@@ -1,0 +1,33 @@
+pipeline:
+  version: "2026.09.0"
+  schema_version: "1.0.0"
+
+limits:
+  max_file_size_bytes: 104857600   # 100 MB
+  max_page_count: 500
+  per_page_timeout_seconds: 60
+  max_worker_memory_mb: 1500
+  max_render_pixels: 16000000      # 4000x4000
+
+inspection:
+  blank_ink_ratio_threshold: 0.001
+  scanned_image_coverage_threshold: 0.60
+  garbled_text_ratio_threshold: 0.15
+
+ocr:
+  engine: "tesseract"
+  dpi: 300
+  default_languages: ["eng", "hin"]
+  confidence_threshold: 0.60
+
+tables:
+  native_engine: "pdfplumber"
+  min_confidence: 0.70
+
+math:
+  enable_cpu_latex_ocr: true
+  confidence_threshold: 0.85
+
+storage:
+  root_dir: "storage/documents"
+  retention_days: 30
