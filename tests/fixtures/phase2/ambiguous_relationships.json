@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0.0",
+  "pipeline_version": "2026.09.0",
+  "document_id": "doc_ambig",
+  "source": {
+    "sha256": "abcdef1234567890",
+    "filename": "doc_ambig.pdf",
+    "size_bytes": 102400
+  },
+  "metadata": {
+    "page_count": 1,
+    "title": {
+      "value": "Physics and Finance",
+      "source": "inferred"
+    },
+    "processing_status": "completed"
+  },
+  "outline": [
+    {
+      "section_id": "sec_01",
+      "title": "Physics",
+      "level": 1,
+      "page_start": 1,
+      "children": []
+    },
+    {
+      "section_id": "sec_02",
+      "title": "Economics",
+      "level": 1,
+      "page_start": 1,
+      "children": []
+    }
+  ],
+  "pages": [
+    {
+      "page_index": 1,
+      "page_label": "1",
+      "width": 612.0,
+      "height": 792.0,
+      "orientation": "portrait",
+      "page_type": "native",
+      "status": "ok",
+      "blocks": [
+        {
+          "block_id": "blk_01",
+          "type": "paragraph",
+          "role": "body",
+          "bbox": [
+            10.0,
+            10.0,
+            200.0,
+            50.0
+          ],
+          "content": {
+            "text": "Electric current is the flow of electric charge.",
+            "text_raw": "Electric current is the flow of electric charge."
+          },
+          "language": "en",
+          "reading_order": 1,
+          "section_id": "sec_01",
+          "extraction_method": "native",
+          "confidence": 0.95,
+          "status": "ok",
+          "asset_ids": [],
+          "warnings": []
+        },
+        {
+          "block_id": "blk_02",
+          "type": "paragraph",
+          "role": "body",
+          "bbox": [
+            10.0,
+            10.0,
+            200.0,
+            50.0
+          ],
+          "content": {
+            "text": "In economics, current account reflects net trade.",
+            "text_raw": "In economics, current account reflects net trade."
+          },
+          "language": "en",
+          "reading_order": 2,
+          "section_id": "sec_02",
+          "extraction_method": "native",
+          "confidence": 0.95,
+          "status": "ok",
+          "asset_ids": [],
+          "warnings": []
+        }
+      ]
+    }
+  ],
+  "assets": [],
+  "links": [],
+  "annotations": [],
+  "warnings": []
+}
