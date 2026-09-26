@@ -1,0 +1,1507 @@
+{
+  "document_id": "doc_ass_001",
+  "chapter_id": "ch_1",
+  "questions": {
+    "q_df48d95d2f80": {
+      "question_id": "q_df48d95d2f80",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 1)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.3,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769613Z"
+    },
+    "q_96542b3105a6": {
+      "question_id": "q_96542b3105a6",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 2)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.35,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769666Z"
+    },
+    "q_42a4e5b6ea50": {
+      "question_id": "q_42a4e5b6ea50",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 3)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.4,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769709Z"
+    },
+    "q_9c4d80848980": {
+      "question_id": "q_9c4d80848980",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 4)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.45,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769749Z"
+    },
+    "q_d491018748f9": {
+      "question_id": "q_d491018748f9",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 5)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769786Z"
+    },
+    "q_7d5e0b677520": {
+      "question_id": "q_7d5e0b677520",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 6)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.55,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769817Z"
+    },
+    "q_9d8953ea1bea": {
+      "question_id": "q_9d8953ea1bea",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 7)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.6000000000000001,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769853Z"
+    },
+    "q_8eff6aff090f": {
+      "question_id": "q_8eff6aff090f",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 8)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.65,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769883Z"
+    },
+    "q_dae67084707d": {
+      "question_id": "q_dae67084707d",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 9)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.7,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769921Z"
+    },
+    "q_59cc28d65093": {
+      "question_id": "q_59cc28d65093",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 10)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.75,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769950Z"
+    },
+    "q_75fda4d8602c": {
+      "question_id": "q_75fda4d8602c",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 11)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.8,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.769986Z"
+    },
+    "q_e59a61686851": {
+      "question_id": "q_e59a61686851",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 12)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.8500000000000001,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770004Z"
+    },
+    "q_0618316e4b35": {
+      "question_id": "q_0618316e4b35",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 13)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.9000000000000001,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770034Z"
+    },
+    "q_a853e91d9b79": {
+      "question_id": "q_a853e91d9b79",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 14)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 0.95,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770071Z"
+    },
+    "q_0e323071cc2e": {
+      "question_id": "q_0e323071cc2e",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 15)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770100Z"
+    },
+    "q_48245be3e19d": {
+      "question_id": "q_48245be3e19d",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 16)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770130Z"
+    },
+    "q_fbda57f44d60": {
+      "question_id": "q_fbda57f44d60",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 17)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770163Z"
+    },
+    "q_a26c38510e58": {
+      "question_id": "q_a26c38510e58",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 18)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770248Z"
+    },
+    "q_d9dd7e021611": {
+      "question_id": "q_d9dd7e021611",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 19)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770295Z"
+    },
+    "q_988b6f6a086d": {
+      "question_id": "q_988b6f6a086d",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 20)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770316Z"
+    },
+    "q_1c6544272e4b": {
+      "question_id": "q_1c6544272e4b",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 21)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770332Z"
+    },
+    "q_5d25b9071f17": {
+      "question_id": "q_5d25b9071f17",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 22)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770367Z"
+    },
+    "q_4310300676f0": {
+      "question_id": "q_4310300676f0",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 23)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770403Z"
+    },
+    "q_ad441cbbc1af": {
+      "question_id": "q_ad441cbbc1af",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 24)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770448Z"
+    },
+    "q_fdef284d767f": {
+      "question_id": "q_fdef284d767f",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes Derivatives (Question 25)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Grounded in course concepts for sec_diff.",
+      "difficulty": 1.0,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770484Z"
+    },
+    "q_f7ed621ac6b6": {
+      "question_id": "q_f7ed621ac6b6",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_df48d95d2f80): Which statement best describes Derivatives (Question 1)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_df48d95d2f80",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_df48d95d2f80",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770533Z"
+    },
+    "q_ea32fac80f16": {
+      "question_id": "q_ea32fac80f16",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_96542b3105a6): Which statement best describes Derivatives (Question 2)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_96542b3105a6",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_96542b3105a6",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770572Z"
+    },
+    "q_1cebe358a57b": {
+      "question_id": "q_1cebe358a57b",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_42a4e5b6ea50): Which statement best describes Derivatives (Question 3)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_42a4e5b6ea50",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_42a4e5b6ea50",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770598Z"
+    },
+    "q_b254bb0a843e": {
+      "question_id": "q_b254bb0a843e",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_9c4d80848980): Which statement best describes Derivatives (Question 4)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_9c4d80848980",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_9c4d80848980",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770624Z"
+    },
+    "q_c61510daf26f": {
+      "question_id": "q_c61510daf26f",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_d491018748f9): Which statement best describes Derivatives (Question 5)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_d491018748f9",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_d491018748f9",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770671Z"
+    },
+    "q_eb5f1e1bd934": {
+      "question_id": "q_eb5f1e1bd934",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_7d5e0b677520): Which statement best describes Derivatives (Question 6)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_7d5e0b677520",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_7d5e0b677520",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770696Z"
+    },
+    "q_03b110701c4a": {
+      "question_id": "q_03b110701c4a",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_9d8953ea1bea): Which statement best describes Derivatives (Question 7)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_9d8953ea1bea",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_9d8953ea1bea",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770721Z"
+    },
+    "q_a4f1ee6fb13d": {
+      "question_id": "q_a4f1ee6fb13d",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_8eff6aff090f): Which statement best describes Derivatives (Question 8)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_8eff6aff090f",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_8eff6aff090f",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770754Z"
+    },
+    "q_aa0ef1e240cd": {
+      "question_id": "q_aa0ef1e240cd",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_dae67084707d): Which statement best describes Derivatives (Question 9)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_dae67084707d",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_dae67084707d",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770794Z"
+    },
+    "q_a1c4c67e2a0e": {
+      "question_id": "q_a1c4c67e2a0e",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_59cc28d65093): Which statement best describes Derivatives (Question 10)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_59cc28d65093",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_59cc28d65093",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770826Z"
+    },
+    "q_c93cfeefbf64": {
+      "question_id": "q_c93cfeefbf64",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_75fda4d8602c): Which statement best describes Derivatives (Question 11)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_75fda4d8602c",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_75fda4d8602c",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770880Z"
+    },
+    "q_fd0d6853953f": {
+      "question_id": "q_fd0d6853953f",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_e59a61686851): Which statement best describes Derivatives (Question 12)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_e59a61686851",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_e59a61686851",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770906Z"
+    },
+    "q_b8ce1eb278cd": {
+      "question_id": "q_b8ce1eb278cd",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_0618316e4b35): Which statement best describes Derivatives (Question 13)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_0618316e4b35",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_0618316e4b35",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770931Z"
+    },
+    "q_9690d9e9c23b": {
+      "question_id": "q_9690d9e9c23b",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_a853e91d9b79): Which statement best describes Derivatives (Question 14)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_a853e91d9b79",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_a853e91d9b79",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770957Z"
+    },
+    "q_3daaad374a33": {
+      "question_id": "q_3daaad374a33",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_0e323071cc2e): Which statement best describes Derivatives (Question 15)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_0e323071cc2e",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_0e323071cc2e",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.770982Z"
+    },
+    "q_50b267c17a7b": {
+      "question_id": "q_50b267c17a7b",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_48245be3e19d): Which statement best describes Derivatives (Question 16)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_48245be3e19d",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_48245be3e19d",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771007Z"
+    },
+    "q_e2feaab9e437": {
+      "question_id": "q_e2feaab9e437",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_fbda57f44d60): Which statement best describes Derivatives (Question 17)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_fbda57f44d60",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_fbda57f44d60",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771040Z"
+    },
+    "q_f5b5236eca72": {
+      "question_id": "q_f5b5236eca72",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_a26c38510e58): Which statement best describes Derivatives (Question 18)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_a26c38510e58",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_a26c38510e58",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771066Z"
+    },
+    "q_786428dbfe7b": {
+      "question_id": "q_786428dbfe7b",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_d9dd7e021611): Which statement best describes Derivatives (Question 19)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_d9dd7e021611",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_d9dd7e021611",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771091Z"
+    },
+    "q_1b8c3d6e54d6": {
+      "question_id": "q_1b8c3d6e54d6",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_988b6f6a086d): Which statement best describes Derivatives (Question 20)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_988b6f6a086d",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_988b6f6a086d",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771117Z"
+    },
+    "q_d75649e1c0b1": {
+      "question_id": "q_d75649e1c0b1",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_1c6544272e4b): Which statement best describes Derivatives (Question 21)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_1c6544272e4b",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_1c6544272e4b",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771143Z"
+    },
+    "q_f69f296a6114": {
+      "question_id": "q_f69f296a6114",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_5d25b9071f17): Which statement best describes Derivatives (Question 22)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_5d25b9071f17",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_5d25b9071f17",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771175Z"
+    },
+    "q_7c3302f80fe5": {
+      "question_id": "q_7c3302f80fe5",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_4310300676f0): Which statement best describes Derivatives (Question 23)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_4310300676f0",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_4310300676f0",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771250Z"
+    },
+    "q_cae6996e2cd0": {
+      "question_id": "q_cae6996e2cd0",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_ad441cbbc1af): Which statement best describes Derivatives (Question 24)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_ad441cbbc1af",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_ad441cbbc1af",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771298Z"
+    },
+    "q_a38ea2a4face": {
+      "question_id": "q_a38ea2a4face",
+      "chapter_id": "ch_1",
+      "topic_ids": [
+        "sec_diff"
+      ],
+      "concept_ids": [
+        "c_diff_1"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Variation of (q_fdef284d767f): Which statement best describes Derivatives (Question 25)?",
+      "options": [
+        "Core principle of Derivatives",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of Derivatives",
+      "explanation": "Variant of question q_fdef284d767f",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "VARIANT",
+      "source_item_id": "q_fdef284d767f",
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-26T15:15:57.771328Z"
+    }
+  },
+  "updated_at": "2026-09-26T15:15:57.772922Z"
+}

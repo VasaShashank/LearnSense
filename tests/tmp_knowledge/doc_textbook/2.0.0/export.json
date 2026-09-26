@@ -1,0 +1,867 @@
+{
+  "knowledge_document_id": "kr_doc_textbook",
+  "source_document_id": "doc_textbook",
+  "schema_version": "2.0.0",
+  "pipeline_version": "2.0.0",
+  "source_schema_version": "1.0.0",
+  "status": "completed",
+  "document_profile": {
+    "genre": "textbook",
+    "domain_hint": "physics",
+    "level_hint": null,
+    "languages": [
+      "en"
+    ]
+  },
+  "sections": [],
+  "evidence": [
+    {
+      "evidence_id": "ev_8ba9438300d3",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 73
+      },
+      "excerpt": "By the end of this chapter you will be able to apply Newton's Second Law.",
+      "level": "EXPLICIT",
+      "kind": "learning_objective",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_ee38af1e42ad",
+      "block_id": "blk_01",
+      "span": {
+        "field": "normalized_text",
+        "start": 11,
+        "end": 15
+      },
+      "excerpt": "Laws",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_38019ef26b2c",
+      "block_id": "blk_01",
+      "span": {
+        "field": "normalized_text",
+        "start": 19,
+        "end": 25
+      },
+      "excerpt": "Motion",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_a38dd49b46b1",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 59
+      },
+      "excerpt": "Newton",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_cfbddd65e46e",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 22
+      },
+      "excerpt": "Newton",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_c9829a2f9920",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 6
+      },
+      "excerpt": "Newton",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_a8e0dd3c6ab6",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 62,
+        "end": 72
+      },
+      "excerpt": "Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_a49beb609ed2",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 25,
+        "end": 35
+      },
+      "excerpt": "Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_3f24621bb4c0",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 9,
+        "end": 19
+      },
+      "excerpt": "Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_af4a8d934a41",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 6
+      },
+      "excerpt": "Before",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_f8c3a17ed802",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 62,
+        "end": 67
+      },
+      "excerpt": "Force",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_095804b59aa3",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 68
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    }
+  ],
+  "mentions": [
+    {
+      "mention_id": "m_9312e0a9d36d",
+      "concept_id": "c_778b27def4b6",
+      "block_id": "blk_01",
+      "span": {
+        "field": "normalized_text",
+        "start": 11,
+        "end": 15
+      },
+      "surface_form": "Laws",
+      "language": "en",
+      "unit_id": "u_afcef420da32",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_73272ff755fb",
+      "concept_id": "c_1ad22c219f65",
+      "block_id": "blk_01",
+      "span": {
+        "field": "normalized_text",
+        "start": 19,
+        "end": 25
+      },
+      "surface_form": "Motion",
+      "language": "en",
+      "unit_id": "u_afcef420da32",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_03d2d204cd97",
+      "concept_id": "c_c271e2cc7fe0",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 59
+      },
+      "surface_form": "Newton",
+      "language": "en",
+      "unit_id": "u_41d3052bc6cd",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_0fc7fd063835",
+      "concept_id": "c_f36ae5d6784c",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 62,
+        "end": 72
+      },
+      "surface_form": "Second Law",
+      "language": "en",
+      "unit_id": "u_41d3052bc6cd",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_1dd2a4dce598",
+      "concept_id": "c_245b4f665ed4",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 6
+      },
+      "surface_form": "Before",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_b0173a8f3673",
+      "concept_id": "c_c271e2cc7fe0",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 22
+      },
+      "surface_form": "Newton",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_965a6ce2d80c",
+      "concept_id": "c_f36ae5d6784c",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 25,
+        "end": 35
+      },
+      "surface_form": "Second Law",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_57f7c4623151",
+      "concept_id": "c_f534c67fd02f",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 62,
+        "end": 67
+      },
+      "surface_form": "Force",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_de4918074a62",
+      "concept_id": "c_c271e2cc7fe0",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 6
+      },
+      "surface_form": "Newton",
+      "language": "en",
+      "unit_id": "u_f06a8f25165f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_c4f0e615a624",
+      "concept_id": "c_f36ae5d6784c",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 9,
+        "end": 19
+      },
+      "surface_form": "Second Law",
+      "language": "en",
+      "unit_id": "u_f06a8f25165f",
+      "confidence": 0.95
+    }
+  ],
+  "concepts": [
+    {
+      "concept_id": "c_778b27def4b6",
+      "canonical_name": "Laws",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_9312e0a9d36d"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_ee38af1e42ad"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_1ad22c219f65",
+      "canonical_name": "Motion",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_73272ff755fb"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_38019ef26b2c"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_c271e2cc7fe0",
+      "canonical_name": "Newton",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_03d2d204cd97",
+        "m_b0173a8f3673",
+        "m_de4918074a62"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_a38dd49b46b1",
+        "ev_cfbddd65e46e",
+        "ev_c9829a2f9920"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_f36ae5d6784c",
+      "canonical_name": "Second Law",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_0fc7fd063835",
+        "m_965a6ce2d80c",
+        "m_c4f0e615a624"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_a8e0dd3c6ab6",
+        "ev_a49beb609ed2",
+        "ev_3f24621bb4c0"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_245b4f665ed4",
+      "canonical_name": "Before",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_1dd2a4dce598"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_af4a8d934a41"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_f534c67fd02f",
+      "canonical_name": "Force",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_57f7c4623151"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_f8c3a17ed802"
+      ],
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    }
+  ],
+  "skills": [
+    {
+      "skill_id": "s_3372b579889d",
+      "action": "apply",
+      "statement": "By the end of this chapter you will be able to apply Newton's Second Law.",
+      "concept_ids": [],
+      "source_kind": "explicit_objective",
+      "confidence": {
+        "value": 0.9,
+        "components": null
+      },
+      "evidence_ids": [
+        "ev_8ba9438300d3"
+      ]
+    }
+  ],
+  "educational_units": [
+    {
+      "unit_id": "u_afcef420da32",
+      "unit_type": "explanation",
+      "section_id": "sec_01",
+      "source": [
+        {
+          "block_id": "blk_01",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 25
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_778b27def4b6",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_1ad22c219f65",
+          "link": "mentions"
+        }
+      ]
+    },
+    {
+      "unit_id": "u_41d3052bc6cd",
+      "unit_type": "learning_objective",
+      "section_id": "sec_01",
+      "source": [
+        {
+          "block_id": "blk_02",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 73
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_c271e2cc7fe0",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_f36ae5d6784c",
+          "link": "mentions"
+        }
+      ]
+    },
+    {
+      "unit_id": "u_32bef7b4f34f",
+      "unit_type": "prerequisite_statement",
+      "section_id": "sec_01",
+      "source": [
+        {
+          "block_id": "blk_03",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 68
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_c271e2cc7fe0",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_f36ae5d6784c",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_245b4f665ed4",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_f534c67fd02f",
+          "link": "mentions"
+        }
+      ]
+    },
+    {
+      "unit_id": "u_f06a8f25165f",
+      "unit_type": "explanation",
+      "section_id": "sec_01",
+      "source": [
+        {
+          "block_id": "blk_04",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 58
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_c271e2cc7fe0",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_f36ae5d6784c",
+          "link": "mentions"
+        }
+      ]
+    }
+  ],
+  "formulas": [],
+  "assessable_items": [],
+  "relationships": [
+    {
+      "relationship_id": "rel_cec9ac6cff98",
+      "source": "c_f36ae5d6784c",
+      "type": "prerequisite_of",
+      "target": "c_c271e2cc7fe0",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    },
+    {
+      "relationship_id": "rel_a4c0ce20ef8e",
+      "source": "c_c271e2cc7fe0",
+      "type": "prerequisite_of",
+      "target": "c_245b4f665ed4",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    },
+    {
+      "relationship_id": "rel_8b84da65d290",
+      "source": "c_f534c67fd02f",
+      "type": "prerequisite_of",
+      "target": "c_c271e2cc7fe0",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    },
+    {
+      "relationship_id": "rel_af5de36e7779",
+      "source": "c_f36ae5d6784c",
+      "type": "prerequisite_of",
+      "target": "c_245b4f665ed4",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    },
+    {
+      "relationship_id": "rel_458528cb638b",
+      "source": "c_f534c67fd02f",
+      "type": "prerequisite_of",
+      "target": "c_f36ae5d6784c",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    },
+    {
+      "relationship_id": "rel_58ce67dab3f8",
+      "source": "c_f534c67fd02f",
+      "type": "prerequisite_of",
+      "target": "c_245b4f665ed4",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.85,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.9,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_095804b59aa3"
+      ],
+      "flags": []
+    }
+  ],
+  "views": {
+    "trusted": {
+      "policy_version": "1.0",
+      "relationship_ids": [
+        "rel_cec9ac6cff98",
+        "rel_a4c0ce20ef8e",
+        "rel_8b84da65d290",
+        "rel_af5de36e7779",
+        "rel_458528cb638b",
+        "rel_58ce67dab3f8"
+      ]
+    },
+    "full": {
+      "total_nodes": 6,
+      "total_edges": 6
+    }
+  },
+  "merge_records": [
+    {
+      "record_id": "mr_c_c271e2cc7fe0",
+      "inputs": [
+        "Newton",
+        "Newton",
+        "Newton"
+      ],
+      "canonical_name": "Newton",
+      "signals": {
+        "exact_normalized_match": true
+      },
+      "score": 1.0,
+      "outcome": "merged"
+    },
+    {
+      "record_id": "mr_c_f36ae5d6784c",
+      "inputs": [
+        "Second Law",
+        "Second Law",
+        "Second Law"
+      ],
+      "canonical_name": "Second Law",
+      "signals": {
+        "exact_normalized_match": true
+      },
+      "score": 1.0,
+      "outcome": "merged"
+    }
+  ],
+  "id_map": [],
+  "qc_report": {
+    "hard_invariant_violations_count": 0,
+    "hard_invariant_violations": [],
+    "passed_qc": true
+  },
+  "coverage_report": {
+    "educational_units_count": 4,
+    "concepts_count": 6,
+    "relationships_count": 6
+  },
+  "warnings": []
+}

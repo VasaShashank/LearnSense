@@ -1,0 +1,17 @@
+{
+  "knowledge_document_id": "kr_doc_textbook",
+  "source_document_id": "doc_textbook",
+  "schema_version": "2.0.0",
+  "pipeline_version": "2.0.0",
+  "status": "completed",
+  "qc_report": {
+    "hard_invariant_violations_count": 0,
+    "hard_invariant_violations": [],
+    "passed_qc": true
+  },
+  "coverage_report": {
+    "educational_units_count": 4,
+    "concepts_count": 6,
+    "relationships_count": 6
+  }
+}

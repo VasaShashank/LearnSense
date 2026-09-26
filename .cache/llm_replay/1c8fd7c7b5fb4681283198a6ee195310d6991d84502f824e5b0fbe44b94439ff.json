@@ -1,0 +1,82 @@
+{
+  "questions": [
+    {
+      "question_text": "Question about Chain Rule (Item 1)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "mcq",
+      "difficulty": 0.4
+    },
+    {
+      "question_text": "Question about Chain Rule (Item 2)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "short_answer",
+      "difficulty": 0.48000000000000004
+    },
+    {
+      "question_text": "Question about Chain Rule (Item 3)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "mcq",
+      "difficulty": 0.56
+    },
+    {
+      "question_text": "Question about Chain Rule (Item 4)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "short_answer",
+      "difficulty": 0.64
+    },
+    {
+      "question_text": "Question about Chain Rule (Item 5)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "mcq",
+      "difficulty": 0.72
+    },
+    {
+      "question_text": "Question about Chain Rule (Item 6)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Chain Rule.",
+      "question_type": "short_answer",
+      "difficulty": 0.8
+    }
+  ]
+}
