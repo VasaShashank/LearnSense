@@ -1,0 +1,82 @@
+{
+  "questions": [
+    {
+      "question_text": "Question about Definite Integral (Item 1)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "mcq",
+      "difficulty": 0.4
+    },
+    {
+      "question_text": "Question about Definite Integral (Item 2)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "short_answer",
+      "difficulty": 0.48000000000000004
+    },
+    {
+      "question_text": "Question about Definite Integral (Item 3)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "mcq",
+      "difficulty": 0.56
+    },
+    {
+      "question_text": "Question about Definite Integral (Item 4)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "short_answer",
+      "difficulty": 0.64
+    },
+    {
+      "question_text": "Question about Definite Integral (Item 5)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "mcq",
+      "difficulty": 0.72
+    },
+    {
+      "question_text": "Question about Definite Integral (Item 6)",
+      "options": [
+        "Correct Option",
+        "Distractor 1",
+        "Distractor 2",
+        "Distractor 3"
+      ],
+      "correct_answer": "Correct Option",
+      "explanation": "Detailed step-by-step explanation for Definite Integral.",
+      "question_type": "short_answer",
+      "difficulty": 0.8
+    }
+  ]
+}

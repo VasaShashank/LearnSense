@@ -1,0 +1,20 @@
+{
+  "learner_id": "l1",
+  "concept_states": {
+    "c1": {
+      "concept_id": "c1",
+      "mastery_probability": 0.6657,
+      "uncertainty": 0.6685,
+      "attempt_count": 1,
+      "correct_count": 1,
+      "incorrect_count": 0,
+      "recent_performance": [
+        true
+      ],
+      "last_attempt": "2026-09-26T15:10:49.282820Z"
+    }
+  },
+  "topic_scores": {},
+  "created_at": "2026-09-26T15:10:49.281808Z",
+  "updated_at": "2026-09-26T15:10:49.282829Z"
+}

@@ -1,0 +1,17 @@
+{
+  "questions": [
+    {
+      "question_text": "Which statement best describes this topic?",
+      "options": [
+        "Core principle of topic",
+        "Unrelated concept definition",
+        "Incorrect application",
+        "Opposite theorem statement"
+      ],
+      "correct_answer": "Core principle of topic",
+      "explanation": "Grounded in course concepts for sec_integration.",
+      "question_type": "mcq",
+      "difficulty": 0.5
+    }
+  ]
+}
