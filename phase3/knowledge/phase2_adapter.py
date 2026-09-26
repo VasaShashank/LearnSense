@@ -1,6 +1,7 @@
 """
 Phase-2 → Phase-3 Knowledge Adapter and LearningContext.
-Provides a clean abstraction over Phase 2 EducationalKnowledgeRepresentation (EKR).
+Provides a clean abstraction over Phase 2 EducationalKnowledgeRepresentation (EKR)
+and connects learner state to prerequisite graph analysis.
 """
 
 from typing import Any, Dict, List, Optional
@@ -17,6 +18,7 @@ from phase2.models import (
     Evidence,
     RelationshipTypeEnum,
 )
+from phase3.learner.models import LearnerState
 
 
 class ConceptView(BaseModel):
@@ -36,8 +38,8 @@ class SkillView(BaseModel):
 
 
 class PrerequisiteLink(BaseModel):
-    source_concept_id: str
-    target_concept_id: str
+    source_concept_id: str  # Prerequisite concept
+    target_concept_id: str  # Dependent concept
     confidence: float
     evidence_ids: List[str] = Field(default_factory=list)
 
@@ -56,6 +58,48 @@ class LearningContext(BaseModel):
     evidence: Dict[str, Evidence] = Field(default_factory=dict)
     prerequisites: List[PrerequisiteLink] = Field(default_factory=list)
     trusted_relationships: List[Relationship] = Field(default_factory=list)
+
+    def get_upstream_weak_prerequisites(
+        self,
+        target_concept_id: str,
+        learner_state: LearnerState,
+        mastery_threshold: float = 0.5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Traces the prerequisite graph upwards to identify weak upstream concepts
+        causing gaps in target_concept_id.
+        """
+        weak_gaps = []
+        visited = set()
+
+        def _trace(c_id: str):
+            if c_id in visited:
+                return
+            visited.add(c_id)
+
+            # Find prerequisites where target is c_id
+            prereq_c_ids = [
+                link.source_concept_id
+                for link in self.prerequisites
+                if link.target_concept_id == c_id
+            ]
+
+            for prereq_id in prereq_c_ids:
+                c_state = learner_state.get_concept_state(prereq_id)
+                mastery = c_state.mastery_probability
+                if mastery < mastery_threshold:
+                    c_view = self.concepts.get(prereq_id)
+                    weak_gaps.append({
+                        "prerequisite_concept_id": prereq_id,
+                        "canonical_name": c_view.canonical_name if c_view else prereq_id,
+                        "mastery_probability": mastery,
+                        "target_concept_id": c_id,
+                    })
+                # Recurse upstream
+                _trace(prereq_id)
+
+        _trace(target_concept_id)
+        return weak_gaps
 
 
 class Phase2Adapter:
@@ -109,7 +153,6 @@ class Phase2Adapter:
                     )
                 )
 
-        # Build sections & topics from section statuses and educational units
         sections: List[Dict[str, Any]] = []
         topics: List[Dict[str, Any]] = []
         seen_sections = set()
@@ -117,7 +160,6 @@ class Phase2Adapter:
             seen_sections.add(sec.section_id)
             sections.append({"section_id": sec.section_id, "status": sec.semantic_status})
 
-        # Infer chapters / topics if not explicitly structured
         topic_concepts: Dict[str, List[str]] = {}
         for unit in ekr.educational_units:
             sec_id = unit.section_id or "default_topic"
