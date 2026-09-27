@@ -5,8 +5,8 @@
       "concept_id": "c_integrals_1",
       "mastery_probability": 0.99,
       "uncertainty": 0.02,
-      "attempt_count": 22,
-      "correct_count": 22,
+      "attempt_count": 23,
+      "correct_count": 23,
       "incorrect_count": 0,
       "recent_performance": [
         true,
@@ -20,7 +20,7 @@
         true,
         true
       ],
-      "last_attempt": "2026-09-27T16:45:21.645593Z"
+      "last_attempt": "2026-09-27T17:02:15.955541Z"
     },
     "c_ftc_1": {
       "concept_id": "c_ftc_1",
@@ -35,5 +35,5 @@
   },
   "topic_scores": {},
   "created_at": "2026-09-26T15:12:10.761265Z",
-  "updated_at": "2026-09-27T16:45:21.645607Z"
+  "updated_at": "2026-09-27T17:02:15.955564Z"
 }
