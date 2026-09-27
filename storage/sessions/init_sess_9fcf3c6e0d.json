@@ -1,0 +1,41 @@
+{
+  "session_id": "init_sess_9fcf3c6e0d",
+  "learner_id": "learner_zero_202",
+  "subject_id": "subj_calculus_e2e",
+  "self_assessments": {
+    "c_limits": {
+      "concept_id": "c_limits",
+      "status": "DONT_KNOW",
+      "updated_at": "2026-09-27T17:31:21.997337Z"
+    },
+    "c_derivatives": {
+      "concept_id": "c_derivatives",
+      "status": "DONT_KNOW",
+      "updated_at": "2026-09-27T17:31:21.997346Z"
+    },
+    "c_chain_rule": {
+      "concept_id": "c_chain_rule",
+      "status": "DONT_KNOW",
+      "updated_at": "2026-09-27T17:31:21.997350Z"
+    },
+    "c_integrals": {
+      "concept_id": "c_integrals",
+      "status": "DONT_KNOW",
+      "updated_at": "2026-09-27T17:31:21.997353Z"
+    }
+  },
+  "know_concept_ids": [],
+  "dont_know_concept_ids": [
+    "c_limits",
+    "c_derivatives",
+    "c_chain_rule",
+    "c_integrals"
+  ],
+  "unanswered_concept_ids": [],
+  "diagnostic_session_id": null,
+  "diagnostic_completed": true,
+  "diagnostic_score": null,
+  "sufficiency_status": "UNINITIALIZED",
+  "created_at": "2026-09-27T17:31:21.997391Z",
+  "updated_at": "2026-09-27T17:31:21.997392Z"
+}

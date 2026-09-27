@@ -12,23 +12,27 @@ from fastapi.responses import FileResponse, JSONResponse
 from ingestion.pipeline import IngestionPipeline
 from storage.db import DatabaseManager
 from storage.store import DocumentStorage
+from phase5.validation.input_validator import InputValidator
 
 router = APIRouter()
 pipeline = IngestionPipeline()
 storage = DocumentStorage()
 db = DatabaseManager()
+input_validator = InputValidator()
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(file: UploadFile = File(...)):
     """Upload PDF document for Phase 1 ingestion."""
-    if not file.filename.lower().endswith(".pdf"):
+    content = await file.read()
+
+    val_res = input_validator.validate_file(content, file.filename)
+    if not val_res.is_valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only PDF files are supported.",
+            detail=val_res.errors[0] if val_res.errors else "Document validation failed.",
         )
 
-    content = await file.read()
     sha256 = DocumentStorage.compute_sha256(content)
     doc_id = f"doc_{sha256[:12]}"
 

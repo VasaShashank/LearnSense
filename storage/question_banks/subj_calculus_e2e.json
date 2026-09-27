@@ -1,0 +1,36 @@
+{
+  "document_id": "subj_calculus_e2e",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_c_limits_1": {
+      "question_id": "q_c_limits_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "c_limits"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement best describes C Limits in relation to problem-solving?",
+      "options": [
+        "A fundamental mathematical or analytical principle defining C Limits.",
+        "An unrelated decorative element.",
+        "A historical artifact with no current utility.",
+        "An optional configuration setting."
+      ],
+      "correct_answer": "A fundamental mathematical or analytical principle defining C Limits.",
+      "allow_dont_know_option": true,
+      "explanation": "C Limits is essential for establishing core relationships and solving downstream problems.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T17:22:24.861850Z"
+    }
+  },
+  "updated_at": "2026-09-27T17:22:24.861863Z"
+}

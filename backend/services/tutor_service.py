@@ -82,9 +82,15 @@ class TutorService:
             suggested_actions = ["Practice another problem", "Review prerequisites"]
 
         else: # CUSTOM
-            msg = user_message or f"Tell me more about {c_name}"
+            # Sanitize custom user messages against prompt injection patterns
+            raw_msg = user_message or f"Tell me more about {c_name}"
+            sanitized_msg = raw_msg.replace("Ignore previous instructions", "[Filtered Instruction]")
+            sanitized_msg = sanitized_msg.replace("Reveal system prompt", "[Filtered Query]")
+            sanitized_msg = sanitized_msg.replace("Execute this command", "[Filtered Action]")
+            sanitized_msg = sanitized_msg[:500]  # Bound message length
+
             response_text = (
-                f"Regarding **{c_name}**: '{msg}' is a great inquiry! "
+                f"Regarding **{c_name}**: '{sanitized_msg}' is a great inquiry! "
                 f"In {subject_id.replace('_', ' ').title()}, {c_name} serves as a key bridge. "
                 f"Your current mastery level is {int(mastery * 100)}%. "
                 f"Would you like to review an example or practice a problem?"

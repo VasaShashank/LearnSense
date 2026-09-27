@@ -7,12 +7,18 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 from storage.store import DocumentStorage
 from phase5.config.phase5_config import Phase5Config
+from phase5.validation.input_validator import InputValidator
 
 
 class SourceService:
-    def __init__(self, doc_storage: Optional[DocumentStorage] = None):
+    def __init__(
+        self,
+        doc_storage: Optional[DocumentStorage] = None,
+        input_validator: Optional[InputValidator] = None,
+    ):
         self.doc_storage = doc_storage or DocumentStorage()
         self.p5_config = Phase5Config()
+        self.input_validator = input_validator or InputValidator()
 
     def list_sources(self) -> List[Dict[str, Any]]:
         """
@@ -77,10 +83,11 @@ class SourceService:
 
     def save_uploaded_source(self, document_id: str, file_bytes: bytes, filename: str) -> Dict[str, Any]:
         """
-        Saves PDF and checks Phase 5 size limits.
+        Saves PDF and checks Phase 5 validation rules (file type, size, magic header, page limits, corrupt PDF).
         """
-        if len(file_bytes) > self.p5_config.MAX_PDF_FILE_SIZE_BYTES:
-            raise ValueError(f"File size exceeds maximum allowed limit of {self.p5_config.MAX_PDF_FILE_SIZE_MB}MB.")
+        val_res = self.input_validator.validate_file(file_bytes, filename)
+        if not val_res.is_valid:
+            raise ValueError(val_res.errors[0] if val_res.errors else "Invalid PDF document.")
 
         saved_path = self.doc_storage.save_original_pdf(document_id, file_bytes)
         return {

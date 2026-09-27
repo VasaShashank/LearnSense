@@ -54,7 +54,7 @@ class PlanningValidator:
             return result
 
         for q in generated_questions:
-            q_concepts = q.get("concept_ids", [])
+            q_concepts = q.concept_ids if hasattr(q, "concept_ids") else q.get("concept_ids", [])
             for c_id in q_concepts:
                 if c_id not in know_set:
                     result.add_error(

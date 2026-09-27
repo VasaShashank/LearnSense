@@ -1,0 +1,56 @@
+{
+  "learner_id": "learner_new_101",
+  "concept_states": {
+    "c_limits": {
+      "concept_id": "c_limits",
+      "mastery_probability": 0.9734,
+      "uncertainty": 0.0532,
+      "attempt_count": 3,
+      "correct_count": 3,
+      "incorrect_count": 0,
+      "recent_performance": [
+        true,
+        true,
+        true
+      ],
+      "last_attempt": "2026-09-27T17:32:06.041188Z"
+    },
+    "c_derivatives": {
+      "concept_id": "c_derivatives",
+      "mastery_probability": 0.9734,
+      "uncertainty": 0.0532,
+      "attempt_count": 3,
+      "correct_count": 3,
+      "incorrect_count": 0,
+      "recent_performance": [
+        true,
+        true,
+        true
+      ],
+      "last_attempt": "2026-09-27T17:32:06.053196Z"
+    },
+    "c_chain_rule": {
+      "concept_id": "c_chain_rule",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    },
+    "c_integrals": {
+      "concept_id": "c_integrals",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    }
+  },
+  "topic_scores": {},
+  "created_at": "2026-09-27T17:21:51.861617Z",
+  "updated_at": "2026-09-27T17:32:06.053203Z"
+}

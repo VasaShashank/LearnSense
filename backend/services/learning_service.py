@@ -40,10 +40,10 @@ class LearningService:
                 # Create standard assessment question for concept
                 q1_id = f"q_{cid}_1"
                 questions[q1_id] = QuestionBankItem(
-                    item_id=q1_id,
+                    question_id=q1_id,
                     concept_ids=[cid],
-                    question_type=QuestionType.MULTIPLE_CHOICE,
-                    prompt=f"Which statement best describes {c_name} in relation to problem-solving?",
+                    question_type=QuestionType.MCQ,
+                    question_text=f"Which statement best describes {c_name} in relation to problem-solving?",
                     options=[
                         f"A fundamental mathematical or analytical principle defining {c_name}.",
                         f"An unrelated decorative element.",

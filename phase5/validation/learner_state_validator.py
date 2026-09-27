@@ -101,7 +101,7 @@ class LearnerStateValidator:
             if c_state.mastery_probability < 0.0 or c_state.mastery_probability > 1.0:
                 result.add_error(f"ConceptState '{c_id}' mastery_probability {c_state.mastery_probability} outside [0.0, 1.0].")
 
-            if c_state.attempts < 0:
-                result.add_error(f"ConceptState '{c_id}' attempts count is negative: {c_state.attempts}.")
+            if c_state.attempt_count < 0:
+                result.add_error(f"ConceptState '{c_id}' attempt_count is negative: {c_state.attempt_count}.")
 
         return result
