@@ -1,30 +1,34 @@
 """
-FastAPI Web Server Entrypoint Application for Taproot Phase 1.
-Configures CORS, exception handlers, REST routers, and static asset streaming.
-Matches Section 26 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
+FastAPI Web Server Entrypoint Application for Taproot Platform.
+Configures CORS, exception handlers, REST routers, and application services.
 """
 
+import os
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.routes import documents, phase4
+from backend.routes import documents, phase4, api
 
 app = FastAPI(
-    title="TAPROOT Platform API",
-    description="Adaptive Learning Platform API (Phases 1-4)",
+    title="TAPROOT Adaptive Learning Platform API",
+    description="Unified Adaptive Learning Platform API (Phases 1-6)",
     version="2026.09.0",
 )
 
-# Configure CORS Middleware for Frontend Verification UI
+# Environment-driven CORS configuration for frontend integration
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Mount REST API Routers
+app.include_router(api.router, prefix="/api", tags=["application_facades"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
 app.include_router(phase4.router, prefix="/phase4", tags=["phase4"])
 
@@ -41,6 +45,6 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
 async def health_check():
     return {
         "status": "healthy",
-        "service": "TAPROOT Phase 1 Ingestion Pipeline",
+        "service": "TAPROOT Adaptive Learning Platform API",
         "version": "2026.09.0",
     }

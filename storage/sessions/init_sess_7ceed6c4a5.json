@@ -1,0 +1,89 @@
+{
+  "session_id": "init_sess_7ceed6c4a5",
+  "learner_id": "student_alex",
+  "subject_id": "calculus_101",
+  "self_assessments": {
+    "limits_intro": {
+      "concept_id": "limits_intro",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827413Z"
+    },
+    "continuity": {
+      "concept_id": "continuity",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827425Z"
+    },
+    "derivatives_def": {
+      "concept_id": "derivatives_def",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827429Z"
+    },
+    "power_rule": {
+      "concept_id": "power_rule",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827491Z"
+    },
+    "chain_rule": {
+      "concept_id": "chain_rule",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827504Z"
+    },
+    "product_rule": {
+      "concept_id": "product_rule",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827509Z"
+    },
+    "implicit_diff": {
+      "concept_id": "implicit_diff",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827513Z"
+    },
+    "related_rates": {
+      "concept_id": "related_rates",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827516Z"
+    },
+    "extrema": {
+      "concept_id": "extrema",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827520Z"
+    },
+    "mean_value_thm": {
+      "concept_id": "mean_value_thm",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827523Z"
+    },
+    "integrals_def": {
+      "concept_id": "integrals_def",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827527Z"
+    },
+    "ftc": {
+      "concept_id": "ftc",
+      "status": "UNANSWERED",
+      "updated_at": "2026-09-27T16:00:04.827530Z"
+    }
+  },
+  "know_concept_ids": [],
+  "dont_know_concept_ids": [],
+  "unanswered_concept_ids": [
+    "limits_intro",
+    "continuity",
+    "derivatives_def",
+    "power_rule",
+    "chain_rule",
+    "product_rule",
+    "implicit_diff",
+    "related_rates",
+    "extrema",
+    "mean_value_thm",
+    "integrals_def",
+    "ftc"
+  ],
+  "diagnostic_session_id": null,
+  "diagnostic_completed": false,
+  "diagnostic_score": null,
+  "sufficiency_status": "UNINITIALIZED",
+  "created_at": "2026-09-27T16:00:04.827581Z",
+  "updated_at": "2026-09-27T16:00:04.827582Z"
+}
