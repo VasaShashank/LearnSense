@@ -44,7 +44,7 @@ export const XRayInspector: React.FC<XRayInspectorProps> = ({
           </div>
           <div className="p-2 rounded-xl bg-slate-900/80 border border-slate-800">
             <span className="text-slate-400 text-[10px]">UNCERTAINTY BOUND</span>
-            <span className="text-amber-400 font-bold text-sm block">{Math.round(concept.uncertainty * 100)}%</span>
+            <span className="text-amber-400 font-bold text-sm block">{Math.round((concept.uncertainty ?? 0.3) * 100)}%</span>
           </div>
         </div>
 

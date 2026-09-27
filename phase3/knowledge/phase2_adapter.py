@@ -40,7 +40,7 @@ class SkillView(BaseModel):
 class PrerequisiteLink(BaseModel):
     source_concept_id: str  # Prerequisite concept
     target_concept_id: str  # Dependent concept
-    confidence: float
+    confidence: float = 0.9
     evidence_ids: List[str] = Field(default_factory=list)
 
 

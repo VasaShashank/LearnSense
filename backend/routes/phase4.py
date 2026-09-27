@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.learner.kt import KnowledgeTracer
 from phase3.learner.models import LearnerState
-from phase3.question_bank.models import QuestionBank, QuestionBankItem
+from phase3.question_bank.models import QuestionBank, QuestionBankItem, QuestionType
 from phase4.integration.phase3_adapter import Phase3Adapter
 from phase4.models import (
     ActivityType,
@@ -79,14 +79,11 @@ def _get_or_create_learning_context(subject_id: str, concept_ids: List[str]) -> 
     return _LEARNING_CONTEXTS[subject_id]
 
 
-def _get_or_create_question_bank(subject_id: str) -> QuestionBank:
-    if subject_id not in _QUESTION_BANKS:
-        _QUESTION_BANKS[subject_id] = QuestionBank(
-            document_id=subject_id,
-            chapter_id="ch_1",
-            questions={},
-        )
-    return _QUESTION_BANKS[subject_id]
+def _get_or_create_question_bank(subject_id: str, concept_ids: Optional[List[str]] = None) -> QuestionBank:
+    from backend.services.learning_service import LearningService
+    _svc = LearningService()
+    return _svc.get_or_create_question_bank(subject_id, concept_ids or [])
+
 
 
 @router.post("/initialization/self-assessment", response_model=KnowledgeInitializationSession)
@@ -121,7 +118,7 @@ async def start_diagnostic(req: DiagnosticStartRequest):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    bank = _get_or_create_question_bank(session.subject_id)
+    bank = _get_or_create_question_bank(session.subject_id, session.know_concept_ids)
     questions = adapter.diagnostic_orchestrator.create_diagnostic_quiz(session, bank)
 
     # Validate diagnostic questions restriction

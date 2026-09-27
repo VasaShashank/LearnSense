@@ -69,7 +69,7 @@ export const AccessibleAtlasView: React.FC<AccessibleAtlasViewProps> = ({
                     {concept.prerequisites.length > 0 ? concept.prerequisites.join(', ') : 'None (Foundational)'}
                   </td>
                   <td className="py-3 px-3 text-slate-400">
-                    {concept.dependents.length > 0 ? concept.dependents.join(', ') : 'None'}
+                    {concept.dependents && concept.dependents.length > 0 ? concept.dependents.join(', ') : 'None'}
                   </td>
                   <td className="py-3 px-3 text-right">
                     <button

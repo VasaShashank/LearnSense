@@ -63,26 +63,30 @@ class QuestionBankBuilder:
                 concept_names = [c.canonical_name for c in list(context.concepts.values())[:2]] or ["General Topic Principles"]
 
             prompt = (
-                f"Generate {per_topic_gen} educational multiple-choice questions for topic '{topic['topic_id']}' "
-                f"grounded ONLY in concepts: {', '.join(concept_names)}. Return JSON format."
+                f"Generate {per_topic_gen} authentic, concept-specific educational multiple-choice questions for topic '{topic['topic_id']}' "
+                f"testing these specific concepts: {', '.join(concept_names)}.\n"
+                f"RULES:\n"
+                f"1. Directly test core operational, algorithmic, or theoretical properties of each concept.\n"
+                f"2. Provide 4 concrete, technically sound options directly using the terminology of each concept. Exactly ONE must be correct.\n"
+                f"3. The 3 wrong options must be realistic, plausible student misconceptions or confusion points.\n"
+                f"4. NEVER use generic placeholder or filler phrases. All options must be substantive statements."
             )
 
             template = {
                 "questions": [
                     {
-                        "question_text": f"Which statement best describes {concept_names[i % len(concept_names)]} (Question {i+1})?",
+                        "question_text": "string (concrete question testing specific concept)",
                         "options": [
-                            f"Core principle of {concept_names[i % len(concept_names)]}",
-                            "Unrelated concept definition",
-                            "Incorrect application",
-                            "Opposite theorem statement"
+                            "string (option A)",
+                            "string (option B)",
+                            "string (option C)",
+                            "string (option D)"
                         ],
-                        "correct_answer": f"Core principle of {concept_names[i % len(concept_names)]}",
-                        "explanation": f"Grounded in course concepts for {topic['topic_id']}.",
+                        "correct_answer": "string (exact match of correct option)",
+                        "explanation": "string (detailed explanation)",
                         "question_type": "mcq",
-                        "difficulty": min(0.9, 0.3 + (i * 0.03))
+                        "difficulty": 0.5
                     }
-                    for i in range(per_topic_gen)
                 ]
             }
 

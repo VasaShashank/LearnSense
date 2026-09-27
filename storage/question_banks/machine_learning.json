@@ -1,0 +1,123 @@
+{
+  "document_id": "machine_learning",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_vectors_1": {
+      "question_id": "q_vectors_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "vectors"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which of the following expressions always equals the Euclidean (L2) norm of a vector x∈R^n?",
+      "options": [
+        "||x||_2 = sqrt(sum_{i=1}^n x_i^2)",
+        "||x||_2 = sum_{i=1}^n |x_i|",
+        "||x||_2 = max_{i=1,...,n} |x_i|",
+        "||x||_2 = (sum_{i=1}^n x_i)^2"
+      ],
+      "correct_answer": "||x||_2 = sqrt(sum_{i=1}^n x_i^2)",
+      "allow_dont_know_option": true,
+      "explanation": "The Euclidean norm (L2 norm) of a vector x is defined as the square root of the sum of the squares of its components, i.e., ||x||_2 = sqrt(∑_{i=1}^n x_i^2). This follows directly from the Pythagorean theorem in n‑dimensional space. Option 2 gives the L1 norm, option 3 gives the L∞ norm, and option 4 squares the sum of components, which is not a norm and does not satisfy the required properties (e.g., it is not homogeneous).",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T18:46:03.120070Z"
+    },
+    "q_linear_regression_1": {
+      "question_id": "q_linear_regression_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "linear_regression"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In ordinary least squares linear regression, which statement about the estimated coefficient vector \\betâ is true?",
+      "options": [
+        "\\betâ is the solution that minimizes the sum of squared residuals.",
+        "\\betâ maximizes the likelihood under a Laplace error distribution.",
+        "\\betâ is unbiased only if the predictor variables are orthogonal.",
+        "\\betâ is obtained by minimizing the sum of absolute residuals."
+      ],
+      "correct_answer": "\\betâ is the solution that minimizes the sum of squared residuals.",
+      "allow_dont_know_option": true,
+      "explanation": "Ordinary least squares (OLS) defines \\betâ as the argument that minimizes the residual sum of squares \\sum_i (y_i - X_i\\beta)^2, which yields the closed‑form solution (X^TX)^{-1}X^Ty. The second option confuses OLS with the maximum‑likelihood estimator for Laplace (double‑exponential) errors, which leads to a least‑absolute‑deviations problem, not OLS. The third option incorrectly ties unbiasedness to orthogonal predictors; unbiasedness holds when the error term has zero mean and is uncorrelated with the predictors, regardless of orthogonality. The fourth option describes the least‑absolute‑deviations (LAD) estimator, not OLS, because OLS minimizes squared, not absolute, residuals.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:02.647807Z"
+    },
+    "q_loss_functions_1": {
+      "question_id": "q_loss_functions_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "loss_functions"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement about the binary cross-entropy loss is true?",
+      "options": [
+        "It is equivalent to the negative log-likelihood of a Bernoulli distribution and penalizes confident but wrong predictions heavily.",
+        "It is minimized when the predicted probability equals 0.5 for all samples.",
+        "It is identical to mean squared error for binary targets.",
+        "It does not depend on the predicted probability, only on the true label."
+      ],
+      "correct_answer": "It is equivalent to the negative log-likelihood of a Bernoulli distribution and penalizes confident but wrong predictions heavily.",
+      "allow_dont_know_option": true,
+      "explanation": "The binary cross-entropy loss L = -[y*log(p)+(1-y)*log(1-p)] is derived from the negative log-likelihood of a Bernoulli model, so it directly measures how unlikely the observed label is under the predicted probability. Because the log function grows rapidly for probabilities near 0 or 1, the loss becomes large when the model is confident (p≈0 or p≈1) but the prediction is wrong, fulfilling the statement. The first distractor is false because the loss is minimized when p matches the true label (p→1 for y=1, p→0 for y=0), not at 0.5. The second distractor confuses cross-entropy with MSE; they are different functions and behave differently, especially for binary targets. The third distractor is incorrect because the loss explicitly depends on the predicted probability p through the log terms; the true label alone does not determine the loss.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:04.203661Z"
+    },
+    "q_neural_networks_1": {
+      "question_id": "q_neural_networks_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "neural_networks"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In a standard feedforward neural network trained with backpropagation, which statement correctly describes how the gradient of the loss with respect to a weight in layer l is computed?",
+      "options": [
+        "The gradient is the product of the activation of the neuron in layer l‑1 and the error term δ of the neuron in layer l.",
+        "The gradient is the product of the activation of the neuron in layer l and the error term δ of the neuron in layer l‑1.",
+        "The gradient depends only on the bias terms and is independent of the activations of the preceding layer.",
+        "All weights in the same layer receive identical gradient values because backpropagation shares a single scalar per layer."
+      ],
+      "correct_answer": "The gradient is the product of the activation of the neuron in layer l‑1 and the error term δ of the neuron in layer l.",
+      "allow_dont_know_option": true,
+      "explanation": "Backpropagation computes ∂L/∂w_{ij}^{(l)} = a_i^{(l‑1)}·δ_j^{(l)}, where a_i^{(l‑1)} is the activation from the previous layer and δ_j^{(l)} is the error term (local gradient) of the current layer neuron. Option A states exactly this relationship, so it is correct. Option B swaps the activation and error term, which is a common misconception; the activation comes from the forward pass, not the error term of the next layer. Option C incorrectly claims that gradients ignore activations and depend only on biases, ignoring the chain‑rule contribution of the forward activations. Option D falsely asserts that all weights in a layer share the same gradient; in reality each weight’s gradient is distinct because it multiplies a different activation value.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:06.336460Z"
+    }
+  },
+  "updated_at": "2026-09-27T18:46:01.168147Z"
+}

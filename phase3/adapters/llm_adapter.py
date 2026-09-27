@@ -46,9 +46,9 @@ class Phase3LLMAdapter:
         if model_name:
             self.model_name = model_name
         elif self.groq_api_key:
-            self.model_name = "llama-3.3-70b-versatile"
+            self.model_name = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
         elif self.openai_api_key:
-            self.model_name = "gpt-4o-mini"
+            self.model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
         else:
             self.model_name = "mock-gpt-4o"
 
@@ -76,29 +76,43 @@ class Phase3LLMAdapter:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         }
 
-        payload = {
-            "model": self.model_name,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-            "response_format": {"type": "json_object"},
-            "temperature": config.get("temperature", 0.2),
-        }
+        models_to_try = [self.model_name]
+        if "120b" in self.model_name:
+            models_to_try.append("openai/gpt-oss-20b")
+        elif "20b" in self.model_name:
+            models_to_try.append("openai/gpt-oss-120b")
 
-        try:
-            req = urllib.request.Request(
-                url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                res_data = json.loads(resp.read().decode("utf-8"))
-                content_str = res_data["choices"][0]["message"]["content"]
-                return json.loads(content_str)
-        except Exception:
-            # Fallback on network timeout, invalid key, or API rate limit
-            return None
+        for m_name in models_to_try:
+            payload = {
+                "model": m_name,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": config.get("temperature", 0.2),
+            }
+            for attempt in range(2):
+                try:
+                    req = urllib.request.Request(
+                        url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
+                    )
+                    with urllib.request.urlopen(req, timeout=15) as resp:
+                        res_data = json.loads(resp.read().decode("utf-8"))
+                        content_str = res_data["choices"][0]["message"]["content"]
+                        return json.loads(content_str)
+                except Exception as exc:
+                    if "429" in str(exc) and attempt == 0:
+                        import time
+                        time.sleep(1.5)
+                        continue
+                    import sys
+                    print(f"[Phase3LLMAdapter Error] Live call to {m_name} failed: {exc}", file=sys.stderr)
+                    break
+        return None
 
     def generate_json(
         self, prompt: str, schema_template: Dict[str, Any], config: Optional[Dict[str, Any]] = None
@@ -106,17 +120,15 @@ class Phase3LLMAdapter:
         """Generates a structured JSON response grounded in prompt context."""
         cfg = config or {"temperature": 0.2}
 
-        # Check replay cache first
-        cached = self.cache.get(prompt, self.model_name, cfg)
-        if cached:
-            return cached
+        # If live API credentials are configured, ALWAYS invoke live LLM directly
+        if self.groq_api_key or self.openai_api_key:
+            live_res = self._call_live_api(prompt, schema_template, cfg)
+            if live_res:
+                return live_res
 
-        # Attempt live API call if key exists
-        live_res = self._call_live_api(prompt, schema_template, cfg)
-        if live_res:
-            self.cache.set(prompt, self.model_name, cfg, live_res)
-            return live_res
-
-        # Fallback to mock generation
+        # Fallback to mock generation only if no API key is provided or live API call fails
         res = self._mock_adapter.generate_json_response(prompt, schema_template, cfg)
         return res
+
+    generate_json_response = generate_json
+

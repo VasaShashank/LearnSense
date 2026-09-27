@@ -1,0 +1,181 @@
+{
+  "document_id": "organic_chemistry_chart.png",
+  "knowledge_document_id": "kdoc_organic_chemistry_chart.png",
+  "chapters": [],
+  "sections": [],
+  "topics": [],
+  "concepts": {
+    "atomic_structure": {
+      "concept_id": "atomic_structure",
+      "canonical_name": "Atomic Structure",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "covalent_bonding": {
+      "concept_id": "covalent_bonding",
+      "canonical_name": "Covalent Bonding",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "functional_groups": {
+      "concept_id": "functional_groups",
+      "canonical_name": "Functional Groups",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "isomerism": {
+      "concept_id": "isomerism",
+      "canonical_name": "Isomerism",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "acid_base_chemistry": {
+      "concept_id": "acid_base_chemistry",
+      "canonical_name": "Acid-Base Chemistry",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "reaction_mechanisms": {
+      "concept_id": "reaction_mechanisms",
+      "canonical_name": "Reaction Mechanisms",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "stereochemistry": {
+      "concept_id": "stereochemistry",
+      "canonical_name": "Stereochemistry",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "spectroscopy": {
+      "concept_id": "spectroscopy",
+      "canonical_name": "Spectroscopy",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "organic_synthesis": {
+      "concept_id": "organic_synthesis",
+      "canonical_name": "Organic Synthesis",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "polymer_chemistry": {
+      "concept_id": "polymer_chemistry",
+      "canonical_name": "Polymer Chemistry",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {},
+  "assessable_items": {},
+  "evidence": {},
+  "prerequisites": [
+    {
+      "source_concept_id": "atomic_structure",
+      "target_concept_id": "covalent_bonding",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "covalent_bonding",
+      "target_concept_id": "functional_groups",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "functional_groups",
+      "target_concept_id": "isomerism",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "functional_groups",
+      "target_concept_id": "acid_base_chemistry",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "functional_groups",
+      "target_concept_id": "reaction_mechanisms",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "isomerism",
+      "target_concept_id": "reaction_mechanisms",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "acid_base_chemistry",
+      "target_concept_id": "reaction_mechanisms",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "isomerism",
+      "target_concept_id": "stereochemistry",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "reaction_mechanisms",
+      "target_concept_id": "stereochemistry",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "functional_groups",
+      "target_concept_id": "spectroscopy",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "stereochemistry",
+      "target_concept_id": "spectroscopy",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "reaction_mechanisms",
+      "target_concept_id": "organic_synthesis",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "spectroscopy",
+      "target_concept_id": "organic_synthesis",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "organic_synthesis",
+      "target_concept_id": "polymer_chemistry",
+      "confidence": 0.9,
+      "evidence_ids": []
+    }
+  ],
+  "trusted_relationships": []
+}

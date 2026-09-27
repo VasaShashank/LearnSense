@@ -40,15 +40,27 @@ class DocumentStorage:
             path.mkdir(parents=True, exist_ok=True)
         return dirs
 
-    def save_original_pdf(self, document_id: str, content: bytes) -> Path:
+    def save_original_pdf(self, document_id: str, content: bytes, filename: Optional[str] = None) -> Path:
         dirs = self.initialize_document_structure(document_id)
-        dest = dirs["original"] / "source.pdf"
+        ext = Path(filename).suffix.lower() if filename else ".pdf"
+        dest = dirs["original"] / f"source{ext}"
         with open(dest, "wb") as f:
             f.write(content)
+        if ext == ".pdf":
+            dest_pdf = dirs["original"] / "source.pdf"
+            if dest != dest_pdf:
+                with open(dest_pdf, "wb") as f:
+                    f.write(content)
         return dest
 
     def get_original_pdf_path(self, document_id: str) -> Path:
-        return self.get_document_dir(document_id) / "original" / "source.pdf"
+        doc_dir = self.get_document_dir(document_id) / "original"
+        standard = doc_dir / "source.pdf"
+        if standard.exists():
+            return standard
+        for f in doc_dir.glob("source.*"):
+            return f
+        return standard
 
     def save_page_preview(self, document_id: str, page_index: int, image_bytes: bytes) -> Path:
         dirs = self.initialize_document_structure(document_id)

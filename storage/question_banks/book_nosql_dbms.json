@@ -1,0 +1,94 @@
+{
+  "document_id": "book_nosql_dbms",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_nosql_databases_foundations_1": {
+      "question_id": "q_nosql_databases_foundations_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "nosql_databases_foundations"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In a wide-column NoSQL database such as Apache Cassandra, what is the primary role of the partition key in a table definition?",
+      "options": [
+        "It determines the node that stores the row and defines how data is distributed across the cluster.",
+        "It specifies the order in which columns are stored within each row.",
+        "It guarantees ACID-compliant transactions for all operations on the table.",
+        "It is used by the database to encrypt the row data at rest."
+      ],
+      "correct_answer": "It determines the node that stores the row and defines how data is distributed across the cluster.",
+      "allow_dont_know_option": true,
+      "explanation": "The partition key is the first component of the primary key and is hashed to decide the token range, which maps to a specific node; thus it controls data placement and distribution. It does not affect column ordering (that is controlled by clustering columns), it does not provide ACID guarantees (Cassandra offers eventual consistency and tunable consistency per operation), and encryption is handled by separate security features, not by the partition key.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:24:37.600604Z"
+    },
+    "q_nosql_databases_core_principles_1": {
+      "question_id": "q_nosql_databases_core_principles_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "nosql_databases_core_principles"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "According to the CAP theorem, what must a distributed NoSQL database do when a network partition occurs?",
+      "options": [
+        "It can continue to provide strong (linearizable) consistency and full read/write availability at the same time.",
+        "It must give up either consistency or availability, but can retain partition tolerance.",
+        "It should always favor consistency over availability, regardless of the partition state.",
+        "It can maintain full availability and strong consistency by using quorum reads and writes during a partition."
+      ],
+      "correct_answer": "It must give up either consistency or availability, but can retain partition tolerance.",
+      "allow_dont_know_option": true,
+      "explanation": "The CAP theorem states that in the presence of a network partition (P), a distributed system can guarantee at most two of the three properties: Consistency (C), Availability (A), and Partition tolerance (P). Because partitions cannot be avoided, the system must choose between consistency and availability. Option 2 correctly captures this trade‑off. Option 1 is wrong because strong consistency and full availability cannot coexist during a partition. Option 3 is wrong because the theorem does not prescribe a fixed priority; the choice depends on the system’s design goals. Option 4 is wrong because quorum reads/writes cannot guarantee strong consistency while keeping full availability during a partition; they still require sacrificing either reads or writes to maintain consistency.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:24:40.460529Z"
+    },
+    "q_nosql_databases_advanced_topics_1": {
+      "question_id": "q_nosql_databases_advanced_topics_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "nosql_databases_advanced_topics"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In a Dynamo‑inspired NoSQL store that uses quorum‑based replication, which statement correctly describes the condition on read quorum (R), write quorum (W) and replication factor (N) that guarantees strong consistency for a read operation?",
+      "options": [
+        "Strong consistency is guaranteed if R + W > N, ensuring that every read overlaps with the most recent write.",
+        "Strong consistency is guaranteed if R = W = N, requiring all replicas to participate in every read and write.",
+        "Strong consistency is guaranteed if R > N/2 and W > N/2, independently of their sum.",
+        "Strong consistency is guaranteed if R + W = N, allowing exactly one replica to be missed during reads or writes."
+      ],
+      "correct_answer": "Strong consistency is guaranteed if R + W > N, ensuring that every read overlaps with the most recent write.",
+      "allow_dont_know_option": true,
+      "explanation": "The quorum rule R + W > N ensures that the set of replicas consulted for a read always includes at least one replica that participated in the latest successful write, so the read sees the most recent value (strong consistency). Option B is overly strict; requiring all N replicas is unnecessary and hurts availability. Option C describes a majority rule but does not guarantee overlap unless the sum exceeds N. Option D (R + W = N) allows a scenario where read and write quorums touch disjoint replica subsets, so a read could miss the latest write, violating strong consistency.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:24:42.354420Z"
+    }
+  },
+  "updated_at": "2026-09-27T19:24:33.920221Z"
+}

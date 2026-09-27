@@ -39,6 +39,7 @@ export default function App() {
 
   // Active Session & Drawer States
   const [activeStudyConcept, setActiveStudyConcept] = useState<ConceptNode | null>(null);
+  const [sessionInitialTab, setSessionInitialTab] = useState<'EXPLANATION' | 'PRACTICE'>('EXPLANATION');
   const [isTutorOpen, setIsTutorOpen] = useState<boolean>(false);
   const [tutorConcept, setTutorConcept] = useState<ConceptNode | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
@@ -232,7 +233,24 @@ export default function App() {
             nodes={pathNodes}
             activeTarget={nextTarget}
             onSelectConcept={(cId) => {
-              const c = graphData?.concepts.find((item) => item.concept_id === cId);
+              let c = graphData?.concepts.find((item) => item.concept_id === cId);
+              if (!c) {
+                const node = pathNodes.find((n) => n.concept_id === cId);
+                if (node) {
+                  c = {
+                    concept_id: node.concept_id,
+                    name: node.concept_name || node.name || node.concept_id.replace(/_/g, ' '),
+                    description: `Personalized learning step for ${node.concept_name || node.name}`,
+                    definition: `Target concept: ${node.concept_name || node.name}`,
+                    subject_id: selectedSubject?.id || '',
+                    prerequisites: node.prerequisites || [],
+                    mastery: node.mastery ?? node.estimated_mastery ?? 0.15,
+                    status: (node.status as any) || 'AVAILABLE',
+                    x: 0,
+                    y: 0,
+                  };
+                }
+              }
               if (c) setActiveStudyConcept(c);
             }}
           />
@@ -243,6 +261,19 @@ export default function App() {
           <SourceLibrary
             sources={sources}
             onReloadSources={reloadSubjectsAndSources}
+            onSelectSubject={async (subjectId) => {
+              try {
+                const subs = await ApiClient.getSubjects();
+                setSubjects(subs);
+                const sub = subs.find((s) => s.id === subjectId);
+                if (sub) {
+                  setSelectedSubject(sub);
+                  setActiveView('ATLAS');
+                }
+              } catch (err) {
+                console.error('Failed to switch subject', err);
+              }
+            }}
           />
         )}
       </main>
@@ -254,12 +285,18 @@ export default function App() {
           onClose={() => setSelectedConcept(null)}
           onStartLearning={(cId) => {
             const c = graphData?.concepts.find((item) => item.concept_id === cId);
-            if (c) setActiveStudyConcept(c);
+            if (c) {
+              setSessionInitialTab('EXPLANATION');
+              setActiveStudyConcept(c);
+            }
             setSelectedConcept(null);
           }}
           onStartPractice={(cId) => {
             const c = graphData?.concepts.find((item) => item.concept_id === cId);
-            if (c) setActiveStudyConcept(c);
+            if (c) {
+              setSessionInitialTab('PRACTICE');
+              setActiveStudyConcept(c);
+            }
             setSelectedConcept(null);
           }}
           onAskTutor={(cId) => {
@@ -284,14 +321,15 @@ export default function App() {
       )}
 
       {/* Focused Learning Session Modal */}
-      {activeStudyConcept && selectedSubject && graphData && (
+      {activeStudyConcept && selectedSubject && (
         <LearningSession
           concept={activeStudyConcept}
           subject={selectedSubject}
-          allConceptIds={graphData.concepts.map((c) => c.concept_id)}
+          allConceptIds={graphData?.concepts.map((c) => c.concept_id) || [activeStudyConcept.concept_id]}
           learnerId={learnerId}
+          initialTab={sessionInitialTab}
           onAskTutor={(cId) => {
-            const c = graphData.concepts.find((item) => item.concept_id === cId);
+            const c = graphData?.concepts.find((item) => item.concept_id === cId);
             if (c) {
               setTutorConcept(c);
               setIsTutorOpen(true);

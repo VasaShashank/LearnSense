@@ -13,7 +13,7 @@ export interface ConceptNodeData extends ConceptNode, Record<string, unknown> {
 }
 
 export const CustomConceptNode = memo(({ data }: { data: ConceptNodeData }) => {
-  const { name, mastery, uncertainty, isTarget, isXRay, isImpacted, isSelected, zoomLevel, onSelect } = data;
+  const { name, mastery = 0.5, uncertainty = 0.3, isTarget, isXRay, isImpacted, isSelected, zoomLevel, onSelect } = data;
 
   let stateStyle = 'border-slate-700/60 bg-slate-900/80 text-slate-300';
   let badgeIcon = <HelpCircle className="w-3.5 h-3.5 text-slate-400" />;

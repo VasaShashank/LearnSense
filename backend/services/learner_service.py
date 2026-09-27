@@ -97,8 +97,27 @@ class LearnerService:
         path = self.adapter.path_generator.generate_path(learning_context, learner_state, concept_ids)
         next_target = self.adapter.target_selector.select_next_target(path, learner_state, learning_context)
 
+        dumped_path = path.model_dump(mode="json")
+        for node in dumped_path.get("nodes", []):
+            cid = node.get("concept_id")
+            c_info = next((c for c in graph["concepts"] if c["concept_id"] == cid), None)
+            c_name = node.get("concept_name") or (c_info["name"] if c_info else cid.replace("_", " ").title())
+            node["name"] = c_name
+            node["concept_name"] = c_name
+            node["mastery"] = node.get("estimated_mastery", 0.15)
+            node["prerequisites"] = c_info.get("prerequisites", []) if c_info else []
+
+        dumped_target = next_target.model_dump(mode="json") if next_target else None
+        if dumped_target:
+            t_cid = dumped_target.get("concept_id")
+            c_info = next((c for c in graph["concepts"] if c["concept_id"] == t_cid), None)
+            t_name = dumped_target.get("concept_name") or (c_info["name"] if c_info else t_cid.replace("_", " ").title())
+            dumped_target["name"] = t_name
+            dumped_target["concept_name"] = t_name
+            dumped_target["estimated_minutes"] = 15
+
         return {
             "gaps": [g.model_dump(mode="json") for g in prioritized_gaps],
-            "learning_path": path.model_dump(mode="json"),
-            "next_target": next_target.model_dump(mode="json") if next_target else None,
+            "learning_path": dumped_path,
+            "next_target": dumped_target,
         }

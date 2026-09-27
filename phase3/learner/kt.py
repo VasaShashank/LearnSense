@@ -29,14 +29,17 @@ class KnowledgeTracer:
         self.p_slip = p_slip
         self.p_guess = p_guess
 
+    def initialize_concept_state(self, concept_id: str) -> ConceptState:
+        return ConceptState(
+            concept_id=concept_id,
+            mastery_probability=self.p_init,
+            uncertainty=0.5,
+        )
+
     def initialize_learner(self, learner_id: str, concept_ids: List[str]) -> LearnerState:
         state = LearnerState(learner_id=learner_id)
         for c_id in concept_ids:
-            state.concept_states[c_id] = ConceptState(
-                concept_id=c_id,
-                mastery_probability=self.p_init,
-                uncertainty=0.5,
-            )
+            state.concept_states[c_id] = self.initialize_concept_state(c_id)
         return state
 
     def update(

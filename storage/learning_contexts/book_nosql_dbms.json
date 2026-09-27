@@ -1,0 +1,40 @@
+{
+  "document_id": "book_nosql_dbms",
+  "knowledge_document_id": "kdoc_book_nosql_dbms",
+  "chapters": [],
+  "sections": [],
+  "topics": [],
+  "concepts": {
+    "nosql_databases_foundations": {
+      "concept_id": "nosql_databases_foundations",
+      "canonical_name": "NoSQL Databases Foundations",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "nosql_databases_core_principles": {
+      "concept_id": "nosql_databases_core_principles",
+      "canonical_name": "NoSQL Databases Core Principles",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "nosql_databases_advanced_topics": {
+      "concept_id": "nosql_databases_advanced_topics",
+      "canonical_name": "NoSQL Databases Advanced Topics",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {},
+  "assessable_items": {},
+  "evidence": {},
+  "prerequisites": [],
+  "trusted_relationships": []
+}

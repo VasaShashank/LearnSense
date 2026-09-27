@@ -82,6 +82,28 @@ async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
     return knowledge_service.get_subject_graph(subject_id, learner_masteries=masteries)
 
 
+@router.get("/subjects/{subject_id}/concepts/{concept_id}/question")
+async def get_concept_question(subject_id: str, concept_id: str):
+    """
+    Returns authentic domain question and options for a specific concept.
+    """
+    try:
+        return learning_service.get_concept_question(subject_id, concept_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/subjects/{subject_id}/concepts/{concept_id}/content")
+async def get_concept_learning_content(subject_id: str, concept_id: str):
+    """
+    Returns in-depth educational learning content (overview, intuition, key principles, worked example, misconceptions, takeaway) for a concept.
+    """
+    try:
+        return learning_service.get_concept_learning_content(subject_id, concept_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 # --- LEARNER STATE, PROGRESS & PATH ROUTES ---
 
 @router.get("/learners/{learner_id}/progress")

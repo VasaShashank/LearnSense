@@ -14,14 +14,19 @@ export interface Subject {
 export interface ConceptNode {
   concept_id: string;
   name: string;
-  definition: string;
-  topic_id: string;
-  bloom_level: string;
+  definition?: string;
+  description?: string;
+  topic_id?: string;
+  bloom_level?: string;
   mastery: number;
-  uncertainty: number;
+  uncertainty?: number;
   prerequisites: string[];
-  dependents: string[];
-  source_references: { page: number; section: string; quote: string }[];
+  dependents?: string[];
+  source_references?: { page: number; section: string; quote: string }[];
+  status?: string;
+  x?: number;
+  y?: number;
+  subject_id?: string;
 }
 
 export interface TopicTerritory {
@@ -59,9 +64,11 @@ export interface KnowledgeGap {
 
 export interface LearningPathNode {
   concept_id: string;
-  name: string;
-  status: 'COMPLETED' | 'ACTIVE_TARGET' | 'AVAILABLE' | 'BLOCKED';
-  mastery: number;
+  name?: string;
+  concept_name?: string;
+  status: 'COMPLETED' | 'ACTIVE_TARGET' | 'IN_PROGRESS' | 'AVAILABLE' | 'BLOCKED';
+  mastery?: number;
+  estimated_mastery?: number;
   prerequisites: string[];
 }
 
@@ -73,9 +80,10 @@ export interface LearningPath {
 
 export interface LearningTarget {
   concept_id: string;
-  name: string;
+  name?: string;
+  concept_name?: string;
   reason: string;
-  estimated_minutes: number;
+  estimated_minutes?: number;
 }
 
 export interface QuestionOption {
@@ -83,12 +91,15 @@ export interface QuestionOption {
 }
 
 export interface Question {
-  item_id: string;
+  item_id?: string;
+  question_id?: string;
   concept_ids: string[];
-  prompt: string;
+  prompt?: string;
+  question_text?: string;
   options: string[];
   explanation: string;
   allow_dont_know_option: boolean;
+  correct_answer?: string;
 }
 
 export interface TutorResponse {
@@ -108,6 +119,22 @@ export interface SourceDocument {
   recovery_state: string;
   page_count: number;
   file_size_bytes: number;
+}
+
+export interface ConceptLearningContent {
+  concept_id: string;
+  concept_name: string;
+  subject_id: string;
+  overview: string;
+  intuition: string;
+  key_principles: string[];
+  worked_example: {
+    problem: string;
+    steps: string[];
+    solution: string;
+  };
+  common_misconceptions: string[];
+  key_takeaway: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
@@ -207,5 +234,39 @@ export const ApiClient = {
       body: JSON.stringify(data),
     }),
 
+  getConceptQuestion: (subjectId: string, conceptId: string): Promise<{
+    question_id: string;
+    concept_id: string;
+    question_text: string;
+    options: string[];
+    correct_answer: string;
+    explanation: string;
+  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question`),
+
+  getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>
+    fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/content`),
+
   getSources: (): Promise<SourceDocument[]> => fetchJson('/sources'),
+
+  uploadSource: async (file: File): Promise<{
+    document_id: string;
+    filename: string;
+    status: string;
+    page_count: number;
+    concept_count: number;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `${API_BASE_URL}/sources/upload`;
+    const res = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.detail || err.message || 'Upload failed');
+    }
+    return await res.json();
+  },
 };
+

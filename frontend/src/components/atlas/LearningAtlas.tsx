@@ -46,13 +46,15 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   const initialNodes: Node[] = useMemo(() => {
     const topicGrouped: Record<string, ConceptNode[]> = {};
     graphData.concepts.forEach((c) => {
+      const def = c.definition || c.description || '';
       const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.definition.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTopic = filterTopic === 'ALL' || c.topic_id === filterTopic;
+        def.toLowerCase().includes(searchQuery.toLowerCase());
+      const tId = c.topic_id || 'general';
+      const matchesTopic = filterTopic === 'ALL' || tId === filterTopic;
 
       if (matchesSearch && matchesTopic) {
-        if (!topicGrouped[c.topic_id]) topicGrouped[c.topic_id] = [];
-        topicGrouped[c.topic_id].push(c);
+        if (!topicGrouped[tId]) topicGrouped[tId] = [];
+        topicGrouped[tId].push(c);
       }
     });
 

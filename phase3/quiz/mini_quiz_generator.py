@@ -45,22 +45,29 @@ class DynamicMiniQuizGenerator:
 
         # 2. Call LLM with KT-aware context prompt
         prompt = (
-            f"Generate {target_count} educational questions for topic '{topic_id}' "
-            f"targeting concepts with low learner mastery: {', '.join(concept_names)}. "
-            f"Provide diverse questions (MCQ and numerical/short answer)."
+            f"Generate {target_count} authentic educational diagnostic questions for topic '{topic_id}' "
+            f"specifically testing these low-mastery concepts: {', '.join(concept_names)}.\n"
+            f"RULES:\n"
+            f"1. For each question, directly test a concrete property or operation of one of the concepts.\n"
+            f"2. For MCQ questions, provide 4 distinct, plausible options directly discussing the concept. Exactly ONE must be correct.\n"
+            f"3. NEVER use generic placeholder phrases like 'Correct Option' or 'Distractor'. All options must be domain-grounded."
         )
 
         template = {
             "questions": [
                 {
-                    "question_text": f"Question about {concept_names[0] if concept_names else topic_id} (Item {i+1})",
-                    "options": ["Correct Option", "Distractor 1", "Distractor 2", "Distractor 3"],
-                    "correct_answer": "Correct Option",
-                    "explanation": f"Detailed step-by-step explanation for {concept_names[0] if concept_names else topic_id}.",
-                    "question_type": "mcq" if i % 2 == 0 else "short_answer",
-                    "difficulty": 0.4 + (i * 0.08),
+                    "question_text": "string (concrete question testing specific concept)",
+                    "options": [
+                        "string (option A)",
+                        "string (option B)",
+                        "string (option C)",
+                        "string (option D)"
+                    ],
+                    "correct_answer": "string (exact match of correct option)",
+                    "explanation": "string (detailed explanation)",
+                    "question_type": "mcq",
+                    "difficulty": 0.5,
                 }
-                for i in range(target_count)
             ]
         }
 

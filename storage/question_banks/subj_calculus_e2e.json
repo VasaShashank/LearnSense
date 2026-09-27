@@ -11,16 +11,16 @@
       ],
       "skill_ids": [],
       "question_type": "mcq",
-      "question_text": "Which statement best describes C Limits in relation to problem-solving?",
+      "question_text": "What is the value of \\(\\lim_{x\\to 2}\\frac{x^2-4}{x-2}\\) ?",
       "options": [
-        "A fundamental mathematical or analytical principle defining C Limits.",
-        "An unrelated decorative element.",
-        "A historical artifact with no current utility.",
-        "An optional configuration setting."
+        "The limit does not exist because the function is undefined at x=2.",
+        "The limit equals 4 because the expression simplifies to x+2 and can be evaluated at x=2.",
+        "The limit equals 0 because the numerator approaches 0 faster than the denominator.",
+        "The limit equals 2 by incorrectly canceling the factor (x-2)."
       ],
-      "correct_answer": "A fundamental mathematical or analytical principle defining C Limits.",
+      "correct_answer": "The limit equals 4 because the expression simplifies to x+2 and can be evaluated at x=2.",
       "allow_dont_know_option": true,
-      "explanation": "C Limits is essential for establishing core relationships and solving downstream problems.",
+      "explanation": "Factoring the numerator gives (x-2)(x+2). Canceling the common factor (x-2) for x\\neq2 yields the simplified function f(x)=x+2, which is continuous at x=2. Hence \\(\\lim_{x\\to2}f(x)=2+2=4\\). The first option is a common misconception: a removable discontinuity does not prevent the limit from existing. The third option misinterprets the rate at which numerator and denominator approach zero; both approach zero linearly, so the ratio approaches the ratio of their slopes, not zero. The fourth option incorrectly assumes cancellation without considering the limit process, leading to an erroneous value of 2.",
       "difficulty": 0.5,
       "expected_time_seconds": 60.0,
       "information_value": 1.0,
@@ -29,8 +29,95 @@
       "source_item_id": null,
       "validation_status": "valid",
       "exposure_count": 0,
-      "created_at": "2026-09-27T17:22:24.861850Z"
+      "created_at": "2026-09-27T19:05:08.498115Z"
+    },
+    "q_c_derivatives_1": {
+      "question_id": "q_c_derivatives_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "c_derivatives"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Consider the function f(x)=|x|. Which statement about its derivative at x=0 is correct?",
+      "options": [
+        "f'(0) exists and equals 0 because the graph is symmetric about the y-axis.",
+        "f'(0) does not exist because the left-hand and right-hand limits of the difference quotient are different.",
+        "f'(0) exists and equals 1, since the slope of the right-hand side is 1.",
+        "f'(0) exists and equals -1, since the slope of the left-hand side is -1."
+      ],
+      "correct_answer": "f'(0) does not exist because the left-hand and right-hand limits of the difference quotient are different.",
+      "allow_dont_know_option": true,
+      "explanation": "The derivative at a point is defined as the limit of the difference quotient as h→0. For f(x)=|x|, the right-hand limit gives (|h|-0)/h = h/h = 1, while the left-hand limit gives (|-h|-0)/h = (-h)/h = -1. Because the two one-sided limits are not equal, the limit does not exist, so f'(0) does not exist. Option 1 is a common misconception that symmetry implies a zero slope, but symmetry alone does not guarantee differentiability. Options 3 and 4 each describe only one one-sided slope and ignore the requirement that both sides agree for the derivative to exist.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:10.843284Z"
+    },
+    "q_c_chain_rule_1": {
+      "question_id": "q_c_chain_rule_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "c_chain_rule"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Given h(x)=sin((3*x^2+2)^5), which expression correctly gives h'(x) using the chain rule?",
+      "options": [
+        "h'(x)=30*x*(3*x^2+2)^4*cos((3*x^2+2)^5)",
+        "h'(x)=cos((3*x^2+2)^5)*5*(3*x^2+2)^4",
+        "h'(x)=5*(3*x^2+2)^4*sin((3*x^2+2)^5)*6*x",
+        "h'(x)=30*x*(3*x^2+2)^5*cos((3*x^2+2)^5)"
+      ],
+      "correct_answer": "h'(x)=30*x*(3*x^2+2)^4*cos((3*x^2+2)^5)",
+      "allow_dont_know_option": true,
+      "explanation": "The chain rule states that the derivative of a composite f(g(x)) is f'(g(x))*g'(x). Here f(u)=sin(u) so f'(u)=cos(u). The inner function is u=(3*x^2+2)^5. Differentiating u gives u'=5*(3*x^2+2)^4*(6*x)=30*x*(3*x^2+2)^4. Multiplying gives h'(x)=cos((3*x^2+2)^5)*30*x*(3*x^2+2)^4, which matches the correct option. Option 2 omits the factor 6*x from differentiating the quadratic 3*x^2+2. Option 3 incorrectly keeps sin instead of cos after differentiating the outer function. Option 4 uses (3*x^2+2)^5 instead of the required power 4 after applying the power rule, so the exponent is wrong.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:13.569219Z"
+    },
+    "q_c_integrals_1": {
+      "question_id": "q_c_integrals_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "c_integrals"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately reflects the definition and core mechanism of Definite Integrals in Subj Calculus E2E?",
+      "options": [
+        "Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
+        "Definite Integrals operates in the inverse manner by counteracting changes in Subj Calculus E2E.",
+        "Definite Integrals is an unconstrained heuristic applied only when Subj Calculus E2E data is missing.",
+        "Definite Integrals functions as an auxiliary index without direct theoretical importance in Subj Calculus E2E."
+      ],
+      "correct_answer": "Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
+      "allow_dont_know_option": true,
+      "explanation": "Definite Integrals: Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:05:13.718318Z"
     }
   },
-  "updated_at": "2026-09-27T17:22:24.861863Z"
+  "updated_at": "2026-09-27T19:05:06.439685Z"
 }

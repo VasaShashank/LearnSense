@@ -1,0 +1,355 @@
+{
+  "document_id": "computer_networks.docx",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_fundamentals_of_computer_network_1": {
+      "question_id": "q_fundamentals_of_computer_network_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "fundamentals_of_computer_network"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement correctly describes the primary function of the transport layer in the OSI model?",
+      "options": [
+        "It provides end-to-end reliable data transfer using sequence numbers, acknowledgments, and flow control.",
+        "It determines the optimal path for packets and forwards them between different networks.",
+        "It converts digital bits into electrical or optical signals for transmission over the physical medium.",
+        "It resolves hostnames to IP addresses using a hierarchical naming system."
+      ],
+      "correct_answer": "It provides end-to-end reliable data transfer using sequence numbers, acknowledgments, and flow control.",
+      "allow_dont_know_option": true,
+      "explanation": "The transport layer (layer 4) is responsible for end-to-end communication between host processes, offering services such as segmentation, sequencing, acknowledgment, retransmission, and flow control to ensure reliable data delivery. Determining optimal paths and forwarding packets is the function of the network layer (layer 3). Converting bits to signals belongs to the physical layer (layer 1). Resolving hostnames to IP addresses is performed by the application layer service DNS, not by the transport layer.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:34.572386Z"
+    },
+    "q_network_topologies_and_architect_1": {
+      "question_id": "q_network_topologies_and_architect_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "network_topologies_and_architect"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In a full mesh network topology with N nodes, how many distinct point‑to‑point links are required to interconnect every node directly with every other node?",
+      "options": [
+        "N(N-1)/2 links",
+        "N(N-1) links",
+        "N-1 links",
+        "2N links"
+      ],
+      "correct_answer": "N(N-1)/2 links",
+      "allow_dont_know_option": true,
+      "explanation": "A full mesh topology connects each node to every other node with a dedicated link. The number of unique unordered pairs of nodes is given by the combination formula C(N,2) = N!/(2!(N-2)!) which simplifies to N(N-1)/2. Therefore the correct count of links is N(N-1)/2. Option \"N(N-1) links\" mistakenly counts each pair twice (as if links were directed). Option \"N-1 links\" is the link count for a tree or minimally connected network, not a full mesh. Option \"2N links\" has no basis in mesh topology and may arise from confusing the number of links in a ring or a star with a factor of two.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:37.333776Z"
+    },
+    "q_osi_model_overview_1": {
+      "question_id": "q_osi_model_overview_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "osi_model_overview"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In the OSI reference model, which layer is primarily responsible for establishing, maintaining, and terminating logical connections between end systems?",
+      "options": [
+        "The Transport layer provides end-to-end logical connections, flow control, and error recovery between communicating hosts.",
+        "The Network layer defines physical addressing and manages the transmission of raw bits over a medium.",
+        "The Data Link layer routes packets across multiple networks and determines the best path for delivery.",
+        "The Session layer encapsulates user data into frames and adds MAC addresses for local delivery."
+      ],
+      "correct_answer": "The Transport layer provides end-to-end logical connections, flow control, and error recovery between communicating hosts.",
+      "allow_dont_know_option": true,
+      "explanation": "The Transport layer (Layer 4) is defined to provide end‑to‑end logical connections, flow control, segmentation, and error recovery, which includes establishing, maintaining, and terminating sessions between host processes. The Network layer (Layer 3) deals with logical addressing (IP) and routing, not physical addressing or raw bit transmission, so option 2 is incorrect. Routing is a function of the Network layer, not the Data Link layer, making option 3 wrong. The Session layer (Layer 5) manages dialog control and synchronization, not framing or MAC addressing, which are responsibilities of the Data Link layer, so option 4 is also incorrect.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:40.156277Z"
+    },
+    "q_physical_layer_1": {
+      "question_id": "q_physical_layer_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "physical_layer"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which of the following statements about Manchester line coding is correct?",
+      "options": [
+        "Manchester encoding guarantees a transition in the middle of every bit interval, with a high-to-low transition representing a binary 0 and a low-to-high transition representing a binary 1.",
+        "Manchester encoding represents a binary 1 by maintaining a constant high voltage throughout the bit interval and a binary 0 by maintaining a constant low voltage.",
+        "Manchester encoding requires a separate clock signal to be transmitted alongside the data because it does not contain any transitions within the bit interval.",
+        "Manchester encoding doubles the required bandwidth compared to NRZ but eliminates the need for any synchronization because the receiver can infer bit boundaries from the amplitude level alone."
+      ],
+      "correct_answer": "Manchester encoding guarantees a transition in the middle of every bit interval, with a high-to-low transition representing a binary 0 and a low-to-high transition representing a binary 1.",
+      "allow_dont_know_option": true,
+      "explanation": "Manchester encoding is a self‑clocking line code that inserts a guaranteed transition at the middle of each bit period. By convention, a high-to-low transition encodes a binary 0 and a low-to-high transition encodes a binary 1, allowing the receiver to recover timing from the data stream itself. Option B describes NRZ (non‑return‑to‑zero) rather than Manchester. Option C is incorrect because Manchester’s inherent mid‑bit transitions eliminate the need for a separate clock channel. Option D is partially true about bandwidth (Manchester requires roughly twice the bandwidth of NRZ) but it incorrectly claims that synchronization is unnecessary and that bit boundaries can be inferred from amplitude alone; synchronization still relies on the transitions, not on static amplitude levels.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:42.765622Z"
+    },
+    "q_data_link_layer_1": {
+      "question_id": "q_data_link_layer_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "data_link_layer"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In IEEE 802.3 Ethernet, which statement correctly describes the purpose of the Frame Check Sequence (FCS) field?",
+      "options": [
+        "The FCS contains a 32-bit CRC that the receiver uses to detect errors in the received frame.",
+        "The FCS stores the source MAC address to verify the sender's identity.",
+        "The FCS indicates the length of the payload so the receiver knows where the frame ends.",
+        "The FCS provides flow control by signaling the sender to pause transmission."
+      ],
+      "correct_answer": "The FCS contains a 32-bit CRC that the receiver uses to detect errors in the received frame.",
+      "allow_dont_know_option": true,
+      "explanation": "The FCS field holds a 32‑bit cyclic redundancy check (CRC) computed by the sender; the receiver recomputes the CRC and compares it to the received FCS to detect bit errors. It does not carry MAC addresses (that is the source address field), does not convey payload length (the Length/Type field does that), and it is unrelated to flow control (which is handled by PAUSE frames, not the FCS).",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:44.861849Z"
+    },
+    "q_network_layer_1": {
+      "question_id": "q_network_layer_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "network_layer"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In IPv4, what is the primary purpose of the Time To Live (TTL) field in the IP header?",
+      "options": [
+        "It is decremented by each router the packet traverses, and the packet is discarded when the field reaches zero, preventing indefinite looping.",
+        "It is incremented by each router to indicate the total number of hops the packet has taken.",
+        "It specifies the maximum amount of time, in milliseconds, that the packet may remain in a router's queue before being forwarded.",
+        "It is used by IPv6 to indicate the packet's lifetime, while IPv4 ignores this field."
+      ],
+      "correct_answer": "It is decremented by each router the packet traverses, and the packet is discarded when the field reaches zero, preventing indefinite looping.",
+      "allow_dont_know_option": true,
+      "explanation": "The TTL field in an IPv4 header is decremented by one at each router; when it reaches zero the packet is dropped, which prevents packets from circulating forever due to routing loops. Option 2 is incorrect because TTL is not incremented. Option 3 is wrong because TTL counts hops, not elapsed time in milliseconds. Option 4 is false: TTL is defined for IPv4, while IPv6 uses a separate Hop Limit field with the same function.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:46.614000Z"
+    },
+    "q_ip_addressing_and_subnetting_1": {
+      "question_id": "q_ip_addressing_and_subnetting_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "ip_addressing_and_subnetting"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "A network administrator has the IPv4 network 192.168.10.0/24 and must create subnets that can each support up to 30 usable host addresses. Which subnet mask should be applied to achieve this requirement?",
+      "options": [
+        "Use a /27 subnet mask (255.255.255.224)",
+        "Use a /26 subnet mask (255.255.255.192)",
+        "Use a /28 subnet mask (255.255.255.240)",
+        "Use a /29 subnet mask (255.255.255.248)"
+      ],
+      "correct_answer": "Use a /27 subnet mask (255.255.255.224)",
+      "allow_dont_know_option": true,
+      "explanation": "A /27 mask provides 32 IP addresses per subnet, of which 30 are usable for hosts (network and broadcast addresses are reserved). This exactly meets the requirement of up to 30 hosts. A /26 mask yields 64 addresses (62 usable), which is more than needed and wastes address space. A /28 mask yields 16 addresses (14 usable), insufficient for 30 hosts. A /29 mask yields 8 addresses (6 usable), also insufficient.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:48.112962Z"
+    },
+    "q_routing_fundamentals_1": {
+      "question_id": "q_routing_fundamentals_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "routing_fundamentals"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In IP routing, which statement correctly describes how the longest prefix match rule selects a route from the routing table?",
+      "options": [
+        "The router chooses the entry with the most specific (longest) subnet mask that matches the destination address.",
+        "The router chooses the entry with the highest administrative distance among matching routes.",
+        "The router chooses the entry with the lowest metric value, ignoring the length of the subnet mask.",
+        "The router chooses the entry that was learned most recently, regardless of other attributes."
+      ],
+      "correct_answer": "The router chooses the entry with the most specific (longest) subnet mask that matches the destination address.",
+      "allow_dont_know_option": true,
+      "explanation": "The longest prefix match rule directs a router to forward a packet using the routing-table entry whose destination network has the longest (most specific) subnet mask that still includes the packet's destination IP. This ensures the most precise route is used. Option 1 states this rule correctly. Option 2 confuses administrative distance, which is used to rank routes from different protocols, not to select among multiple matching prefixes. Option 3 ignores prefix length; metrics are considered only after the most specific prefix is identified. Option 4 describes a 'most recent' rule that does not exist in IP forwarding; route freshness does not override the prefix‑match criterion.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:50.373762Z"
+    },
+    "q_transport_layer_protocols_(tcp_a_1": {
+      "question_id": "q_transport_layer_protocols_(tcp_a_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "transport_layer_protocols_(tcp_a"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately describes a mechanism that TCP uses to provide reliable, ordered delivery that UDP does not provide?",
+      "options": [
+        "TCP assigns a sequence number to each byte of data, uses acknowledgments and retransmission timers to recover lost segments, whereas UDP does not implement these mechanisms.",
+        "TCP delivers packets on a best‑effort basis similar to UDP, but it adds a larger header to improve speed.",
+        "UDP guarantees in‑order delivery by using sequence numbers, while TCP may reorder packets.",
+        "TCP relies on flow control only, and it does not use acknowledgments or retransmission."
+      ],
+      "correct_answer": "TCP assigns a sequence number to each byte of data, uses acknowledgments and retransmission timers to recover lost segments, whereas UDP does not implement these mechanisms.",
+      "allow_dont_know_option": true,
+      "explanation": "TCP provides reliable, ordered delivery by numbering each byte, requiring the receiver to send ACKs, and retransmitting any segment whose ACK is not received before the timer expires. UDP lacks sequence numbers, ACKs, and retransmission logic, so it offers no reliability guarantees. Option 2 is wrong because TCP is not best‑effort; it is connection‑oriented and reliable. Option 3 reverses the roles: UDP does not guarantee ordering, and TCP does. Option 4 is incorrect because TCP uses both flow control (window) and acknowledgments/retransmission; UDP does not use flow control.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:52.806741Z"
+    },
+    "q_session,_presentation,_and_appli_1": {
+      "question_id": "q_session,_presentation,_and_appli_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "session,_presentation,_and_appli"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately reflects the definition and core mechanism of Session, Presentation, and Application Layers in Computer Networks.Docx?",
+      "options": [
+        "Core pedagogical concept defining Session, Presentation, and Application Layers in Computer Networks.Docx.",
+        "Session, Presentation, and Application Layers operates in the inverse manner by counteracting changes in Computer Networks.Docx.",
+        "Session, Presentation, and Application Layers is an unconstrained heuristic applied only when Computer Networks.Docx data is missing.",
+        "Session, Presentation, and Application Layers functions as an auxiliary index without direct theoretical importance in Computer Networks.Docx."
+      ],
+      "correct_answer": "Core pedagogical concept defining Session, Presentation, and Application Layers in Computer Networks.Docx.",
+      "allow_dont_know_option": true,
+      "explanation": "Session, Presentation, and Application Layers: Core pedagogical concept defining Session, Presentation, and Application Layers in Computer Networks.Docx.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:53.459332Z"
+    },
+    "q_network_devices_(switches,_route_1": {
+      "question_id": "q_network_devices_(switches,_route_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "network_devices_(switches,_route"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately reflects the definition and core mechanism of Network Devices (Switches, Routers, Hubs) in Computer Networks.Docx?",
+      "options": [
+        "Core pedagogical concept defining Network Devices (Switches, Routers, Hubs) in Computer Networks.Docx.",
+        "Network Devices (Switches, Routers, Hubs) operates in the inverse manner by counteracting changes in Computer Networks.Docx.",
+        "Network Devices (Switches, Routers, Hubs) is an unconstrained heuristic applied only when Computer Networks.Docx data is missing.",
+        "Network Devices (Switches, Routers, Hubs) functions as an auxiliary index without direct theoretical importance in Computer Networks.Docx."
+      ],
+      "correct_answer": "Core pedagogical concept defining Network Devices (Switches, Routers, Hubs) in Computer Networks.Docx.",
+      "allow_dont_know_option": true,
+      "explanation": "Network Devices (Switches, Routers, Hubs): Core pedagogical concept defining Network Devices (Switches, Routers, Hubs) in Computer Networks.Docx.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:53.917376Z"
+    },
+    "q_network_security_basics_1": {
+      "question_id": "q_network_security_basics_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "network_security_basics"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately reflects the definition and core mechanism of Network Security Basics in Computer Networks.Docx?",
+      "options": [
+        "Core pedagogical concept defining Network Security Basics in Computer Networks.Docx.",
+        "Network Security Basics operates in the inverse manner by counteracting changes in Computer Networks.Docx.",
+        "Network Security Basics is an unconstrained heuristic applied only when Computer Networks.Docx data is missing.",
+        "Network Security Basics functions as an auxiliary index without direct theoretical importance in Computer Networks.Docx."
+      ],
+      "correct_answer": "Core pedagogical concept defining Network Security Basics in Computer Networks.Docx.",
+      "allow_dont_know_option": true,
+      "explanation": "Network Security Basics: Core pedagogical concept defining Network Security Basics in Computer Networks.Docx.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:32:54.218864Z"
+    }
+  },
+  "updated_at": "2026-09-27T19:32:32.866928Z"
+}

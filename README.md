@@ -6,11 +6,12 @@ TAPROOT is a local-first, CPU-friendly AI adaptive learning platform that transf
 
 ## Key Features
 
-- **Document Ingestion & Extraction (Phase 1)**: Robust PDF parsing, multi-column detection, and image asset extraction.
+- **Multi-Format Ingestion & Synthesis (Phase 1 & 5)**: Ingests PDF, PowerPoint (`.pptx`), Word (`.docx`), and Image diagrams (`.png`, `.jpg`, `.jpeg`) up to 3,000 pages with automated LLM curriculum synthesis into custom Knowledge Atlases.
 - **Educational Knowledge Representation & NLP (Phase 2)**: Extracts canonical concepts, bloom taxonomy skills, and prerequisite relationships.
-- **Learner Model & Bayesian Knowledge Tracing (Phase 3)**: Continuous tracking of concept mastery ($P(L)$) and uncertainty, with adaptive question generation and evaluation.
+- **Learner Model & Bayesian Knowledge Tracing (Phase 3)**: Continuous tracking of concept mastery ($P(L)$) and uncertainty, with dynamic live Groq LLM question generation and zero hardcoded templates.
+- **Comprehensive Concept Lessons & Study Guides**: In-depth pedagogical modules featuring theoretical overviews, intuitive mental models, core principles, step-by-step worked examples, and common misconceptions.
 - **Knowledge Initialization & Gap Prioritization (Phase 4)**: Self-assessment onboarding, diagnostic quizzes restricted strictly to self-reported known concepts, 4-category gap detection (Low Mastery, Insufficient Evidence, Weak Prerequisite, High Downstream Impact), and cycle-safe learning path generation.
-- **Validation, Reliability & Idempotency (Phase 5)**: Standardized validation bounds, retry handlers, recovery logging, and duplicate request idempotency tracking.
+- **Validation, Reliability & Idempotency (Phase 5)**: Standardized validation bounds, 429 transient retry with dual-model fallback, recovery logging, and duplicate request idempotency tracking.
 - **Student-Facing Application & Learning Atlas (Phase 6)**: Modern React + TypeScript + Tailwind CSS UI with progressive 4-level zoom knowledge graph, concept inspector (X-Ray), AI tutor, and source document library.
 
 ---

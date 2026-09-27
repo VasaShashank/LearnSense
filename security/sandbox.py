@@ -6,7 +6,10 @@ Matches Section 13 & Section 21 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md
 """
 
 import re
-import resource
+try:
+    import resource
+except ImportError:
+    resource = None
 from typing import Dict, Any, List, Tuple
 from schemas.document import DocumentBlock, DocumentWarning
 
@@ -32,6 +35,8 @@ class SecuritySandbox:
 
     def apply_process_limits(self) -> None:
         """Enforces CPU time and virtual memory RLIMITs on Unix worker processes."""
+        if resource is None:
+            return
         try:
             # Set CPU time limit
             resource.setrlimit(resource.RLIMIT_CPU, (self.max_cpu_seconds, self.max_cpu_seconds + 5))

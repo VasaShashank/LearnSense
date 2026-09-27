@@ -1,0 +1,40 @@
+{
+  "document_id": "genetics_101",
+  "knowledge_document_id": "kdoc_genetics_101",
+  "chapters": [],
+  "sections": [],
+  "topics": [],
+  "concepts": {
+    "genetics_foundations": {
+      "concept_id": "genetics_foundations",
+      "canonical_name": "Genetics Foundations",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "genetics_core_principles": {
+      "concept_id": "genetics_core_principles",
+      "canonical_name": "Genetics Core Principles",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "genetics_advanced_topics": {
+      "concept_id": "genetics_advanced_topics",
+      "canonical_name": "Genetics Advanced Topics",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {},
+  "assessable_items": {},
+  "evidence": {},
+  "prerequisites": [],
+  "trusted_relationships": []
+}

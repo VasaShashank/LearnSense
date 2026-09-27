@@ -73,7 +73,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 YOUR NEXT MOVE
               </span>
             </div>
-            <h3 className="text-xl font-black text-white mt-1">{nextTarget.name}</h3>
+            <h3 className="text-xl font-black text-white mt-1">{nextTarget.concept_name || nextTarget.name || nextTarget.concept_id}</h3>
             <p className="text-xs text-slate-200 mt-2 leading-relaxed">
               <strong className="text-sky-300">Why?</strong> {nextTarget.reason}
             </p>

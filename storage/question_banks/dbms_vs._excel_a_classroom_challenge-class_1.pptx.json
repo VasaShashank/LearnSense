@@ -1,0 +1,355 @@
+{
+  "document_id": "dbms_vs._excel_a_classroom_challenge-class_1.pptx",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_data_1": {
+      "question_id": "q_data_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "data"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement correctly describes how data is handled in a relational DBMS compared to Microsoft Excel?",
+      "options": [
+        "In a DBMS, data is organized into tables with a predefined schema that enforces data types for each column, whereas Excel stores data in cells without a global schema, allowing mixed data types within the same column.",
+        "Excel automatically enforces primary‑key constraints to prevent duplicate rows, while a DBMS provides no built‑in uniqueness mechanism.",
+        "A DBMS stores data as unstructured text files, whereas Excel stores data in a binary format with built‑in compression.",
+        "Excel defines relationships between worksheets using foreign‑key constraints, while a DBMS does not support relationships between tables."
+      ],
+      "correct_answer": "In a DBMS, data is organized into tables with a predefined schema that enforces data types for each column, whereas Excel stores data in cells without a global schema, allowing mixed data types within the same column.",
+      "allow_dont_know_option": true,
+      "explanation": "Option A is correct because a relational DBMS requires a schema that specifies the data type of each column and can enforce constraints such as NOT NULL or CHECK, ensuring consistent data. Excel, by contrast, has no enforced schema; a column can contain numbers, text, dates, or formulas simultaneously, leading to potential type inconsistencies. Option B is false: Excel does not enforce primary‑key constraints; duplicate rows can easily be entered. Option C is false: DBMS data is stored in structured formats (pages, tablespaces) that maintain metadata, not merely unstructured text, and Excel files (.xlsx) are actually zipped XML, not a simple binary with compression. Option D is false: Excel does not have foreign‑key constraints; relationships can be mimicked with lookup functions but are not enforced, whereas DBMSs explicitly support foreign‑key constraints to maintain referential integrity.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:19.196091Z"
+    },
+    "q_spreadsheet_(excel)_basics_1": {
+      "question_id": "q_spreadsheet_(excel)_basics_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "spreadsheet_(excel)_basics"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "When copying a formula in Excel, what does a dollar sign ($) in a cell reference such as $A1, A$1, or $A$1 control?",
+      "options": [
+        "$A1 locks the column, A$1 locks the row, and $A$1 locks both column and row during copy.",
+        "It converts the referenced cell into a named range that can be used elsewhere.",
+        "It forces Excel to treat the referenced cell's content as text regardless of its original type.",
+        "It makes the reference volatile, causing the formula to recalculate on every workbook change."
+      ],
+      "correct_answer": "$A1 locks the column, A$1 locks the row, and $A$1 locks both column and row during copy.",
+      "allow_dont_know_option": true,
+      "explanation": "In Excel, the dollar sign creates an absolute reference. $A1 fixes the column (A) while allowing the row to change, A$1 fixes the row while allowing the column to change, and $A$1 fixes both. This behavior determines how references adjust when a formula is copied. The other options describe unrelated features: named ranges are created via the Name Manager, not by $; $ does not change data type to text, and volatility is controlled by functions like NOW() or OFFSET(), not by $ signs.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:21.140801Z"
+    },
+    "q_database_1": {
+      "question_id": "q_database_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "database"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement correctly describes a fundamental property of a relational database that distinguishes it from a spreadsheet like Microsoft Excel?",
+      "options": [
+        "A relational database enforces data integrity through primary key and foreign key constraints, preventing duplicate or orphaned records.",
+        "A relational database stores data in a single, flat table where each cell can contain a formula that automatically updates dependent cells.",
+        "A relational database limits the total number of rows to 1,048,576, the same as the maximum rows in an Excel worksheet.",
+        "A relational database requires each column to be defined as a text field, disallowing numeric or date data types."
+      ],
+      "correct_answer": "A relational database enforces data integrity through primary key and foreign key constraints, preventing duplicate or orphaned records.",
+      "allow_dont_know_option": true,
+      "explanation": "The correct option states that relational databases use primary key and foreign key constraints to enforce referential integrity, a core mechanism that prevents duplicate primary keys and orphaned child records. This is a built‑in feature of DBMSs and does not exist in Excel. Option 2 is incorrect because spreadsheets, not databases, allow cell formulas; databases store raw data and calculations are performed via queries or stored procedures. Option 3 is wrong because relational databases can handle far more rows than Excel’s 1,048,576‑row limit, scaling to millions or billions of records. Option 4 is false because databases support multiple data types (INTEGER, DATE, VARCHAR, etc.) and do not restrict columns to text only.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:23.942212Z"
+    },
+    "q_database_management_system_(dbms_1": {
+      "question_id": "q_database_management_system_(dbms_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "database_management_system_(dbms"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement correctly describes a fundamental advantage of a Database Management System (DBMS) compared to a spreadsheet application such as Excel?",
+      "options": [
+        "A DBMS enforces data integrity through constraints such as primary keys, foreign keys, and check constraints.",
+        "A DBMS stores data only in flat files and cannot support concurrent user access.",
+        "A DBMS requires manual recalculation of formulas after each data entry, similar to spreadsheet cells.",
+        "A DBMS does not provide transaction processing or rollback capabilities."
+      ],
+      "correct_answer": "A DBMS enforces data integrity through constraints such as primary keys, foreign keys, and check constraints.",
+      "allow_dont_know_option": true,
+      "explanation": "The correct answer highlights that a DBMS implements integrity constraints (primary key, foreign key, check) to ensure consistent and valid data, which is a core mechanism absent in Excel. Option 2 is wrong because DBMSs use structured tables and support multi‑user concurrency, not simple flat files. Option 3 is wrong because DBMSs use declarative queries; they do not require manual formula recalculation. Option 4 is wrong because DBMSs provide ACID transaction support, allowing commit, rollback, and recovery.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:26.710587Z"
+    },
+    "q_data_modeling_&_schema_design_1": {
+      "question_id": "q_data_modeling_&_schema_design_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "data_modeling_&_schema_design"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately reflects a fundamental difference between relational database schema design and Excel worksheet design concerning data normalization?",
+      "options": [
+        "In a relational database, normalization decomposes tables to eliminate redundancy, while Excel worksheets typically store denormalized, flat data without enforced normalization rules.",
+        "Excel automatically enforces primary‑key constraints on each column, guaranteeing uniqueness across rows.",
+        "Normalization in a relational schema is optional and used only to improve query performance, not to ensure data integrity.",
+        "Relational schema design permits duplicate rows as long as a foreign key is present, whereas Excel disallows any duplicate entries."
+      ],
+      "correct_answer": "In a relational database, normalization decomposes tables to eliminate redundancy, while Excel worksheets typically store denormalized, flat data without enforced normalization rules.",
+      "allow_dont_know_option": true,
+      "explanation": "Relational DBMS require schemas to be normalized (e.g., 1NF, 2NF, 3NF) to reduce redundancy and update anomalies; this is enforced by design and often by constraints. Excel, on the other hand, is a flat‑file tool that does not enforce any normalization rules, so users typically keep data in a denormalized, tabular form. The second option is false because Excel does not enforce primary‑key constraints automatically. The third option mischaracterizes normalization as merely a performance tweak; it is primarily about data integrity. The fourth option incorrectly states that relational schemas allow duplicate rows with a foreign key; relational tables enforce uniqueness through primary keys, and duplicates are not permitted unless explicitly allowed.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:28.946378Z"
+    },
+    "q_relational_model_&_tables_1": {
+      "question_id": "q_relational_model_&_tables_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "relational_model_&_tables"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In the relational model used by a DBMS (as opposed to Excel), which statement correctly defines the properties of a primary key for a table?",
+      "options": [
+        "A primary key uniquely identifies each row and cannot contain NULL values.",
+        "A primary key can be duplicated across rows as long as the column is formatted as text.",
+        "A primary key may contain NULL values if the column is defined as a calculated field.",
+        "A primary key is automatically created for every column that contains unique values."
+      ],
+      "correct_answer": "A primary key uniquely identifies each row and cannot contain NULL values.",
+      "allow_dont_know_option": true,
+      "explanation": "The correct statement reflects the relational definition: a primary key must be unique for every tuple and must be NOT NULL, guaranteeing entity integrity. Option 2 is wrong because uniqueness, not formatting, is required; duplicates violate the primary‑key rule. Option 3 is wrong because primary keys are never allowed to be NULL—NULL would break the guarantee of identification. Option 4 is wrong because a DBMS does not auto‑create primary keys; the designer must explicitly designate a column (or set of columns) as the primary key, even if other columns happen to be unique.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:30.906647Z"
+    },
+    "q_data_integrity_&_constraints_1": {
+      "question_id": "q_data_integrity_&_constraints_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "data_integrity_&_constraints"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In the context of comparing a relational DBMS to Microsoft Excel, which mechanism enforces referential integrity that cannot be implemented with Excel's native features?",
+      "options": [
+        "Primary key constraint on a table column",
+        "Foreign key constraint linking two tables",
+        "Check constraint that limits column values to a specific range",
+        "Data validation rule applied to a cell range"
+      ],
+      "correct_answer": "Foreign key constraint linking two tables",
+      "allow_dont_know_option": true,
+      "explanation": "A foreign key constraint explicitly defines a relationship between two tables and guarantees that every value in the child table matches an existing value in the parent table, thereby enforcing referential integrity. Relational DBMSs enforce this rule automatically during INSERT, UPDATE, and DELETE operations. Excel can apply data validation or conditional formatting, but it cannot maintain a live, cross‑sheet relationship that prevents orphaned rows; thus primary keys, check constraints, and data‑validation rules do not provide true referential integrity. Only the foreign key constraint satisfies the requirement.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:32.948581Z"
+    },
+    "q_transaction_management_&_acid_pr_1": {
+      "question_id": "q_transaction_management_&_acid_pr_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "transaction_management_&_acid_pr"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which of the following statements correctly describes the role of the 'commit' operation in ensuring the ACID properties of a database transaction?",
+      "options": [
+        "Commit guarantees atomicity by rolling back all changes if any part fails.",
+        "Commit ensures durability by writing all transaction changes to stable storage before releasing locks.",
+        "Commit provides isolation by preventing other transactions from seeing intermediate results.",
+        "Commit enforces consistency by validating all foreign key constraints after the transaction completes."
+      ],
+      "correct_answer": "Commit ensures durability by writing all transaction changes to stable storage before releasing locks.",
+      "allow_dont_know_option": true,
+      "explanation": "The commit operation is the point at which a transaction’s changes are permanently written to stable storage, thereby guaranteeing durability. Atomicity is achieved by the database engine’s ability to roll back or commit all changes as a unit; isolation is maintained by locks held until commit; consistency is ensured by constraint checks performed before commit. Thus only option 2 correctly identifies the durability role of commit, while the others misattribute other ACID properties to it.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:35.983733Z"
+    },
+    "q_concurrency_control_&_multi_user_1": {
+      "question_id": "q_concurrency_control_&_multi_user_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "concurrency_control_&_multi_user"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which statement accurately describes the mechanism a DBMS uses to prevent lost‑update anomalies during concurrent modifications of the same row, in contrast to how Excel handles simultaneous edits?",
+      "options": [
+        "The DBMS employs a two‑phase locking protocol that acquires a write lock on the row before the transaction modifies it and releases the lock only after the transaction commits, thereby preventing lost updates; Excel does not enforce such locks, so the last saved version overwrites earlier changes.",
+        "The DBMS relies on cell‑level version numbers that are automatically merged by the system, while Excel uses a similar versioning mechanism to resolve conflicts.",
+        "Both the DBMS and Excel use optimistic concurrency control by default, checking for conflicts only at commit time.",
+        "Isolation levels are irrelevant for concurrency control in a DBMS, whereas Excel provides built-in isolation levels for each worksheet."
+      ],
+      "correct_answer": "The DBMS employs a two‑phase locking protocol that acquires a write lock on the row before the transaction modifies it and releases the lock only after the transaction commits, thereby preventing lost updates; Excel does not enforce such locks, so the last saved version overwrites earlier changes.",
+      "allow_dont_know_option": true,
+      "explanation": "The correct answer describes two‑phase locking (2PL), a concrete concurrency‑control technique used by DBMSs. 2PL acquires a write (exclusive) lock on the target row, holds it for the duration of the transaction, and releases it only after commit, which guarantees that no other transaction can read or write the row in the meantime, thus avoiding lost‑update anomalies. Excel, being a file‑based spreadsheet, lacks any lock manager; when two users edit the same cell, the version that is saved last simply overwrites the earlier one, leading to potential data loss.\n\nOption 2 is incorrect because DBMSs do not merge changes based on cell‑level version numbers; versioning is typically part of application‑level conflict resolution, not a built‑in concurrency mechanism, and Excel does not provide automatic merging.\n\nOption 3 is wrong because optimistic concurrency control is not the default in most relational DBMSs; they usually default to locking (pessimistic) protocols, and Excel certainly does not implement an optimistic check‑at‑commit model.\n\nOption 4 is false because isolation levels (READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE) are fundamental to DBMS concurrency control, while Excel has no concept of isolation levels for worksheets.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:40.426444Z"
+    },
+    "q_scalability_&_performance_1": {
+      "question_id": "q_scalability_&_performance_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "scalability_&_performance"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which of the following mechanisms enables a relational database to maintain fast query performance as the number of rows grows, a capability that Excel typically lacks?",
+      "options": [
+        "Use of B‑tree indexes for efficient lookups",
+        "Use of pivot tables for summarization",
+        "Use of cell‑level caching",
+        "Use of manual filtering"
+      ],
+      "correct_answer": "Use of B‑tree indexes for efficient lookups",
+      "allow_dont_know_option": true,
+      "explanation": "Relational DBMSs build B‑tree indexes on columns that are frequently queried. These indexes allow the engine to locate rows in O(log n) time, keeping query latency low even when the table contains millions of rows. Excel, on the other hand, relies on linear scans of cells; pivot tables, cell caching, and manual filtering are user‑interface conveniences that do not provide a data‑structure‑based lookup mechanism and therefore cannot prevent performance degradation as data volume increases.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:43.599506Z"
+    },
+    "q_use_case_evaluation:_choosing_sp_1": {
+      "question_id": "q_use_case_evaluation:_choosing_sp_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "use_case_evaluation:_choosing_sp"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "Which criterion most strongly indicates that a relational DBMS should be chosen over a spreadsheet for a given use case?",
+      "options": [
+        "The data model includes many-to-many relationships that must enforce referential integrity constraints.",
+        "The dataset contains fewer than 100 rows and will be edited by a single user only.",
+        "The primary need is to perform simple arithmetic calculations on a few columns.",
+        "The information will be printed as a static report once a month without further querying."
+      ],
+      "correct_answer": "The data model includes many-to-many relationships that must enforce referential integrity constraints.",
+      "allow_dont_know_option": true,
+      "explanation": "A relational DBMS is designed to manage complex data models, especially many-to-many relationships, and can enforce referential integrity to keep related tables consistent. This makes it the appropriate choice when such constraints are required. Option B describes a scenario where a spreadsheet is sufficient because the data volume is low and concurrency is not an issue. Option C focuses on simple calculations, which spreadsheets handle efficiently without the overhead of a DBMS. Option D involves a static, one‑time report, which does not justify the need for a DBMS's querying and transaction capabilities.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:47.592971Z"
+    },
+    "q_real_world_applications_of_dbms_1": {
+      "question_id": "q_real_world_applications_of_dbms_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "real_world_applications_of_dbms"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "In a real-world airline reservation system that must process thousands of concurrent booking requests, which DBMS feature is essential to guarantee that two passengers cannot be assigned the same seat simultaneously?",
+      "options": [
+        "Normalization",
+        "ACID transactions",
+        "Row-level locking",
+        "Excel data validation"
+      ],
+      "correct_answer": "Row-level locking",
+      "allow_dont_know_option": true,
+      "explanation": "Row-level locking is a concurrency-control mechanism that locks the specific row (seat record) being updated, preventing other transactions from modifying it until the lock is released. This ensures that two passengers cannot be assigned the same seat at the same time. Normalization organizes data but does not control concurrent updates. ACID transactions guarantee overall data integrity, but without locking they could still allow a race condition that assigns the same seat. Excel data validation is an Excel feature and does not provide transactional isolation in a multi-user database environment.",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-27T19:38:52.114614Z"
+    }
+  },
+  "updated_at": "2026-09-27T19:38:17.001499Z"
+}

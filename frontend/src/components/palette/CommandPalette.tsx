@@ -41,7 +41,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   const filteredConcepts = concepts.filter(
-    (c) => c.name.toLowerCase().includes(query.toLowerCase()) || c.definition.toLowerCase().includes(query.toLowerCase())
+    (c) => c.name.toLowerCase().includes(query.toLowerCase()) || (c.definition || c.description || '').toLowerCase().includes(query.toLowerCase())
   );
 
   const filteredSources = sources.filter((s) => s.title.toLowerCase().includes(query.toLowerCase()));

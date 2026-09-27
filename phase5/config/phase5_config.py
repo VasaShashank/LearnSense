@@ -17,7 +17,7 @@ class Phase5Config(BaseModel):
     NLP_CONFIDENCE_THRESHOLD: float = Field(default=0.70, description="Minimum confidence score for NLP extracted entities.")
     MIN_USABLE_TEXT_LENGTH: int = Field(default=100, description="Minimum extracted text length (characters) for valid document content.")
     MAX_FILE_SIZE_BYTES: int = Field(default=104857600, description="Maximum allowed file size in bytes (100 MB).")
-    MAX_PAGE_COUNT: int = Field(default=500, description="Maximum allowed PDF page count.")
+    MAX_PAGE_COUNT: int = Field(default=3000, description="Maximum allowed PDF/document page count.")
 
     # Execution Mode
     VALIDATION_STRICT_MODE: bool = Field(

@@ -21,7 +21,15 @@ export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
 }) => {
   if (!concept) return null;
 
-  const { name, definition, mastery, uncertainty, prerequisites, dependents, source_references } = concept;
+  const {
+    name,
+    definition = '',
+    mastery = 0.5,
+    uncertainty = 0.3,
+    prerequisites = [],
+    dependents = [],
+    source_references = [],
+  } = concept;
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-slate-900/95 border-l border-slate-800 backdrop-blur-2xl shadow-2xl p-6 overflow-y-auto flex flex-col justify-between transition-all duration-300">

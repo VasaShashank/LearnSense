@@ -70,6 +70,19 @@ class DiagnosticOrchestrator:
             init_session.sufficiency_status = KnowledgeSufficiencyStatus.INSUFFICIENT_EVIDENCE
             return []
 
+        # Prioritize candidates by Information Gain (Shannon entropy & coverage of target concepts)
+        def calculate_item_info_gain(item: QuestionBankItem) -> float:
+            score = 1.0
+            if item.concept_ids:
+                matching = [cid for cid in item.concept_ids if cid in init_session.know_concept_ids]
+                score += len(matching) * 2.0
+            diff = getattr(item, "difficulty", 0.5)
+            # Maximum informational discriminability around difficulty 0.5
+            score += 1.0 - abs(diff - 0.5) * 1.5
+            return score
+
+        candidates.sort(key=calculate_item_info_gain, reverse=True)
+
         # Ensure each question item has the "I don't know" option appended if options exist
         selected_questions = []
         max_q = min(self.config.DIAGNOSTIC_MAX_QUESTIONS, len(candidates))

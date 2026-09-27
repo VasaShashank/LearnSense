@@ -71,9 +71,15 @@ class KnowledgeService:
             }
         ]
 
-        # Filter out subjects with 0 concepts for onboarding
+        # Deduplicate and return valid subjects
         valid_subjects = [s for s in subjects if s.get("concept_count", 0) > 0]
-        return valid_subjects + demo_subjects
+        seen_ids = set()
+        merged = []
+        for s in valid_subjects + demo_subjects:
+            if s["id"] not in seen_ids:
+                seen_ids.add(s["id"])
+                merged.append(s)
+        return merged
 
     def get_learning_context(self, subject_id: str, default_concept_ids: Optional[List[str]] = None) -> LearningContext:
         """
@@ -122,11 +128,18 @@ class KnowledgeService:
                 "topic_applications": {"id": "topic_applications", "name": "Applications of Derivatives", "order": 3},
                 "topic_integration": {"id": "topic_integration", "name": "Integral Calculus", "order": 4},
             }
-        else:
+        elif subject_id == "machine_learning":
             topics_map = {
                 "topic_math_basics": {"id": "topic_math_basics", "name": "Mathematical Foundations", "order": 1},
                 "topic_supervised": {"id": "topic_supervised", "name": "Supervised Learning", "order": 2},
                 "topic_deep_learning": {"id": "topic_deep_learning", "name": "Deep Learning & Neural Nets", "order": 3},
+            }
+        else:
+            sub_title = subject_id.replace("_", " ").title()
+            topics_map = {
+                "topic_foundations": {"id": "topic_foundations", "name": f"{sub_title} Foundations", "order": 1},
+                "topic_core": {"id": "topic_core", "name": f"{sub_title} Core Principles", "order": 2},
+                "topic_advanced": {"id": "topic_advanced", "name": f"{sub_title} Advanced Topics", "order": 3},
             }
 
         # Build concept nodes
@@ -151,7 +164,17 @@ class KnowledgeService:
                 elif cid == "ftc":
                     prereqs = ["integrals_def", "extrema"]
 
-            topic_id = "topic_foundations" if cid in ("limits_intro", "continuity") else "topic_differentiation" if cid in ("derivatives_def", "power_rule", "product_rule", "chain_rule") else "topic_applications" if cid in ("implicit_diff", "related_rates", "extrema", "mean_value_thm") else "topic_integration"
+            if subject_id == "calculus_101":
+                topic_id = "topic_foundations" if cid in ("limits_intro", "continuity") else "topic_differentiation" if cid in ("derivatives_def", "power_rule", "product_rule", "chain_rule") else "topic_applications" if cid in ("implicit_diff", "related_rates", "extrema", "mean_value_thm") else "topic_integration"
+            elif subject_id == "machine_learning":
+                topic_id = "topic_math_basics" if cid in ("linear_algebra", "vectors", "matrices") else "topic_supervised" if cid in ("linear_regression", "logistic_regression", "gradient_descent", "loss_functions") else "topic_deep_learning"
+            else:
+                if not prereqs:
+                    topic_id = "topic_foundations"
+                elif len(prereqs) == 1:
+                    topic_id = "topic_core"
+                else:
+                    topic_id = "topic_advanced"
 
             concepts_out.append({
                 "concept_id": cid,

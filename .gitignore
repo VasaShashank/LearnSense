@@ -3,8 +3,12 @@ __pycache__/
 *$py.class
 *.so
 .pytest_cache/
+.cache/
 storage/documents/
+storage/sessions/
 storage/*.db
 storage/*.db-wal
 storage/*.db-shm
 .env
+frontend/dist/
+frontend/node_modules/

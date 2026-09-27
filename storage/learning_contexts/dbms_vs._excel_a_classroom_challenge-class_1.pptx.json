@@ -1,0 +1,209 @@
+{
+  "document_id": "dbms_vs._excel_a_classroom_challenge-class_1.pptx",
+  "knowledge_document_id": "kdoc_dbms_vs._excel_a_classroom_challenge-class_1.pptx",
+  "chapters": [],
+  "sections": [],
+  "topics": [],
+  "concepts": {
+    "data": {
+      "concept_id": "data",
+      "canonical_name": "Data",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "spreadsheet_(excel)_basics": {
+      "concept_id": "spreadsheet_(excel)_basics",
+      "canonical_name": "Spreadsheet (Excel) Basics",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "database": {
+      "concept_id": "database",
+      "canonical_name": "Database",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "database_management_system_(dbms": {
+      "concept_id": "database_management_system_(dbms",
+      "canonical_name": "Database Management System (DBMS)",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "data_modeling_&_schema_design": {
+      "concept_id": "data_modeling_&_schema_design",
+      "canonical_name": "Data Modeling & Schema Design",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "relational_model_&_tables": {
+      "concept_id": "relational_model_&_tables",
+      "canonical_name": "Relational Model & Tables",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "data_integrity_&_constraints": {
+      "concept_id": "data_integrity_&_constraints",
+      "canonical_name": "Data Integrity & Constraints",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "transaction_management_&_acid_pr": {
+      "concept_id": "transaction_management_&_acid_pr",
+      "canonical_name": "Transaction Management & ACID Properties",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "concurrency_control_&_multi_user": {
+      "concept_id": "concurrency_control_&_multi_user",
+      "canonical_name": "Concurrency Control & Multi-user Access",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "scalability_&_performance": {
+      "concept_id": "scalability_&_performance",
+      "canonical_name": "Scalability & Performance",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "use_case_evaluation:_choosing_sp": {
+      "concept_id": "use_case_evaluation:_choosing_sp",
+      "canonical_name": "Use Case Evaluation: Choosing Spreadsheet vs DBMS",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    },
+    "real_world_applications_of_dbms": {
+      "concept_id": "real_world_applications_of_dbms",
+      "canonical_name": "Real-world Applications of DBMS",
+      "aliases": [],
+      "type": "concept",
+      "skill_ids": [],
+      "evidence_ids": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {},
+  "assessable_items": {},
+  "evidence": {},
+  "prerequisites": [
+    {
+      "source_concept_id": "data",
+      "target_concept_id": "spreadsheet_(excel)_basics",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "data",
+      "target_concept_id": "database",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "database",
+      "target_concept_id": "database_management_system_(dbms",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "database",
+      "target_concept_id": "data_modeling_&_schema_design",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "data_modeling_&_schema_design",
+      "target_concept_id": "relational_model_&_tables",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "relational_model_&_tables",
+      "target_concept_id": "data_integrity_&_constraints",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "data_integrity_&_constraints",
+      "target_concept_id": "transaction_management_&_acid_pr",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "transaction_management_&_acid_pr",
+      "target_concept_id": "concurrency_control_&_multi_user",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "concurrency_control_&_multi_user",
+      "target_concept_id": "scalability_&_performance",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "scalability_&_performance",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "concurrency_control_&_multi_user",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "transaction_management_&_acid_pr",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "data_integrity_&_constraints",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "relational_model_&_tables",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "database_management_system_(dbms",
+      "target_concept_id": "use_case_evaluation:_choosing_sp",
+      "confidence": 0.9,
+      "evidence_ids": []
+    },
+    {
+      "source_concept_id": "use_case_evaluation:_choosing_sp",
+      "target_concept_id": "real_world_applications_of_dbms",
+      "confidence": 0.9,
+      "evidence_ids": []
+    }
+  ],
+  "trusted_relationships": []
+}
