@@ -2,6 +2,7 @@
 Phase 4 FastAPI REST API Routes.
 Exposes endpoints for concept self-assessment, diagnostic lifecycle, knowledge gap detection,
 personalized learning path generation, next target selection, and adaptive activity responses.
+Integrated with Phase 5 validators and response submission idempotency checks.
 """
 
 from typing import Dict, List, Optional
@@ -22,6 +23,7 @@ from phase4.models import (
     LearningTarget,
     SelfAssessmentStatus,
 )
+from phase5.validation import LearnerStateValidator, IdempotencyTracker, PlanningValidator
 
 router = APIRouter()
 
@@ -32,6 +34,9 @@ _LEARNING_CONTEXTS: Dict[str, LearningContext] = {}
 _QUESTION_BANKS: Dict[str, QuestionBank] = {}
 
 adapter = Phase3Adapter()
+idempotency_tracker = IdempotencyTracker()
+learner_state_validator = LearnerStateValidator(idempotency_tracker=idempotency_tracker)
+planning_validator = PlanningValidator()
 
 
 class SelfAssessmentRequest(BaseModel):
@@ -56,6 +61,7 @@ class ActivityResponseRequest(BaseModel):
     concept_ids: List[str]
     correctness: float
     all_subject_concept_ids: List[str]
+    request_id: Optional[str] = None  # Idempotency token
 
 
 def _get_or_create_learner_state(learner_id: str, concept_ids: List[str]) -> LearnerState:
@@ -89,6 +95,10 @@ async def submit_self_assessment(req: SelfAssessmentRequest):
     Submits learner concept self-assessment (KNOW, DONT_KNOW, UNANSWERED).
     Self-reported status is kept separate from objective KT evidence.
     """
+    val_res = planning_validator.validate_self_assessment(req.selections, req.all_subject_concept_ids)
+    if not val_res.is_valid:
+        raise HTTPException(status_code=400, detail=val_res.errors[0])
+
     session = adapter.self_assessment_handler.create_session(
         learner_id=req.learner_id,
         subject_id=req.subject_id,
@@ -113,6 +123,12 @@ async def start_diagnostic(req: DiagnosticStartRequest):
 
     bank = _get_or_create_question_bank(session.subject_id)
     questions = adapter.diagnostic_orchestrator.create_diagnostic_quiz(session, bank)
+
+    # Validate diagnostic questions restriction
+    val_res = planning_validator.validate_diagnostic_quiz_creation(session, questions)
+    if not val_res.is_valid:
+        raise HTTPException(status_code=422, detail=val_res.errors[0])
+
     return {
         "session_id": session.session_id,
         "know_concepts": session.know_concept_ids,
@@ -177,6 +193,11 @@ async def get_learning_path(learner_id: str, subject_id: str, concept_ids: str):
     learning_context = _get_or_create_learning_context(subject_id, c_ids)
 
     path = adapter.path_generator.generate_path(learning_context, learner_state, c_ids)
+
+    val_res = planning_validator.validate_learning_path(path, set(c_ids))
+    if not val_res.is_valid:
+        raise HTTPException(status_code=422, detail=val_res.errors[0])
+
     return path
 
 
@@ -198,9 +219,36 @@ async def get_next_learning_target(learner_id: str, subject_id: str, concept_ids
 async def submit_activity_response(req: ActivityResponseRequest):
     """
     Submits response for a learning activity, updates Phase 3 KT, and triggers Phase 4 replanning.
+    Protects against duplicate submission double-updating KT via idempotency tracking.
     """
     learner_state = _get_or_create_learner_state(req.learner_id, req.all_subject_concept_ids)
     learning_context = _get_or_create_learning_context(req.subject_id, req.all_subject_concept_ids)
+
+    # Phase 5 Response Submission Validation & Idempotency Check
+    val_res = learner_state_validator.validate_response_submission(
+        learner_id=req.learner_id,
+        concept_ids=req.concept_ids,
+        correctness=req.correctness,
+        request_id=req.request_id,
+        valid_subject_concepts=set(req.all_subject_concept_ids),
+    )
+
+    if not val_res.is_valid:
+        raise HTTPException(status_code=400, detail=val_res.errors[0])
+
+    if val_res.metadata.get("duplicate_submission", False):
+        # Return current state without reapplying double KT mutation
+        path = adapter.path_generator.generate_path(learning_context, learner_state, req.all_subject_concept_ids)
+        next_target = adapter.target_selector.select_next_target(path, learner_state, learning_context)
+        return {
+            "duplicate_submission": True,
+            "updated_masteries": {
+                c_id: learner_state.concept_states[c_id].mastery_probability
+                for c_id in req.concept_ids if c_id in learner_state.concept_states
+            },
+            "path_node_count": len(path.nodes),
+            "next_target": next_target,
+        }
 
     updated_masteries, path, next_target = adapter.handle_activity_response_and_replan(
         learner_state=learner_state,
@@ -209,6 +257,9 @@ async def submit_activity_response(req: ActivityResponseRequest):
         concept_ids=req.concept_ids,
         correctness=req.correctness,
     )
+
+    if req.request_id:
+        idempotency_tracker.mark_processed(req.request_id)
 
     return {
         "updated_masteries": updated_masteries,
