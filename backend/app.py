@@ -7,11 +7,11 @@ Matches Section 26 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.routes import documents
+from backend.routes import documents, phase4
 
 app = FastAPI(
-    title="TAPROOT Phase 1 Ingestion API",
-    description="CPU-First Educational PDF Ingestion & Structuring Pipeline Server",
+    title="TAPROOT Platform API",
+    description="Adaptive Learning Platform API (Phases 1-4)",
     version="2026.09.0",
 )
 
@@ -26,6 +26,7 @@ app.add_middleware(
 
 # Mount REST API Routers
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
+app.include_router(phase4.router, prefix="/phase4", tags=["phase4"])
 
 
 @app.exception_handler(ValueError)
