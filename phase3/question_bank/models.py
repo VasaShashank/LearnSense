@@ -39,6 +39,10 @@ class QuestionBankItem(BaseModel):
     question_text: str
     options: Optional[List[str]] = None
     correct_answer: Any
+    allow_dont_know_option: bool = Field(
+        default=True,
+        description="When True, presents an explicit 'I don't know' option to learners."
+    )
     explanation: str = ""
     difficulty: float = Field(default=0.5, ge=0.0, le=1.0)
     expected_time_seconds: float = 60.0

@@ -70,9 +70,14 @@ class DiagnosticOrchestrator:
             init_session.sufficiency_status = KnowledgeSufficiencyStatus.INSUFFICIENT_EVIDENCE
             return []
 
-        # Cap questions to DIAGNOSTIC_MAX_QUESTIONS
+        # Ensure each question item has the "I don't know" option appended if options exist
+        selected_questions = []
         max_q = min(self.config.DIAGNOSTIC_MAX_QUESTIONS, len(candidates))
-        selected_questions = candidates[:max_q]
+        for item in candidates[:max_q]:
+            item_copy = item.model_copy()
+            if item_copy.options is not None and "I don't know" not in item_copy.options:
+                item_copy.options = list(item_copy.options) + ["I don't know"]
+            selected_questions.append(item_copy)
 
         init_session.diagnostic_session_id = f"diag_{uuid.uuid4().hex[:10]}"
         return selected_questions
