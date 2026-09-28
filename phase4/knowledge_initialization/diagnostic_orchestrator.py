@@ -126,6 +126,15 @@ class DiagnosticOrchestrator:
                 updated_masteries.update(concept_updates)
 
         avg_score = round(total_score / len(question_responses), 4)
+        for cid in init_session.know_concept_ids:
+            if cid not in updated_masteries:
+                concept_updates = self.tracer.update(
+                    learner_state=learner_state,
+                    concept_ids=[cid],
+                    correctness=avg_score,
+                )
+                updated_masteries.update(concept_updates)
+
         init_session.diagnostic_completed = True
         init_session.diagnostic_score = avg_score
         init_session.sufficiency_status = KnowledgeSufficiencyStatus.INITIALIZED

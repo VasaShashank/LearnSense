@@ -274,7 +274,7 @@ class QuestionBankBuilder:
         seen = {QuestionBankDeduplicator.compute_fingerprint(q.question_text) for q in bank.questions.values()}
 
         for concept_id in shortfalls:
-            if rounds >= _MAX_GENERATION_ROUNDS or len(bank.get_grounded_questions()) >= target_count:
+            if rounds >= _MAX_GENERATION_ROUNDS:
                 break
             concept = context.concepts.get(concept_id)
             if concept is None:

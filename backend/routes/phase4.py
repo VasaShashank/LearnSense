@@ -126,11 +126,17 @@ async def start_diagnostic(req: DiagnosticStartRequest):
     if not val_res.is_valid:
         raise HTTPException(status_code=422, detail=val_res.errors[0])
 
+    safe_questions = []
+    for q in questions:
+        q_dict = q.model_dump(mode="json") if hasattr(q, "model_dump") else dict(q)
+        q_dict.pop("correct_answer", None)
+        safe_questions.append(q_dict)
+
     return {
         "session_id": session.session_id,
         "know_concepts": session.know_concept_ids,
-        "question_count": len(questions),
-        "questions": questions,
+        "question_count": len(safe_questions),
+        "questions": safe_questions,
     }
 
 

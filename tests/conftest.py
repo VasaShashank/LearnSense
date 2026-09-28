@@ -6,14 +6,38 @@ generate content that is not grounded in a learner's own material, so any test t
 exercises the API end to end needs a document whose passages actually exist. Hand-built
 ``LearningContext`` objects with concepts but no evidence cannot produce a question, so
 these fixtures use the real Phase 1 -> Phase 2 -> Phase 3 pipeline instead.
+
+LLM mode
+--------
+All tests run with ``LLM_MODE=mock`` so they are deterministic and never require a live
+API key. The mock adapter is the explicit, opt-in test double in
+``tests.support.mock_llm``. It is reset at the start of the session so the shared
+process-wide singleton picks up the environment variable.
 """
 
 from __future__ import annotations
+
+import os
+
+# Override LLM_MODE for the entire test session. Tests are deterministic and
+# must never require a live API key. This is set unconditionally (not setdefault)
+# so that a developer's .env with a real key does not accidentally run live LLM
+# calls during tests.
+os.environ["LLM_MODE"] = "mock"
 
 import shutil
 from typing import Dict, List
 
 import pytest
+
+
+def pytest_configure(config):
+    """Reset the shared LLM adapter singleton so it picks up LLM_MODE=mock."""
+    try:
+        from phase3.adapters.llm_adapter import reset_llm_adapter
+        reset_llm_adapter()
+    except Exception:
+        pass
 
 CALCULUS_TEXT = (
     "Limits\n"

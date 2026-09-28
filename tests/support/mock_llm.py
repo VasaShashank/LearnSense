@@ -116,6 +116,8 @@ class MockLLMAdapter:
             return "mcq"
         if field_low in ("correct_answer", "answer", "solution"):
             return self._correct_answer(prompt, self._last_key_name(prompt))
+        if field_low in ("evidence_refs", "evidence_ref", "citations", "citation_refs", "refs") or "evidence" in combined or "citation" in combined or "ref" in combined:
+            return f"E{(salt % 2) + 1}"
 
         # Numeric-looking placeholders in the schema must yield real numbers.
         if not field_low and ("float" in hint.lower() or "number" in hint.lower() or hint.strip().lstrip("-.").replace(".", "", 1).isdigit()):
@@ -133,8 +135,10 @@ class MockLLMAdapter:
                 f"defining behaviours that determine how it responds to the stated conditions."
             )
         if "question" in combined or "prompt" in combined or "ask" in combined:
+            p_words = self._extract_passage_words(prompt)
+            pw_str = " ".join(p_words[:8]) if p_words else key
             return (
-                f"According to the source material, which statement about {key} is correct "
+                f"According to the source material regarding {pw_str}, which statement is correct "
                 f"for condition set {salt + 1}?"
             )
         if "title" in combined or "name" in combined or "heading" in combined:
@@ -146,6 +150,24 @@ class MockLLMAdapter:
         return f"{key} derived from the source material."
 
     # -- helpers ------------------------------------------------------------
+
+    @staticmethod
+    def _extract_passage_words(prompt: str) -> List[str]:
+        ignore = {
+            "below", "passages", "taken", "learner", "material", "write", "questions",
+            "concept", "answerable", "using", "only", "above", "rules", "every", "must",
+            "outside", "knowledge", "invent", "facts", "examples", "formulas", "absent",
+            "give", "exactly", "options", "correct", "explanation", "difficulty", "string",
+            "statement", "which", "about", "condition", "derived", "source", "supplied",
+            "characterised", "defining", "behaviours", "determine", "responds", "stated",
+            "conditions", "page", "section", "cite", "labels", "relies", "quote", "paraphrase",
+            "cited", "passage", "add", "claims", "typical", "match", "mcq", "true", "false"
+        }
+        words: List[str] = []
+        for w in re.findall(r"[a-zA-Z]{4,}", prompt):
+            if w.lower() not in ignore:
+                words.append(w)
+        return list(dict.fromkeys(words))
 
     @staticmethod
     def _requested_count(prompt: str, config: Optional[Dict[str, Any]]) -> int:
@@ -196,12 +218,16 @@ class MockLLMAdapter:
 
     def _distractor(self, prompt: str, key: str, salt: int) -> str:
         """Deterministic, distinct option text. The first option is always correct."""
+        p_words = self._extract_passage_words(prompt)
+        pw_str = " ".join(p_words[:6]) if p_words else key
         if salt == 0:
-            return f"{key} increases monotonically with the measured quantity"
-        return f"{key} {self._DISTRACTORS[salt % len(self._DISTRACTORS)]}"
+            return f"{pw_str} increases monotonically with the measured quantity"
+        return f"{pw_str} {self._DISTRACTORS[salt % len(self._DISTRACTORS)]}"
 
     def _correct_answer(self, prompt: str, key: str) -> str:
-        return f"{key} increases monotonically with the measured quantity"
+        p_words = self._extract_passage_words(prompt)
+        pw_str = " ".join(p_words[:6]) if p_words else key
+        return f"{pw_str} increases monotonically with the measured quantity"
 
 
 class ScriptedLLM:

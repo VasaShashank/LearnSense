@@ -6,6 +6,8 @@ __pycache__/
 .cache/
 storage/documents/
 storage/sessions/
+storage/learner_states/
+storage/question_banks/
 storage/*.db
 storage/*.db-wal
 storage/*.db-shm

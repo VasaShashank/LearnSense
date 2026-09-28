@@ -132,6 +132,7 @@ class LearningService:
         dumped_questions = []
         for q in questions:
             q_dict = q.model_dump(mode="json")
+            q_dict.pop("correct_answer", None)
             q_dict["item_id"] = q_dict.get("question_id", "")
             q_dict["prompt"] = q_dict.get("question_text", "")
             dumped_questions.append(q_dict)
