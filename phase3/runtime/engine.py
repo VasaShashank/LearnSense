@@ -20,6 +20,7 @@ from phase3.question_bank.models import QuestionBank, QuestionBankItem
 from phase3.question_bank.repository import QuestionBankRepository
 from phase3.quiz.mini_quiz_generator import DynamicMiniQuizGenerator
 from phase3.quiz.models import DynamicMiniQuiz, QuizQuestion
+from phase3.retrieval.evidence_retriever import EvidenceRetriever
 from phase3.session.manager import LearningSession, SessionManager, SessionType
 from phase3.storage.learner_repository import LearnerStateRepository
 
@@ -34,6 +35,7 @@ class AdaptiveLearningEngine:
         qb_repository: Optional[QuestionBankRepository] = None,
         learner_repository: Optional[LearnerStateRepository] = None,
         assessment_constraints: Optional[AssessmentConstraints] = None,
+        qb_builder: Optional[QuestionBankBuilder] = None,
     ):
         self.tracer = knowledge_tracer or KnowledgeTracer()
         self.evaluator = evaluator or AnswerEvaluator()
@@ -41,7 +43,7 @@ class AdaptiveLearningEngine:
         self.learner_repo = learner_repository or LearnerStateRepository()
         self.session_manager = SessionManager()
         self.interaction_logger = InteractionLogger()
-        self.qb_builder = QuestionBankBuilder()
+        self.qb_builder = qb_builder or QuestionBankBuilder()
         self.quiz_generator = DynamicMiniQuizGenerator()
         self.assessment_engine = ChapterAssessmentEngine(constraints=assessment_constraints)
 
@@ -60,12 +62,27 @@ class AdaptiveLearningEngine:
         return state
 
     def ensure_question_bank(
-        self, context: LearningContext, chapter_id: str = "ch_1"
+        self,
+        context: LearningContext,
+        chapter_id: str = "ch_1",
+        retriever: Optional[EvidenceRetriever] = None,
+        target_count: int = 25,
     ) -> QuestionBank:
-        bank = self.qb_repo.load_bank(context.document_id, chapter_id)
-        if not bank or not bank.questions:
-            bank = self.qb_builder.build_bank_for_chapter(context, chapter_id)
-            self.qb_repo.save_bank(bank)
+        """
+        Return a persisted, grounded question bank, generating only the gaps.
+
+        An existing bank is reused as-is; the LLM is called only for concepts that do
+        not yet have enough grounded questions.
+        """
+        existing = self.qb_repo.load_grounded_bank(context.document_id, chapter_id)
+        bank = self.qb_builder.build_bank_for_chapter(
+            context,
+            chapter_id,
+            target_count=target_count,
+            retriever=retriever,
+            existing=existing,
+        )
+        self.qb_repo.save_bank(bank)
         return bank
 
     # --- MINI QUIZ WORKFLOW ---
@@ -176,8 +193,9 @@ class AdaptiveLearningEngine:
         learner_id: str,
         context: LearningContext,
         chapter_id: str = "ch_1",
+        retriever: Optional[EvidenceRetriever] = None,
     ) -> tuple[LearningSession, QuestionBank]:
-        bank = self.ensure_question_bank(context, chapter_id)
+        bank = self.ensure_question_bank(context, chapter_id, retriever=retriever)
         sess = self.session_manager.create_session(
             learner_id=learner_id,
             document_id=context.document_id,

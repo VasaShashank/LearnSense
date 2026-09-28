@@ -1,0 +1,38 @@
+{
+  "learner_id": "test_ml_learner",
+  "concept_states": {
+    "linear_regression": {
+      "concept_id": "linear_regression",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    },
+    "loss_functions": {
+      "concept_id": "loss_functions",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    },
+    "neural_networks": {
+      "concept_id": "neural_networks",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    }
+  },
+  "topic_scores": {},
+  "created_at": "2026-09-28T09:02:38.050811Z",
+  "updated_at": "2026-09-28T09:02:38.050811Z"
+}

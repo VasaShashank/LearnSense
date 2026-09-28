@@ -15,50 +15,91 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from storage.repositories import SessionRepository, LearningContextRepository
 from phase3.storage.learner_repository import LearnerStateRepository
-from phase3.knowledge.phase2_adapter import LearningContext, ConceptView, PrerequisiteLink
+from phase3.knowledge.phase2_adapter import LearningContext, PrerequisiteLink
+from tests.conftest import CALCULUS_TEXT, _pdf_bytes
 
 client = TestClient(app)
 
+# Maps the concepts the real pipeline extracts to the stable IDs these journeys assert on.
+# Only the *identifiers* are rewritten; names, evidence, page numbers and quotes all stay
+# as the pipeline produced them, so questions are still grounded in real text.
+_ID_BY_NAME = {
+    "Limits": "c_limits",
+    "Derivatives": "c_derivatives",
+    "Chain Rule": "c_chain_rule",
+    "Definite Integrals": "c_integrals",
+}
+
 
 def create_sample_learning_context(subject_id: str) -> LearningContext:
-    """Helper to populate a multi-concept calculus subject context into repository."""
-    ctx = LearningContext(
-        document_id=subject_id,
-        knowledge_document_id=f"kdoc_{subject_id}",
-        concepts={
-            "c_limits": ConceptView(
-                concept_id="c_limits",
-                canonical_name="Limits & Continuity",
-                type="CORE",
-                aliases=[],
-            ),
-            "c_derivatives": ConceptView(
-                concept_id="c_derivatives",
-                canonical_name="Derivatives",
-                type="CORE",
-                aliases=[],
-            ),
-            "c_chain_rule": ConceptView(
-                concept_id="c_chain_rule",
-                canonical_name="Chain Rule",
-                type="CORE",
-                aliases=[],
-            ),
-            "c_integrals": ConceptView(
-                concept_id="c_integrals",
-                canonical_name="Definite Integrals",
-                type="CORE",
-                aliases=[],
-            ),
-        },
-        prerequisites=[
-            PrerequisiteLink(source_concept_id="c_limits", target_concept_id="c_derivatives", confidence=1.0),
-            PrerequisiteLink(source_concept_id="c_derivatives", target_concept_id="c_chain_rule", confidence=1.0),
-            PrerequisiteLink(source_concept_id="c_derivatives", target_concept_id="c_integrals", confidence=1.0),
-        ],
+    """
+    Ingest a real calculus PDF and persist its context under ``subject_id``.
+
+    The concepts, their evidence and their page/block provenance are produced by the real
+    Phase 1 -> Phase 2 pipeline. Only the concept IDs are remapped to the stable
+    ``c_limits``/``c_derivatives``/... names the journeys below assert on.
+    """
+    from backend.services.knowledge_build_service import KnowledgeBuildService
+
+    # reuse_existing=False: a leftover context on disk from an earlier run would be
+    # returned as-is, and the journeys below need freshly extracted evidence.
+    KnowledgeBuildService().build(
+        subject_id, _pdf_bytes(CALCULUS_TEXT), "e2e_calculus.pdf", reuse_existing=False
     )
-    LearningContextRepository().save_context(ctx)
-    return ctx
+
+    ctx = LearningContextRepository().load_context(subject_id)
+    assert ctx is not None, "real ingestion produced no context"
+    assert ctx.evidence, "real ingestion produced no evidence to ground questions in"
+
+    remapped = LearningContext(
+        document_id=ctx.document_id,
+        knowledge_document_id=ctx.knowledge_document_id,
+        document_title=ctx.document_title,
+        source_filename=ctx.source_filename,
+        chapters=ctx.chapters,
+        sections=ctx.sections,
+        topics=ctx.topics,
+        concepts={},
+        skills=ctx.skills,
+        formulas=ctx.formulas,
+        educational_units=ctx.educational_units,
+        assessable_items=ctx.assessable_items,
+        concept_definitions=ctx.concept_definitions,
+        evidence=ctx.evidence,
+        prerequisites=[],
+        trusted_relationships=ctx.trusted_relationships,
+    )
+
+    old_to_new = {}
+    for concept in ctx.concepts.values():
+        new_id = _ID_BY_NAME.get(concept.canonical_name)
+        if not new_id:
+            continue
+        old_to_new[concept.concept_id] = new_id
+        remapped.concepts[new_id] = concept.model_copy(update={"concept_id": new_id})
+
+    # The pipeline does not assert an ordering, so the fixture states the intended
+    # prerequisite chain explicitly for the path/targeting assertions.
+    for source_name, target_name in (
+        ("Limits", "Derivatives"),
+        ("Derivatives", "Chain Rule"),
+        ("Derivatives", "Definite Integrals"),
+    ):
+        remapped.prerequisites.append(
+            PrerequisiteLink(
+                source_concept_id=_ID_BY_NAME[source_name],
+                target_concept_id=_ID_BY_NAME[target_name],
+                confidence=1.0,
+            )
+        )
+
+    assert len(remapped.concepts) == len(_ID_BY_NAME), (
+        f"expected {sorted(_ID_BY_NAME.values())}, got {sorted(remapped.concepts)}"
+    )
+
+    # Point the persisted document's question bank/caching at the new IDs.
+    LearningContextRepository().save_context(remapped)
+    return remapped
 
 
 def test_e2e_new_learner_complete_journey():

@@ -69,7 +69,7 @@ class TableExtractor:
 
                     if is_valid:
                         doc_block = DocumentBlock(
-                            block_id=f"blk_tbl_{idx:04d}",
+                            block_id=f"blk_p{page_index:04d}_tbl_{idx:04d}",
                             type=BlockTypeEnum.TABLE,
                             role="table",
                             bbox=canonical_bbox,
@@ -162,7 +162,7 @@ class TableExtractor:
         )
 
         block = DocumentBlock(
-            block_id=f"blk_tbl_{tbl_idx:04d}",
+            block_id=f"blk_p{page_index:04d}_tbl_{tbl_idx:04d}",
             type=BlockTypeEnum.TABLE,
             role="table",
             bbox=canonical_bbox,

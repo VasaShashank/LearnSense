@@ -1,41 +1,78 @@
 """
 Integration End-to-End Test for Phase 1 + Phase 2 + Phase 3 Adaptive Learning Engine Pipeline.
+
+These tests build a *real* one-page ``StructuredDocument`` and a matching EKR, so the
+question bank is grounded in retrievable passages rather than synthesised.
 """
 
 import pytest
 from phase2.models import (
-    EducationalKnowledgeRepresentation,
-    Concept,
-    EducationalUnit,
     AssessableItem,
+    Concept,
     ConfidenceBreakdown,
+    EducationalUnit,
+    SourceSpanReference,
+    TextSpan,
 )
 from phase3.assessment.models import AssessmentConstraints
+from phase3.question_bank.builder import QuestionBankBuilder
 from phase3.runtime.engine import AdaptiveLearningEngine
+from schemas.document import BlockTypeEnum
+from tests.support.mini_document import (
+    build_ekr,
+    build_mini_document,
+    build_retriever,
+    grounded_payload,
+)
+from tests.support.mock_llm import ScriptedLLM
+
+_FTC_TEXT = (
+    "The Fundamental Theorem of Calculus states that the definite integral of a "
+    "continuous function over an interval equals the evaluation of its antiderivative "
+    "at the endpoints of that interval."
+)
+_INTEGRAL_TEXT = (
+    "A definite integral accumulates the signed area between the curve and the axis "
+    "over a closed interval, and it is defined as the limit of a Riemann sum."
+)
+
+
+def _integration_document(document_id: str):
+    document = build_mini_document(
+        document_id,
+        [
+            ("blk_p1_0", "Integration", BlockTypeEnum.HEADING),
+            ("blk_p1_1", _FTC_TEXT, BlockTypeEnum.PARAGRAPH),
+            ("blk_p1_2", _INTEGRAL_TEXT, BlockTypeEnum.PARAGRAPH),
+        ],
+    )
+    concepts = [
+        ("c_integrals_1", "Definite Integral", "blk_p1_2"),
+        ("c_ftc_1", "Fundamental Theorem of Calculus", "blk_p1_1"),
+    ]
+    evidence = [
+        ("ev_ftc_1", "blk_p1_1", _FTC_TEXT),
+        ("ev_int_1", "blk_p1_2", _INTEGRAL_TEXT),
+    ]
+    return document, concepts, evidence
 
 
 def test_full_phase3_adaptive_learning_pipeline():
-    # 1. Simulate EKR produced from Phase 1 + Phase 2
-    ekr = EducationalKnowledgeRepresentation(
-        knowledge_document_id="k_e2e_001",
-        source_document_id="doc_e2e_001",
-        concepts=[
-            Concept(
-                concept_id="c_integrals_1",
-                canonical_name="Definite Integral",
-                confidence=ConfidenceBreakdown(value=0.98),
-            ),
-            Concept(
-                concept_id="c_ftc_1",
-                canonical_name="Fundamental Theorem of Calculus",
-                confidence=ConfidenceBreakdown(value=0.95),
-            ),
-        ],
-        educational_units=[
+    document_id = "doc_e2e_001"
+    document, concepts, evidence = _integration_document(document_id)
+
+    # 1. EKR produced by Phase 2 from that document
+    ekr = build_ekr(
+        document_id,
+        document,
+        concepts,
+        evidence,
+        units=[
             EducationalUnit(
                 unit_id="u_ftc_def",
                 unit_type="definition",
                 section_id="sec_integration",
+                source=[SourceSpanReference(block_id="blk_p1_1", span=TextSpan(start=0, end=60))],
             )
         ],
         assessable_items=[
@@ -43,6 +80,7 @@ def test_full_phase3_adaptive_learning_pipeline():
                 item_id="ex_ftc_1",
                 unit_id="u_ftc_def",
                 concept_ids=["c_ftc_1"],
+                evidence_ids=["ev_ftc_1"],
             )
         ],
     )
@@ -52,12 +90,26 @@ def test_full_phase3_adaptive_learning_pipeline():
 
     # 3. Load Phase 2 EKR into LearningContext
     ctx = engine.load_context(ekr)
-    assert ctx.document_id == "doc_e2e_001"
+    assert ctx.document_id == document_id
     assert "c_integrals_1" in ctx.concepts
 
-    # 4. Generate & Persist Question Bank
-    bank = engine.ensure_question_bank(ctx, chapter_id="ch_integration")
-    assert len(bank.questions) >= 1
+    # 4. Generate & Persist Question Bank, grounded in the real document.
+    #    The LLM double is scripted from the real passage, so this exercises the
+    #    grounding path rather than a fabricated placeholder.
+    retriever = build_retriever(document_id, document, concepts, evidence)
+    chunks = retriever.retrieve_for_concept("c_ftc_1", "Fundamental Theorem of Calculus")
+    builder = QuestionBankBuilder(
+        llm_adapter=ScriptedLLM(grounded_payload(chunks, "c_ftc_1", count=4))
+    )
+    engine.qb_builder = builder
+
+    bank = engine.ensure_question_bank(ctx, chapter_id="ch_integration", retriever=retriever)
+    assert len(bank.get_grounded_questions()) >= 1
+    # Every stored question points at a real page/block of the upload.
+    for item in bank.get_grounded_questions():
+        assert item.source_citations
+        assert item.source_citations[0].block_id.startswith("blk_")
+        assert item.source_citations[0].page >= 1
 
     # 5. Start Mini Quiz
     learner_id = "learner_e2e_user"
@@ -94,17 +146,25 @@ def test_full_phase3_adaptive_learning_pipeline():
 
 
 def test_adaptive_chapter_assessment_loop():
-    ekr = EducationalKnowledgeRepresentation(
-        knowledge_document_id="k_ass_001",
-        source_document_id="doc_ass_001",
-        concepts=[
-            Concept(
-                concept_id="c_diff_1",
-                canonical_name="Derivatives",
-                confidence=ConfidenceBreakdown(value=0.9),
-            )
-        ],
-        educational_units=[
+    document_id = "doc_ass_001"
+    _diff_text = (
+        "Derivatives measure instantaneous change. The derivative of a function at a "
+        "point is the limit of the difference quotient as the increment approaches zero."
+    )
+    document = build_mini_document(
+        document_id,
+        [("blk_p1_0", "Derivatives", BlockTypeEnum.HEADING), ("blk_p1_1", _diff_text, BlockTypeEnum.PARAGRAPH)],
+        section_title="Derivatives",
+        section_id="sec_diff",
+    )
+    concepts = [("c_diff_1", "Derivatives", "blk_p1_1")]
+    evidence = [("ev_diff_1", "blk_p1_1", _diff_text)]
+    ekr = build_ekr(
+        document_id,
+        document,
+        concepts,
+        evidence,
+        units=[
             EducationalUnit(
                 unit_id="u_diff_1",
                 unit_type="explanation",
@@ -114,13 +174,21 @@ def test_adaptive_chapter_assessment_loop():
     )
 
     # Configure small target (3 questions) for fast loop testing
+    retriever = build_retriever(document_id, document, concepts, evidence)
+    chunks = retriever.retrieve_for_concept("c_diff_1", "Derivatives")
+    builder = QuestionBankBuilder(
+        llm_adapter=ScriptedLLM(grounded_payload(chunks, "c_diff_1", count=4))
+    )
     engine = AdaptiveLearningEngine(
-        assessment_constraints=AssessmentConstraints(min_questions=2, max_questions=3)
+        assessment_constraints=AssessmentConstraints(min_questions=2, max_questions=3),
+        qb_builder=builder,
     )
     ctx = engine.load_context(ekr)
     learner_id = "learner_ass_user"
 
-    sess, bank = engine.start_chapter_assessment(learner_id, ctx, chapter_id="ch_1")
+    sess, bank = engine.start_chapter_assessment(
+        learner_id, ctx, chapter_id="ch_1", retriever=retriever
+    )
     assert sess.session_type.value == "chapter_assessment"
 
     answered = 0

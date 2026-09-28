@@ -15,11 +15,22 @@ from phase5.models.validation_result import RecoveryClassification, ValidationSt
 
 
 def test_input_validator_unsupported_file_type():
+    # ".docx" is a supported format, so it exercises the DOCX parsing path rather than
+    # the unsupported-extension path. Use a genuinely unsupported extension here.
+    validator = InputValidator()
+    res = validator.validate_file(b"some content text", "document.xyz")
+    assert res.is_valid is False
+    assert res.recovery_classification == RecoveryClassification.NON_RECOVERABLE
+    assert "Unsupported file type" in res.errors[0]
+
+
+def test_input_validator_malformed_docx_is_non_recoverable():
+    """A supported extension carrying garbage must fail explicitly, not be accepted."""
     validator = InputValidator()
     res = validator.validate_file(b"some content text", "document.docx")
     assert res.is_valid is False
     assert res.recovery_classification == RecoveryClassification.NON_RECOVERABLE
-    assert "Unsupported file type" in res.errors[0]
+    assert "DOCX" in res.errors[0]
 
 
 def test_input_validator_empty_file():

@@ -4,6 +4,8 @@ Exposes clean facade endpoints for Subjects, Knowledge Graph, Learner Progress, 
 """
 
 from typing import Dict, List, Optional, Any
+from pathlib import Path
+import re
 from fastapi import APIRouter, HTTPException, status, Query, UploadFile, File
 from pydantic import BaseModel, Field
 
@@ -12,6 +14,7 @@ from backend.services.learner_service import LearnerService
 from backend.services.learning_service import LearningService
 from backend.services.tutor_service import TutorService
 from backend.services.source_service import SourceService
+from phase3.errors import LearnSenseError
 from phase4.models import SelfAssessmentStatus
 
 router = APIRouter()
@@ -89,6 +92,9 @@ async def get_concept_question(subject_id: str, concept_id: str):
     """
     try:
         return learning_service.get_concept_question(subject_id, concept_id)
+    except LearnSenseError:
+        # Typed runtime errors are rendered by the global handler in app.py.
+        raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -100,6 +106,9 @@ async def get_concept_learning_content(subject_id: str, concept_id: str):
     """
     try:
         return learning_service.get_concept_learning_content(subject_id, concept_id)
+    except LearnSenseError:
+        # Typed runtime errors are rendered by the global handler in app.py.
+        raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -207,14 +216,41 @@ async def list_sources():
     return source_service.list_sources()
 
 
+@router.get("/health")
+async def api_health():
+    """
+    Backend + LLM provider health for the frontend connection banner.
+
+    Reports whether a real model is reachable, so the UI can warn *before* a learner
+    uploads a document that generation will then fail to process.
+    """
+    from phase3.adapters.llm_adapter import get_llm_adapter
+
+    adapter = get_llm_adapter()
+    health = adapter.health()
+    return {
+        "status": "healthy",
+        "llm": health,
+        "llm_ready": bool(adapter.is_mock or (health["has_credentials"] and health["provider"])),
+    }
+
+
 @router.post("/sources/upload")
 async def upload_source(file: UploadFile = File(...), document_id: Optional[str] = None):
     """
-    Uploads a source PDF document.
+    Uploads a source document and builds its grounded knowledge context.
+
+    Runs the full Phase 1 → Phase 2 → Phase 3 chain. Failures propagate as typed
+    :mod:`phase3.errors` exceptions and are rendered by the global handler in ``app.py``,
+    so the endpoint never substitutes placeholder concepts or a generic lesson.
     """
-    doc_id = document_id or file.filename.replace(" ", "_").lower().replace(".pdf", "")
+    doc_id = document_id or _derive_document_id(file.filename)
     content = await file.read()
-    try:
-        return source_service.save_uploaded_source(doc_id, content, file.filename)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+    return source_service.save_uploaded_source(doc_id, content, file.filename)
+
+
+def _derive_document_id(filename: Optional[str]) -> str:
+    """Stable, filesystem-safe id derived from the upload's name."""
+    stem = Path(filename or "document").stem
+    slug = re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_").lower()
+    return f"doc_{slug or 'document'}"

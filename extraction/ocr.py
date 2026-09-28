@@ -35,6 +35,7 @@ class OCREngine:
         page_height: float,
         target_dpi: int = 300,
         languages: Optional[List[str]] = None,
+        page_index: int = 0,
     ) -> List[DocumentBlock]:
         """
         Renders target scanned page at 300 DPI, runs Tesseract OCR, applies language detection,
@@ -52,7 +53,7 @@ class OCREngine:
             # Fallback block if OCR returns empty or fails
             return [
                 DocumentBlock(
-                    block_id="blk_ocr_0001",
+                    block_id=f"blk_p{page_index:04d}_ocr_0001",
                     type=BlockTypeEnum.PARAGRAPH,
                     role="body",
                     bbox=[0.0, 0.0, page_width, page_height],
@@ -66,7 +67,9 @@ class OCREngine:
             ]
 
         # Group OCR word bounding boxes into block paragraphs
-        blocks = self._group_ocr_results_into_blocks(ocr_results, dpi_scale, page_width, page_height)
+        blocks = self._group_ocr_results_into_blocks(
+            ocr_results, dpi_scale, page_width, page_height, page_index
+        )
         return blocks
 
     def detect_block_language(self, text: str) -> str:
@@ -92,6 +95,7 @@ class OCREngine:
         dpi_scale: float,
         page_width: float,
         page_height: float,
+        page_index: int = 0,
     ) -> List[DocumentBlock]:
         blocks: List[DocumentBlock] = []
         block_counter = 1
@@ -127,13 +131,17 @@ class OCREngine:
                 if line_y1 - last_y2 < (25 * dpi_scale):
                     current_block_words.extend(line)
                 else:
-                    block = self._create_block_from_words(current_block_words, block_counter, dpi_scale, page_width, page_height)
+                    block = self._create_block_from_words(
+                        current_block_words, block_counter, dpi_scale, page_width, page_height, page_index
+                    )
                     blocks.append(block)
                     block_counter += 1
                     current_block_words = list(line)
 
         if current_block_words:
-            block = self._create_block_from_words(current_block_words, block_counter, dpi_scale, page_width, page_height)
+            block = self._create_block_from_words(
+                current_block_words, block_counter, dpi_scale, page_width, page_height, page_index
+            )
             blocks.append(block)
 
         return blocks
@@ -145,6 +153,7 @@ class OCREngine:
         dpi_scale: float,
         page_width: float,
         page_height: float,
+        page_index: int = 0,
     ) -> DocumentBlock:
         full_text = " ".join([w["text"] for w in words])
         avg_conf = sum(w["confidence"] for w in words) / len(words) if words else 0.0
@@ -162,7 +171,7 @@ class OCREngine:
         warnings = [] if avg_conf >= self.confidence_threshold else ["LOW_OCR_CONFIDENCE"]
 
         return DocumentBlock(
-            block_id=f"blk_ocr_{block_idx:04d}",
+            block_id=f"blk_p{page_index:04d}_ocr_{block_idx:04d}",
             type=BlockTypeEnum.PARAGRAPH,
             role="body",
             bbox=canonical_bbox,

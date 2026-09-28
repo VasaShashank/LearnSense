@@ -139,26 +139,142 @@ export interface ConceptLearningContent {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+/** Default request timeout. A hung request used to leave the UI spinning forever. */
+const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 120000);
+
+export interface ApiErrorBody {
+  code?: string;
+  message?: string;
+  recoverable?: boolean;
+  details?: Record<string, unknown>;
+  detail?: string | ApiErrorBody | Array<{ msg?: string }>;
+}
+
+/**
+ * Error raised for any failed API call.
+ *
+ * Carries the backend's machine-readable `code` and `recoverable` flag so the UI can
+ * distinguish "your file is unsupported" (show a form error) from "the model provider is
+ * rate limited" (offer retry) from "the backend is not running" (offer reconnect).
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly recoverable: boolean;
+  readonly details: Record<string, unknown>;
+
+  constructor(
+    message: string,
+    opts: { status?: number; code?: string; recoverable?: boolean; details?: Record<string, unknown> } = {}
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = opts.status ?? 0;
+    this.code = opts.code ?? (this.status === 0 ? 'BACKEND_UNREACHABLE' : 'API_ERROR');
+    this.recoverable = opts.recoverable ?? this.status === 0 || this.status >= 500;
+    this.details = opts.details ?? {};
+  }
+}
+
+function describeNetworkFailure(endpoint: string, cause: unknown): ApiError {
+  const reason = cause instanceof Error ? cause.message : String(cause);
+  // A browser reports every transport failure as "Failed to fetch", which tells the
+  // user nothing. Distinguish abort/timeout from a dead or blocked backend.
+  if (reason === 'AbortError' || /abort/i.test(reason)) {
+    return new ApiError(
+      `The request to ${endpoint} timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s. The backend may be busy processing a large document.`,
+      { code: 'REQUEST_TIMEOUT', recoverable: true }
+    );
+  }
+  return new ApiError(
+    `Could not reach the LearnSense backend at ${API_BASE_URL}. Check that the API server is running and that CORS allows this origin. (${reason})`,
+    { code: 'BACKEND_UNREACHABLE', recoverable: true }
+  );
+}
+
+function messageFromBody(body: ApiErrorBody | undefined, status: number, statusText: string): ApiError {
+  if (!body) {
+    return new ApiError(`API request failed with HTTP ${status} ${statusText}.`, { status });
+  }
+
+  // FastAPI's typed handler returns { error, code, message, recoverable, details }.
+  if (body.code || body.error) {
+    const code = body.code || body.error || 'API_ERROR';
+    return new ApiError(body.message || `API request failed (${code}).`, {
+      status,
+      code,
+      recoverable: body.recoverable,
+      details: body.details,
+    });
+  }
+
+  // Legacy shape: detail is a string.
+  if (typeof body.detail === 'string') {
+    return new ApiError(body.detail, { status });
+  }
+
+  // FastAPI validation errors: detail is a list of {msg, loc}.
+  if (Array.isArray(body.detail) && body.detail.length > 0) {
+    const first = body.detail[0];
+    return new ApiError(
+      `The request was rejected: ${first?.msg || JSON.stringify(body.detail)}`,
+      { status, code: 'REQUEST_VALIDATION_FAILED' }
+    );
+  }
+
+  // detail as an object (e.g. wrapped HTTPException) - never stringify to "[object Object]".
+  if (body.detail && typeof body.detail === 'object') {
+    const inner = body.detail as ApiErrorBody;
+    return new ApiError(inner.message || 'API request failed.', {
+      status,
+      code: inner.code,
+      recoverable: inner.recoverable,
+      details: inner.details,
+    });
+  }
+
+  return new ApiError(body.message || `API request failed with HTTP ${status} ${statusText}.`, { status });
+}
+
+async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
     const res = await fetch(url, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
         ...(options?.headers || {}),
       },
-      ...options,
+      signal: controller.signal,
     });
+
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.detail || err.message || 'API Request failed');
+      const body = (await res.json().catch(() => undefined)) as ApiErrorBody | undefined;
+      throw messageFromBody(body, res.status, res.statusText);
     }
-    return await res.json();
+
+    if (res.status === 204) {
+      return undefined as T;
+    }
+    return (await res.json()) as T;
   } catch (error) {
-    console.warn(`API call failed for ${endpoint}:`, error);
-    throw error;
+    if (error instanceof ApiError) {
+      console.warn(`API call failed for ${endpoint} [${error.code}]:`, error.message);
+      throw error;
+    }
+    const apiError = describeNetworkFailure(endpoint, error);
+    console.warn(`API call failed for ${endpoint} [${apiError.code}]:`, apiError.message);
+    throw apiError;
+  } finally {
+    clearTimeout(timer);
   }
 }
+
+const fetchJson = <T,>(endpoint: string, options?: RequestInit): Promise<T> =>
+  request<T>(endpoint, options);
 
 export const ApiClient = {
   getSubjects: (): Promise<Subject[]> => fetchJson('/subjects'),
@@ -248,25 +364,62 @@ export const ApiClient = {
 
   getSources: (): Promise<SourceDocument[]> => fetchJson('/sources'),
 
-  uploadSource: async (file: File): Promise<{
+  /**
+   * Uploads a document. The backend runs the full Phase 1 -> Phase 2 -> Phase 3 chain,
+   * which can take a while for large files, so this uses a longer timeout than reads.
+   */
+  uploadSource: async (
+    file: File,
+    onProgress?: (stage: string) => void
+  ): Promise<{
     document_id: string;
     filename: string;
+    title: string;
     status: string;
     page_count: number;
+    block_count: number;
     concept_count: number;
+    grounded_concept_count: number;
+    topic_count: number;
+    reused: boolean;
   }> => {
     const formData = new FormData();
     formData.append('file', file);
-    const url = `${API_BASE_URL}/sources/upload`;
-    const res = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.detail || err.message || 'Upload failed');
+    onProgress?.('uploading');
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10 * 60 * 1000);
+    try {
+      const res = await fetch(`${API_BASE_URL}/sources/upload`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+      onProgress?.('processing');
+      if (!res.ok) {
+        const body = (await res.json().catch(() => undefined)) as ApiErrorBody | undefined;
+        throw messageFromBody(body, res.status, res.statusText);
+      }
+      return await res.json();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        console.warn(`Source upload failed [${error.code}]:`, error.message);
+        throw error;
+      }
+      throw describeNetworkFailure('/sources/upload', error);
+    } finally {
+      clearTimeout(timer);
     }
-    return await res.json();
+  },
+
+  /** Health probe used by the connection banner. */
+  checkBackend: async (): Promise<{ ok: boolean; error?: ApiError }> => {
+    try {
+      await fetchJson('/health');
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: error instanceof ApiError ? error : new ApiError(String(error)) };
+    }
   },
 };
 

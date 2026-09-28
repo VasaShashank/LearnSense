@@ -32,6 +32,47 @@ STOPWORDS = {
     "section", "figure", "table", "definition", "equation", "problem", "solution"
 }
 
+# Determiners / quantifiers / interrogatives that must never begin a concept name.
+# Without this, capitalised sentence openers ("The Zorblax Protocol", "What", "Every")
+# are promoted straight into the EKR concept graph and pollute the learner's atlas.
+LEADING_FUNCTION_WORDS = {
+    "the", "a", "an", "this", "that", "these", "those", "its", "their", "our",
+    "your", "his", "her", "each", "every", "all", "any", "some", "no", "one",
+    "two", "three", "what", "which", "who", "whom", "whose", "when", "where",
+    "why", "how", "if", "then", "than", "as", "at", "by", "for", "from", "in",
+    "into", "of", "on", "or", "so", "to", "we", "you", "they", "he", "she", "it",
+    "note", "see", "figure", "table", "exercise", "example", "summary", "overview",
+    "introduction", "conclusion", "definition", "theorem", "lemma", "proof",
+    "chapter", "section", "part", "unit", "lesson", "topic", "step", "rule",
+    "using", "given", "let", "suppose", "consider", "recall", "remember", "prove",
+}
+
+# Trailing tokens stripped from a multi-word candidate before it is treated as a concept.
+TRAILING_FUNCTION_WORDS = {"the", "a", "an", "of", "and", "or", "to", "in", "for", "is", "are"}
+
+
+def _trim_candidate(term: str) -> str:
+    """Strip leading determiners/interrogatives and dangling function words."""
+    words = term.split()
+    while words and words[0].lower() in LEADING_FUNCTION_WORDS:
+        words = words[1:]
+    while words and words[-1].lower() in TRAILING_FUNCTION_WORDS:
+        words = words[:-1]
+    if not words:
+        return ""
+    # Keep a single lower-cased preposition attached to a proper name (e.g. "Rules of Evidence")
+    # but drop a dangling one.
+    if len(words) > 1 and words[-1].lower() in {"of", "and", "or", "to", "in", "for"}:
+        words = words[:-1]
+    return " ".join(words)
+
+
+def _is_single_common_word(term: str) -> bool:
+    """Reject lone sentence-initial function words such as "What" or "The"."""
+    if " " in term:
+        return False
+    return term.lower() in LEADING_FUNCTION_WORDS
+
 
 class Stage4ExtractionResult:
     def __init__(self):
@@ -131,23 +172,29 @@ def extract_candidates(
         # 5. Extract Concept Mention Candidates
         words = re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text)
         for w in words:
-            term = w.strip()
+            term = _trim_candidate(w.strip())
+            if not term:
+                continue
             if term.lower() in STOPWORDS or len(term) < 3:
                 continue
-
+            if _is_single_common_word(term):
+                continue
+            # A trimmed candidate must still occur verbatim so the Evidence span
+            # remains a real substring of the block (Phase 2 QC enforces this).
             start = text.find(term)
-            if start != -1:
-                end = start + len(term)
-                m_id = generate_mention_id(norm_doc.doc_id, blk_id, start, end)
-                mention = ConceptMention(
-                    mention_id=m_id,
-                    concept_id="",  # Resolved in Stage 5
-                    block_id=blk_id,
-                    span=TextSpan(start=start, end=end),
-                    surface_form=term,
-                    unit_id=unit_id,
-                    confidence=block["confidence"]
-                )
-                res.mentions.append(mention)
+            if start == -1:
+                continue
+            end = start + len(term)
+            m_id = generate_mention_id(norm_doc.doc_id, blk_id, start, end)
+            mention = ConceptMention(
+                mention_id=m_id,
+                concept_id="",  # Resolved in Stage 5
+                block_id=blk_id,
+                span=TextSpan(start=start, end=end),
+                surface_form=term,
+                unit_id=unit_id,
+                confidence=block["confidence"]
+            )
+            res.mentions.append(mention)
 
     return res

@@ -72,12 +72,16 @@ class EscalationRouter:
         if metrics.page_type in ("native", "hybrid"):
             # Rung 1: Native Text Extraction
             extracted_blocks = self.text_extractor.extract_page_blocks(
-                page, page_width=page_width, page_height=page_height, rotation=metrics.rotation_applied
+                page,
+                page_width=page_width,
+                page_height=page_height,
+                rotation=metrics.rotation_applied,
+                page_index=page_idx,
             )
         else: # "scanned" or "garbled"
             # Rung 3: Tesseract OCR Engine Override
             extracted_blocks = self.ocr_engine.process_scanned_page(
-                page, page_width=page_width, page_height=page_height
+                page, page_width=page_width, page_height=page_height, page_index=page_idx
             )
 
         # Rung 2: Layout Analysis & Reading Order Sorting

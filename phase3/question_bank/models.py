@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 class QuestionSourceType(str, Enum):
     SOURCE = "SOURCE"        # Directly extracted from user material via Phase 2 AssessableItem
-    GENERATED = "GENERATED"  # LLM-generated based on Phase 2 EKR course knowledge
+    GENERATED = "GENERATED"  # LLM-generated, grounded in retrieved passages from the material
     VARIANT = "VARIANT"      # LLM-generated variant of another question
 
 
@@ -27,6 +27,22 @@ class QuestionValidationStatus(str, Enum):
     VALID = "valid"
     INVALID = "invalid"
     PENDING = "pending"
+
+
+class SourceCitation(BaseModel):
+    """
+    Where a question came from in the learner's own material.
+
+    Every field is derived from the real Phase 1 document structure via a
+    ``SourceChunk``; nothing here is synthesised.
+    """
+
+    document_id: str
+    page: int
+    block_id: str
+    section: Optional[str] = None
+    evidence_ids: List[str] = Field(default_factory=list)
+    quote: str = ""
 
 
 class QuestionBankItem(BaseModel):
@@ -54,6 +70,22 @@ class QuestionBankItem(BaseModel):
     exposure_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    # -- grounding provenance -------------------------------------------------
+    # ``evidence_refs`` are the [E1]/[E2] labels handed to the LLM in the prompt.
+    # ``source_citations`` are the resolved, real locations those labels point at.
+    # A question may only be VALID when it carries at least one citation.
+    evidence_refs: List[str] = Field(default_factory=list)
+    source_citations: List[SourceCitation] = Field(default_factory=list)
+
+    @property
+    def is_grounded(self) -> bool:
+        """True when the question is traceable to a real passage in the material."""
+        return bool(self.source_citations)
+
+    @property
+    def pages(self) -> List[int]:
+        return sorted({c.page for c in self.source_citations})
+
 
 class QuestionBank(BaseModel):
     document_id: str
@@ -70,3 +102,11 @@ class QuestionBank(BaseModel):
 
     def get_by_concept(self, concept_id: str) -> List[QuestionBankItem]:
         return [q for q in self.questions.values() if concept_id in q.concept_ids and q.validation_status == QuestionValidationStatus.VALID]
+
+    def get_grounded_questions(self) -> List[QuestionBankItem]:
+        """Only questions traceable to a real passage of the learner's material."""
+        return [
+            q
+            for q in self.questions.values()
+            if q.validation_status == QuestionValidationStatus.VALID and q.is_grounded
+        ]

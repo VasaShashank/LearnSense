@@ -4,9 +4,10 @@ Matches Section 22 and Section 24 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.
 """
 
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 from schemas.document import ProcessingStatusEnum, WarningCodeEnum, WarningSeverityEnum
 
 
@@ -23,12 +24,33 @@ class DatabaseManager:
         conn.execute("PRAGMA foreign_keys=ON;")
         return conn
 
+    @contextmanager
+    def _connection(self) -> Iterator[sqlite3.Connection]:
+        """
+        Open a connection, commit on success, and **always close it**.
+
+        ``with sqlite3.connect(...) as conn`` only commits or rolls back the transaction -
+        it leaves the file handle open until the garbage collector happens to run. On
+        Windows that made ``shutil.rmtree`` of a test's temp directory fail with
+        ``PermissionError: [WinError 32]`` nondeterministically, and leaked handles in
+        the long-running API process.
+        """
+        conn = self._get_connection()
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
     @staticmethod
     def _now_iso() -> str:
         return datetime.now(timezone.utc).isoformat()
 
     def _init_db(self) -> None:
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             conn.executescript("""
             CREATE TABLE IF NOT EXISTS documents (
                 document_id TEXT PRIMARY KEY,
@@ -79,26 +101,59 @@ class DatabaseManager:
         cache_key: Optional[str] = None,
         status: str = "queued",
     ) -> Dict[str, Any]:
+        """
+        Register (or re-register) a document job.
+
+        Upsert rather than plain INSERT: re-processing a document is a normal operation -
+        the learner can upload a corrected file, or a test can rebuild a fixture - and a
+        bare INSERT failed with ``UNIQUE constraint failed: documents.document_id``.
+        Re-registering resets the progress columns, because the previous run's page
+        counts and warnings describe the *old* content.
+        """
         now = self._now_iso()
-        with self._get_connection() as conn:
+        with self._connection() as conn:
+            # A cache key may still be held by a different document_id from an earlier
+            # run. Release it first so the UNIQUE index does not reject this insert.
+            if cache_key:
+                conn.execute(
+                    "UPDATE documents SET cache_key = NULL WHERE cache_key = ? AND document_id != ?",
+                    (cache_key, document_id),
+                )
+
+            # Previous progress describes the old file, so drop it.
+            conn.execute("DELETE FROM page_states WHERE document_id = ?", (document_id,))
+            conn.execute("DELETE FROM warnings WHERE document_id = ?", (document_id,))
+
             conn.execute(
                 """
-                INSERT INTO documents (document_id, sha256, filename, size_bytes, cache_key, status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO documents (
+                    document_id, sha256, filename, size_bytes, cache_key, status,
+                    page_count, processed_pages, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
+                ON CONFLICT(document_id) DO UPDATE SET
+                    sha256 = excluded.sha256,
+                    filename = excluded.filename,
+                    size_bytes = excluded.size_bytes,
+                    cache_key = excluded.cache_key,
+                    status = excluded.status,
+                    page_count = 0,
+                    processed_pages = 0,
+                    updated_at = excluded.updated_at
                 """,
                 (document_id, sha256, filename, size_bytes, cache_key, status, now, now),
             )
         return self.get_document_job(document_id)
 
     def get_document_job(self, document_id: str) -> Optional[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             row = conn.execute("SELECT * FROM documents WHERE document_id = ?", (document_id,)).fetchone()
             if row:
                 return dict(row)
             return None
 
     def find_cached_document(self, cache_key: str) -> Optional[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             row = conn.execute(
                 "SELECT * FROM documents WHERE cache_key = ? AND status IN ('completed', 'completed_with_warnings')",
                 (cache_key,),
@@ -115,7 +170,7 @@ class DatabaseManager:
         processed_pages: Optional[int] = None,
     ) -> None:
         now = self._now_iso()
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             if page_count is not None and processed_pages is not None:
                 conn.execute(
                     "UPDATE documents SET status = ?, page_count = ?, processed_pages = ?, updated_at = ? WHERE document_id = ?",
@@ -146,7 +201,7 @@ class DatabaseManager:
         status: str,
     ) -> None:
         now = self._now_iso()
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             conn.execute(
                 """
                 INSERT INTO page_states (document_id, page_index, page_label, page_type, status, updated_at)
@@ -161,7 +216,7 @@ class DatabaseManager:
             )
 
     def get_page_states(self, document_id: str) -> List[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             rows = conn.execute(
                 "SELECT * FROM page_states WHERE document_id = ? ORDER BY page_index ASC", (document_id,)
             ).fetchall()
@@ -177,7 +232,7 @@ class DatabaseManager:
         block_id: Optional[str] = None,
     ) -> None:
         now = self._now_iso()
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             conn.execute(
                 """
                 INSERT INTO warnings (document_id, code, severity, page_index, block_id, message, created_at)
@@ -187,7 +242,7 @@ class DatabaseManager:
             )
 
     def get_warnings(self, document_id: str) -> List[Dict[str, Any]]:
-        with self._get_connection() as conn:
+        with self._connection() as conn:
             rows = conn.execute(
                 "SELECT * FROM warnings WHERE document_id = ? ORDER BY id ASC", (document_id,)
             ).fetchall()

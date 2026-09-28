@@ -26,7 +26,35 @@ class ConceptView(BaseModel):
     canonical_name: str
     aliases: List[str] = Field(default_factory=list)
     type: str
+    # Derived from the concept's real evidence excerpts in the uploaded document.
+    # Never invented: empty when the source did not define the concept.
+    description: str = ""
     skill_ids: List[str] = Field(default_factory=list)
+    evidence_ids: List[str] = Field(default_factory=list)
+    # Real document locations backing this concept, used for grounded citations.
+    page_indices: List[int] = Field(default_factory=list)
+    block_ids: List[str] = Field(default_factory=list)
+    section_titles: List[str] = Field(default_factory=list)
+
+    def citation(self) -> Dict[str, Any]:
+        """Provenance payload derived entirely from the ingested document."""
+        return {
+            "concept_id": self.concept_id,
+            "canonical_name": self.canonical_name,
+            "pages": [p + 1 for p in self.page_indices],
+            "block_ids": self.block_ids,
+            "sections": self.section_titles,
+            "evidence_ids": self.evidence_ids,
+        }
+
+
+class ConceptDefinitionView(BaseModel):
+    """An ``AssessableItem`` that states a concept in the learner's own material."""
+
+    item_id: str
+    item_type: str
+    concept_ids: List[str] = Field(default_factory=list)
+    text: str = ""
     evidence_ids: List[str] = Field(default_factory=list)
 
 
@@ -47,6 +75,8 @@ class PrerequisiteLink(BaseModel):
 class LearningContext(BaseModel):
     document_id: str
     knowledge_document_id: str
+    document_title: str = ""
+    source_filename: str = ""
     chapters: List[Dict[str, Any]] = Field(default_factory=list)
     sections: List[Dict[str, Any]] = Field(default_factory=list)
     topics: List[Dict[str, Any]] = Field(default_factory=list)
@@ -55,9 +85,17 @@ class LearningContext(BaseModel):
     formulas: Dict[str, Formula] = Field(default_factory=dict)
     educational_units: Dict[str, EducationalUnit] = Field(default_factory=dict)
     assessable_items: Dict[str, AssessableItem] = Field(default_factory=dict)
+    concept_definitions: List[ConceptDefinitionView] = Field(default_factory=list)
     evidence: Dict[str, Evidence] = Field(default_factory=dict)
     prerequisites: List[PrerequisiteLink] = Field(default_factory=list)
     trusted_relationships: List[Relationship] = Field(default_factory=list)
+
+    def concept(self, concept_id: str) -> Optional[ConceptView]:
+        return self.concepts.get(concept_id)
+
+    def concepts_with_evidence(self) -> List[ConceptView]:
+        """Only concepts that actually have source evidence behind them."""
+        return [c for c in self.concepts.values() if c.evidence_ids]
 
     def get_upstream_weak_prerequisites(
         self,
@@ -103,19 +141,115 @@ class LearningContext(BaseModel):
 
 
 class Phase2Adapter:
-    """Adapter converting Phase 2 EKR to Phase 3 LearningContext."""
+    """
+    Adapter converting Phase 2 EKR to a Phase 3 ``LearningContext``.
+
+    Pass the originating ``StructuredDocument`` as ``structured_document`` so concept
+    descriptions, page numbers and section titles can be resolved against the real
+    document. Without it the context still works but carries no page-level provenance
+    and no human-readable section titles.
+    """
 
     @staticmethod
-    def adapt(ekr: EducationalKnowledgeRepresentation) -> LearningContext:
+    def adapt(
+        ekr: EducationalKnowledgeRepresentation,
+        structured_document: Any = None,
+    ) -> LearningContext:
+        # block_id -> (page_index, section_title, block_text)
+        block_index: Dict[str, tuple] = {}
+        section_titles: Dict[str, str] = {}
+        document_title = ""
+        source_filename = ""
+        page_count = 0
+
+        if structured_document is not None:
+            md = getattr(structured_document, "metadata", None)
+            if md is not None and getattr(md, "title", None) is not None:
+                document_title = getattr(md.title, "value", "") or ""
+            source_filename = getattr(getattr(structured_document, "source", None), "filename", "") or ""
+            page_count = getattr(md, "page_count", 0) or 0
+
+            def _walk(nodes) -> None:
+                for node in nodes or []:
+                    section_titles[node.section_id] = node.title
+                    _walk(getattr(node, "children", []) or [])
+
+            _walk(getattr(structured_document, "outline", []) or [])
+
+            for page in getattr(structured_document, "pages", []) or []:
+                for block in getattr(page, "blocks", []) or []:
+                    block_index[block.block_id] = (
+                        page.page_index,
+                        section_titles.get(block.section_id or "", None),
+                        (block.content.text or "").strip(),
+                    )
+
+        ev_map: Dict[str, Evidence] = {e.evidence_id: e for e in ekr.evidence}
+
+        def _provenance(evidence_ids) -> tuple:
+            pages: List[int] = []
+            block_ids: List[str] = []
+            titles: List[str] = []
+            excerpts: List[str] = []
+            for ev_id in evidence_ids or []:
+                ev = ev_map.get(ev_id)
+                if ev is None:
+                    continue
+                block_ids.append(ev.block_id)
+                excerpt = (ev.excerpt or "").strip()
+                if excerpt:
+                    excerpts.append(excerpt)
+                located = block_index.get(ev.block_id)
+                if located is None:
+                    continue
+                page_index, sec_title, _ = located
+                if page_index not in pages:
+                    pages.append(page_index)
+                if sec_title and sec_title not in titles:
+                    titles.append(sec_title)
+            pages.sort()
+            return pages, block_ids, titles, excerpts
+
+        def _describe(excerpts: List[str], block_text: str) -> str:
+            """Prefer a definitional sentence from the source; never fabricate one."""
+            for excerpt in excerpts:
+                for sentence in excerpt.replace("\n", " ").split(". "):
+                    sentence = sentence.strip().rstrip(".")
+                    low = sentence.lower()
+                    if not sentence:
+                        continue
+                    if any(
+                        low.startswith(prefix)
+                        for prefix in (
+                            "a ", "an ", "the ", "is ", "are ", "refers to",
+                            "is defined", "is called", "means ", "consists of",
+                        )
+                    ) and len(sentence) > 25:
+                        return sentence if len(sentence) <= 300 else sentence[:299] + "…"
+            for text in (excerpts, [block_text]):
+                for candidate in text:
+                    candidate = (candidate or "").strip()
+                    if len(candidate) > 40:
+                        return candidate if len(candidate) <= 300 else candidate[:299] + "…"
+            return ""
+
         concepts_map: Dict[str, ConceptView] = {}
         for c in ekr.concepts:
+            pages, block_ids, titles, excerpts = _provenance(c.evidence_ids)
+            block_text = next(
+                (block_index[b][2] for b in block_ids if b in block_index), ""
+            )
             concepts_map[c.concept_id] = ConceptView(
                 concept_id=c.concept_id,
                 canonical_name=c.canonical_name,
                 aliases=[a.text for a in c.aliases],
                 type=c.type.value if hasattr(c.type, "value") else str(c.type),
+                description=_describe(excerpts, block_text),
                 skill_ids=c.skill_ids,
                 evidence_ids=c.evidence_ids,
+                page_indices=pages,
+                block_ids=block_ids,
+                section_titles=titles,
             )
 
         skills_map: Dict[str, SkillView] = {}
@@ -130,7 +264,6 @@ class Phase2Adapter:
         formulas_map = {f.formula_id: f for f in ekr.formulas}
         units_map = {u.unit_id: u for u in ekr.educational_units}
         items_map = {item.item_id: item for item in ekr.assessable_items}
-        ev_map = {e.evidence_id: e for e in ekr.evidence}
 
         prereqs: List[PrerequisiteLink] = []
         trusted_rels: List[Relationship] = []
@@ -154,33 +287,71 @@ class Phase2Adapter:
                 )
 
         sections: List[Dict[str, Any]] = []
-        topics: List[Dict[str, Any]] = []
         seen_sections = set()
         for sec in ekr.sections:
             seen_sections.add(sec.section_id)
-            sections.append({"section_id": sec.section_id, "status": sec.semantic_status})
+            sections.append({
+                "section_id": sec.section_id,
+                "status": sec.semantic_status.value if hasattr(sec.semantic_status, "value") else str(sec.semantic_status),
+                "title": section_titles.get(sec.section_id, ""),
+                "warnings": [w.model_dump() for w in (sec.warnings or [])],
+            })
 
         topic_concepts: Dict[str, List[str]] = {}
         for unit in ekr.educational_units:
-            sec_id = unit.section_id or "default_topic"
-            if sec_id not in topic_concepts:
-                topic_concepts[sec_id] = []
+            # A unit with no section is keyed by its own unit_id, not by a shared
+            # "default_topic" bucket: collapsing every section-less unit into one
+            # invented topic would show the learner a label that is in no document.
+            sec_id = unit.section_id or f"unit_{unit.unit_id}"
+            topic_concepts.setdefault(sec_id, [])
             for link in unit.concept_links:
                 if link.concept_id not in topic_concepts[sec_id]:
                     topic_concepts[sec_id].append(link.concept_id)
 
+        topics: List[Dict[str, Any]] = []
         for top_id, c_ids in topic_concepts.items():
-            topics.append({
-                "topic_id": top_id,
-                "title": top_id.replace("_", " ").title(),
-                "concept_ids": c_ids,
-            })
+            # Real section title when the document had one; otherwise derive a readable
+            # label from the concepts it actually contains (never a generic constant).
+            title = section_titles.get(top_id) or (
+                " & ".join(concepts_map[c].canonical_name for c in c_ids[:3] if c in concepts_map)
+                or top_id.replace("_", " ").title()
+            )
+            topics.append({"topic_id": top_id, "title": title, "concept_ids": c_ids})
 
-        chapters = [{"chapter_id": "ch_1", "title": "Main Chapter", "topic_ids": [t["topic_id"] for t in topics]}]
+        definitions: List[ConceptDefinitionView] = []
+        for item in ekr.assessable_items:
+            item_type = item.item_type.value if hasattr(item.item_type, "value") else str(item.item_type)
+            if "definition" not in item_type.lower():
+                continue
+            pages, block_ids, titles, excerpts = _provenance(item.evidence_ids)
+            text = excerpts[0] if excerpts else ""
+            if not text:
+                text = next((block_index[b][2] for b in block_ids if b in block_index), "")
+            definitions.append(
+                ConceptDefinitionView(
+                    item_id=item.item_id,
+                    item_type=item_type,
+                    concept_ids=item.concept_ids,
+                    text=text,
+                    evidence_ids=item.evidence_ids,
+                )
+            )
+
+        chapter_title = (
+            section_titles.get(next(iter(section_titles))) if len(section_titles) == 1 else None
+        ) or document_title or source_filename or "Document"
+
+        chapters = [{
+            "chapter_id": "ch_1",
+            "title": chapter_title,
+            "topic_ids": [t["topic_id"] for t in topics],
+        }]
 
         return LearningContext(
             document_id=ekr.source_document_id,
             knowledge_document_id=ekr.knowledge_document_id,
+            document_title=document_title,
+            source_filename=source_filename,
             chapters=chapters,
             sections=sections,
             topics=topics,
@@ -189,6 +360,7 @@ class Phase2Adapter:
             formulas=formulas_map,
             educational_units=units_map,
             assessable_items=items_map,
+            concept_definitions=definitions,
             evidence=ev_map,
             prerequisites=prereqs,
             trusted_relationships=trusted_rels,

@@ -37,10 +37,16 @@ class NativeTextExtractor:
         page_width: float,
         page_height: float,
         rotation: int = 0,
+        page_index: int = 0,
     ) -> List[DocumentBlock]:
         """
         Extracts native text blocks from a PyMuPDF page, performing span analysis,
         script detection, Unicode normalization, and coordinate standardization.
+
+        ``page_index`` is used to scope block identifiers to the document. Block ids must be
+        unique across the whole document: Phase 2 evidence grounding resolves every
+        Evidence record back to its block by id, so a page-local counter would silently
+        alias unrelated blocks on different pages.
         """
         text_page = page.get_text("dict", flags=fitz.TEXT_PRESERVE_LIGATURES | fitz.TEXT_PRESERVE_WHITESPACE)
         raw_blocks = text_page.get("blocks", [])
@@ -105,7 +111,7 @@ class NativeTextExtractor:
             )
 
             doc_block = DocumentBlock(
-                block_id=f"blk_nat_{block_counter:04d}",
+                block_id=f"blk_p{page_index:04d}_nat_{block_counter:04d}",
                 type=BlockTypeEnum.PARAGRAPH,  # Default to paragraph; layout builder refines to heading/list/etc.
                 role="body",
                 bbox=canonical_bbox,

@@ -1,0 +1,38 @@
+{
+  "document_id": "subj_algebra",
+  "chapter_id": "ch_all",
+  "questions": {
+    "q_c_var_1": {
+      "question_id": "q_c_var_1",
+      "chapter_id": "ch_1",
+      "topic_ids": [],
+      "concept_ids": [
+        "c_var"
+      ],
+      "skill_ids": [],
+      "question_type": "mcq",
+      "question_text": "According to the source material, which statement about C Var is correct for condition set 1?",
+      "options": [
+        "C Var increases monotonically with the measured quantity",
+        "C Var decreases monotonically with the measured quantity",
+        "C Var is independent of the measured quantity",
+        "C Var is undefined for the given conditions"
+      ],
+      "correct_answer": "C Var increases monotonically with the measured quantity",
+      "allow_dont_know_option": true,
+      "explanation": "C Var increases monotonically with the measured quantity",
+      "difficulty": 0.5,
+      "expected_time_seconds": 60.0,
+      "information_value": 1.0,
+      "quality_score": 1.0,
+      "source_type": "GENERATED",
+      "source_item_id": null,
+      "validation_status": "valid",
+      "exposure_count": 0,
+      "created_at": "2026-09-28T09:02:40.398208Z",
+      "evidence_refs": [],
+      "source_citations": []
+    }
+  },
+  "updated_at": "2026-09-28T09:02:40.395092Z"
+}

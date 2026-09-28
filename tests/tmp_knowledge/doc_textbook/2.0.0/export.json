@@ -13,7 +13,13 @@
       "en"
     ]
   },
-  "sections": [],
+  "sections": [
+    {
+      "section_id": "sec_01",
+      "semantic_status": "ok",
+      "warnings": []
+    }
+  ],
   "evidence": [
     {
       "evidence_id": "ev_8ba9438300d3",

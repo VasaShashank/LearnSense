@@ -1,0 +1,205 @@
+{
+  "document_id": "probe_calc",
+  "knowledge_document_id": "kr_probe_calc",
+  "document_title": "Calc",
+  "source_filename": "calc.pdf",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "Calc",
+      "topic_ids": [
+        "sec_page_1"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "section_id": "sec_page_1",
+      "status": "ok",
+      "title": "",
+      "warnings": []
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "sec_page_1",
+      "title": "Limits & Continuity & Derivatives",
+      "concept_ids": [
+        "c_32d11674fb08",
+        "c_cbe4460e287f",
+        "c_e1b197db6135",
+        "c_05fa7e9b7927"
+      ]
+    }
+  ],
+  "concepts": {
+    "c_32d11674fb08": {
+      "concept_id": "c_32d11674fb08",
+      "canonical_name": "Limits",
+      "aliases": [],
+      "type": "concept",
+      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_7f84cc3f466b"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    },
+    "c_cbe4460e287f": {
+      "concept_id": "c_cbe4460e287f",
+      "canonical_name": "Continuity",
+      "aliases": [],
+      "type": "concept",
+      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_82ae3bee4b1a"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    },
+    "c_e1b197db6135": {
+      "concept_id": "c_e1b197db6135",
+      "canonical_name": "Derivatives",
+      "aliases": [],
+      "type": "concept",
+      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_01a43f9a07c7"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    },
+    "c_05fa7e9b7927": {
+      "concept_id": "c_05fa7e9b7927",
+      "canonical_name": "Definite Integrals",
+      "aliases": [],
+      "type": "concept",
+      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_75d8399a207d"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {
+    "u_307dd4be80b4": {
+      "unit_id": "u_307dd4be80b4",
+      "unit_type": "explanation",
+      "section_id": "sec_page_1",
+      "source": [
+        {
+          "block_id": "blk_p0000_nat_0001",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 668
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_32d11674fb08",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_cbe4460e287f",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_e1b197db6135",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_05fa7e9b7927",
+          "link": "mentions"
+        }
+      ]
+    }
+  },
+  "assessable_items": {},
+  "concept_definitions": [],
+  "evidence": {
+    "ev_7f84cc3f466b": {
+      "evidence_id": "ev_7f84cc3f466b",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 6
+      },
+      "excerpt": "Limits",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    },
+    "ev_82ae3bee4b1a": {
+      "evidence_id": "ev_82ae3bee4b1a",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 11,
+        "end": 21
+      },
+      "excerpt": "Continuity",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    },
+    "ev_01a43f9a07c7": {
+      "evidence_id": "ev_01a43f9a07c7",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 207,
+        "end": 218
+      },
+      "excerpt": "Derivatives",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    },
+    "ev_75d8399a207d": {
+      "evidence_id": "ev_75d8399a207d",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 445,
+        "end": 463
+      },
+      "excerpt": "Definite Integrals",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    }
+  },
+  "prerequisites": [],
+  "trusted_relationships": []
+}

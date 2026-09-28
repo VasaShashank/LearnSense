@@ -55,6 +55,7 @@ class NormalizedDocumentContext:
 
                 self.semantic_blocks.append({
                     "block_id": block.block_id,
+                    "page_index": page.page_index,
                     "type": block.type.value if hasattr(block.type, "value") else str(block.type),
                     "role": block.role,
                     "section_id": block.section_id,

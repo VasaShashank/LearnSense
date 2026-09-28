@@ -78,7 +78,17 @@ class Tier01DeterministicAdapter:
 
 
 class MockLLMAdapter:
-    """Mock Tier 2 LLM Adapter with record/replay cache."""
+    """
+    DEPRECATED / TEST-ONLY LLM double.
+
+    This adapter is *not* part of the production generation path. It exists so that
+    historical Phase 2 contract tests keep exercising the adapter interface without a
+    network call, and so that ``LLM_MODE=mock`` runs have a fixture source.
+
+    Production generation goes through :class:`phase3.adapters.llm_adapter.Phase3LLMAdapter`,
+    which never falls back to this class. In particular this class must not be used to
+    satisfy an educational-content request in a live deployment.
+    """
 
     def __init__(self, model_name: str = "mock-gpt-4o", cache_dir: Optional[str] = None):
         self.model_name = model_name
@@ -91,8 +101,7 @@ class MockLLMAdapter:
         cached = self.cache.get(prompt, self.model_name, cfg)
         if cached:
             return cached
-
-        # Generate deterministic mock response from prompt hash if not cached
+        # Deterministic structural echo. This is a *test double*, not a content source.
         response = schema_template.copy()
         self.cache.set(prompt, self.model_name, cfg, response)
         return response

@@ -148,6 +148,7 @@ class IngestionPipeline:
 
         # 5. Pass B: Document Aggregation & Section Tree Building
         self.db.update_document_status(doc_id, "aggregating")
+        self._enforce_document_unique_block_ids(doc_id, extracted_pages)
         structured_doc = self.pass_b_aggregator.process_document(
             document_id=doc_id,
             source_meta=source_meta,
@@ -183,3 +184,44 @@ class IngestionPipeline:
 
         doc.close()
         return structured_doc
+
+    @staticmethod
+    def _enforce_document_unique_block_ids(document_id: str, pages: List[DocumentPage]) -> int:
+        """
+        Guarantee that every ``DocumentBlock.block_id`` is unique across the whole document.
+
+        Phase 2 resolves each ``Evidence`` record back to its source block by id and
+        verifies the excerpt actually occurs inside that block's text. A page-local id
+        counter therefore silently corrupts grounding (and QC) on any multi-page
+        document. Extractors already scope ids by page; this pass is the defensive
+        invariant that keeps a custom/third-party extractor from reintroducing the bug.
+
+        Returns the number of blocks whose id had to be rewritten.
+        """
+        seen: set = set()
+        remap: Dict[str, str] = {}
+        rewritten = 0
+
+        for page in pages:
+            for block in page.blocks:
+                if block.block_id not in seen:
+                    seen.add(block.block_id)
+                    continue
+                new_id = f"blk_{document_id}_{page.page_index:04d}_{len(remap):04d}"
+                suffix = 0
+                while new_id in seen:
+                    suffix += 1
+                    new_id = f"blk_{document_id}_{page.page_index:04d}_{len(remap):04d}_{suffix}"
+                remap[block.block_id] = new_id
+                seen.add(new_id)
+                block.block_id = new_id
+                rewritten += 1
+
+        if remap:
+            for page in pages:
+                for block in page.blocks:
+                    if block.continues_from in remap:
+                        block.continues_from = remap[block.continues_from]
+                    if block.continues_to in remap:
+                        block.continues_to = remap[block.continues_to]
+        return rewritten

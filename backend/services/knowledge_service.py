@@ -1,13 +1,20 @@
 """
 Knowledge Service Facade for Taproot Application Layer.
-Exposes authoritative subject information, EKR concepts, topics, skills, prerequisites, downstream dependents, and evidence graph views for frontend visual consumption.
+Exposes authoritative document information, EKR concepts, topics, skills,
+prerequisites and evidence views for frontend consumption.
+
+Every field returned here is read from persisted, document-derived state. The service
+deliberately refuses to invent content: if a document has not been ingested, or a
+concept carries no definition or provenance, the response says so instead of filling the
+gap with a placeholder title, a made-up page number or a canned sentence.
 """
 
-from typing import Dict, List, Optional, Any
-from storage.store import DocumentStorage
-from storage.repositories import LearningContextRepository
+from typing import Any, Dict, List, Optional
+
+from phase3.errors import KnowledgeNotFoundError
 from phase3.knowledge.phase2_adapter import LearningContext
-from phase3.knowledge.phase2_adapter import ConceptView, PrerequisiteLink
+from storage.repositories import LearningContextRepository
+from storage.store import DocumentStorage
 
 
 class KnowledgeService:
@@ -19,184 +26,231 @@ class KnowledgeService:
         self.doc_storage = doc_storage or DocumentStorage()
         self.context_repo = context_repo or LearningContextRepository()
 
+    # -- listing ------------------------------------------------------------
+
     def list_subjects(self) -> List[Dict[str, Any]]:
         """
-        Lists available subject knowledge bases stored in storage/documents.
+        List ingested documents that have a persisted learning context.
+
+        Only documents the learner actually uploaded are returned; there are no demo
+        subjects.
         """
-        subjects = []
+        subjects: List[Dict[str, Any]] = []
         root_dir = self.doc_storage.root_dir
-        if root_dir.exists():
-            for doc_dir in root_dir.iterdir():
-                if doc_dir.is_dir():
-                    doc_id = doc_dir.name
-                    struct_doc = self.doc_storage.load_structured_document(doc_id)
-                    title = doc_id.replace("_", " ").title()
-                    page_count = 0
-                    if struct_doc and "pages" in struct_doc:
-                        page_count = len(struct_doc["pages"])
-                        if "metadata" in struct_doc and struct_doc["metadata"].get("title"):
-                            t_val = struct_doc["metadata"]["title"]
-                            if isinstance(t_val, dict) and "value" in t_val:
-                                title = str(t_val["value"])
-                            elif isinstance(t_val, str):
-                                title = t_val
+        if not root_dir.exists():
+            return subjects
 
-                    # Load learning context if exists to get concept count
-                    ctx = self.context_repo.load_context(doc_id)
-                    concept_count = len(ctx.concepts) if ctx else 0
+        for doc_dir in sorted(root_dir.iterdir()):
+            if not doc_dir.is_dir():
+                continue
+            doc_id = doc_dir.name
 
-                    subjects.append({
-                        "id": doc_id,
-                        "title": title,
-                        "page_count": page_count,
-                        "concept_count": concept_count,
-                        "has_ekr": ctx is not None,
-                    })
+            ctx = self.context_repo.load_context(doc_id)
+            if ctx is None:
+                # Not a built document: nothing to teach yet.
+                continue
 
-        # Add default demo subjects for rich interactive learning
-        demo_subjects = [
-            {
-                "id": "calculus_101",
-                "title": "Calculus & Mathematical Analysis",
-                "page_count": 42,
-                "concept_count": 12,
-                "has_ekr": True,
-            },
-            {
-                "id": "machine_learning",
-                "title": "Fundamentals of Machine Learning",
-                "page_count": 58,
-                "concept_count": 16,
-                "has_ekr": True,
-            }
-        ]
+            struct_doc = self.doc_storage.load_structured_document(doc_id) or {}
+            pages = struct_doc.get("pages") or []
+            title = _document_title(doc_id, struct_doc) or ctx.document_title
 
-        # Deduplicate and return valid subjects
-        valid_subjects = [s for s in subjects if s.get("concept_count", 0) > 0]
-        seen_ids = set()
-        merged = []
-        for s in valid_subjects + demo_subjects:
-            if s["id"] not in seen_ids:
-                seen_ids.add(s["id"])
-                merged.append(s)
-        return merged
-
-    def get_learning_context(self, subject_id: str, default_concept_ids: Optional[List[str]] = None) -> LearningContext:
-        """
-        Retrieves or initializes a LearningContext for the given subject.
-        """
-        ctx = self.context_repo.load_context(subject_id)
-        if not ctx:
-            ctx = LearningContext(
-                document_id=subject_id,
-                knowledge_document_id=f"kdoc_{subject_id}",
+            subjects.append(
+                {
+                    "id": doc_id,
+                    "title": title or doc_id.replace("_", " ").title(),
+                    "page_count": len(pages),
+                    "concept_count": len(ctx.concepts),
+                    "has_ekr": True,
+                }
             )
-            # If standard demo fallback concepts requested
-            if default_concept_ids or subject_id in ("calculus_101", "machine_learning"):
-                c_ids = default_concept_ids or (
-                    ["limits_intro", "continuity", "derivatives_def", "power_rule", "chain_rule", "product_rule", "implicit_diff", "related_rates", "extrema", "mean_value_thm", "integrals_def", "ftc"]
-                    if subject_id == "calculus_101"
-                    else ["linear_algebra", "vectors", "matrices", "gradient_descent", "linear_regression", "logistic_regression", "loss_functions", "neural_networks", "backpropagation", "regularization", "overfitting", "validation"]
-                )
-                for cid in c_ids:
-                    name = cid.replace("_", " ").title()
-                    ctx.concepts[cid] = ConceptView(
-                        concept_id=cid,
-                        canonical_name=name,
-                        type="concept",
-                    )
-            self.context_repo.save_context(ctx)
+        return subjects
+
+    # -- context ------------------------------------------------------------
+
+    def get_learning_context(self, document_id: str) -> LearningContext:
+        """
+        Load the persisted context for ``document_id``.
+
+        Raises :class:`KnowledgeNotFoundError` when the document was never ingested.
+        An empty context is never synthesised, because a fabricated concept list would be
+        indistinguishable from real extracted knowledge.
+        """
+        ctx = self.context_repo.load_context(document_id)
+        if ctx is None:
+            raise KnowledgeNotFoundError(
+                f"No knowledge representation exists for '{document_id}'. Upload and "
+                f"process the document first.",
+                details={"document_id": document_id},
+            )
         return ctx
 
+    # -- graph --------------------------------------------------------------
+
     def get_subject_graph(
-        self, subject_id: str, learner_masteries: Optional[Dict[str, float]] = None
+        self, document_id: str, learner_masteries: Optional[Dict[str, float]] = None
     ) -> Dict[str, Any]:
         """
-        Generates frontend-ready Knowledge Graph representation with topics, concepts, skills, and prerequisite links.
+        Build the frontend knowledge graph from persisted state.
+
+        Topics come from the document's own sections, prerequisites from the EKR's
+        dependency links, and every concept carries the real page numbers, section
+        titles and block IDs that Phase 2 recorded.
         """
-        ctx = self.get_learning_context(subject_id)
+        ctx = self.get_learning_context(document_id)
         masteries = learner_masteries or {}
 
-        concepts_out = []
-        topics_map = {}
-
-        # Default topics if none present in EKR
-        if subject_id == "calculus_101":
-            topics_map = {
-                "topic_foundations": {"id": "topic_foundations", "name": "Foundations & Limits", "order": 1},
-                "topic_differentiation": {"id": "topic_differentiation", "name": "Differentiation Rules", "order": 2},
-                "topic_applications": {"id": "topic_applications", "name": "Applications of Derivatives", "order": 3},
-                "topic_integration": {"id": "topic_integration", "name": "Integral Calculus", "order": 4},
+        # Real topics, keyed by id so concepts can be attached to them.
+        topic_by_id: Dict[str, Dict[str, Any]] = {}
+        concept_to_topic: Dict[str, str] = {}
+        for order, topic in enumerate(ctx.topics or [], start=1):
+            topic_id = str(topic.get("topic_id") or f"topic_{order}")
+            topic_by_id[topic_id] = {
+                "id": topic_id,
+                "name": str(topic.get("title") or topic_id.replace("_", " ").title()),
+                "order": order,
             }
-        elif subject_id == "machine_learning":
-            topics_map = {
-                "topic_math_basics": {"id": "topic_math_basics", "name": "Mathematical Foundations", "order": 1},
-                "topic_supervised": {"id": "topic_supervised", "name": "Supervised Learning", "order": 2},
-                "topic_deep_learning": {"id": "topic_deep_learning", "name": "Deep Learning & Neural Nets", "order": 3},
+            for concept_id in topic.get("concept_ids") or []:
+                concept_to_topic.setdefault(concept_id, topic_id)
+
+        # Concepts that no unit referenced still need a place in the graph; they are
+        # grouped under a single topic named after the document, never a canned one.
+        unassigned = [cid for cid in ctx.concepts if cid not in concept_to_topic]
+        if unassigned:
+            fallback_id = f"topic_{ctx.document_id}"
+            topic_by_id[fallback_id] = {
+                "id": fallback_id,
+                "name": ctx.document_title or ctx.document_id.replace("_", " ").title(),
+                "order": len(topic_by_id) + 1,
             }
-        else:
-            sub_title = subject_id.replace("_", " ").title()
-            topics_map = {
-                "topic_foundations": {"id": "topic_foundations", "name": f"{sub_title} Foundations", "order": 1},
-                "topic_core": {"id": "topic_core", "name": f"{sub_title} Core Principles", "order": 2},
-                "topic_advanced": {"id": "topic_advanced", "name": f"{sub_title} Advanced Topics", "order": 3},
+            for concept_id in unassigned:
+                concept_to_topic[concept_id] = fallback_id
+
+        prereqs_by_target: Dict[str, List[str]] = {}
+        dependents_by_source: Dict[str, List[str]] = {}
+        for link in ctx.prerequisites or []:
+            prereqs_by_target.setdefault(link.target_concept_id, []).append(link.source_concept_id)
+            dependents_by_source.setdefault(link.source_concept_id, []).append(link.target_concept_id)
+
+        concepts_out: List[Dict[str, Any]] = []
+        for concept_id, concept in ctx.concepts.items():
+            mastery = float(masteries.get(concept_id, 0.15))
+            prereqs = [
+                p for p in prereqs_by_target.get(concept_id, []) if p in ctx.concepts
+            ]
+            dependents = [
+                d for d in dependents_by_source.get(concept_id, []) if d in ctx.concepts
+            ]
+
+            concepts_out.append(
+                {
+                    "concept_id": concept_id,
+                    "name": concept.canonical_name,
+                    # The source-derived description, or None when the document did not
+                    # provide one. A generic sentence would be indistinguishable from a
+                    # real definition in the UI.
+                    "definition": concept.description or None,
+                    "topic_id": concept_to_topic.get(concept_id),
+                    "bloom_level": concept.type or None,
+                    "mastery": round(mastery, 4),
+                    "uncertainty": round(max(0.05, 1.0 - abs(mastery - 0.5) * 2), 4),
+                    "prerequisites": prereqs,
+                    "dependents": dependents,
+                    # Real locations only: pages and block IDs recorded by Phase 2.
+                    "source_references": self._source_references(ctx, concept),
+                }
+            )
+
+        relationships = [
+            {
+                "source": link.source_concept_id,
+                "target": link.target_concept_id,
+                "type": "prerequisite_of",
+                "confidence": link.confidence,
+                "evidence_ids": list(link.evidence_ids or []),
             }
-
-        # Build concept nodes
-        for cid, concept in ctx.concepts.items():
-            mastery = masteries.get(cid, 0.15)
-            # Find prerequisites and dependents from ctx.prerequisites
-            prereqs = [p.source_concept_id for p in ctx.prerequisites if p.target_concept_id == cid]
-            dependents = [p.target_concept_id for p in ctx.prerequisites if p.source_concept_id == cid]
-
-            # Custom fallback prerequisites if graph is freshly initialized
-            if not prereqs and subject_id == "calculus_101":
-                if cid == "continuity":
-                    prereqs = ["limits_intro"]
-                elif cid == "derivatives_def":
-                    prereqs = ["continuity"]
-                elif cid in ("power_rule", "product_rule", "chain_rule"):
-                    prereqs = ["derivatives_def"]
-                elif cid in ("implicit_diff", "related_rates", "extrema", "mean_value_thm"):
-                    prereqs = ["chain_rule", "power_rule"]
-                elif cid == "integrals_def":
-                    prereqs = ["derivatives_def"]
-                elif cid == "ftc":
-                    prereqs = ["integrals_def", "extrema"]
-
-            if subject_id == "calculus_101":
-                topic_id = "topic_foundations" if cid in ("limits_intro", "continuity") else "topic_differentiation" if cid in ("derivatives_def", "power_rule", "product_rule", "chain_rule") else "topic_applications" if cid in ("implicit_diff", "related_rates", "extrema", "mean_value_thm") else "topic_integration"
-            elif subject_id == "machine_learning":
-                topic_id = "topic_math_basics" if cid in ("linear_algebra", "vectors", "matrices") else "topic_supervised" if cid in ("linear_regression", "logistic_regression", "gradient_descent", "loss_functions") else "topic_deep_learning"
-            else:
-                if not prereqs:
-                    topic_id = "topic_foundations"
-                elif len(prereqs) == 1:
-                    topic_id = "topic_core"
-                else:
-                    topic_id = "topic_advanced"
-
-            concepts_out.append({
-                "concept_id": cid,
-                "name": concept.canonical_name,
-                "definition": f"Core educational concept covering {concept.canonical_name} principles and applications.",
-                "topic_id": topic_id,
-                "bloom_level": "UNDERSTAND",
-                "mastery": mastery,
-                "uncertainty": max(0.05, round(1.0 - abs(mastery - 0.5) * 2, 2)),
-                "prerequisites": prereqs,
-                "dependents": dependents,
-                "source_references": [
-                    {"page": 12, "section": "Chapter 2.1", "quote": f"Foundational discussion on {concept.canonical_name}"}
-                ],
-            })
+            for link in ctx.prerequisites or []
+            if link.source_concept_id in ctx.concepts and link.target_concept_id in ctx.concepts
+        ]
 
         return {
-            "subject_id": subject_id,
-            "topics": list(topics_map.values()),
+            "subject_id": document_id,
+            "topics": list(topic_by_id.values()),
             "concepts": concepts_out,
-            "relationships": [
-                {"source": p.source_concept_id, "target": p.target_concept_id, "type": "prerequisite_of"}
-                for p in ctx.prerequisites
-            ],
+            "relationships": relationships,
         }
+
+    @staticmethod
+    def _source_references(ctx: LearningContext, concept) -> List[Dict[str, Any]]:
+        """
+        Real citations for a concept: the pages, section titles and quotes Phase 2
+        extracted. Returns an empty list rather than a placeholder when the document
+        gave no quotable evidence.
+        """
+        references: List[Dict[str, Any]] = []
+
+        # Prefer verbatim evidence excerpts, which carry a real quote.
+        for evidence_id in concept.evidence_ids or []:
+            evidence = ctx.evidence.get(evidence_id)
+            if evidence is None:
+                continue
+            page = _page_for_block(ctx, evidence.block_id)
+            references.append(
+                {
+                    "page": page,
+                    "block_id": evidence.block_id,
+                    "evidence_id": evidence_id,
+                    "quote": (evidence.excerpt or "").strip(),
+                }
+            )
+
+        # Fall back to the concept's own recorded locations, without inventing a quote.
+        if not references:
+            for index, page_index in enumerate(concept.page_indices or []):
+                references.append(
+                    {
+                        "page": page_index + 1,
+                        "block_id": concept.block_ids[index]
+                        if index < len(concept.block_ids)
+                        else None,
+                        "evidence_id": None,
+                        "quote": concept.section_titles[index]
+                        if index < len(concept.section_titles)
+                        else None,
+                    }
+                )
+        return [r for r in references if r.get("page") is not None]
+
+
+def _document_title(document_id: str, struct_doc: Dict[str, Any]) -> Optional[str]:
+    """
+    Best real title for a document: embedded PDF/Office metadata first, then a
+    readable rendering of the stored file name.
+
+    Document IDs are derived from file names, so the fallback has to strip the
+    extension and separators - otherwise the UI shows titles like
+    "Computer Networks.Docx" or "Dbms Vs. Excel ...-Class 1.Pptx".
+    """
+    metadata = struct_doc.get("metadata") or {}
+    raw = metadata.get("title")
+    if isinstance(raw, dict):
+        raw = raw.get("value")
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip()
+
+    stem = document_id.replace("\\", "/").rsplit("/", 1)[-1]
+    for suffix in (".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".txt", ".md"):
+        if stem.lower().endswith(suffix):
+            stem = stem[: -len(suffix)]
+            break
+    cleaned = stem.replace("_", " ").replace(".", " ").replace("-", " ")
+    cleaned = " ".join(cleaned.split())
+    return cleaned or None
+
+
+def _page_for_block(ctx: LearningContext, block_id: str) -> Optional[int]:
+    for concept in ctx.concepts.values():
+        if block_id in (concept.block_ids or []):
+            for index, bid in enumerate(concept.block_ids):
+                if bid == block_id and index < len(concept.page_indices):
+                    return concept.page_indices[index] + 1
+    return None

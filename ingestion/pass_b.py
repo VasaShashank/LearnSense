@@ -201,6 +201,15 @@ class PassBAggregator:
             return self._nest_sections(sections)
 
         # 2. Derive from detected HEADING blocks across pages
+        #
+        # A heading opens a section that extends until the next heading of equal or
+        # higher rank, so every subsequent block inherits the current section id.
+        # Without this, body paragraphs carry ``section_id=None`` and Phase 2 cannot
+        # bind them to an EducationalUnit, which in turn leaves the learner's topic
+        # list empty and strips section titles from generated citations.
+        current_section_id: Optional[str] = None
+        current_level = 1
+
         for page in pages:
             for block in page.blocks:
                 if block.type == BlockTypeEnum.HEADING:
@@ -221,6 +230,12 @@ class PassBAggregator:
                     )
                     sections.append(node)
                     sec_counter += 1
+                    current_section_id = sec_id
+                    current_level = level
+                    continue
+
+                if block.section_id is None and current_section_id is not None:
+                    block.section_id = current_section_id
 
         return self._nest_sections(sections)
 

@@ -1,0 +1,133 @@
+{
+  "document_id": "probe_prob2",
+  "knowledge_document_id": "kr_probe_prob2",
+  "document_title": "Prob",
+  "source_filename": "prob.pdf",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "Prob",
+      "topic_ids": [
+        "sec_page_1"
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "section_id": "sec_page_1",
+      "status": "ok",
+      "title": "",
+      "warnings": []
+    }
+  ],
+  "topics": [
+    {
+      "topic_id": "sec_page_1",
+      "title": "Probability Distributions & Bernoulli",
+      "concept_ids": [
+        "c_664a9e058d81",
+        "c_9f9f0252a3f5"
+      ]
+    }
+  ],
+  "concepts": {
+    "c_664a9e058d81": {
+      "concept_id": "c_664a9e058d81",
+      "canonical_name": "Probability Distributions",
+      "aliases": [],
+      "type": "concept",
+      "description": "Probability Distributions\nA probability distribution assigns a probability to each outcome of a random experiment.\nThe binomial distribution models the number of successes in n independent Bernoulli trials.\nThe expected value of a random variable is the probability weighted average of its possible …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_c5ffab8b179c"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    },
+    "c_9f9f0252a3f5": {
+      "concept_id": "c_9f9f0252a3f5",
+      "canonical_name": "Bernoulli",
+      "aliases": [],
+      "type": "concept",
+      "description": "Probability Distributions\nA probability distribution assigns a probability to each outcome of a random experiment.\nThe binomial distribution models the number of successes in n independent Bernoulli trials.\nThe expected value of a random variable is the probability weighted average of its possible …",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_c46c1c48b6e4"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    }
+  },
+  "skills": {},
+  "formulas": {},
+  "educational_units": {
+    "u_fc6767591778": {
+      "unit_id": "u_fc6767591778",
+      "unit_type": "explanation",
+      "section_id": "sec_page_1",
+      "source": [
+        {
+          "block_id": "blk_p0000_nat_0001",
+          "span": {
+            "field": "normalized_text",
+            "start": 0,
+            "end": 306
+          }
+        }
+      ],
+      "parent_unit_id": null,
+      "concept_links": [
+        {
+          "concept_id": "c_664a9e058d81",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_9f9f0252a3f5",
+          "link": "mentions"
+        }
+      ]
+    }
+  },
+  "assessable_items": {},
+  "concept_definitions": [],
+  "evidence": {
+    "ev_c5ffab8b179c": {
+      "evidence_id": "ev_c5ffab8b179c",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 25
+      },
+      "excerpt": "Probability Distributions",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    },
+    "ev_c46c1c48b6e4": {
+      "evidence_id": "ev_c46c1c48b6e4",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 189,
+        "end": 198
+      },
+      "excerpt": "Bernoulli",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    }
+  },
+  "prerequisites": [],
+  "trusted_relationships": []
+}

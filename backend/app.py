@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.routes import documents, phase4, api
+from phase3.errors import LearnSenseError
 
 # Load environment configuration if .env exists
 for p in [Path(".env"), Path(__file__).resolve().parent.parent / ".env"]:
@@ -59,6 +60,28 @@ async def value_error_exception_handler(request: Request, exc: ValueError):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"error": "VALIDATION_ERROR", "message": str(exc)},
+    )
+
+
+@app.exception_handler(LearnSenseError)
+async def learnsense_error_handler(request: Request, exc: LearnSenseError):
+    """
+    Render every typed runtime error with its machine-readable code and retry state.
+
+    Without this, a route-level ``except Exception`` turned "the LLM provider is rate
+    limited" into an opaque 400 with no indication that retrying would succeed, and the
+    frontend had no way to distinguish a transient failure from a bad upload.
+    """
+    return JSONResponse(
+        status_code=exc.http_status,
+        content={
+            "error": exc.code,
+            "code": exc.code,
+            "message": str(exc),
+            "recoverable": exc.recoverable,
+            "details": exc.details,
+        },
+        headers={"Retry-After": "5"} if exc.recoverable else None,
     )
 
 

@@ -31,7 +31,12 @@ def run_stage3_segmentation(
         role = nlp_adapter.classify_text_role(text)
 
         unit_idx += 1
-        sec_id = block["section_id"] or "sec_default"
+        # Blocks outside any heading (a document with no outline, or body text before the
+        # first heading) still belong to a real, locatable group. Keying them by their
+        # page keeps the section id traceable to the document instead of collapsing them
+        # into an invented "sec_default" bucket that appears in API responses.
+        page_index = block.get("page_index", 0)
+        sec_id = block["section_id"] or f"sec_page_{page_index + 1}"
         u_id = generate_unit_id(norm_doc.doc_id, sec_id, unit_idx, role)
 
         unit = EducationalUnit(

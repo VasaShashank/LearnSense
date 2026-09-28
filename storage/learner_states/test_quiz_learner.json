@@ -1,0 +1,54 @@
+{
+  "learner_id": "test_quiz_learner",
+  "concept_states": {
+    "continuity": {
+      "concept_id": "continuity",
+      "mastery_probability": 0.8959,
+      "uncertainty": 0.2081,
+      "attempt_count": 2,
+      "correct_count": 2,
+      "incorrect_count": 0,
+      "recent_performance": [
+        true,
+        true
+      ],
+      "last_attempt": "2026-09-28T09:04:31.445167Z"
+    },
+    "power_rule": {
+      "concept_id": "power_rule",
+      "mastery_probability": 0.8959,
+      "uncertainty": 0.2081,
+      "attempt_count": 2,
+      "correct_count": 2,
+      "incorrect_count": 0,
+      "recent_performance": [
+        true,
+        true
+      ],
+      "last_attempt": "2026-09-28T09:04:31.445167Z"
+    },
+    "limits_intro": {
+      "concept_id": "limits_intro",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    },
+    "chain_rule": {
+      "concept_id": "chain_rule",
+      "mastery_probability": 0.3,
+      "uncertainty": 0.5,
+      "attempt_count": 0,
+      "correct_count": 0,
+      "incorrect_count": 0,
+      "recent_performance": [],
+      "last_attempt": null
+    }
+  },
+  "topic_scores": {},
+  "created_at": "2026-09-28T09:02:37.870640Z",
+  "updated_at": "2026-09-28T09:04:31.445167Z"
+}

@@ -90,7 +90,9 @@ class LearnerService:
         concept_ids = [c["concept_id"] for c in graph["concepts"]]
 
         learner_state = self.get_or_create_learner_state(learner_id, concept_ids)
-        learning_context = self.knowledge_service.get_learning_context(subject_id, concept_ids)
+        # No concept seeding: the context is loaded from the uploaded document, and
+        # concept_ids here come from that same document's graph.
+        learning_context = self.knowledge_service.get_learning_context(subject_id)
 
         gaps = self.adapter.gap_detector.detect_gaps(learning_context, learner_state, concept_ids)
         prioritized_gaps = self.adapter.gap_prioritizer.prioritize_gaps(gaps)
