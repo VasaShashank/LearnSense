@@ -144,6 +144,7 @@ const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 120000)
 
 export interface ApiErrorBody {
   code?: string;
+  error?: string;
   message?: string;
   recoverable?: boolean;
   details?: Record<string, unknown>;
@@ -395,12 +396,32 @@ export const ApiClient = {
         body: formData,
         signal: controller.signal,
       });
-      onProgress?.('processing');
       if (!res.ok) {
         const body = (await res.json().catch(() => undefined)) as ApiErrorBody | undefined;
         throw messageFromBody(body, res.status, res.statusText);
       }
-      return await res.json();
+      const data = await res.json();
+
+      // --- Async job pattern: backend returns {job_id, status: "processing"} ---
+      if (data.job_id && data.status === 'processing') {
+        onProgress?.('processing');
+        const jobId: string = data.job_id;
+        const deadline = Date.now() + 10 * 60 * 1000; // 10 min max
+        while (Date.now() < deadline) {
+          await new Promise(r => setTimeout(r, 3000));
+          const pollRes = await fetch(`${API_BASE_URL}/sources/upload/status/${jobId}`);
+          if (!pollRes.ok) continue;
+          const poll = await pollRes.json();
+          if (poll.status === 'done' && poll.result) return poll.result;
+          if (poll.status === 'error') throw new ApiError(poll.error || 'Ingestion failed.');
+          const elapsed = Math.round(poll.elapsed_seconds ?? 0);
+          onProgress?.(`processing (${elapsed}s elapsed…)`);
+        }
+        throw new ApiError('Ingestion timed out after 10 minutes.');
+      }
+
+      // --- Legacy sync pattern: result returned directly ---
+      return data;
     } catch (error) {
       if (error instanceof ApiError) {
         console.warn(`Source upload failed [${error.code}]:`, error.message);

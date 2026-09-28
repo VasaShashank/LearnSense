@@ -5,6 +5,7 @@ and generates LaTeX representation or crops equation image assets with MATH_UNPA
 Matches Section 12 & Section 18 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 """
 
+import hashlib
 import re
 from typing import Dict, Any, List, Tuple, Optional
 import fitz  # PyMuPDF
@@ -138,7 +139,7 @@ class MathExtractor:
 
         pix = page.get_pixmap(clip=crop_rect, dpi=200)
         img_bytes = pix.tobytes("png")
-        sha256 = fitz.get_sha256(img_bytes)
+        sha256 = hashlib.sha256(img_bytes).hexdigest()
 
         filename = f"{asset_id}.png"
         uri = f"documents/{document_id}/assets/{filename}"

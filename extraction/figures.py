@@ -5,6 +5,7 @@ filters out small decorative icons/logos, and associates nearby 'Figure X' capti
 Matches Section 12 & Section 19 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 """
 
+import hashlib
 import re
 from typing import Dict, Any, List, Tuple, Optional
 import fitz  # PyMuPDF
@@ -56,7 +57,7 @@ class FigureExtractor:
             asset_id = f"ast_fig_{page_index:02d}_{fig_counter:02d}"
             filename = f"{asset_id}.png"
             uri = f"documents/{document_id}/assets/{filename}"
-            sha256 = fitz.get_sha256(image_bytes)
+            sha256 = hashlib.sha256(image_bytes).hexdigest()
 
             asset = DocumentAsset(
                 asset_id=asset_id,
@@ -88,7 +89,7 @@ class FigureExtractor:
                 crop_rect = fitz.Rect(vector_bbox[0], vector_bbox[1], vector_bbox[2], vector_bbox[3])
                 pix = page.get_pixmap(clip=crop_rect, dpi=200)
                 img_bytes = pix.tobytes("png")
-                sha256 = fitz.get_sha256(img_bytes)
+                sha256 = hashlib.sha256(img_bytes).hexdigest()
 
                 filename = f"{asset_id}.png"
                 uri = f"documents/{document_id}/assets/{filename}"

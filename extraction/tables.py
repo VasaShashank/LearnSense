@@ -6,6 +6,7 @@ sets status to preserved_only, and attaches TABLE_RECONSTRUCTION_FAILED warning.
 Matches Section 12 & Section 17 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 """
 
+import hashlib
 from typing import Dict, Any, List, Tuple, Optional
 import fitz  # PyMuPDF
 import pdfplumber
@@ -146,7 +147,7 @@ class TableExtractor:
         # Render high-res crop pixmap
         pix = page.get_pixmap(clip=crop_rect, dpi=200)
         img_bytes = pix.tobytes("png")
-        sha256 = fitz.get_sha256(img_bytes)
+        sha256 = hashlib.sha256(img_bytes).hexdigest()
 
         filename = f"{asset_id}.png"
         uri = f"documents/{document_id}/assets/{filename}"

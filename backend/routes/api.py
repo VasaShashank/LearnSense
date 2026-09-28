@@ -6,7 +6,10 @@ Exposes clean facade endpoints for Subjects, Knowledge Graph, Learner Progress, 
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 import re
-from fastapi import APIRouter, HTTPException, status, Query, UploadFile, File
+import threading
+import time
+import uuid
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Query, UploadFile, File
 from pydantic import BaseModel, Field
 
 from backend.services.knowledge_service import KnowledgeService
@@ -24,6 +27,10 @@ learner_service = LearnerService(knowledge_service=knowledge_service)
 learning_service = LearningService(learner_service=learner_service, knowledge_service=knowledge_service)
 tutor_service = TutorService(knowledge_service=knowledge_service, learner_service=learner_service)
 source_service = SourceService()
+
+# In-memory job store for async upload tracking
+# {job_id: {"status": str, "result": dict|None, "error": str|None, "started_at": float}}
+_upload_jobs: Dict[str, Dict] = {}
 
 
 # Request Models
@@ -238,15 +245,75 @@ async def api_health():
 @router.post("/sources/upload")
 async def upload_source(file: UploadFile = File(...), document_id: Optional[str] = None):
     """
-    Uploads a source document and builds its grounded knowledge context.
+    Uploads a source document and kicks off the knowledge-build pipeline asynchronously.
 
-    Runs the full Phase 1 → Phase 2 → Phase 3 chain. Failures propagate as typed
-    :mod:`phase3.errors` exceptions and are rendered by the global handler in ``app.py``,
-    so the endpoint never substitutes placeholder concepts or a generic lesson.
+    Returns a ``job_id`` immediately. Poll ``GET /api/sources/upload/status/{job_id}``
+    to track progress. The full Phase 1 → Phase 2 → Phase 3 chain runs in a background
+    thread so the HTTP connection is never held open for the full ingestion time.
     """
     doc_id = document_id or _derive_document_id(file.filename)
     content = await file.read()
-    return source_service.save_uploaded_source(doc_id, content, file.filename)
+    filename = file.filename or "document.pdf"
+
+    job_id = str(uuid.uuid4())
+    _upload_jobs[job_id] = {
+        "status": "processing",
+        "document_id": doc_id,
+        "filename": filename,
+        "result": None,
+        "error": None,
+        "started_at": time.time(),
+    }
+
+    def _run_build(job_id: str, doc_id: str, content: bytes, filename: str) -> None:
+        try:
+            result = source_service.save_uploaded_source(doc_id, content, filename)
+            _upload_jobs[job_id]["status"] = "done"
+            _upload_jobs[job_id]["result"] = result
+        except Exception as exc:  # pragma: no cover
+            _upload_jobs[job_id]["status"] = "error"
+            _upload_jobs[job_id]["error"] = str(exc)
+
+    thread = threading.Thread(
+        target=_run_build,
+        args=(job_id, doc_id, content, filename),
+        daemon=True,
+        name=f"ingest-{doc_id}",
+    )
+    thread.start()
+
+    return {
+        "job_id": job_id,
+        "document_id": doc_id,
+        "status": "processing",
+        "message": "Ingestion started. Poll /api/sources/upload/status/{job_id} for progress.",
+    }
+
+
+@router.get("/sources/upload/status/{job_id}")
+async def upload_status(job_id: str):
+    """
+    Poll the status of an async upload job started by POST /api/sources/upload.
+
+    Returns one of:
+    - ``{"status": "processing", ...}``  – still running
+    - ``{"status": "done", "result": {...}}``  – completed successfully
+    - ``{"status": "error", "error": "..."}``  – failed with reason
+    """
+    job = _upload_jobs.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail=f"No upload job found with id '{job_id}'")
+
+    elapsed = round(time.time() - job["started_at"], 1)
+    return {
+        "job_id": job_id,
+        "document_id": job["document_id"],
+        "filename": job["filename"],
+        "status": job["status"],
+        "elapsed_seconds": elapsed,
+        "result": job["result"],
+        "error": job["error"],
+    }
 
 
 def _derive_document_id(filename: Optional[str]) -> str:

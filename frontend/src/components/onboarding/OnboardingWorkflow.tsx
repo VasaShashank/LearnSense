@@ -23,6 +23,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadingPdf, setUploadingPdf] = useState<boolean>(false);
+  const [uploadStage, setUploadStage] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // 1. Select Subject
@@ -54,7 +55,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     setUploadError(null);
 
     try {
-      const res = await ApiClient.uploadSource(file);
+      const res = await ApiClient.uploadSource(file, (stage) => setUploadStage(stage));
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').toUpperCase();
       const newSub: Subject = {
         id: res.document_id,
@@ -69,6 +70,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setUploadError(err.message || 'Failed to parse and synthesize Knowledge Atlas from document.');
     } finally {
       setUploadingPdf(false);
+      setUploadStage('');
       e.target.value = '';
     }
   };
@@ -187,7 +189,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 max-w-md">
                     {uploadingPdf
-                      ? 'Extracting chapters, slide notes, prerequisite concepts, and generating curriculum question bank with Groq LLM...'
+                      ? uploadStage.startsWith('processing (')
+                        ? `Ingesting PDF — ${uploadStage.replace('processing (', '').replace(')', '')} • Extracting chapters, concepts & question bank…`
+                        : 'Extracting chapters, slide notes, prerequisite concepts, and generating curriculum question bank with Groq LLM...'
                       : 'Drop any PDF, PowerPoint slides (.pptx), Word doc (.docx), or diagram images (.png, .jpg) to dynamically construct an intelligent learning map.'}
                   </p>
                 </div>

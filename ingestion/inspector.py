@@ -74,10 +74,13 @@ class PageInspector:
         rotation = page.rotation
         orientation = "landscape" if width > height else "portrait"
 
-        # 1. Render 150 DPI preview & calculate ink density
-        zoom = self.preview_dpi / 72.0
-        mat = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=mat, alpha=False)
+        # 1. Render tiny 50-DPI thumbnail for ink density (fast – ~6KB vs 2MB at 150 DPI)
+        #    Only render the 150-DPI preview on demand; the thumbnail doubles as the preview
+        #    for the classification step.
+        thumb_dpi = 50
+        thumb_zoom = thumb_dpi / 72.0
+        thumb_mat = fitz.Matrix(thumb_zoom, thumb_zoom)
+        pix = page.get_pixmap(matrix=thumb_mat, alpha=False)
         preview_bytes = pix.tobytes("png")
 
         # Calculate ink ratio using numpy array from pixmap samples
@@ -171,20 +174,22 @@ class PageInspector:
         if ink_ratio < self.blank_ink_threshold and char_count < 10 and vector_path_count < 5:
             return "blank"
 
-        # Rule 2: Scanned / Garbled text
-        if char_count < 50 and image_coverage_ratio >= self.scanned_image_coverage_threshold:
-            return "scanned"
-
-        if char_count >= 50 and garbage_ratio >= self.garbled_text_ratio_threshold:
-            return "scanned"  # Route garbled text layer pages to OCR
-
-        # Rule 3: Hybrid (text + significant raster images)
-        if char_count >= 50 and image_coverage_ratio >= 0.25 and garbage_ratio < self.garbled_text_ratio_threshold:
-            return "hybrid"
-
-        # Rule 4: Native Digital Text
-        if char_count >= 50 and garbage_ratio < self.garbled_text_ratio_threshold:
+        # Rule 2: If PyMuPDF extracted any usable text, always prefer native extraction.
+        # OCR (Tesseract) is 10-50x slower and produces worse results on digital PDFs.
+        # Only escalate to OCR when the PDF has NO extractable text at all.
+        if char_count > 0 and garbage_ratio < self.garbled_text_ratio_threshold:
+            # Has real native text — classify as native or hybrid based on image coverage
+            if image_coverage_ratio >= 0.25:
+                return "hybrid"
             return "native"
 
-        # Default fallback
+        # Rule 3: True scanned page — no native text, mostly image area
+        if char_count == 0 and image_coverage_ratio >= self.scanned_image_coverage_threshold:
+            return "scanned"
+
+        # Rule 4: Garbled text layer → OCR
+        if char_count >= 50 and garbage_ratio >= self.garbled_text_ratio_threshold:
+            return "scanned"
+
+        # Default fallback — treat as native to avoid slow OCR on borderline pages
         return "native" if char_count > 0 else "scanned"
