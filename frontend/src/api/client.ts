@@ -171,7 +171,7 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = opts.status ?? 0;
     this.code = opts.code ?? (this.status === 0 ? 'BACKEND_UNREACHABLE' : 'API_ERROR');
-    this.recoverable = opts.recoverable ?? this.status === 0 || this.status >= 500;
+    this.recoverable = opts.recoverable ?? (this.status === 0 || this.status >= 500);
     this.details = opts.details ?? {};
   }
 }
