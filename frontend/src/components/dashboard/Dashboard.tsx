@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Subject, LearnerProgress, KnowledgeGap, LearningTarget } from '../../api/client';
-import { Play, Sparkles, AlertTriangle, BookOpen, Compass, ArrowUpRight, ShieldCheck, Activity } from 'lucide-react';
+import { Play, Sparkles, AlertTriangle, BookOpen, Compass, ArrowUpRight, ShieldCheck, Activity, Trophy } from 'lucide-react';
 
 export interface DashboardProps {
   currentSubject: Subject;
@@ -11,6 +11,7 @@ export interface DashboardProps {
   onNavigateToPath: () => void;
   onNavigateToSession: (conceptId: string) => void;
   onNavigateToSources: () => void;
+  onStartFinalAssessment?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -22,6 +23,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigateToPath,
   onNavigateToSession,
   onNavigateToSources,
+  onStartFinalAssessment,
 }) => {
   const masteryPercent = progress ? Math.round(progress.average_mastery * 100) : 0;
   const explorationPercent = progress ? Math.round(progress.exploration_rate * 100) : 0;
@@ -191,6 +193,37 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <ArrowUpRight className="w-3.5 h-3.5 text-universe-slate" />
               </button>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Final Assessment Launch Card */}
+      {onStartFinalAssessment && (
+        <section className="relative universe-panel rounded-3xl p-6 lg:p-8 overflow-hidden border-violet-500/20 shadow-[0_8px_32px_rgba(139,92,246,0.06)]">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded bg-violet-950/80 border border-violet-500/40 text-violet-300 font-mono text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+                  <Trophy className="w-3 h-3 text-violet-400" />
+                  COMPREHENSIVE EVALUATION
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+                Final Assessment
+              </h2>
+              <p className="text-xs text-universe-slate font-sans leading-relaxed max-w-xl">
+                Test your comprehensive understanding across all concepts in this domain.
+                Server-evaluated with BKT mastery calibration. Score 70%+ to demonstrate domain mastery.
+              </p>
+            </div>
+            <button
+              onClick={onStartFinalAssessment}
+              className="shrink-0 px-6 py-3.5 rounded-xl bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-400 hover:to-cyan-400 text-white font-display font-extrabold text-xs flex items-center gap-2 shadow-[0_0_24px_rgba(139,92,246,0.3)] transition-all hover:scale-[1.02]"
+            >
+              <Trophy className="w-4 h-4" />
+              <span>Take Final Assessment</span>
+            </button>
           </div>
         </section>
       )}

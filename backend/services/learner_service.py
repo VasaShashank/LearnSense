@@ -123,3 +123,51 @@ class LearnerService:
             "learning_path": dumped_path,
             "next_target": dumped_target,
         }
+
+    def resume_learner_state(self, learner_id: str, subject_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Determines whether the learner has persisted progress / initialized subjects on the server.
+        Allows frontend to restore active learning state and dashboard after browser refresh.
+        """
+        from storage.repositories import SessionRepository
+
+        state = self.repo.load_state(learner_id)
+        if not state or not state.concept_states:
+            return {
+                "learner_id": learner_id,
+                "has_state": False,
+                "is_onboarded": False,
+                "subject_id": subject_id,
+                "progress": None,
+                "active_assessment_id": None,
+            }
+
+        active_subject = subject_id
+        if not active_subject:
+            subjects = self.knowledge_service.list_subjects()
+            active_subject = subjects[0]["id"] if subjects else None
+
+        progress = None
+        if active_subject:
+            try:
+                progress = self.get_learner_progress(learner_id, active_subject)
+            except Exception:
+                pass
+
+        session_repo = SessionRepository()
+        active_assessment_id = None
+        if active_subject:
+            active_final = session_repo.find_active_final_assessment(learner_id, active_subject)
+            if active_final:
+                active_assessment_id = active_final.assessment_id
+
+        is_onboarded = bool(state and state.concept_states)
+
+        return {
+            "learner_id": learner_id,
+            "has_state": True,
+            "is_onboarded": is_onboarded,
+            "subject_id": active_subject,
+            "progress": progress,
+            "active_assessment_id": active_assessment_id,
+        }

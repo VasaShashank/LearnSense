@@ -5,8 +5,8 @@
       "concept_id": "c_limits",
       "mastery_probability": 0.99,
       "uncertainty": 0.02,
-      "attempt_count": 92,
-      "correct_count": 92,
+      "attempt_count": 100,
+      "correct_count": 100,
       "incorrect_count": 0,
       "recent_performance": [
         true,
@@ -20,7 +20,7 @@
         true,
         true
       ],
-      "last_attempt": "2026-09-29T13:46:30.318043Z"
+      "last_attempt": "2026-09-29T15:19:57.286731Z"
     },
     "c_derivatives": {
       "concept_id": "c_derivatives",
@@ -55,5 +55,5 @@
   },
   "topic_scores": {},
   "created_at": "2026-09-27T17:21:52.748366Z",
-  "updated_at": "2026-09-29T13:46:30.318049Z"
+  "updated_at": "2026-09-29T15:19:57.286738Z"
 }

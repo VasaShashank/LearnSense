@@ -76,6 +76,19 @@ class TutorInteractApiRequest(BaseModel):
     user_message: Optional[str] = None
 
 
+class FinalAssessmentStartApiRequest(BaseModel):
+    learner_id: str
+    subject_id: str
+
+
+class FinalAssessmentSubmitApiRequest(BaseModel):
+    assessment_id: str
+    learner_id: str
+    subject_id: str
+    responses: Dict[str, Any]
+    request_id: Optional[str] = None
+
+
 # --- SUBJECTS & KNOWLEDGE GRAPH ROUTES ---
 
 @router.get("/subjects")
@@ -208,6 +221,56 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
             selected_index=req.selected_index,
             is_dont_know=req.is_dont_know,
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/learners/{learner_id}/resume")
+async def resume_learner(learner_id: str, subject_id: Optional[str] = Query(None)):
+    """
+    Returns persisted learner state, progress, and active assessment to resume UI after refresh.
+    """
+    return learner_service.resume_learner_state(learner_id, subject_id=subject_id)
+
+
+# --- FINAL ASSESSMENT ROUTES ---
+
+@router.post("/assessment/final/start")
+async def start_final_assessment(req: FinalAssessmentStartApiRequest):
+    """
+    Starts or resumes a dedicated Final Assessment covering concepts in the subject.
+    Never exposes correct_answer or explanation.
+    """
+    try:
+        return learning_service.start_final_assessment(req.learner_id, req.subject_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/assessment/final/submit")
+async def submit_final_assessment(req: FinalAssessmentSubmitApiRequest):
+    """
+    Evaluates Final Assessment server-side authoritatively and updates BKT masteries.
+    """
+    try:
+        return learning_service.submit_final_assessment(
+            assessment_id=req.assessment_id,
+            learner_id=req.learner_id,
+            subject_id=req.subject_id,
+            responses=req.responses,
+            request_id=req.request_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/assessment/final/status/{assessment_id}")
+async def get_final_assessment_status(assessment_id: str, learner_id: Optional[str] = Query(None)):
+    """
+    Retrieves status / scorecard of a Final Assessment.
+    """
+    try:
+        return learning_service.get_final_assessment_status(assessment_id, learner_id=learner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

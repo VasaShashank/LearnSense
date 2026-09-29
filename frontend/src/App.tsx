@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, SourceDocument } from './api/client';
 import { ApiClient } from './api/client';
 import { TopNavbar } from './components/navigation/TopNavbar';
@@ -9,6 +9,7 @@ import { XRayInspector } from './components/atlas/XRayInspector';
 import { ConceptInspector } from './components/inspector/ConceptInspector';
 import { LearningPathTimeline } from './components/path/LearningPathTimeline';
 import { LearningSession } from './components/session/LearningSession';
+import { FinalAssessment } from './components/session/FinalAssessment';
 import { ContextualTutor } from './components/tutor/ContextualTutor';
 import { SourceLibrary } from './components/sources/SourceLibrary';
 import { CommandPalette } from './components/palette/CommandPalette';
@@ -44,6 +45,14 @@ export default function App() {
   const [tutorConcept, setTutorConcept] = useState<ConceptNode | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
+  // Final Assessment State
+  const [isFinalAssessmentOpen, setIsFinalAssessmentOpen] = useState<boolean>(false);
+  const [activeAssessmentId, setActiveAssessmentId] = useState<string | null>(null);
+
+  // Resume / Rehydration State
+  const [isResuming, setIsResuming] = useState<boolean>(true);
+  const resumeAttempted = useRef<boolean>(false);
+
   // Signature "Knowledge Changed" Notification State
   const [knowledgeChangedNotification, setKnowledgeChangedNotification] = useState<string | null>(null);
 
@@ -65,6 +74,41 @@ export default function App() {
   useEffect(() => {
     reloadSubjectsAndSources();
   }, [reloadSubjectsAndSources]);
+
+  // 1b. Resume learner state on mount (survives browser refresh)
+  useEffect(() => {
+    if (resumeAttempted.current) return;
+    resumeAttempted.current = true;
+
+    const attemptResume = async () => {
+      try {
+        const resumeData = await ApiClient.resumeLearner(learnerId);
+        if (resumeData.has_state && resumeData.is_onboarded) {
+          // Learner was previously onboarded — skip onboarding screen
+          if (resumeData.subject_id) {
+            const subs = await ApiClient.getSubjects();
+            setSubjects(subs);
+            const sub = subs.find((s) => s.id === resumeData.subject_id) || subs[0];
+            if (sub) setSelectedSubject(sub);
+          }
+          if (resumeData.progress) {
+            setProgress(resumeData.progress);
+          }
+          if (resumeData.active_assessment_id) {
+            setActiveAssessmentId(resumeData.active_assessment_id);
+          }
+          setIsOnboarded(true);
+          setActiveView('DASHBOARD');
+        }
+      } catch {
+        // Resume is best-effort — if it fails, user sees onboarding normally
+      } finally {
+        setIsResuming(false);
+      }
+    };
+
+    attemptResume();
+  }, [learnerId]);
 
   // 2. Load Subject Data when subject changes or knowledge updates
   const refreshSubjectData = useCallback(async () => {
@@ -99,6 +143,14 @@ export default function App() {
     setActiveView('DASHBOARD');
   };
 
+  // Handle Final Assessment Completion
+  const handleFinalAssessmentComplete = (updatedMasteries: Record<string, number>) => {
+    refreshSubjectData();
+    const conceptNames = Object.keys(updatedMasteries).map((c) => c.replace(/_/g, ' ').toUpperCase()).join(', ');
+    setKnowledgeChangedNotification(`FINAL ASSESSMENT EVALUATED // Masteries calibrated across: ${conceptNames.substring(0, 80)}...`);
+    setTimeout(() => setKnowledgeChangedNotification(null), 6000);
+  };
+
   // Trace Downstream Impact Algorithm
   const handleTraceImpact = (conceptId: string) => {
     if (!graphData) return;
@@ -123,6 +175,18 @@ export default function App() {
       setKnowledgeChangedNotification(null);
     }, 5000);
   };
+
+  // Show a brief loading state while attempting resume
+  if (isResuming) {
+    return (
+      <div className="min-h-screen universe-canvas flex items-center justify-center">
+        <div className="text-center space-y-4 animate-pulse">
+          <Orbit className="w-10 h-10 text-cyan-400 mx-auto animate-spin" />
+          <p className="text-sm font-mono text-universe-slate">Restoring learning state...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isOnboarded) {
     return (
@@ -180,6 +244,7 @@ export default function App() {
               if (c) setActiveStudyConcept(c);
             }}
             onNavigateToSources={() => setActiveView('SOURCES')}
+            onStartFinalAssessment={() => setIsFinalAssessmentOpen(true)}
           />
         )}
 
@@ -356,6 +421,20 @@ export default function App() {
           }}
           onKnowledgeChanged={handleKnowledgeChanged}
           onCloseSession={() => setActiveStudyConcept(null)}
+        />
+      )}
+
+      {/* Final Assessment Modal */}
+      {isFinalAssessmentOpen && selectedSubject && (
+        <FinalAssessment
+          subject={selectedSubject}
+          learnerId={learnerId}
+          activeAssessmentId={activeAssessmentId}
+          onComplete={handleFinalAssessmentComplete}
+          onClose={() => {
+            setIsFinalAssessmentOpen(false);
+            setActiveAssessmentId(null);
+          }}
         />
       )}
 

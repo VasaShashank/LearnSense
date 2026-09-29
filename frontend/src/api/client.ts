@@ -474,5 +474,85 @@ export const ApiClient = {
       return { ok: false, error: error instanceof ApiError ? error : new ApiError(String(error)) };
     }
   },
+
+  /**
+   * Resume learner state after browser refresh.
+   * Returns persisted progress, onboarding status, and any active assessment.
+   */
+  resumeLearner: (learnerId: string, subjectId?: string): Promise<{
+    learner_id: string;
+    has_state: boolean;
+    is_onboarded: boolean;
+    subject_id: string | null;
+    progress: LearnerProgress | null;
+    active_assessment_id: string | null;
+  }> =>
+    fetchJson(`/learners/${learnerId}/resume${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * Start (or resume) a Final Assessment for a subject.
+   * Returns questions with correct_answer and explanation stripped.
+   */
+  startFinalAssessment: (learnerId: string, subjectId: string): Promise<{
+    assessment_id: string;
+    subject_id: string;
+    resumed: boolean;
+    question_count: number;
+    questions: Array<{
+      item_id?: string;
+      question_id?: string;
+      concept_ids?: string[];
+      prompt?: string;
+      question_text?: string;
+      options?: string[];
+      allow_dont_know_option?: boolean;
+    }>;
+  }> =>
+    fetchJson('/assessment/final/start', {
+      method: 'POST',
+      body: JSON.stringify({ learner_id: learnerId, subject_id: subjectId }),
+    }),
+
+  /**
+   * Submit final assessment responses for server-side authoritative evaluation.
+   */
+  submitFinalAssessment: (data: {
+    assessment_id: string;
+    learner_id: string;
+    subject_id: string;
+    responses: Record<string, string>;
+    request_id?: string;
+  }): Promise<{
+    assessment_id: string;
+    duplicate_submission: boolean;
+    completed: boolean;
+    total_questions: number;
+    correct_count: number;
+    score_pct: number;
+    passed: boolean;
+    concept_results: Record<string, { question_id: string; correct: boolean; score: number; correct_answer: string; explanation: string }>;
+    updated_masteries: Record<string, number>;
+    message: string;
+  }> =>
+    fetchJson('/assessment/final/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Get final assessment status / scorecard.
+   */
+  getFinalAssessmentStatus: (assessmentId: string, learnerId?: string): Promise<{
+    assessment_id: string;
+    learner_id: string;
+    subject_id: string;
+    completed: boolean;
+    score_pct: number | null;
+    passed: boolean | null;
+    total_questions: number;
+    correct_count: number;
+    concept_results: Record<string, any>;
+  }> =>
+    fetchJson(`/assessment/final/status/${assessmentId}${learnerId ? `?learner_id=${learnerId}` : ''}`),
 };
 

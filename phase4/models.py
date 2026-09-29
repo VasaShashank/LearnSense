@@ -88,6 +88,7 @@ class ActivityType(str, Enum):
     EXPLANATION = "EXPLANATION"
     PRACTICE_QUESTION = "PRACTICE_QUESTION"
     MINI_QUIZ = "MINI_QUIZ"
+    FINAL_ASSESSMENT = "FINAL_ASSESSMENT"
 
 
 class LearningActivity(BaseModel):
@@ -97,6 +98,24 @@ class LearningActivity(BaseModel):
     activity_type: ActivityType
     title: str
     content: Optional[Dict[str, Any]] = None
+
+
+class FinalAssessmentSession(BaseModel):
+    assessment_id: str
+    learner_id: str
+    subject_id: str
+    question_ids: List[str] = Field(default_factory=list)
+    concept_ids: List[str] = Field(default_factory=list)
+    completed: bool = False
+    score_pct: Optional[float] = None
+    passed: Optional[bool] = None
+    total_questions: int = 0
+    correct_count: int = 0
+    responses: Dict[str, Any] = Field(default_factory=dict)
+    scores: Dict[str, float] = Field(default_factory=dict)
+    concept_results: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
 
 
 class LearningPathNode(BaseModel):

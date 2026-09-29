@@ -33,6 +33,9 @@ def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
     return path
 
 
+from phase4.models import KnowledgeInitializationSession, FinalAssessmentSession
+
+
 class SessionRepository:
     def __init__(self, base_dir: str = "storage/sessions"):
         self.base_dir = Path(base_dir)
@@ -41,9 +44,10 @@ class SessionRepository:
     def get_path(self, session_id: str) -> Path:
         return self.base_dir / f"{session_id}.json"
 
-    def save_session(self, session: KnowledgeInitializationSession) -> Path:
-        path = self.get_path(session.session_id)
-        data = session.model_dump(mode="json")
+    def save_session(self, session: Any) -> Path:
+        sess_id = getattr(session, "session_id", None) or getattr(session, "assessment_id", None)
+        path = self.get_path(sess_id)
+        data = session.model_dump(mode="json") if hasattr(session, "model_dump") else session
         return _atomic_write_json(path, data, self.base_dir)
 
     def load_session(self, session_id: str) -> Optional[KnowledgeInitializationSession]:
@@ -53,6 +57,34 @@ class SessionRepository:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             return KnowledgeInitializationSession.model_validate(data)
+
+    def save_final_assessment(self, session: FinalAssessmentSession) -> Path:
+        path = self.get_path(session.assessment_id)
+        data = session.model_dump(mode="json")
+        return _atomic_write_json(path, data, self.base_dir)
+
+    def load_final_assessment(self, assessment_id: str) -> Optional[FinalAssessmentSession]:
+        path = self.get_path(assessment_id)
+        if not path.exists():
+            return None
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return FinalAssessmentSession.model_validate(data)
+
+    def find_active_final_assessment(self, learner_id: str, subject_id: str) -> Optional[FinalAssessmentSession]:
+        """Find active, uncompleted final assessment session for this learner and subject."""
+        if not self.base_dir.exists():
+            return None
+        for file in self.base_dir.glob("final_*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
+                        if not data.get("completed", False):
+                            return FinalAssessmentSession.model_validate(data)
+            except Exception:
+                continue
+        return None
 
 
 class QuestionBankRepository:

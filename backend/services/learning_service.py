@@ -17,10 +17,12 @@ from phase3.errors import (
     RetrievalError,
 )
 from phase3.question_bank.builder import QuestionBankBuilder
+from datetime import datetime, timezone
+import uuid
 from phase3.question_bank.models import QuestionBank, QuestionBankItem, QuestionType, SourceCitation
 from phase3.retrieval.evidence_retriever import EvidenceRetriever
 from phase4.integration.phase3_adapter import Phase3Adapter
-from phase4.models import KnowledgeInitializationSession, SelfAssessmentStatus
+from phase4.models import KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession
 from phase5.validation import IdempotencyTracker, LearnerStateValidator, PlanningValidator
 from storage.repositories import QuestionBankRepository, SessionRepository
 
@@ -438,3 +440,219 @@ class LearningService:
             ],
             "key_takeaway": f"Mastery of {c_name} requires verifying governing principles and source conditions.",
         }
+
+    def start_final_assessment(self, learner_id: str, subject_id: str) -> Dict[str, Any]:
+        """
+        Creates or resumes a dedicated Final Assessment covering concepts in the subject.
+        NEVER leaks correct_answer or explanation to the client.
+        Guarantees session resumability upon browser refresh.
+        """
+        learning_context = self.knowledge_service.get_learning_context(subject_id)
+        if not learning_context or not learning_context.concepts:
+            raise ValueError(f"Subject '{subject_id}' does not have valid knowledge context.")
+
+        all_concept_ids = list(learning_context.concepts.keys())
+        learner_state = self.learner_service.get_or_create_learner_state(learner_id, all_concept_ids)
+
+        # Resumability check: if active uncompleted session exists, resume it
+        active_sess = self.session_repo.find_active_final_assessment(learner_id, subject_id)
+        bank = self.get_or_create_question_bank(subject_id, all_concept_ids)
+
+        if active_sess and not active_sess.completed:
+            questions = []
+            for qid in active_sess.question_ids:
+                q_item = bank.get_question(qid)
+                if q_item:
+                    q_dict = q_item.model_dump(mode="json")
+                    q_dict.pop("correct_answer", None)
+                    q_dict.pop("explanation", None)
+                    q_dict["item_id"] = q_dict.get("question_id", "")
+                    q_dict["prompt"] = q_dict.get("question_text", "")
+                    questions.append(q_dict)
+            return {
+                "assessment_id": active_sess.assessment_id,
+                "subject_id": subject_id,
+                "resumed": True,
+                "question_count": len(questions),
+                "questions": questions,
+            }
+
+        # Select grounded questions covering concepts
+        target_concept_ids = all_concept_ids[:10]
+        selected_questions: List[Dict[str, Any]] = []
+        question_ids: List[str] = []
+
+        for cid in target_concept_ids:
+            candidates = bank.get_by_concept(cid)
+            if candidates:
+                q = candidates[0]
+                if q.question_id not in question_ids:
+                    question_ids.append(q.question_id)
+                    q_dict = q.model_dump(mode="json")
+                    q_dict.pop("correct_answer", None)
+                    q_dict.pop("explanation", None)
+                    q_dict["item_id"] = q_dict.get("question_id", "")
+                    q_dict["prompt"] = q_dict.get("question_text", "")
+                    selected_questions.append(q_dict)
+
+        if not selected_questions:
+            for q in bank.get_grounded_questions()[:10]:
+                if q.question_id not in question_ids:
+                    question_ids.append(q.question_id)
+                    q_dict = q.model_dump(mode="json")
+                    q_dict.pop("correct_answer", None)
+                    q_dict.pop("explanation", None)
+                    q_dict["item_id"] = q_dict.get("question_id", "")
+                    q_dict["prompt"] = q_dict.get("question_text", "")
+                    selected_questions.append(q_dict)
+
+        if not selected_questions:
+            raise ValueError(f"Insufficient question material in document to construct final assessment for '{subject_id}'.")
+
+        assessment_id = f"final_{uuid.uuid4().hex[:12]}"
+        final_sess = FinalAssessmentSession(
+            assessment_id=assessment_id,
+            learner_id=learner_id,
+            subject_id=subject_id,
+            question_ids=question_ids,
+            concept_ids=target_concept_ids,
+            total_questions=len(selected_questions),
+            completed=False,
+        )
+        self.session_repo.save_final_assessment(final_sess)
+
+        return {
+            "assessment_id": assessment_id,
+            "subject_id": subject_id,
+            "resumed": False,
+            "question_count": len(selected_questions),
+            "questions": selected_questions,
+        }
+
+    def submit_final_assessment(
+        self,
+        assessment_id: str,
+        learner_id: str,
+        subject_id: str,
+        responses: Dict[str, Any],
+        request_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Evaluates Final Assessment responses authoritatively on the server.
+        Updates BKT masteries across all tested concepts and marks assessment complete.
+        Protected by durable idempotency and per-learner thread locks.
+        """
+        if request_id and self.idempotency_tracker.is_duplicate(request_id):
+            cached = self.idempotency_tracker.get_cached_response(request_id)
+            if cached:
+                cached["duplicate_submission"] = True
+                return cached
+
+        with self._get_learner_lock(learner_id):
+            session = self.session_repo.load_final_assessment(assessment_id)
+            if not session:
+                raise ValueError(f"Final Assessment session '{assessment_id}' not found.")
+
+            if session.learner_id != learner_id:
+                raise ValueError(f"Assessment '{assessment_id}' does not belong to learner '{learner_id}'.")
+
+            if session.subject_id != subject_id:
+                raise ValueError(f"Assessment '{assessment_id}' belongs to subject '{session.subject_id}', not '{subject_id}'.")
+
+            learning_context = self.knowledge_service.get_learning_context(subject_id)
+            all_concept_ids = list(learning_context.concepts.keys()) if learning_context else list(session.concept_ids)
+            learner_state = self.learner_service.get_or_create_learner_state(learner_id, all_concept_ids)
+            bank = self.get_or_create_question_bank(subject_id, all_concept_ids)
+
+            correct_count = 0
+            total_questions = len(session.question_ids) or len(responses) or 1
+            scores: Dict[str, float] = {}
+            concept_results: Dict[str, Dict[str, Any]] = {}
+
+            for qid in session.question_ids:
+                q_item = bank.get_question(qid)
+                resp = responses.get(qid)
+                is_correct = False
+
+                if q_item and resp is not None:
+                    user_str = str(resp).strip()
+                    correct_str = str(q_item.correct_answer).strip()
+                    if user_str.lower() in ("i don't know", "dont know", "unsure", ""):
+                        is_correct = False
+                    else:
+                        is_correct = (user_str == correct_str)
+
+                score_val = 1.0 if is_correct else 0.0
+                scores[qid] = score_val
+                if is_correct:
+                    correct_count += 1
+
+                if q_item and q_item.concept_ids:
+                    for cid in q_item.concept_ids:
+                        concept_results[cid] = {
+                            "question_id": qid,
+                            "correct": is_correct,
+                            "score": score_val,
+                            "correct_answer": q_item.correct_answer,
+                            "explanation": q_item.explanation,
+                        }
+
+            score_pct = round((correct_count / total_questions) * 100, 1)
+            passed = bool(score_pct >= 70.0)
+
+            # Update BKT for all tested concepts
+            updated_masteries = {}
+            for cid, c_res in concept_results.items():
+                c_score = c_res["score"]
+                post_m = self.adapter.tracer.update(
+                    learner_state=learner_state,
+                    concept_ids=[cid],
+                    correctness=c_score,
+                )
+                updated_masteries.update(post_m)
+
+            # Mark session complete & persist atomically
+            session.completed = True
+            session.score_pct = score_pct
+            session.passed = passed
+            session.correct_count = correct_count
+            session.total_questions = total_questions
+            session.responses = responses
+            session.scores = scores
+            session.concept_results = concept_results
+            session.completed_at = datetime.now(timezone.utc)
+
+            self.session_repo.save_final_assessment(session)
+            self.learner_service.save_learner_state(learner_state)
+
+            result_payload = {
+                "assessment_id": assessment_id,
+                "duplicate_submission": False,
+                "completed": True,
+                "total_questions": total_questions,
+                "correct_count": correct_count,
+                "score_pct": score_pct,
+                "passed": passed,
+                "concept_results": concept_results,
+                "updated_masteries": updated_masteries,
+                "message": "Final assessment completed successfully.",
+            }
+
+            if request_id:
+                self.idempotency_tracker.mark_processed(
+                    request_id, learner_id=learner_id, response_payload=result_payload
+                )
+
+            return result_payload
+
+    def get_final_assessment_status(self, assessment_id: str, learner_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Retrieves status of a Final Assessment.
+        """
+        session = self.session_repo.load_final_assessment(assessment_id)
+        if not session:
+            raise ValueError(f"Final Assessment session '{assessment_id}' not found.")
+        if learner_id and session.learner_id != learner_id:
+            raise ValueError(f"Assessment '{assessment_id}' does not belong to learner '{learner_id}'.")
+
+        return session.model_dump(mode="json")
