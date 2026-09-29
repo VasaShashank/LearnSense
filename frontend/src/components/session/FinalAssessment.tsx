@@ -3,8 +3,6 @@ import type { Subject } from '../../api/client';
 import { ApiClient } from '../../api/client';
 import {
   Trophy,
-  ShieldCheck,
-  ShieldAlert,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
@@ -61,7 +59,7 @@ interface AssessmentResult {
 export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
   subject,
   learnerId,
-  activeAssessmentId,
+  activeAssessmentId: _activeAssessmentId,
   onComplete,
   onClose,
 }) => {

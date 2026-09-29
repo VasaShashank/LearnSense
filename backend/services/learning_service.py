@@ -273,106 +273,108 @@ class LearningService:
                 else (all_subject_concept_ids or concept_ids)
             )
 
-        # Enforce concept containment
-        if learning_context and learning_context.concepts:
-            for cid in concept_ids:
-                if cid not in learning_context.concepts:
-                    raise ValueError(f"Concept '{cid}' does not belong to subject '{subject_id}'.")
+            # Enforce concept containment
+            if learning_context and learning_context.concepts:
+                for cid in concept_ids:
+                    if cid not in learning_context.concepts:
+                        raise ValueError(f"Concept '{cid}' does not belong to subject '{subject_id}'.")
 
-        learner_state = self.learner_service.get_or_create_learner_state(learner_id, authoritative_concepts)
+            learner_state = self.learner_service.get_or_create_learner_state(learner_id, authoritative_concepts)
 
-        # 3. Server-Side Correctness Evaluation
-        q_item = None
-        is_correct = False
-        eval_correctness = 0.0
-        correct_answer = ""
-        explanation = ""
+            # 3. Server-Side Correctness Evaluation
+            q_item = None
+            is_correct = False
+            eval_correctness = 0.0
+            correct_answer = ""
+            explanation = ""
 
-        if question_id:
-            bank = self.get_or_create_question_bank(subject_id, concept_ids)
-            q_item = bank.get_question(question_id)
-            if not q_item:
-                raise ValueError(f"Question '{question_id}' not found in question bank for subject '{subject_id}'.")
+            if question_id:
+                bank = self.get_or_create_question_bank(subject_id, concept_ids)
+                q_item = bank.get_question(question_id)
+                if not q_item:
+                    raise ValueError(f"Question '{question_id}' not found in question bank for subject '{subject_id}'.")
 
-            correct_answer = str(q_item.correct_answer).strip()
-            explanation = q_item.explanation or ""
+                correct_answer = str(q_item.correct_answer).strip()
+                explanation = q_item.explanation or ""
 
-            if is_dont_know:
-                eval_correctness = 0.0
-                is_correct = False
-            elif selected_option is not None:
-                is_correct = (selected_option.strip() == correct_answer)
-                eval_correctness = 1.0 if is_correct else 0.0
-            elif selected_index is not None:
-                opts = q_item.options or []
-                if 0 <= selected_index < len(opts):
-                    is_correct = (opts[selected_index].strip() == correct_answer)
+                if is_dont_know:
+                    eval_correctness = 0.0
+                    is_correct = False
+                elif selected_option is not None:
+                    is_correct = (selected_option.strip() == correct_answer)
                     eval_correctness = 1.0 if is_correct else 0.0
+                elif selected_index is not None:
+                    opts = q_item.options or []
+                    if 0 <= selected_index < len(opts):
+                        is_correct = (opts[selected_index].strip() == correct_answer)
+                        eval_correctness = 1.0 if is_correct else 0.0
+                    else:
+                        raise ValueError(f"Invalid option index {selected_index} for question '{question_id}'.")
                 else:
-                    raise ValueError(f"Invalid option index {selected_index} for question '{question_id}'.")
+                    raise ValueError("Must provide selected_option, selected_index, or is_dont_know.")
             else:
-                raise ValueError("Must provide selected_option, selected_index, or is_dont_know.")
-        else:
-            # Fallback for direct test calls passing correctness directly
-            if correctness is None:
-                raise ValueError("Must provide either question_id or correctness.")
-            eval_correctness = float(correctness)
-            is_correct = (eval_correctness >= 0.7)
+                # Fallback for direct test calls passing correctness directly
+                if correctness is None:
+                    raise ValueError("Must provide either question_id or correctness.")
+                eval_correctness = float(correctness)
+                is_correct = (eval_correctness >= 0.7)
 
-        # 4. Validation
-        val_res = self.learner_state_validator.validate_response_submission(
-            learner_id=learner_id,
-            concept_ids=concept_ids,
-            correctness=eval_correctness,
-            request_id=request_id,
-            valid_subject_concepts=set(authoritative_concepts),
-        )
-        if not val_res.is_valid:
-            raise ValueError(val_res.errors[0])
+            # 4. Validation
+            val_res = self.learner_state_validator.validate_response_submission(
+                learner_id=learner_id,
+                concept_ids=concept_ids,
+                correctness=eval_correctness,
+                request_id=request_id,
+                valid_subject_concepts=set(authoritative_concepts),
+            )
+            if not val_res.is_valid:
+                raise ValueError(val_res.errors[0])
 
-        if val_res.metadata.get("duplicate_submission", False):
-            path = self.adapter.path_generator.generate_path(learning_context, learner_state, authoritative_concepts)
-            next_target = self.adapter.target_selector.select_next_target(path, learner_state, learning_context)
-            dup_res = {
-                "duplicate_submission": True,
+            if val_res.metadata.get("duplicate_submission", False):
+                path = self.adapter.path_generator.generate_path(learning_context, learner_state, authoritative_concepts)
+                next_target = self.adapter.target_selector.select_next_target(path, learner_state, learning_context)
+                dup_res = {
+                    "duplicate_submission": True,
+                    "is_correct": is_correct,
+                    "correct_answer": correct_answer if q_item else None,
+                    "explanation": explanation if q_item else None,
+                    "updated_masteries": {
+                        cid: learner_state.concept_states[cid].mastery_probability
+                        for cid in concept_ids if cid in learner_state.concept_states
+                    },
+                    "path": path.model_dump(mode="json"),
+                    "next_target": next_target.model_dump(mode="json") if next_target else None,
+                }
+                return dup_res
+
+            # 5. Bayesian Knowledge Tracing Update & Replanning
+            updated_masteries, path, next_target = self.adapter.handle_activity_response_and_replan(
+                learner_state=learner_state,
+                learning_context=learning_context,
+                subject_concept_ids=authoritative_concepts,
+                concept_ids=concept_ids,
+                correctness=eval_correctness,
+            )
+
+            self.learner_service.save_learner_state(learner_state)
+
+            result_payload = {
+                "duplicate_submission": False,
                 "is_correct": is_correct,
                 "correct_answer": correct_answer if q_item else None,
                 "explanation": explanation if q_item else None,
-                "updated_masteries": {
-                    cid: learner_state.concept_states[cid].mastery_probability
-                    for cid in concept_ids if cid in learner_state.concept_states
-                },
+                "updated_masteries": updated_masteries,
                 "path": path.model_dump(mode="json"),
                 "next_target": next_target.model_dump(mode="json") if next_target else None,
             }
-            return dup_res
 
-        # 5. Bayesian Knowledge Tracing Update & Replanning
-        updated_masteries, path, next_target = self.adapter.handle_activity_response_and_replan(
-            learner_state=learner_state,
-            learning_context=learning_context,
-            subject_concept_ids=authoritative_concepts,
-            concept_ids=concept_ids,
-            correctness=eval_correctness,
-        )
+            # 6. Save durable idempotency token with response payload
+            if request_id:
+                self.idempotency_tracker.mark_processed(
+                    request_id, learner_id=learner_id, response_payload=result_payload
+                )
 
-        self.learner_service.save_learner_state(learner_state)
-
-        result_payload = {
-            "duplicate_submission": False,
-            "is_correct": is_correct,
-            "correct_answer": correct_answer if q_item else None,
-            "explanation": explanation if q_item else None,
-            "updated_masteries": updated_masteries,
-            "path": path.model_dump(mode="json"),
-            "next_target": next_target.model_dump(mode="json") if next_target else None,
-        }
-
-        # 6. Save durable idempotency token with response payload
-        if request_id:
-            self.idempotency_tracker.mark_processed(
-                request_id, learner_id=learner_id, response_payload=result_payload
-            )
+            return result_payload
 
         return result_payload
 
