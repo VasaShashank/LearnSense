@@ -97,9 +97,9 @@ export interface Question {
   prompt?: string;
   question_text?: string;
   options: string[];
-  explanation: string;
+  explanation?: string;
   allow_dont_know_option: boolean;
-  correct_answer?: string;
+  // correct_answer is intentionally omitted — the server evaluates answers authoritatively
 }
 
 export interface TutorResponse {
@@ -110,15 +110,19 @@ export interface TutorResponse {
   response_text: string;
   suggested_actions: string[];
   source_citations: { page: number; section: string; quote: string }[];
+  grounded?: boolean;
 }
 
 export interface SourceDocument {
   document_id: string;
   title: string;
+  filename?: string;
+  file_type?: string;
   status: 'READY' | 'PROCESSING' | 'PARTIAL' | 'ERROR';
   recovery_state: string;
   page_count: number;
   file_size_bytes: number;
+  is_demo?: boolean;
 }
 
 export interface ConceptLearningContent {
@@ -321,16 +325,36 @@ export const ApiClient = {
       }
     ),
 
+  /**
+   * Submit diagnostic with raw option text for server-side authoritative evaluation.
+   * This is the production flow — the server evaluates correctness, never the client.
+   */
+  submitDiagnosticRaw: (sessionId: string, responses: Record<string, string>) =>
+    fetchJson<{ session_id: string; diagnostic_completed: boolean; diagnostic_score: number; updated_masteries: Record<string, number> }>(
+      '/initialization/diagnostic/submit',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session_id: sessionId, responses }),
+      }
+    ),
+
   submitActivityResponse: (data: {
     learner_id: string;
     subject_id: string;
     concept_ids: string[];
-    correctness: number;
-    all_subject_concept_ids: string[];
+    question_id?: string;
+    selected_option?: string;
+    selected_index?: number;
+    is_dont_know?: boolean;
+    correctness?: number;
+    all_subject_concept_ids?: string[];
     request_id?: string;
   }) =>
     fetchJson<{
       duplicate_submission: boolean;
+      is_correct?: boolean;
+      correct_answer?: string;
+      explanation?: string;
       updated_masteries: Record<string, number>;
       path: LearningPath;
       next_target: LearningTarget | null;
@@ -356,14 +380,22 @@ export const ApiClient = {
     concept_id: string;
     question_text: string;
     options: string[];
-    correct_answer: string;
-    explanation: string;
+    source_citations?: Array<{
+      document_id: string;
+      page: number;
+      section?: string;
+      block_id: string;
+      quote: string;
+    }>;
   }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question`),
 
   getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>
     fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/content`),
 
   getSources: (): Promise<SourceDocument[]> => fetchJson('/sources'),
+
+  cancelUpload: (jobId: string): Promise<{ job_id: string; status: string; message: string }> =>
+    fetchJson(`/sources/upload/cancel/${jobId}`, { method: 'POST' }),
 
   /**
    * Uploads a document. The backend runs the full Phase 1 -> Phase 2 -> Phase 3 chain,

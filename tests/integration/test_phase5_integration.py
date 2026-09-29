@@ -2,6 +2,7 @@
 Phase 5 End-to-End Pipeline Integration & Recovery Test Suite.
 """
 
+import time
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import app
@@ -22,23 +23,31 @@ def test_api_upload_invalid_file_rejected():
 
 def test_api_activity_response_idempotency():
     """Verify duplicate activity response submission is handled idempotently without double KT update."""
+    from phase3.knowledge.phase2_adapter import ConceptView, LearningContext
+    from storage.repositories import LearningContextRepository
+    repo = LearningContextRepository()
+    ctx = LearningContext(document_id="subj_p5_test", knowledge_document_id="kdoc_p5_test")
+    ctx.concepts["c1"] = ConceptView(concept_id="c1", canonical_name="Concept 1", type="concept")
+    ctx.concepts["c2"] = ConceptView(concept_id="c2", canonical_name="Concept 2", type="concept")
+    repo.save_context(ctx)
+
     payload = {
         "learner_id": "learner_p5_test",
         "subject_id": "subj_p5_test",
         "concept_ids": ["c1"],
         "correctness": 1.0,
         "all_subject_concept_ids": ["c1", "c2"],
-        "request_id": "req_unique_token_12345",
+        "request_id": f"req_unique_token_{int(time.time() * 1000)}",
     }
 
     # First attempt
-    res1 = client.post("/phase4/learners/activity-response", json=payload)
+    res1 = client.post("/api/learners/activity-response", json=payload)
     assert res1.status_code == 200
     data1 = res1.json()
     assert "duplicate_submission" not in data1 or data1.get("duplicate_submission") is False
 
     # Second duplicate attempt with same request_id
-    res2 = client.post("/phase4/learners/activity-response", json=payload)
+    res2 = client.post("/api/learners/activity-response", json=payload)
     assert res2.status_code == 200
     data2 = res2.json()
     assert data2.get("duplicate_submission") is True

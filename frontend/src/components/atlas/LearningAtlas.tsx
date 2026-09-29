@@ -10,10 +10,10 @@ import {
 } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import type { KnowledgeGraphData, ConceptNode } from '../../api/client';
 import { CustomConceptNode } from './CustomConceptNode';
 import type { ConceptNodeData } from './CustomConceptNode';
 import { TerritoryOverlay } from './TerritoryOverlay';
-import type { KnowledgeGraphData, ConceptNode } from '../../api/client';
 import { Layers, Eye, Search, Filter } from 'lucide-react';
 
 export interface LearningAtlasProps {
@@ -105,13 +105,15 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           target: concept.concept_id,
           animated: isTargetEdge || isPrereqImpacted || isXRayMode,
           style: {
-            stroke: isPrereqImpacted ? '#f43f5e' : isTargetEdge ? '#38bdf8' : isXRayMode ? '#8b5cf6' : '#334155',
-            strokeWidth: isPrereqImpacted ? 3 : isTargetEdge ? 2.5 : 1.5,
+            stroke: isPrereqImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : isXRayMode ? '#8B5CF6' : '#2A364F',
+            strokeWidth: isPrereqImpacted ? 2.5 : isTargetEdge ? 2 : 1.2,
             strokeDasharray: isXRayMode ? '4 4' : undefined,
           },
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: isPrereqImpacted ? '#f43f5e' : isTargetEdge ? '#38bdf8' : '#64748b',
+            color: isPrereqImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : '#5A667A',
+            width: 14,
+            height: 14,
           },
         });
       });
@@ -130,32 +132,37 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   }, []);
 
   return (
-    <div className="relative w-full h-[680px] rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl">
+    <div className="relative w-full h-[720px] rounded-3xl border border-white/[0.08] bg-space-950 overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.8)]">
+      
+      {/* Dynamic Territory Regional Overlays */}
       <TerritoryOverlay topics={graphData.topics} zoomLevel={zoomLevel} />
 
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl glass-panel shadow-lg">
+      {/* Floating Control HUD */}
+      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-2xl universe-panel shadow-lg">
         <div className="flex items-center gap-3">
+          {/* Search Box */}
           <div className="relative flex items-center">
-            <Search className="absolute left-3 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 w-3.5 h-3.5 text-universe-slate" />
             <input
               type="text"
               placeholder="Search knowledge territory..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-xs rounded-xl bg-slate-900/80 border border-slate-700/60 text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 w-52 transition-all"
+              className="pl-8 pr-4 py-1.5 text-xs rounded-xl bg-space-850/90 border border-white/[0.07] text-white placeholder-universe-slate focus:outline-none focus:border-cyan-400 w-48 sm:w-60 font-sans transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-700/60 text-xs">
-            <Filter className="w-3.5 h-3.5 text-slate-400 ml-1" />
+          {/* Topic Filter */}
+          <div className="flex items-center gap-1 bg-space-850/90 px-2 py-1 rounded-xl border border-white/[0.07] text-xs">
+            <Filter className="w-3 h-3 text-universe-slate mr-1" />
             <select
               value={filterTopic}
               onChange={(e) => setFilterTopic(e.target.value)}
-              className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent text-universe-text text-xs focus:outline-none cursor-pointer pr-2 font-mono"
             >
-              <option value="ALL" className="bg-slate-900">All Topics</option>
+              <option value="ALL" className="bg-space-900">All Topics ({graphData.topics.length})</option>
               {graphData.topics.map((t) => (
-                <option key={t.id} value={t.id} className="bg-slate-900">
+                <option key={t.id} value={t.id} className="bg-space-900">
                   {t.name}
                 </option>
               ))}
@@ -163,26 +170,28 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           </div>
         </div>
 
+        {/* Right Tools: Zoom Metric & X-Ray Mode */}
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-700/60 text-[11px] font-mono text-slate-300 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            <span>ZOOM LEVEL {zoomLevel}/4</span>
+          <div className="px-2.5 py-1 rounded-xl bg-space-850/80 border border-white/[0.06] text-[10px] font-mono text-universe-slate flex items-center gap-1.5">
+            <Layers className="w-3 h-3 text-cyan-400" />
+            <span>LAYER {zoomLevel}/4</span>
           </div>
 
           <button
             onClick={onToggleXRay}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1.5 transition-all duration-300 ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold tracking-wider flex items-center gap-1.5 transition-all duration-200 ${
               isXRayMode
-                ? 'bg-violet-600 text-white shadow-glow-rose ring-2 ring-violet-400/50'
-                : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700'
+                ? 'bg-violet-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] border border-violet-400/60'
+                : 'bg-space-850 text-universe-slate border border-white/[0.07] hover:text-white hover:bg-space-800'
             }`}
           >
-            <Eye className={`w-4 h-4 ${isXRayMode ? 'text-violet-200 animate-pulse' : 'text-slate-400'}`} />
-            <span>X-RAY MODE</span>
+            <Eye className={`w-3.5 h-3.5 ${isXRayMode ? 'text-violet-200 animate-pulse' : 'text-universe-slate'}`} />
+            <span>X-RAY SCAN</span>
           </button>
         </div>
       </div>
 
+      {/* Main React Flow Graph Canvas */}
       <ReactFlow
         nodes={initialNodes}
         edges={initialEdges}
@@ -192,30 +201,31 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
         onMove={(_, viewport) => handleViewportChange(viewport)}
         fitView
         fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.3}
+        minZoom={0.25}
         maxZoom={2.0}
-        className="w-full h-full"
+        className="w-full h-full bg-space-950"
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#1e293b" />
+        <Background variant={BackgroundVariant.Dots} gap={28} size={1.2} color="#162238" />
         <Controls position="bottom-right" className="!mb-4 !mr-4" />
       </ReactFlow>
 
-      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-4 px-4 py-2 rounded-xl glass-panel text-[11px] font-mono text-slate-300">
+      {/* Floating Legend Dock */}
+      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-4 px-4 py-2 rounded-xl universe-panel text-[10px] font-mono text-universe-slate">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-glow-emerald" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
           <span>Mastered</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-glow-cyan" />
+          <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00F0FF]" />
           <span>Developing</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-glow-amber" />
-          <span>Needs Attention</span>
+          <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#F59E0B]" />
+          <span>Gap Attention</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-ping" style={{ animationDuration: '3s' }} />
-          <span>Current Target</span>
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" style={{ animationDuration: '3s' }} />
+          <span>Target Vector</span>
         </div>
       </div>
     </div>

@@ -69,6 +69,7 @@ class ExtractionMethodEnum(str, Enum):
     TABLE_PARSER = "table_parser"
     MATH_PARSER = "math_parser"
     PRESERVED = "preserved"
+    VLM = "vlm"
 
 
 class BlockStatusEnum(str, Enum):
@@ -113,6 +114,8 @@ class WarningCodeEnum(str, Enum):
     RESOURCE_LIMIT_HIT = "RESOURCE_LIMIT_HIT"
     ENGINE_FALLBACK_USED = "ENGINE_FALLBACK_USED"
     OWNER_PASSWORD_RESTRICTED = "OWNER_PASSWORD_RESTRICTED"
+    VLM_FALLBACK_USED = "VLM_FALLBACK_USED"
+    VLM_EXTRACTION_FAILED = "VLM_EXTRACTION_FAILED"
 
 
 # Supporting Models

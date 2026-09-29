@@ -1,6 +1,8 @@
 """
 Unified Application REST API Router for TAPROOT Phase 6.
-Exposes clean facade endpoints for Subjects, Knowledge Graph, Learner Progress, Gap Analysis, Learning Path, Session/Quiz activities, Contextual AI Tutor, and Source Library.
+Exposes clean facade endpoints for Subjects, Knowledge Graph, Learner Progress,
+Gap Analysis, Learning Path, Session/Quiz activities, Contextual AI Tutor,
+and Source Library with durable job tracking and server authority.
 """
 
 from typing import Dict, List, Optional, Any
@@ -19,6 +21,10 @@ from backend.services.tutor_service import TutorService
 from backend.services.source_service import SourceService
 from phase3.errors import LearnSenseError
 from phase4.models import SelfAssessmentStatus
+import logging
+from storage.job_repository import JobRepository
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -27,10 +33,7 @@ learner_service = LearnerService(knowledge_service=knowledge_service)
 learning_service = LearningService(learner_service=learner_service, knowledge_service=knowledge_service)
 tutor_service = TutorService(knowledge_service=knowledge_service, learner_service=learner_service)
 source_service = SourceService()
-
-# In-memory job store for async upload tracking
-# {job_id: {"status": str, "result": dict|None, "error": str|None, "started_at": float}}
-_upload_jobs: Dict[str, Dict] = {}
+job_repo = JobRepository()
 
 
 # Request Models
@@ -38,24 +41,30 @@ class SelfAssessmentApiRequest(BaseModel):
     learner_id: str
     subject_id: str
     selections: Dict[str, SelfAssessmentStatus]
-    all_subject_concept_ids: List[str]
+    all_subject_concept_ids: Optional[List[str]] = None
 
 
 class DiagnosticStartApiRequest(BaseModel):
     session_id: str
+    learner_id: Optional[str] = None
 
 
 class DiagnosticSubmitApiRequest(BaseModel):
     session_id: str
-    responses: Dict[str, float]
+    responses: Dict[str, Any]
+    learner_id: Optional[str] = None
 
 
 class ActivityResponseApiRequest(BaseModel):
     learner_id: str
     subject_id: str
     concept_ids: List[str]
-    correctness: float
-    all_subject_concept_ids: List[str]
+    question_id: Optional[str] = None
+    selected_option: Optional[str] = None
+    selected_index: Optional[int] = None
+    is_dont_know: bool = False
+    correctness: Optional[float] = None
+    all_subject_concept_ids: Optional[List[str]] = None
     request_id: Optional[str] = None
 
 
@@ -96,11 +105,11 @@ async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
 async def get_concept_question(subject_id: str, concept_id: str):
     """
     Returns authentic domain question and options for a specific concept.
+    P0 Security: correct_answer and explanation are strictly stripped before submission!
     """
     try:
         return learning_service.get_concept_question(subject_id, concept_id)
     except LearnSenseError:
-        # Typed runtime errors are rendered by the global handler in app.py.
         raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -109,12 +118,11 @@ async def get_concept_question(subject_id: str, concept_id: str):
 @router.get("/subjects/{subject_id}/concepts/{concept_id}/content")
 async def get_concept_learning_content(subject_id: str, concept_id: str):
     """
-    Returns in-depth educational learning content (overview, intuition, key principles, worked example, misconceptions, takeaway) for a concept.
+    Returns in-depth educational learning content for a concept.
     """
     try:
         return learning_service.get_concept_learning_content(subject_id, concept_id)
     except LearnSenseError:
-        # Typed runtime errors are rendered by the global handler in app.py.
         raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -144,6 +152,7 @@ async def get_path_and_gaps(learner_id: str, subject_id: str):
 async def submit_self_assessment(req: SelfAssessmentApiRequest):
     """
     Submits concept self-assessment (KNOW, DONT_KNOW, UNANSWERED) and creates initialization session.
+    Server is authoritative for valid concepts.
     """
     try:
         session = learning_service.submit_self_assessment(
@@ -161,9 +170,10 @@ async def submit_self_assessment(req: SelfAssessmentApiRequest):
 async def start_diagnostic(req: DiagnosticStartApiRequest):
     """
     Generates diagnostic assessment questions restricted strictly to KNOW concepts.
+    P0 Security: correct_answer is never leaked before submission.
     """
     try:
-        return learning_service.start_diagnostic(req.session_id)
+        return learning_service.start_diagnostic(req.session_id, learner_id=req.learner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -171,10 +181,10 @@ async def start_diagnostic(req: DiagnosticStartApiRequest):
 @router.post("/initialization/diagnostic/submit")
 async def submit_diagnostic(req: DiagnosticSubmitApiRequest):
     """
-    Submits diagnostic responses, updates KT state, and sets diagnostic completion.
+    Submits diagnostic responses. Evaluates correctness AUTHORITATIVELY on the server.
     """
     try:
-        return learning_service.submit_diagnostic(req.session_id, req.responses)
+        return learning_service.submit_diagnostic(req.session_id, req.responses, learner_id=req.learner_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -182,7 +192,8 @@ async def submit_diagnostic(req: DiagnosticSubmitApiRequest):
 @router.post("/learners/activity-response")
 async def submit_activity_response(req: ActivityResponseApiRequest):
     """
-    Submits activity/quiz response, triggers Phase 3 KT update & Phase 4 replanning with Phase 5 idempotency.
+    Submits activity/quiz response. Evaluates correctness server-side when question_id is provided.
+    Triggers Phase 3 KT update & Phase 4 replanning with durable idempotency.
     """
     try:
         return learning_service.process_activity_response(
@@ -192,6 +203,10 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
             correctness=req.correctness,
             all_subject_concept_ids=req.all_subject_concept_ids,
             request_id=req.request_id,
+            question_id=req.question_id,
+            selected_option=req.selected_option,
+            selected_index=req.selected_index,
+            is_dont_know=req.is_dont_know,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -202,7 +217,7 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
 @router.post("/tutor/interact")
 async def interact_with_tutor(req: TutorInteractApiRequest):
     """
-    Provides context-aware tutoring guidance anchored to concept, learner state, and sources.
+    Provides context-aware tutoring guidance anchored to concept, learner state, and source references.
     """
     return tutor_service.generate_contextual_response(
         learner_id=req.learner_id,
@@ -218,7 +233,7 @@ async def interact_with_tutor(req: TutorInteractApiRequest):
 @router.get("/sources")
 async def list_sources():
     """
-    Lists uploaded PDF sources and Phase 5 processing/recovery statuses.
+    Lists uploaded sources and processing/recovery statuses.
     """
     return source_service.list_sources()
 
@@ -227,9 +242,6 @@ async def list_sources():
 async def api_health():
     """
     Backend + LLM provider health for the frontend connection banner.
-
-    Reports whether a real model is reachable, so the UI can warn *before* a learner
-    uploads a document that generation will then fail to process.
     """
     from phase3.adapters.llm_adapter import get_llm_adapter
 
@@ -246,33 +258,38 @@ async def api_health():
 async def upload_source(file: UploadFile = File(...), document_id: Optional[str] = None):
     """
     Uploads a source document and kicks off the knowledge-build pipeline asynchronously.
-
-    Returns a ``job_id`` immediately. Poll ``GET /api/sources/upload/status/{job_id}``
-    to track progress. The full Phase 1 → Phase 2 → Phase 3 chain runs in a background
-    thread so the HTTP connection is never held open for the full ingestion time.
+    Durable job state is persisted under storage/jobs/{job_id}.json.
     """
     doc_id = document_id or _derive_document_id(file.filename)
     content = await file.read()
     filename = file.filename or "document.pdf"
 
     job_id = str(uuid.uuid4())
-    _upload_jobs[job_id] = {
-        "status": "processing",
-        "document_id": doc_id,
-        "filename": filename,
-        "result": None,
-        "error": None,
-        "started_at": time.time(),
-    }
+    job = job_repo.create_job(job_id, filename)
+    job["document_id"] = doc_id
+    job["status"] = "processing"
+    job_repo.save_job(job)
 
     def _run_build(job_id: str, doc_id: str, content: bytes, filename: str) -> None:
         try:
+            if job_repo.is_cancelled(job_id):
+                return
             result = source_service.save_uploaded_source(doc_id, content, filename)
-            _upload_jobs[job_id]["status"] = "done"
-            _upload_jobs[job_id]["result"] = result
-        except Exception as exc:  # pragma: no cover
-            _upload_jobs[job_id]["status"] = "error"
-            _upload_jobs[job_id]["error"] = str(exc)
+            current_job = job_repo.load_job(job_id) or job
+            if current_job.get("cancelled"):
+                return
+            current_job["status"] = "done"
+            current_job["progress_pct"] = 100
+            current_job["stage"] = "Knowledge Atlas generated successfully"
+            current_job["result"] = result
+            job_repo.save_job(current_job)
+        except Exception as exc:
+            logger.error("Ingestion job %s failed: %s", job_id, exc)
+            current_job = job_repo.load_job(job_id) or job
+            current_job["status"] = "error"
+            current_job["error"] = str(exc)
+            current_job["stage"] = f"Failed: {exc}"
+            job_repo.save_job(current_job)
 
     thread = threading.Thread(
         target=_run_build,
@@ -293,27 +310,34 @@ async def upload_source(file: UploadFile = File(...), document_id: Optional[str]
 @router.get("/sources/upload/status/{job_id}")
 async def upload_status(job_id: str):
     """
-    Poll the status of an async upload job started by POST /api/sources/upload.
-
-    Returns one of:
-    - ``{"status": "processing", ...}``  – still running
-    - ``{"status": "done", "result": {...}}``  – completed successfully
-    - ``{"status": "error", "error": "..."}``  – failed with reason
+    Poll the status of an async upload job from durable storage.
     """
-    job = _upload_jobs.get(job_id)
+    job = job_repo.load_job(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail=f"No upload job found with id '{job_id}'")
 
-    elapsed = round(time.time() - job["started_at"], 1)
     return {
         "job_id": job_id,
-        "document_id": job["document_id"],
-        "filename": job["filename"],
-        "status": job["status"],
-        "elapsed_seconds": elapsed,
-        "result": job["result"],
-        "error": job["error"],
+        "document_id": job.get("document_id"),
+        "filename": job.get("filename"),
+        "status": job.get("status"),
+        "stage": job.get("stage"),
+        "progress_pct": job.get("progress_pct", 0),
+        "elapsed_seconds": job.get("elapsed_seconds", 0.0),
+        "result": job.get("result"),
+        "error": job.get("error"),
     }
+
+
+@router.post("/sources/upload/cancel/{job_id}")
+async def cancel_upload(job_id: str):
+    """
+    Cancels an in-flight upload/ingestion job safely without corrupting persistent state.
+    """
+    cancelled = job_repo.cancel_job(job_id)
+    if not cancelled:
+        raise HTTPException(status_code=404, detail=f"No upload job found with id '{job_id}'")
+    return {"job_id": job_id, "status": "cancelled", "message": "Upload job cancelled successfully."}
 
 
 def _derive_document_id(filename: Optional[str]) -> str:

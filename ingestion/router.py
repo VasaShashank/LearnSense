@@ -14,6 +14,8 @@ from extraction.ocr import OCREngine
 from extraction.structure import EducationalStructureTagger
 from extraction.tables import TableExtractor
 from extraction.text import NativeTextExtractor
+from extraction.vlm import VLMEngine
+from adapters.vlm_adapter import get_vlm_adapter, get_vlm_telemetry
 from ingestion.inspector import PageInspectionMetrics
 from schemas.document import (
     AssetTypeEnum,
@@ -37,6 +39,7 @@ class EscalationRouter:
         math_extractor: Optional[MathExtractor] = None,
         figure_extractor: Optional[FigureExtractor] = None,
         structure_tagger: Optional[EducationalStructureTagger] = None,
+        vlm_engine: Optional[VLMEngine] = None,
     ):
         self.text_extractor = text_extractor or NativeTextExtractor()
         self.layout_analyzer = layout_analyzer or LayoutAnalyzer()
@@ -45,6 +48,8 @@ class EscalationRouter:
         self.math_extractor = math_extractor or MathExtractor()
         self.figure_extractor = figure_extractor or FigureExtractor()
         self.structure_tagger = structure_tagger or EducationalStructureTagger()
+        self.vlm_engine = vlm_engine or VLMEngine()
+        self.telemetry = get_vlm_telemetry()
 
     def route_and_extract_page(
         self,
@@ -68,21 +73,51 @@ class EscalationRouter:
         extracted_blocks: List[DocumentBlock] = []
         page_assets: List[DocumentAsset] = []
 
-        # RUNG 1 vs RUNG 3 Routing Decision
-        if metrics.page_type in ("native", "hybrid"):
-            # Rung 1: Native Text Extraction
-            extracted_blocks = self.text_extractor.extract_page_blocks(
-                page,
-                page_width=page_width,
-                page_height=page_height,
-                rotation=metrics.rotation_applied,
-                page_index=page_idx,
-            )
-        else: # "scanned" or "garbled"
-            # Rung 3: Tesseract OCR Engine Override
-            extracted_blocks = self.ocr_engine.process_scanned_page(
-                page, page_width=page_width, page_height=page_height, page_index=page_idx
-            )
+        # Evaluate VLM mode & eligibility
+        vlm_adapter = getattr(self.vlm_engine, "vlm_adapter", None)
+        vlm_mode = getattr(vlm_adapter, "mode", "auto") if vlm_adapter else "auto"
+
+        should_try_vlm = False
+        if vlm_mode == "always":
+            should_try_vlm = True
+        elif vlm_mode == "auto":
+            should_try_vlm = getattr(metrics, "requires_vlm", False)
+
+        vlm_succeeded = False
+        if should_try_vlm and self.vlm_engine:
+            try:
+                vlm_blocks = self.vlm_engine.process_visual_page(
+                    page=page,
+                    page_width=page_width,
+                    page_height=page_height,
+                    page_index=page_idx,
+                    context_hint=getattr(metrics, "vlm_reason", ""),
+                )
+                if vlm_blocks:
+                    extracted_blocks = vlm_blocks
+                    vlm_succeeded = True
+                    self.telemetry.vlm_pages += 1
+            except Exception:
+                # Graceful fallback: record failure & fallback, continue with traditional pipeline
+                self.telemetry.vlm_failures += 1
+                self.telemetry.vlm_fallbacks += 1
+
+        if not vlm_succeeded:
+            # Traditional Extraction / OCR Ladder
+            if metrics.page_type in ("native", "hybrid"):
+                extracted_blocks = self.text_extractor.extract_page_blocks(
+                    page,
+                    page_width=page_width,
+                    page_height=page_height,
+                    rotation=metrics.rotation_applied,
+                    page_index=page_idx,
+                )
+                self.telemetry.native_pages += 1
+            else:
+                extracted_blocks = self.ocr_engine.process_scanned_page(
+                    page, page_width=page_width, page_height=page_height, page_index=page_idx
+                )
+                self.telemetry.ocr_pages += 1
 
         # Rung 2: Layout Analysis & Reading Order Sorting
         if extracted_blocks:

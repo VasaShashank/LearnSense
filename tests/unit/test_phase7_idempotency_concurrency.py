@@ -1,16 +1,23 @@
 """
 Phase 7 Idempotency and Concurrency Test Suite.
 Verifies Phase 5 IdempotencyTracker and duplicate submission prevention across concurrent requests.
+Uses unique tokens per test run to avoid contamination from a persistent SQLite DB.
 """
 
+import time
 import pytest
 from phase5.validation.learner_state_validator import IdempotencyTracker
 from backend.services.learning_service import LearningService
 
 
+def _unique_id(prefix: str) -> str:
+    """Generate a unique ID incorporating timestamp to avoid cross-run collisions."""
+    return f"{prefix}_{int(time.time() * 1000)}"
+
+
 def test_idempotency_tracker_basic():
     tracker = IdempotencyTracker()
-    request_id = "req_123456_abc"
+    request_id = _unique_id("req_basic")
 
     assert tracker.is_duplicate(request_id) is False
     tracker.mark_processed(request_id)
@@ -19,11 +26,11 @@ def test_idempotency_tracker_basic():
 
 def test_duplicate_activity_response_prevention():
     service = LearningService()
-    learner_id = "learner_idem_test"
+    learner_id = _unique_id("learner_idem")
     subject_id = "subj_algebra"
     concept_ids = ["c_var"]
     all_concepts = ["c_var", "c_eq"]
-    req_id = "unique_req_999"
+    req_id = _unique_id("unique_req")
 
     # First submission
     resp1 = service.process_activity_response(

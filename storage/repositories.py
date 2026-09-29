@@ -14,6 +14,25 @@ from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.question_bank.models import QuestionBank, QuestionValidationStatus
 
 
+def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
+    """Write data as JSON atomically so process crashes cannot leave truncated files."""
+    base_dir.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(dir=str(base_dir), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_name, path)
+    except Exception:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
+    return path
+
+
 class SessionRepository:
     def __init__(self, base_dir: str = "storage/sessions"):
         self.base_dir = Path(base_dir)
@@ -25,9 +44,7 @@ class SessionRepository:
     def save_session(self, session: KnowledgeInitializationSession) -> Path:
         path = self.get_path(session.session_id)
         data = session.model_dump(mode="json")
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        return path
+        return _atomic_write_json(path, data, self.base_dir)
 
     def load_session(self, session_id: str) -> Optional[KnowledgeInitializationSession]:
         path = self.get_path(session_id)
@@ -112,9 +129,7 @@ class LearningContextRepository:
     def save_context(self, context: LearningContext) -> Path:
         path = self.get_path(context.document_id)
         data = context.model_dump(mode="json")
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        return path
+        return _atomic_write_json(path, data, self.base_dir)
 
     def load_context(self, subject_id: str) -> Optional[LearningContext]:
         path = self.get_path(subject_id)

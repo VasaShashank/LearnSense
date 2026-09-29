@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Subject, Question, ConceptNode } from '../../api/client';
 import { ApiClient } from '../../api/client';
-import { CheckCircle2, XCircle, HelpCircle, ArrowRight, Sparkles, BookOpen, Brain, ShieldCheck, Upload, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldCheck, Upload, RefreshCw, Orbit } from 'lucide-react';
 
 export interface OnboardingWorkflowProps {
   subjects: Subject[];
@@ -19,7 +19,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [selfAssessmentSelections, setSelfAssessmentSelections] = useState<Record<string, string>>({});
   const [sessionId, setSessionId] = useState<string>('');
   const [diagnosticQuestions, setDiagnosticQuestions] = useState<Question[]>([]);
-  const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, number>>({});
+  const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, string>>({});
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadingPdf, setUploadingPdf] = useState<boolean>(false);
@@ -33,7 +33,6 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     try {
       const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
       setConcepts(graph.concepts);
-      // Initialize self-assessment state as UNANSWERED
       const initMap: Record<string, string> = {};
       graph.concepts.forEach((c) => {
         initMap[c.concept_id] = 'UNANSWERED';
@@ -47,7 +46,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // 1b. Handle PDF Upload as primary onboarding pathway
+  // 1b. Handle PDF/File Upload
   const handleOnboardingPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -67,7 +66,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       await handleSelectSubject(newSub);
     } catch (err: any) {
       console.error('Failed to process uploaded file', err);
-      setUploadError(err.message || 'Failed to parse and synthesize Knowledge Atlas from document.');
+      setUploadError(err.message || 'Failed to synthesize Knowledge Atlas from document.');
     } finally {
       setUploadingPdf(false);
       setUploadStage('');
@@ -90,14 +89,12 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
       setSessionId(session.session_id);
 
-      // Part 23 Rule: If zero KNOW concepts selected, DO NOT RUN DIAGNOSTIC. Bypass directly to foundational graph.
       const knowCount = Object.values(selfAssessmentSelections).filter((v) => v === 'KNOW').length;
       if (knowCount === 0) {
         onCompleteOnboarding(selectedSubject.id, learnerId);
         return;
       }
 
-      // Fetch diagnostic quiz for KNOW concepts
       const diagData = await ApiClient.startDiagnostic(session.session_id);
       if (!diagData.questions || diagData.questions.length === 0) {
         onCompleteOnboarding(selectedSubject.id, learnerId);
@@ -115,22 +112,21 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   };
 
   // 3. Submit Diagnostic Answer
-  const handleAnswerDiagnosticQuestion = (item_id: string, correctness: number) => {
-    const nextAnswers = { ...diagnosticAnswers, [item_id]: correctness };
+  const handleAnswerDiagnosticQuestion = (item_id: string, selectedOption: string) => {
+    const nextAnswers = { ...diagnosticAnswers, [item_id]: selectedOption };
     setDiagnosticAnswers(nextAnswers);
     if (currentQuestionIdx + 1 < diagnosticQuestions.length) {
       setCurrentQuestionIdx((prev) => prev + 1);
     } else {
-      // Diagnostic complete - pass nextAnswers directly to avoid async state staleness
       handleSubmitDiagnostic(nextAnswers);
     }
   };
 
-  const handleSubmitDiagnostic = async (finalAnswers?: Record<string, number>) => {
+  const handleSubmitDiagnostic = async (finalAnswers?: Record<string, string>) => {
     setLoading(true);
     try {
       const payload = finalAnswers || diagnosticAnswers;
-      await ApiClient.submitDiagnostic(sessionId, payload);
+      await ApiClient.submitDiagnosticRaw(sessionId, payload);
       if (selectedSubject) {
         onCompleteOnboarding(selectedSubject.id, learnerId);
       }
@@ -145,25 +141,30 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950 text-white">
-      <div className="w-full max-w-3xl glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden">
-        {/* Step 1: Upload PDF or Select Subject */}
+    <div className="min-h-screen universe-canvas flex items-center justify-center p-4 sm:p-8 text-white antialiased">
+      <div className="w-full max-w-3xl universe-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)] border border-white/[0.08]">
+        
+        {/* Subtle Ambient Light Orb */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Step 1: Upload Material or Select Subject */}
         {step === 'SELECT_SUBJECT' && (
-          <div>
-            <div className="text-center max-w-lg mx-auto mb-6">
-              <span className="px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/50 text-cyan-300 text-xs font-mono font-bold tracking-widest uppercase">
-                LEARNSENSE ONBOARDING
+          <div className="space-y-8 animate-fade-in relative z-10">
+            <div className="text-center max-w-lg mx-auto space-y-2">
+              <span className="px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold tracking-widest uppercase">
+                LEARNSENSE // ONBOARDING
               </span>
-              <h1 className="text-3xl font-extrabold text-white mt-3 tracking-tight">
-                Upload Your Course Material
+              <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight">
+                Construct Your Knowledge Universe
               </h1>
-              <p className="text-xs text-slate-400 mt-2">
-                Upload any PDF textbook, PowerPoint slides (.pptx), Word document (.docx), or diagrams (.png, .jpg) to automatically synthesize your personalized Knowledge Atlas.
+              <p className="text-xs text-universe-slate font-sans leading-relaxed">
+                Ingest any textbook PDF, lecture slides (.pptx), Word document (.docx), or diagrams to automatically synthesize your interactive topological Atlas.
               </p>
             </div>
 
-            {/* Primary Action: Upload Course Material */}
-            <div className="mb-6 p-6 rounded-3xl border-2 border-dashed border-cyan-500/50 bg-cyan-950/20 hover:bg-cyan-950/40 hover:border-cyan-400 transition-all text-center relative group">
+            {/* Primary Action: Upload Document */}
+            <div className="p-8 rounded-3xl border-2 border-dashed border-cyan-500/30 bg-space-950/40 hover:bg-space-900/60 hover:border-cyan-400/60 transition-all text-center group cursor-pointer relative">
               <input
                 type="file"
                 accept=".pdf,.pptx,.docx,.png,.jpg,.jpeg"
@@ -176,107 +177,109 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                 htmlFor="onboarding-pdf-input"
                 className="cursor-pointer flex flex-col items-center justify-center space-y-3"
               >
-                <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 group-hover:scale-110 transition-transform shadow-glow-cyan">
+                <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-300 group-hover:scale-105 transition-transform shadow-[0_0_20px_rgba(0,240,255,0.15)]">
                   {uploadingPdf ? (
-                    <RefreshCw className="w-7 h-7 animate-spin text-cyan-400" />
+                    <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
                   ) : (
-                    <Upload className="w-7 h-7" />
+                    <Upload className="w-6 h-6" />
                   )}
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">
-                    {uploadingPdf ? 'Analyzing Material & Synthesizing Knowledge Atlas...' : 'Upload Course Material (PDF, PPTX, DOCX, IMG)'}
+
+                <div className="space-y-1">
+                  <h3 className="text-base font-display font-bold text-white">
+                    {uploadingPdf ? 'Synthesizing Knowledge Topology...' : 'Ingest Course Material (PDF, PPTX, DOCX, IMG)'}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 max-w-md">
+                  <p className="text-xs text-universe-slate max-w-md mx-auto font-sans leading-relaxed">
                     {uploadingPdf
                       ? uploadStage.startsWith('processing (')
-                        ? `Ingesting PDF — ${uploadStage.replace('processing (', '').replace(')', '')} • Extracting chapters, concepts & question bank…`
-                        : 'Extracting chapters, slide notes, prerequisite concepts, and generating curriculum question bank with Groq LLM...'
-                      : 'Drop any PDF, PowerPoint slides (.pptx), Word doc (.docx), or diagram images (.png, .jpg) to dynamically construct an intelligent learning map.'}
+                        ? `Extracting content: ${uploadStage.replace('processing (', '').replace(')', '')}`
+                        : 'Extracting chapters, prerequisite concepts, and generating grounded curriculum question bank...'
+                      : 'Drop any course material or textbook file to generate your grounded personalized learning universe.'}
                   </p>
                 </div>
+
                 {!uploadingPdf && (
-                  <span className="py-2 px-5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-glow-cyan transition-all mt-1">
+                  <span className="py-2.5 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all mt-2">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>Select Document or Slides</span>
+                    <span>Select File to Ingest</span>
                   </span>
                 )}
               </label>
             </div>
 
             {uploadError && (
-              <div className="mb-6 p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-xs text-rose-300 font-mono text-center">
+              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 font-mono text-center">
                 {uploadError}
               </div>
             )}
 
             {/* Secondary Action: Select existing subject */}
             <div className="flex items-center gap-4 my-6">
-              <div className="h-px bg-slate-800 flex-1" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500">
-                Or choose an existing subject
+              <div className="h-px bg-white/[0.08] flex-1" />
+              <span className="text-[10px] font-mono uppercase tracking-widest text-universe-slate/70">
+                Or explore an existing knowledge base
               </span>
-              <div className="h-px bg-slate-800 flex-1" />
+              <div className="h-px bg-white/[0.08] flex-1" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {subjects.map((s) => (
                 <div
                   key={s.id}
                   onClick={() => handleSelectSubject(s)}
-                  className="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-cyan-400/80 hover:bg-slate-900 cursor-pointer transition-all duration-300 group shadow-lg flex items-center justify-between"
+                  className="p-4 rounded-2xl universe-panel-interactive cursor-pointer flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-400 group-hover:scale-110 transition-transform">
-                      <BookOpen className="w-5 h-5" />
+                    <div className="p-2.5 rounded-xl bg-space-950 border border-white/[0.08] text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                      <BookOpen className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                      <h4 className="text-xs font-display font-bold text-white group-hover:text-cyan-300 transition-colors">
                         {s.title}
                       </h4>
-                      <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5 font-mono">
+                      <div className="flex items-center gap-2 text-[10px] text-universe-slate mt-0.5 font-mono">
                         <span>{s.concept_count} Concepts</span>
                         <span>•</span>
                         <span>{s.page_count} Pages</span>
                       </div>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-universe-slate group-hover:text-cyan-400 transition-colors" />
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Step 2: Self Assessment */}
+        {/* Step 2: Concept Familiarity Self Assessment */}
         {step === 'SELF_ASSESSMENT' && selectedSubject && (
-          <div>
-            <div className="mb-6 pb-4 border-b border-slate-800 flex items-center justify-between">
+          <div className="space-y-6 animate-fade-in relative z-10">
+            <div className="pb-4 border-b border-white/[0.08] flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold uppercase">
-                  STEP 2 OF 3 • CONCEPT INITIALIZATION
+                  STEP 2 OF 3 // TOPOLOGY INITIALIZATION
                 </span>
-                <h2 className="text-xl font-bold text-white mt-1">
-                  Self-Assess Your Familiarity
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-white mt-1">
+                  Baseline Knowledge Calibration
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Mark concepts you already know. Only <strong className="text-cyan-300">KNOW</strong> concepts are diagnostically tested.
+                <p className="text-xs text-universe-slate font-sans mt-0.5">
+                  Indicate your current familiarity. Only <strong className="text-cyan-300 font-mono">KNOW</strong> concepts are verified diagnostically.
                 </p>
               </div>
-              <Sparkles className="w-6 h-6 text-cyan-400" />
+              <Orbit className="w-6 h-6 text-cyan-400" />
             </div>
 
-            <div className="max-h-96 overflow-y-auto space-y-3 pr-2">
+            <div className="max-h-96 overflow-y-auto space-y-2.5 pr-2">
               {concepts.map((c) => {
                 const currentStatus = selfAssessmentSelections[c.concept_id] || 'UNANSWERED';
                 return (
                   <div
                     key={c.concept_id}
-                    className="p-4 rounded-2xl border border-slate-800 bg-slate-900/50 flex items-center justify-between gap-4"
+                    className="p-3.5 rounded-xl bg-space-950/60 border border-white/[0.06] flex items-center justify-between gap-4"
                   >
                     <div>
-                      <h4 className="text-sm font-bold text-white">{c.name}</h4>
-                      <p className="text-xs text-slate-400 line-clamp-1 mt-0.5">{c.definition}</p>
+                      <h4 className="text-xs font-display font-bold text-white">{c.name}</h4>
+                      <p className="text-[11px] text-universe-slate line-clamp-1 font-sans">{c.definition}</p>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -284,13 +287,13 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                         onClick={() =>
                           setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'KNOW' }))
                         }
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
                           currentStatus === 'KNOW'
-                            ? 'bg-emerald-500 text-slate-950 shadow-glow-emerald'
-                            : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'bg-emerald-500 text-space-950 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
                         }`}
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <CheckCircle2 className="w-3 h-3" />
                         <span>KNOW</span>
                       </button>
 
@@ -298,27 +301,27 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                         onClick={() =>
                           setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'DONT_KNOW' }))
                         }
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
                           currentStatus === 'DONT_KNOW'
-                            ? 'bg-rose-500 text-slate-950 shadow-glow-rose'
-                            : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'bg-rose-500 text-space-950 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
                         }`}
                       >
-                        <XCircle className="w-3.5 h-3.5" />
-                        <span>DON'T KNOW</span>
+                        <XCircle className="w-3 h-3" />
+                        <span>UNFAMILIAR</span>
                       </button>
 
                       <button
                         onClick={() =>
                           setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'UNANSWERED' }))
                         }
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
                           currentStatus === 'UNANSWERED'
-                            ? 'bg-slate-700 text-white'
-                            : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'bg-amber-400 text-space-950 shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-300'
+                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
                         }`}
                       >
-                        <HelpCircle className="w-3.5 h-3.5" />
+                        <HelpCircle className="w-3 h-3" />
                         <span>UNSURE</span>
                       </button>
                     </div>
@@ -330,15 +333,15 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
             {(() => {
               const knowCount = Object.values(selfAssessmentSelections).filter((v) => v === 'KNOW').length;
               return (
-                <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
-                  <div className="text-xs text-slate-400">
+                <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
+                  <div className="text-xs text-universe-slate font-sans">
                     {knowCount > 0 ? (
                       <span>
-                        <strong className="text-cyan-400 font-bold">{knowCount}</strong> {knowCount === 1 ? 'concept' : 'concepts'} selected for diagnostic quiz.
+                        <strong className="text-cyan-400 font-mono font-bold">{knowCount}</strong> concepts queued for diagnostic verification.
                       </span>
                     ) : (
                       <span>
-                        No concepts marked as <strong className="text-slate-300">KNOW</strong>. Click below to begin with all concepts at baseline.
+                        All concepts set to baseline. Click below to begin personalized learning vector.
                       </span>
                     )}
                   </div>
@@ -346,9 +349,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   <button
                     onClick={handleSubmitSelfAssessment}
                     disabled={loading}
-                    className="py-3 px-6 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-glow-cyan transition-all shrink-0 disabled:opacity-50"
+                    className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all shrink-0 disabled:opacity-50"
                   >
-                    <span>{knowCount > 0 ? `Start Diagnostic Quiz (${knowCount})` : 'Start Learning Path'}</span>
+                    <span>{knowCount > 0 ? `Begin Diagnostic (${knowCount})` : 'Construct Learning Atlas'}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -359,28 +362,28 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
         {/* Step 3: Diagnostic Assessment */}
         {step === 'DIAGNOSTIC' && (
-          <div>
+          <div className="space-y-6 animate-fade-in relative z-10">
             {diagnosticQuestions.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-sm text-slate-400">No diagnostic questions found for the selected concepts.</p>
+              <div className="text-center py-12 space-y-3">
+                <p className="text-xs text-universe-slate font-mono">No diagnostic items required.</p>
                 <button
                   onClick={() => selectedSubject && onCompleteOnboarding(selectedSubject.id, learnerId)}
-                  className="mt-4 py-2.5 px-5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
+                  className="py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs"
                 >
-                  Continue to Learning Path
+                  Enter Learning Atlas
                 </button>
               </div>
             ) : (() => {
               const q = diagnosticQuestions[currentQuestionIdx];
               if (!q) {
                 return (
-                  <div className="text-center py-12">
-                    <p className="text-sm text-slate-400">Diagnostic completed.</p>
+                  <div className="text-center py-12 space-y-3">
+                    <p className="text-xs text-universe-slate font-mono">Diagnostic assessment completed.</p>
                     <button
                       onClick={() => handleSubmitDiagnostic()}
-                      className="mt-4 py-2.5 px-5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
+                      className="py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs"
                     >
-                      Finish Diagnostic
+                      Calibrate Knowledge State
                     </button>
                   </div>
                 );
@@ -390,7 +393,6 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               const qId = q.question_id || q.item_id || `q_${currentQuestionIdx}`;
               const rawOptions = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
 
-
               const isDontKnowText = (text: string) => {
                 const lower = text.toLowerCase();
                 return lower.includes("don't know") || lower.includes("dont know") || lower.includes("unsure");
@@ -398,37 +400,31 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
               const hasDontKnowInOptions = rawOptions.some(isDontKnowText);
 
-              const onOptionClick = (optText: string, optIdx: number) => {
+              const onOptionClick = (optText: string) => {
                 if (isDontKnowText(optText)) {
-                  handleAnswerDiagnosticQuestion(qId, 0.0);
+                  handleAnswerDiagnosticQuestion(qId, "I don't know");
                   return;
                 }
-                let correctness = 0.0;
-                if (q.correct_answer) {
-                  correctness = optText.trim() === q.correct_answer.trim() ? 1.0 : 0.0;
-                } else {
-                  correctness = optIdx === 0 ? 1.0 : 0.0;
-                }
-                handleAnswerDiagnosticQuestion(qId, correctness);
+                handleAnswerDiagnosticQuestion(qId, optText.trim());
               };
 
               return (
-                <div>
-                  <div className="mb-6 pb-4 border-b border-slate-800 flex items-center justify-between">
+                <div className="space-y-6">
+                  <div className="pb-4 border-b border-white/[0.08] flex items-center justify-between">
                     <div>
                       <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                        QUESTION {currentQuestionIdx + 1} OF {diagnosticQuestions.length}
+                        DIAGNOSTIC QUESTION {currentQuestionIdx + 1} OF {diagnosticQuestions.length}
                       </span>
-                      <h2 className="text-xl font-bold text-white mt-1">
-                        Diagnostic Knowledge Assessment
+                      <h2 className="text-xl font-display font-bold text-white mt-0.5">
+                        Authentic Mastery Calibration
                       </h2>
                     </div>
-                    <Brain className="w-6 h-6 text-emerald-400" />
+                    <Brain className="w-5 h-5 text-emerald-400" />
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-                      <p className="text-sm font-semibold text-slate-100 leading-relaxed">
+                    <div className="p-5 rounded-2xl bg-space-950/70 border border-white/[0.06]">
+                      <p className="text-xs sm:text-sm font-sans text-universe-text leading-relaxed">
                         {qText}
                       </p>
                     </div>
@@ -438,9 +434,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                         <button
                           key={optIdx}
                           disabled={loading}
-                          onClick={() => onOptionClick(opt, optIdx)}
-                          className={`w-full p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 hover:bg-slate-800 hover:border-cyan-400/60 text-left text-xs text-slate-200 transition-all font-sans flex items-center justify-between disabled:opacity-50 ${
-                            isDontKnowText(opt) ? 'text-amber-300 hover:border-amber-400/60 bg-amber-950/20' : ''
+                          onClick={() => onOptionClick(opt)}
+                          className={`w-full p-3.5 rounded-xl border border-white/[0.06] bg-space-950/50 hover:bg-space-850 hover:border-cyan-400/40 text-left text-xs text-universe-text transition-all font-sans flex items-center justify-between disabled:opacity-50 ${
+                            isDontKnowText(opt) ? 'text-amber-300 hover:border-amber-400/40 bg-amber-950/20' : ''
                           }`}
                         >
                           <span>{opt}</span>
@@ -451,11 +447,11 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                       {q.allow_dont_know_option && !hasDontKnowInOptions && (
                         <button
                           disabled={loading}
-                          onClick={() => handleAnswerDiagnosticQuestion(qId, 0.0)}
-                          className="w-full p-3.5 rounded-xl border border-amber-500/40 bg-amber-950/30 hover:bg-amber-900/50 text-left text-xs font-mono text-amber-200 transition-all flex items-center gap-2 disabled:opacity-50"
+                          onClick={() => handleAnswerDiagnosticQuestion(qId, "I don't know")}
+                          className="w-full p-3.5 rounded-xl border border-amber-500/30 bg-amber-950/30 hover:bg-amber-900/40 text-left text-xs font-mono text-amber-200 transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                           <ShieldCheck className="w-4 h-4 text-amber-400" />
-                          <span>I don't know this yet</span>
+                          <span>I don't know this concept yet</span>
                         </button>
                       )}
                     </div>
@@ -465,6 +461,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
             })()}
           </div>
         )}
+
       </div>
     </div>
   );

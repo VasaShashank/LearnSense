@@ -82,6 +82,8 @@ class IngestionPipeline:
         # 3. Open PyMuPDF Document
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         total_pages = len(doc)
+        if hasattr(self.router, "telemetry") and self.router.telemetry:
+            self.router.telemetry.total_pages += total_pages
         pdf_toc = doc.get_toc()  # [(level, title, page_num)]
 
         # 4. Pass A: Per-Page Extraction via Escalation Router & Security Sandbox

@@ -13,103 +13,143 @@ export interface ConceptNodeData extends ConceptNode, Record<string, unknown> {
 }
 
 export const CustomConceptNode = memo(({ data }: { data: ConceptNodeData }) => {
-  const { name, mastery = 0.5, uncertainty = 0.3, isTarget, isXRay, isImpacted, isSelected, zoomLevel, onSelect } = data;
+  const { 
+    name, 
+    mastery = 0.5, 
+    uncertainty = 0.3, 
+    isTarget, 
+    isXRay, 
+    isImpacted, 
+    isSelected, 
+    zoomLevel, 
+    onSelect 
+  } = data;
 
-  let stateStyle = 'border-slate-700/60 bg-slate-900/80 text-slate-300';
-  let badgeIcon = <HelpCircle className="w-3.5 h-3.5 text-slate-400" />;
-  let stateLabel = 'UNKNOWN';
-  let ringGlow = '';
+  const masteryPercent = Math.round(mastery * 100);
+
+  // States
+  let stateBorder = 'border-white/[0.08]';
+  let stateBg = 'bg-space-850/80';
+  let badgeText = 'text-universe-slate';
+  let badgeIcon = <HelpCircle className="w-3 h-3 text-universe-slate" />;
+  let stateLabel = 'EXPLORING';
+  let haloClass = '';
+  let masteryColor = 'bg-cyan-400';
 
   if (isTarget) {
-    stateStyle = 'border-sky-400 bg-sky-950/90 text-sky-100 shadow-glow-cyan animate-pulse-glow';
-    badgeIcon = <Target className="w-4 h-4 text-sky-400 animate-spin" style={{ animationDuration: '6s' }} />;
+    stateBorder = 'border-cyan-400';
+    stateBg = 'bg-space-800/95';
+    badgeText = 'text-cyan-300';
+    badgeIcon = <Target className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />;
     stateLabel = 'TARGET';
-    ringGlow = 'ring-2 ring-sky-400/50';
+    haloClass = 'halo-target ring-1 ring-cyan-400/60';
+    masteryColor = 'bg-cyan-400';
   } else if (mastery >= 0.75) {
-    stateStyle = 'border-emerald-500/80 bg-emerald-950/80 text-emerald-100 shadow-glow-emerald';
-    badgeIcon = <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />;
+    stateBorder = 'border-emerald-500/40';
+    stateBg = 'bg-space-850/85';
+    badgeText = 'text-emerald-300';
+    badgeIcon = <CheckCircle2 className="w-3 h-3 text-emerald-400" />;
     stateLabel = 'MASTERED';
-    ringGlow = 'ring-1 ring-emerald-500/30';
+    haloClass = 'halo-mastered';
+    masteryColor = 'bg-emerald-400';
   } else if (mastery >= 0.4) {
-    stateStyle = 'border-cyan-500/80 bg-cyan-950/80 text-cyan-100 shadow-glow-cyan';
-    badgeIcon = <Sparkles className="w-3.5 h-3.5 text-cyan-400" />;
+    stateBorder = 'border-cyan-500/30';
+    stateBg = 'bg-space-850/80';
+    badgeText = 'text-cyan-300';
+    badgeIcon = <Sparkles className="w-3 h-3 text-cyan-400" />;
     stateLabel = 'DEVELOPING';
-    ringGlow = 'ring-1 ring-cyan-500/30';
+    masteryColor = 'bg-cyan-400';
   } else if (uncertainty > 0.6 || mastery < 0.25) {
-    stateStyle = 'border-amber-500/80 bg-amber-950/80 text-amber-100 shadow-glow-amber';
-    badgeIcon = <AlertCircle className="w-3.5 h-3.5 text-amber-400" />;
+    stateBorder = 'border-amber-500/40';
+    stateBg = 'bg-space-850/85';
+    badgeText = 'text-amber-300';
+    badgeIcon = <AlertCircle className="w-3 h-3 text-amber-400" />;
     stateLabel = 'NEEDS ATTENTION';
-    ringGlow = 'ring-1 ring-amber-500/40';
+    haloClass = 'halo-gap';
+    masteryColor = 'bg-amber-400';
   }
 
   if (isImpacted) {
-    stateStyle = 'border-rose-500 bg-rose-950/90 text-rose-100 shadow-glow-rose ring-2 ring-rose-500/60 animate-bounce';
+    stateBorder = 'border-rose-500';
+    stateBg = 'bg-rose-950/60';
+    haloClass = 'ring-2 ring-rose-500/70 shadow-[0_0_24px_rgba(244,63,94,0.3)] animate-pulse';
+    stateLabel = 'CASCADE IMPACT';
   }
 
   if (isSelected) {
-    ringGlow += ' ring-2 ring-white shadow-2xl scale-105';
+    stateBorder = 'border-white';
+    haloClass += ' ring-2 ring-white/80 shadow-[0_0_32px_rgba(255,255,255,0.2)] scale-[1.03]';
   }
 
+  // Compact Node for Distant Zoom
   if (zoomLevel <= 2) {
     return (
       <div
         onClick={() => onSelect(data)}
-        className={`cursor-pointer group flex flex-col items-center justify-center p-2 rounded-xl border backdrop-blur-md transition-all duration-300 ${stateStyle} ${ringGlow}`}
+        className={`cursor-pointer group flex items-center gap-2 px-3 py-1.5 rounded-lg border backdrop-blur-md transition-all duration-200 ${stateBg} ${stateBorder} ${haloClass}`}
       >
-        <Handle type="target" position={Position.Top} className="!bg-slate-500 !w-2 !h-2" />
-        <div className="flex items-center gap-1.5">
-          {badgeIcon}
-          <span className="text-xs font-semibold tracking-wide whitespace-nowrap">{name}</span>
-        </div>
-        <Handle type="source" position={Position.Bottom} className="!bg-slate-500 !w-2 !h-2" />
+        <Handle type="target" position={Position.Top} className="!bg-cyan-400 !w-1.5 !h-1.5 !border-0" />
+        {badgeIcon}
+        <span className="text-xs font-display font-semibold tracking-tight text-white whitespace-nowrap">
+          {name}
+        </span>
+        <span className="text-[10px] font-mono text-universe-slate font-bold">
+          {masteryPercent}%
+        </span>
+        <Handle type="source" position={Position.Bottom} className="!bg-cyan-400 !w-1.5 !h-1.5 !border-0" />
       </div>
     );
   }
 
+  // Full High-Fidelity Constellation Node
   return (
     <div
       onClick={() => onSelect(data)}
-      className={`cursor-pointer group relative w-64 p-3.5 rounded-2xl border backdrop-blur-xl transition-all duration-300 ${stateStyle} ${ringGlow}`}
+      className={`cursor-pointer group relative w-64 p-3.5 rounded-xl border backdrop-blur-xl transition-all duration-200 ${stateBg} ${stateBorder} ${haloClass}`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-sky-400 !w-2.5 !h-2.5 !-top-1.5" />
+      <Handle type="target" position={Position.Top} className="!bg-cyan-400 !w-2 !h-2 !-top-1 !border-0 shadow-[0_0_8px_#00F0FF]" />
 
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/50 flex items-center gap-1">
+      {/* Header telemetry */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className={`text-[9px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded bg-space-950/70 border border-white/[0.06] flex items-center gap-1 font-bold ${badgeText}`}>
           {badgeIcon}
           {stateLabel}
         </span>
-        <span className="text-xs font-bold font-mono text-cyan-300">
-          {Math.round(mastery * 100)}%
+
+        <span className="text-xs font-mono font-bold text-white tracking-tight">
+          {masteryPercent}%
         </span>
       </div>
 
-      <h4 className="text-sm font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors">
+      {/* Concept Name */}
+      <h4 className="text-xs font-display font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
         {name}
       </h4>
 
-      {zoomLevel >= 4 && (
-        <p className="text-[11px] text-slate-300/80 line-clamp-2 mt-1 leading-relaxed">
+      {/* Deep definition at high zoom */}
+      {zoomLevel >= 4 && data.definition && (
+        <p className="text-[10px] text-universe-slate mt-1 line-clamp-2 leading-relaxed font-sans">
           {data.definition}
         </p>
       )}
 
-      <div className="mt-3 w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden border border-slate-700/40">
+      {/* Mastery Progress Conduit */}
+      <div className="mt-2.5 w-full bg-space-950 h-1 rounded-full overflow-hidden border border-white/[0.05]">
         <div
-          className={`h-full transition-all duration-700 rounded-full ${
-            mastery >= 0.75 ? 'bg-emerald-400' : mastery >= 0.4 ? 'bg-cyan-400' : 'bg-amber-400'
-          }`}
-          style={{ width: `${Math.max(5, mastery * 100)}%` }}
+          className={`h-full transition-all duration-500 rounded-full ${masteryColor}`}
+          style={{ width: `${Math.max(4, masteryPercent)}%` }}
         />
       </div>
 
+      {/* X-Ray Diagnostics Footnote */}
       {isXRay && (
-        <div className="mt-2.5 pt-2 border-t border-slate-700/50 flex justify-between items-center text-[10px] text-slate-400 font-mono">
+        <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between items-center text-[9px] text-universe-slate font-mono">
           <span>Uncertainty: {Math.round(uncertainty * 100)}%</span>
           <span>Prereqs: {data.prerequisites.length}</span>
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="!bg-sky-400 !w-2.5 !h-2.5 !-bottom-1.5" />
+      <Handle type="source" position={Position.Bottom} className="!bg-cyan-400 !w-2 !h-2 !-bottom-1 !border-0 shadow-[0_0_8px_#00F0FF]" />
     </div>
   );
 });

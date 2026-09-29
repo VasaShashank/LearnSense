@@ -8,9 +8,12 @@ storage/documents/
 storage/sessions/
 storage/learner_states/
 storage/question_banks/
+storage/jobs/
+storage/cache/
 storage/*.db
 storage/*.db-wal
 storage/*.db-shm
 .env
+backend.log
 frontend/dist/
 frontend/node_modules/

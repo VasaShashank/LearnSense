@@ -103,6 +103,9 @@ class QuestionBank(BaseModel):
     def get_by_concept(self, concept_id: str) -> List[QuestionBankItem]:
         return [q for q in self.questions.values() if concept_id in q.concept_ids and q.validation_status == QuestionValidationStatus.VALID]
 
+    def get_question(self, question_id: str) -> Optional[QuestionBankItem]:
+        return self.questions.get(question_id)
+
     def get_grounded_questions(self) -> List[QuestionBankItem]:
         """Only questions traceable to a real passage of the learner's material."""
         return [

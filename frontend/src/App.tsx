@@ -13,7 +13,7 @@ import { ContextualTutor } from './components/tutor/ContextualTutor';
 import { SourceLibrary } from './components/sources/SourceLibrary';
 import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
-import { Zap } from 'lucide-react';
+import { Zap, Sparkles, Orbit } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -116,7 +116,9 @@ export default function App() {
   // Handle "Knowledge Changed" Event
   const handleKnowledgeChanged = (updatedMasteries: Record<string, number>, conceptId: string) => {
     refreshSubjectData();
-    setKnowledgeChangedNotification(`Knowledge Atlas updated! Concept ${conceptId.replace(/_/g, ' ')} mastery is now ${Math.round((updatedMasteries[conceptId] || 0.5) * 100)}%.`);
+    const formattedConcept = conceptId.replace(/_/g, ' ').toUpperCase();
+    const masteryVal = Math.round((updatedMasteries[conceptId] || 0.5) * 100);
+    setKnowledgeChangedNotification(`KNOWLEDGE ATLAS CALIBRATED // ${formattedConcept} mastery calibrated to ${masteryVal}%.`);
     setTimeout(() => {
       setKnowledgeChangedNotification(null);
     }, 5000);
@@ -132,8 +134,9 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${theme} bg-slate-950 text-slate-100 flex flex-col font-sans transition-colors duration-300`}>
-      {/* Top Navbar */}
+    <div className={`min-h-screen ${theme} universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300 relative selection:bg-cyan-500/30 selection:text-cyan-200`}>
+      
+      {/* Top Futuristic Navigation Command Bar */}
       <TopNavbar
         subjects={subjects}
         selectedSubject={selectedSubject}
@@ -145,19 +148,25 @@ export default function App() {
         onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
       />
 
-      {/* Main Workspace Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
-        {/* Signature "Knowledge Changed" Notification Banner */}
+      {/* Main Workspace Universe Viewport */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        
+        {/* Signature "Knowledge Changed" Cosmic Signal */}
         {knowledgeChangedNotification && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-cyan-950 to-slate-900 border border-emerald-400/60 shadow-glow-emerald animate-pulse-glow flex items-center gap-3">
-            <Zap className="w-5 h-5 text-emerald-400 fill-current animate-bounce" />
-            <span className="text-xs font-mono font-bold text-emerald-200">
-              {knowledgeChangedNotification}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-cyan-950/60 to-space-900 border border-emerald-500/50 shadow-[0_0_32px_rgba(16,185,129,0.2)] flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <Zap className="w-5 h-5 text-emerald-400 shrink-0 animate-bounce" />
+              <span className="text-xs font-mono font-bold text-emerald-200 tracking-wider">
+                {knowledgeChangedNotification}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400/70 uppercase">
+              BKT Updated
             </span>
           </div>
         )}
 
-        {/* View 1: DASHBOARD */}
+        {/* View 1: DASHBOARD (Knowledge Command Center) */}
         {activeView === 'DASHBOARD' && selectedSubject && (
           <Dashboard
             currentSubject={selectedSubject}
@@ -174,16 +183,22 @@ export default function App() {
           />
         )}
 
-        {/* View 2: LEARNING ATLAS MAP */}
+        {/* View 2: LEARNING ATLAS (Constellation Map) */}
         {activeView === 'ATLAS' && graphData && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white tracking-tight">Interactive Learning Atlas</h2>
+              <div className="flex items-center gap-2.5">
+                <Orbit className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-lg font-display font-bold text-white tracking-tight">
+                  Knowledge Atlas Topology
+                </h2>
+              </div>
+
               <button
                 onClick={() => setShowAccessibleAtlas(!showAccessibleAtlas)}
-                className="text-xs font-mono text-cyan-400 hover:underline"
+                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline transition-colors"
               >
-                {showAccessibleAtlas ? 'Show Visual Map' : 'Show Accessible View'}
+                {showAccessibleAtlas ? 'Show Interactive Neural Map' : 'Show Accessible Data Table'}
               </button>
             </div>
 
@@ -217,8 +232,12 @@ export default function App() {
                       isTracing={isTracingImpact}
                     />
                   ) : (
-                    <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 text-center text-xs text-slate-400 font-mono">
-                      Click any concept node on the Learning Atlas to open deep X-Ray inspection.
+                    <div className="universe-panel rounded-2xl p-6 text-center space-y-2">
+                      <Sparkles className="w-6 h-6 text-cyan-400/60 mx-auto" />
+                      <h4 className="text-xs font-display font-bold text-white">X-Ray Telemetry Standby</h4>
+                      <p className="text-[11px] text-universe-slate font-sans leading-relaxed">
+                        Select any conceptual node in the Knowledge Atlas to open real-time prerequisite tracing and downstream impact telemetry.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -227,7 +246,7 @@ export default function App() {
           </div>
         )}
 
-        {/* View 3: LEARNING PATH TIMELINE */}
+        {/* View 3: LEARNING PATH TIMELINE (Expedition Vector) */}
         {activeView === 'PATH' && (
           <LearningPathTimeline
             nodes={pathNodes}
@@ -240,7 +259,7 @@ export default function App() {
                   c = {
                     concept_id: node.concept_id,
                     name: node.concept_name || node.name || node.concept_id.replace(/_/g, ' '),
-                    description: `Personalized learning step for ${node.concept_name || node.name}`,
+                    description: `Personalized learning milestone for ${node.concept_name || node.name}`,
                     definition: `Target concept: ${node.concept_name || node.name}`,
                     subject_id: selectedSubject?.id || '',
                     prerequisites: node.prerequisites || [],
@@ -256,7 +275,7 @@ export default function App() {
           />
         )}
 
-        {/* View 4: SOURCE LIBRARY */}
+        {/* View 4: SOURCE LIBRARY (Grounded Ingestion Deck) */}
         {activeView === 'SOURCES' && (
           <SourceLibrary
             sources={sources}
@@ -278,7 +297,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Slide-Over Drawers & Workspaces */}
+      {/* Slide-Over Intelligence Drawer: Concept Inspector */}
       {selectedConcept && (
         <ConceptInspector
           concept={selectedConcept}
@@ -310,7 +329,7 @@ export default function App() {
         />
       )}
 
-      {/* Contextual AI Tutor Sidebar */}
+      {/* Grounded AI Pedagogical Tutor Sidebar */}
       {isTutorOpen && selectedSubject && (
         <ContextualTutor
           concept={tutorConcept}
@@ -320,7 +339,7 @@ export default function App() {
         />
       )}
 
-      {/* Focused Learning Session Modal */}
+      {/* Focused Learning Studio Modal */}
       {activeStudyConcept && selectedSubject && (
         <LearningSession
           concept={activeStudyConcept}
@@ -340,7 +359,7 @@ export default function App() {
         />
       )}
 
-      {/* Global Cmd+K Command Palette */}
+      {/* Global Cmd+K Command Palette Spotlight */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}

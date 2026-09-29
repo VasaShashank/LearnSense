@@ -25,6 +25,9 @@ class PageInspectionMetrics:
         vector_path_count: int,
         page_type: str,  # "native", "scanned", "hybrid", "blank", "near_blank"
         preview_png_bytes: bytes,
+        visual_complexity_score: float = 0.0,
+        requires_vlm: bool = False,
+        vlm_reason: str = "",
     ):
         self.page_index = page_index
         self.width = width
@@ -38,6 +41,9 @@ class PageInspectionMetrics:
         self.vector_path_count = vector_path_count
         self.page_type = page_type
         self.preview_png_bytes = preview_png_bytes
+        self.visual_complexity_score = visual_complexity_score
+        self.requires_vlm = requires_vlm
+        self.vlm_reason = vlm_reason
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -52,6 +58,9 @@ class PageInspectionMetrics:
             "image_coverage_ratio": round(self.image_coverage_ratio, 4),
             "vector_path_count": self.vector_path_count,
             "page_type": self.page_type,
+            "visual_complexity_score": round(self.visual_complexity_score, 4),
+            "requires_vlm": self.requires_vlm,
+            "vlm_reason": self.vlm_reason,
         }
 
 
@@ -117,6 +126,24 @@ class PageInspector:
             vector_path_count=vector_path_count,
         )
 
+        # 6. Evaluate visual complexity and VLM escalation signals
+        visual_complexity = 0.0
+        requires_vlm = False
+        vlm_reason = ""
+
+        if vector_path_count > 35 and image_coverage_ratio >= 0.15:
+            visual_complexity = min(1.0, 0.4 + (vector_path_count / 100.0) * 0.3 + image_coverage_ratio * 0.3)
+            requires_vlm = True
+            vlm_reason = "Complex vector graphics and diagram structures detected"
+        elif garbage_ratio >= self.garbled_text_ratio_threshold and char_count >= 50:
+            visual_complexity = min(1.0, 0.6 + garbage_ratio * 0.4)
+            requires_vlm = True
+            vlm_reason = "Garbled digital text layer requires visual reasoning"
+        elif image_coverage_ratio >= 0.40 and char_count < 100 and ink_ratio > 0.05:
+            visual_complexity = min(1.0, 0.5 + image_coverage_ratio * 0.5)
+            requires_vlm = True
+            vlm_reason = "Dense visual figure / diagram page"
+
         return PageInspectionMetrics(
             page_index=page_index,
             width=width,
@@ -130,6 +157,9 @@ class PageInspector:
             vector_path_count=vector_path_count,
             page_type=page_type,
             preview_png_bytes=preview_bytes,
+            visual_complexity_score=visual_complexity,
+            requires_vlm=requires_vlm,
+            vlm_reason=vlm_reason,
         )
 
     def _calculate_garbage_ratio(self, text: str) -> float:

@@ -3,7 +3,7 @@ Learner State Validator and Response Idempotency Tracker for Taproot Phase 5.
 Validates student response payloads, learner state bounds, history consistency, and prevents duplicate KT updates.
 """
 
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 import time
 from phase3.learner.models import ConceptState, LearnerState
 from phase5.models.validation_result import RecoveryClassification, ValidationResult, ValidationStatus
@@ -11,27 +11,23 @@ from phase5.observability.validation_events import ValidationEventLogger
 
 
 class IdempotencyTracker:
-    """Tracks processed request/attempt IDs to enforce response submission idempotency."""
+    """Tracks processed request/attempt IDs to enforce response submission idempotency with durable storage."""
 
-    def __init__(self, ttl_seconds: int = 86400):
-        self._processed_tokens: Set[str] = set()
-        self._token_timestamps: Dict[str, float] = {}
+    def __init__(self, ttl_seconds: int = 86400, db_path: str = "storage/idempotency.db"):
+        from storage.idempotency import DurableIdempotencyTracker
+        self._durable = DurableIdempotencyTracker(db_path=db_path, ttl_seconds=ttl_seconds)
         self.ttl_seconds = ttl_seconds
 
     def is_duplicate(self, token: str) -> bool:
-        self._cleanup()
-        return token in self._processed_tokens
+        return self._durable.is_duplicate(token)
 
-    def mark_processed(self, token: str):
-        self._processed_tokens.add(token)
-        self._token_timestamps[token] = time.time()
+    def mark_processed(
+        self, token: str, learner_id: Optional[str] = None, response_payload: Optional[Dict[str, Any]] = None
+    ) -> None:
+        self._durable.mark_processed(token, learner_id=learner_id, response_payload=response_payload)
 
-    def _cleanup(self):
-        now = time.time()
-        expired = [t for t, ts in self._token_timestamps.items() if now - ts > self.ttl_seconds]
-        for t in expired:
-            self._processed_tokens.discard(t)
-            del self._token_timestamps[t]
+    def get_cached_response(self, token: str) -> Optional[Dict[str, Any]]:
+        return self._durable.get_cached_response(token)
 
 
 class LearnerStateValidator:

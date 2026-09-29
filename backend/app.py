@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.routes import documents, phase4, api
+from backend.routes import documents, api
 from phase3.errors import LearnSenseError
 
 # Load environment configuration if .env exists
@@ -52,7 +52,6 @@ app.add_middleware(
 # Mount REST API Routers
 app.include_router(api.router, prefix="/api", tags=["application_facades"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
-app.include_router(phase4.router, prefix="/phase4", tags=["phase4"])
 
 
 @app.exception_handler(ValueError)

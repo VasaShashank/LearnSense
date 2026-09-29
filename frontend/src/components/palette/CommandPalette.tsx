@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { ConceptNode, SourceDocument } from '../../api/client';
-import { Search, Compass, BookOpen, MessageSquare, X } from 'lucide-react';
+import { Search, BookOpen, MessageSquare, X, Orbit } from 'lucide-react';
 
 export interface CommandPaletteProps {
   isOpen: boolean;
@@ -47,21 +47,26 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const filteredSources = sources.filter((s) => s.title.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md p-4 flex items-start justify-center pt-20">
-      <div className="w-full max-w-xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-space-950/80 backdrop-blur-xl p-4 flex items-start justify-center pt-24 animate-fade-in">
+      <div className="w-full max-w-xl universe-panel-solid rounded-3xl border border-white/[0.1] shadow-[0_32px_80px_rgba(0,0,0,0.8)] overflow-hidden">
+        
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-slate-800 flex items-center gap-3">
-          <Search className="w-5 h-5 text-cyan-400" />
+        <div className="p-4 border-b border-white/[0.07] flex items-center gap-3 bg-space-900/60">
+          <Search className="w-4 h-4 text-cyan-400 shrink-0 ml-1" />
           <input
             type="text"
             autoFocus
-            placeholder="Search concepts, sources, or quick actions (Cmd + K)..."
+            placeholder="Search knowledge concepts, sources, or jump to actions..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
+            className="flex-1 bg-transparent text-xs text-white placeholder-universe-slate focus:outline-none font-sans"
           />
-          <button onClick={onClose} className="p-1 rounded bg-slate-800 text-slate-400 hover:text-white text-xs">
-            <X className="w-4 h-4" />
+          <button 
+            onClick={onClose} 
+            className="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-universe-slate hover:text-white transition-colors"
+            aria-label="Close command palette"
+          >
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -69,28 +74,36 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="max-h-80 overflow-y-auto p-3 space-y-4 text-xs font-sans">
           {/* Quick Shortcuts */}
           {!query && (
-            <div>
-              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest px-2">
-                QUICK ACTIONS
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono font-bold text-universe-slate/70 uppercase tracking-widest px-2.5">
+                SPATIAL SHORTCUTS
               </span>
-              <div className="mt-2 space-y-1">
+              <div className="space-y-1">
                 <button
                   onClick={() => {
                     onNavigateToAtlas();
                     onClose();
                   }}
-                  className="w-full p-2.5 rounded-xl hover:bg-slate-800 text-left text-slate-200 flex items-center gap-2"
+                  className="w-full p-2.5 rounded-xl hover:bg-space-800 text-left text-universe-text flex items-center justify-between group transition-colors"
                 >
-                  <Compass className="w-4 h-4 text-cyan-400" /> Open Learning Atlas Map
+                  <div className="flex items-center gap-2.5">
+                    <Orbit className="w-4 h-4 text-cyan-400" /> 
+                    <span>Open Knowledge Atlas Map</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-universe-slate group-hover:text-white">↵</span>
                 </button>
                 <button
                   onClick={() => {
                     onNavigateToSources();
                     onClose();
                   }}
-                  className="w-full p-2.5 rounded-xl hover:bg-slate-800 text-left text-slate-200 flex items-center gap-2"
+                  className="w-full p-2.5 rounded-xl hover:bg-space-800 text-left text-universe-text flex items-center justify-between group transition-colors"
                 >
-                  <BookOpen className="w-4 h-4 text-emerald-400" /> View Source Document Library
+                  <div className="flex items-center gap-2.5">
+                    <BookOpen className="w-4 h-4 text-emerald-400" /> 
+                    <span>View Grounded Source Library</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-universe-slate group-hover:text-white">↵</span>
                 </button>
               </div>
             </div>
@@ -98,11 +111,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
           {/* Concepts Section */}
           {filteredConcepts.length > 0 && (
-            <div>
-              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest px-2">
-                CONCEPTS ({filteredConcepts.length})
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono font-bold text-universe-slate/70 uppercase tracking-widest px-2.5">
+                KNOWLEDGE CONCEPTS ({filteredConcepts.length})
               </span>
-              <div className="mt-2 space-y-1">
+              <div className="space-y-1">
                 {filteredConcepts.slice(0, 5).map((c) => (
                   <div
                     key={c.concept_id}
@@ -110,23 +123,24 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       onSelectConcept(c);
                       onClose();
                     }}
-                    className="p-2.5 rounded-xl hover:bg-slate-800 cursor-pointer flex items-center justify-between text-slate-200"
+                    className="p-2.5 rounded-xl hover:bg-space-800 cursor-pointer flex items-center justify-between text-universe-text group transition-colors"
                   >
-                    <div>
-                      <h5 className="font-bold text-white">{c.name}</h5>
-                      <p className="text-[11px] text-slate-400 line-clamp-1">{c.definition}</p>
+                    <div className="pr-4">
+                      <h5 className="font-display font-bold text-white group-hover:text-cyan-300 transition-colors">{c.name}</h5>
+                      <p className="text-[11px] text-universe-slate line-clamp-1">{c.definition}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-cyan-400 font-mono font-bold">{Math.round(c.mastery * 100)}%</span>
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="text-cyan-400 font-mono font-bold text-[11px]">{Math.round(c.mastery * 100)}%</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onAskTutor(c.concept_id);
                           onClose();
                         }}
-                        className="p-1 rounded bg-slate-950 border border-slate-800 text-slate-400 hover:text-cyan-400"
+                        className="p-1.5 rounded-lg bg-space-950 border border-white/[0.08] text-universe-slate hover:text-cyan-400 transition-colors"
+                        title="Ask AI Tutor"
                       >
-                        <MessageSquare className="w-3.5 h-3.5" />
+                        <MessageSquare className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
@@ -137,11 +151,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
           {/* Sources Section */}
           {filteredSources.length > 0 && (
-            <div>
-              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest px-2">
-                SOURCES ({filteredSources.length})
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono font-bold text-universe-slate/70 uppercase tracking-widest px-2.5">
+                GROUNDED SOURCES ({filteredSources.length})
               </span>
-              <div className="mt-2 space-y-1">
+              <div className="space-y-1">
                 {filteredSources.map((s) => (
                   <div
                     key={s.document_id}
@@ -149,16 +163,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       onNavigateToSources();
                       onClose();
                     }}
-                    className="p-2.5 rounded-xl hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-slate-200"
+                    className="p-2.5 rounded-xl hover:bg-space-800 cursor-pointer flex items-center gap-2.5 text-universe-text group transition-colors"
                   >
                     <BookOpen className="w-4 h-4 text-amber-400" />
-                    <span>{s.title}</span>
+                    <span className="group-hover:text-white transition-colors">{s.title}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

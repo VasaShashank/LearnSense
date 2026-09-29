@@ -58,6 +58,7 @@ class OCREngine:
                     role="body",
                     bbox=[0.0, 0.0, page_width, page_height],
                     content=BlockContent(text="", text_raw=""),
+                    reading_order=1,
                     extraction_method=ExtractionMethodEnum.OCR,
                     engine=EngineInfo(name="TesseractOCR", version="5.0"),
                     confidence=0.0,

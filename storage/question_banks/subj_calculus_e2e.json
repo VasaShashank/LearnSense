@@ -2,25 +2,25 @@
   "document_id": "subj_calculus_e2e",
   "chapter_id": "ch_all",
   "questions": {
-    "q_c_limits_1": {
-      "question_id": "q_c_limits_1",
-      "chapter_id": "ch_1",
+    "q_9a9fb8236e44": {
+      "question_id": "q_9a9fb8236e44",
+      "chapter_id": "ch_all",
       "topic_ids": [],
       "concept_ids": [
         "c_limits"
       ],
       "skill_ids": [],
       "question_type": "mcq",
-      "question_text": "What is the value of \\(\\lim_{x\\to 2}\\frac{x^2-4}{x-2}\\) ?",
+      "question_text": "According to the source material regarding from Limits limit describes value function approaches input, which statement is correct for condition set 1?",
       "options": [
-        "The limit does not exist because the function is undefined at x=2.",
-        "The limit equals 4 because the expression simplifies to x+2 and can be evaluated at x=2.",
-        "The limit equals 0 because the numerator approaches 0 faster than the denominator.",
-        "The limit equals 2 by incorrectly canceling the factor (x-2)."
+        "from Limits limit describes value function increases monotonically with the measured quantity",
+        "from Limits limit describes value function decreases monotonically with the measured quantity",
+        "from Limits limit describes value function is independent of the measured quantity",
+        "from Limits limit describes value function is undefined for the given conditions"
       ],
-      "correct_answer": "The limit equals 4 because the expression simplifies to x+2 and can be evaluated at x=2.",
+      "correct_answer": "from Limits limit describes value function increases monotonically with the measured quantity",
       "allow_dont_know_option": true,
-      "explanation": "Factoring the numerator gives (x-2)(x+2). Canceling the common factor (x-2) for x\\neq2 yields the simplified function f(x)=x+2, which is continuous at x=2. Hence \\(\\lim_{x\\to2}f(x)=2+2=4\\). The first option is a common misconception: a removable discontinuity does not prevent the limit from existing. The third option misinterprets the rate at which numerator and denominator approach zero; both approach zero linearly, so the ratio approaches the ratio of their slopes, not zero. The fourth option incorrectly assumes cancellation without considering the limit process, leading to an erroneous value of 2.",
+      "explanation": "In the supplied source material, the concept is characterised by 0 defining behaviours that determine how it responds to the stated conditions.",
       "difficulty": 0.5,
       "expected_time_seconds": 60.0,
       "information_value": 1.0,
@@ -29,27 +29,46 @@
       "source_item_id": null,
       "validation_status": "valid",
       "exposure_count": 0,
-      "created_at": "2026-09-27T19:05:08.498115Z"
+      "created_at": "2026-09-29T03:17:43.792037Z",
+      "evidence_refs": [
+        "E1",
+        "E1"
+      ],
+      "source_citations": [
+        {
+          "document_id": "subj_calculus_e2e",
+          "page": 1,
+          "block_id": "blk_p0000_nat_0001",
+          "section": null,
+          "evidence_ids": [
+            "ev_a070cb9e392c",
+            "ev_21dd52a7fbcd",
+            "ev_05dc5e4dbf46",
+            "ev_6bcb4a417fbd"
+          ],
+          "quote": "Limits A limit describes the value a function approaches as its input becomes arbitrarily close to a given point. Derivatives The derivative of a function at a point is the limit of the difference quotient as the increment approaches zero Chain Rule The chain rule states that the derivative of a composition of functio…"
+        }
+      ]
     },
-    "q_c_derivatives_1": {
-      "question_id": "q_c_derivatives_1",
-      "chapter_id": "ch_1",
+    "q_41a49ad500da": {
+      "question_id": "q_41a49ad500da",
+      "chapter_id": "ch_all",
       "topic_ids": [],
       "concept_ids": [
-        "c_derivatives"
+        "c_limits"
       ],
       "skill_ids": [],
       "question_type": "mcq",
-      "question_text": "Consider the function f(x)=|x|. Which statement about its derivative at x=0 is correct?",
+      "question_text": "According to the source material regarding from Limits limit describes value function approaches input, which statement is correct for condition set 2?",
       "options": [
-        "f'(0) exists and equals 0 because the graph is symmetric about the y-axis.",
-        "f'(0) does not exist because the left-hand and right-hand limits of the difference quotient are different.",
-        "f'(0) exists and equals 1, since the slope of the right-hand side is 1.",
-        "f'(0) exists and equals -1, since the slope of the left-hand side is -1."
+        "from Limits limit describes value function increases monotonically with the measured quantity",
+        "from Limits limit describes value function decreases monotonically with the measured quantity",
+        "from Limits limit describes value function is independent of the measured quantity",
+        "from Limits limit describes value function is undefined for the given conditions"
       ],
-      "correct_answer": "f'(0) does not exist because the left-hand and right-hand limits of the difference quotient are different.",
+      "correct_answer": "from Limits limit describes value function increases monotonically with the measured quantity",
       "allow_dont_know_option": true,
-      "explanation": "The derivative at a point is defined as the limit of the difference quotient as h→0. For f(x)=|x|, the right-hand limit gives (|h|-0)/h = h/h = 1, while the left-hand limit gives (|-h|-0)/h = (-h)/h = -1. Because the two one-sided limits are not equal, the limit does not exist, so f'(0) does not exist. Option 1 is a common misconception that symmetry implies a zero slope, but symmetry alone does not guarantee differentiability. Options 3 and 4 each describe only one one-sided slope and ignore the requirement that both sides agree for the derivative to exist.",
+      "explanation": "In the supplied source material, the concept is characterised by 1 defining behaviours that determine how it responds to the stated conditions.",
       "difficulty": 0.5,
       "expected_time_seconds": 60.0,
       "information_value": 1.0,
@@ -58,27 +77,46 @@
       "source_item_id": null,
       "validation_status": "valid",
       "exposure_count": 0,
-      "created_at": "2026-09-27T19:05:10.843284Z"
+      "created_at": "2026-09-29T03:17:43.792573Z",
+      "evidence_refs": [
+        "E1",
+        "E1"
+      ],
+      "source_citations": [
+        {
+          "document_id": "subj_calculus_e2e",
+          "page": 1,
+          "block_id": "blk_p0000_nat_0001",
+          "section": null,
+          "evidence_ids": [
+            "ev_a070cb9e392c",
+            "ev_21dd52a7fbcd",
+            "ev_05dc5e4dbf46",
+            "ev_6bcb4a417fbd"
+          ],
+          "quote": "Limits A limit describes the value a function approaches as its input becomes arbitrarily close to a given point. Derivatives The derivative of a function at a point is the limit of the difference quotient as the increment approaches zero Chain Rule The chain rule states that the derivative of a composition of functio…"
+        }
+      ]
     },
-    "q_c_chain_rule_1": {
-      "question_id": "q_c_chain_rule_1",
-      "chapter_id": "ch_1",
+    "q_a3b6533b5db5": {
+      "question_id": "q_a3b6533b5db5",
+      "chapter_id": "ch_all",
       "topic_ids": [],
       "concept_ids": [
-        "c_chain_rule"
+        "c_limits"
       ],
       "skill_ids": [],
       "question_type": "mcq",
-      "question_text": "Given h(x)=sin((3*x^2+2)^5), which expression correctly gives h'(x) using the chain rule?",
+      "question_text": "According to the source material regarding from Limits limit describes value function approaches input, which statement is correct for condition set 3?",
       "options": [
-        "h'(x)=30*x*(3*x^2+2)^4*cos((3*x^2+2)^5)",
-        "h'(x)=cos((3*x^2+2)^5)*5*(3*x^2+2)^4",
-        "h'(x)=5*(3*x^2+2)^4*sin((3*x^2+2)^5)*6*x",
-        "h'(x)=30*x*(3*x^2+2)^5*cos((3*x^2+2)^5)"
+        "from Limits limit describes value function increases monotonically with the measured quantity",
+        "from Limits limit describes value function decreases monotonically with the measured quantity",
+        "from Limits limit describes value function is independent of the measured quantity",
+        "from Limits limit describes value function is undefined for the given conditions"
       ],
-      "correct_answer": "h'(x)=30*x*(3*x^2+2)^4*cos((3*x^2+2)^5)",
+      "correct_answer": "from Limits limit describes value function increases monotonically with the measured quantity",
       "allow_dont_know_option": true,
-      "explanation": "The chain rule states that the derivative of a composite f(g(x)) is f'(g(x))*g'(x). Here f(u)=sin(u) so f'(u)=cos(u). The inner function is u=(3*x^2+2)^5. Differentiating u gives u'=5*(3*x^2+2)^4*(6*x)=30*x*(3*x^2+2)^4. Multiplying gives h'(x)=cos((3*x^2+2)^5)*30*x*(3*x^2+2)^4, which matches the correct option. Option 2 omits the factor 6*x from differentiating the quadratic 3*x^2+2. Option 3 incorrectly keeps sin instead of cos after differentiating the outer function. Option 4 uses (3*x^2+2)^5 instead of the required power 4 after applying the power rule, so the exponent is wrong.",
+      "explanation": "In the supplied source material, the concept is characterised by 2 defining behaviours that determine how it responds to the stated conditions.",
       "difficulty": 0.5,
       "expected_time_seconds": 60.0,
       "information_value": 1.0,
@@ -87,27 +125,46 @@
       "source_item_id": null,
       "validation_status": "valid",
       "exposure_count": 0,
-      "created_at": "2026-09-27T19:05:13.569219Z"
+      "created_at": "2026-09-29T03:17:43.792847Z",
+      "evidence_refs": [
+        "E1",
+        "E1"
+      ],
+      "source_citations": [
+        {
+          "document_id": "subj_calculus_e2e",
+          "page": 1,
+          "block_id": "blk_p0000_nat_0001",
+          "section": null,
+          "evidence_ids": [
+            "ev_a070cb9e392c",
+            "ev_21dd52a7fbcd",
+            "ev_05dc5e4dbf46",
+            "ev_6bcb4a417fbd"
+          ],
+          "quote": "Limits A limit describes the value a function approaches as its input becomes arbitrarily close to a given point. Derivatives The derivative of a function at a point is the limit of the difference quotient as the increment approaches zero Chain Rule The chain rule states that the derivative of a composition of functio…"
+        }
+      ]
     },
-    "q_c_integrals_1": {
-      "question_id": "q_c_integrals_1",
-      "chapter_id": "ch_1",
+    "q_dc3999057a4d": {
+      "question_id": "q_dc3999057a4d",
+      "chapter_id": "ch_all",
       "topic_ids": [],
       "concept_ids": [
-        "c_integrals"
+        "c_limits"
       ],
       "skill_ids": [],
       "question_type": "mcq",
-      "question_text": "Which statement accurately reflects the definition and core mechanism of Definite Integrals in Subj Calculus E2E?",
+      "question_text": "According to the source material regarding from Limits limit describes value function approaches input, which statement is correct for condition set 4?",
       "options": [
-        "Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
-        "Definite Integrals operates in the inverse manner by counteracting changes in Subj Calculus E2E.",
-        "Definite Integrals is an unconstrained heuristic applied only when Subj Calculus E2E data is missing.",
-        "Definite Integrals functions as an auxiliary index without direct theoretical importance in Subj Calculus E2E."
+        "from Limits limit describes value function increases monotonically with the measured quantity",
+        "from Limits limit describes value function decreases monotonically with the measured quantity",
+        "from Limits limit describes value function is independent of the measured quantity",
+        "from Limits limit describes value function is undefined for the given conditions"
       ],
-      "correct_answer": "Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
+      "correct_answer": "from Limits limit describes value function increases monotonically with the measured quantity",
       "allow_dont_know_option": true,
-      "explanation": "Definite Integrals: Core pedagogical concept defining Definite Integrals in Subj Calculus E2E.",
+      "explanation": "In the supplied source material, the concept is characterised by 3 defining behaviours that determine how it responds to the stated conditions.",
       "difficulty": 0.5,
       "expected_time_seconds": 60.0,
       "information_value": 1.0,
@@ -116,8 +173,27 @@
       "source_item_id": null,
       "validation_status": "valid",
       "exposure_count": 0,
-      "created_at": "2026-09-27T19:05:13.718318Z"
+      "created_at": "2026-09-29T03:17:43.793088Z",
+      "evidence_refs": [
+        "E1",
+        "E1"
+      ],
+      "source_citations": [
+        {
+          "document_id": "subj_calculus_e2e",
+          "page": 1,
+          "block_id": "blk_p0000_nat_0001",
+          "section": null,
+          "evidence_ids": [
+            "ev_a070cb9e392c",
+            "ev_21dd52a7fbcd",
+            "ev_05dc5e4dbf46",
+            "ev_6bcb4a417fbd"
+          ],
+          "quote": "Limits A limit describes the value a function approaches as its input becomes arbitrarily close to a given point. Derivatives The derivative of a function at a point is the limit of the difference quotient as the increment approaches zero Chain Rule The chain rule states that the derivative of a composition of functio…"
+        }
+      ]
     }
   },
-  "updated_at": "2026-09-27T19:05:06.439685Z"
+  "updated_at": "2026-09-29T13:46:29.432403Z"
 }
