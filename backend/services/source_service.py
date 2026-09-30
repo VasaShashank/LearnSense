@@ -10,6 +10,31 @@ from phase5.config.phase5_config import Phase5Config
 from phase5.validation.input_validator import InputValidator
 
 
+def _title_text(metadata: Dict[str, Any]) -> str:
+    """
+    Human-readable document title as a plain string.
+
+    Persisted documents written before the ``TitleMetadata`` model existed store a
+    bare string; everything since stores ``{"value": ..., "source": ...}``. Both are
+    accepted so the client is always given a string it can render.
+    """
+    raw = metadata.get("title")
+    if isinstance(raw, dict):
+        raw = raw.get("value")
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip()
+    return ""
+
+
+def _source_filename(struct_doc: Dict[str, Any]) -> str:
+    """Original upload filename, from ``StructuredDocument.source`` (SourceMetadata)."""
+    source = struct_doc.get("source") or {}
+    name = source.get("filename") if isinstance(source, dict) else None
+    if isinstance(name, str) and name.strip():
+        return name.strip()
+    return ""
+
+
 class SourceService:
     def __init__(
         self,
@@ -51,10 +76,18 @@ class SourceService:
 
                     title = doc_id.replace("_", " ").title()
                     fn = ""
-                    if struct_doc and "metadata" in struct_doc:
-                        if struct_doc["metadata"].get("title"):
-                            title = struct_doc["metadata"]["title"]
-                        fn = struct_doc["metadata"].get("filename", "")
+                    if struct_doc:
+                        # ``DocumentMetadata.title`` is a TitleMetadata object
+                        # (``{"value": ..., "source": ...}``), NOT a string. Handing
+                        # that object to the client made the React UI render an object
+                        # as a child, which throws and unmounts the entire app - the
+                        # "blank pale screen" the upload button appeared to cause.
+                        title = _title_text(struct_doc.get("metadata") or {}) or title
+                        # ``filename`` lives on ``StructuredDocument.source``
+                        # (SourceMetadata), a sibling of ``metadata`` - reading it from
+                        # ``metadata`` always returned "", so every upload was
+                        # mislabelled as a PDF.
+                        fn = _source_filename(struct_doc) or fn
 
                     file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
 

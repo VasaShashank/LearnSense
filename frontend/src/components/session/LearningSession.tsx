@@ -47,6 +47,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
       block_id: string;
       quote: string;
     }>;
+    no_questions?: boolean;
   } | null>(null);
   const [feedback, setFeedback] = useState<{
     submitted: boolean;

@@ -38,8 +38,14 @@ logger = logging.getLogger(__name__)
 
 # How many passages of the learner's own text to show the model per request.
 _PASSAGES_PER_REQUEST = 8
-# Chapters of a real document rarely need more than this many generation rounds.
-_MAX_GENERATION_ROUNDS = 6
+# Upper bound on provider requests for ONE build, so a document with hundreds of
+# concepts cannot make hundreds of calls inside a single request. Concepts that do
+# not fit are logged and left for a later build, which resumes from the persisted
+# bank and therefore only generates for the concepts that are still short.
+#
+# This used to be a cap of 6 *concepts*, which silently left 289 of the 295 concepts
+# in a real 11-page document with no possible question - the "empty question bank".
+_MAX_LLM_CALLS_PER_BUILD = 25
 
 
 class QuestionBankBuilder:
@@ -71,16 +77,34 @@ class QuestionBankBuilder:
         target_count: int = 25,
         retriever: Optional[EvidenceRetriever] = None,
         existing: Optional[QuestionBank] = None,
+        concept_ids: Optional[Sequence[str]] = None,
     ) -> QuestionBank:
         """
         Return a question bank for ``chapter_id``, generating only what is missing.
 
         ``existing`` (usually the persisted bank) is kept as-is; questions are only
         generated for concepts that have fewer than ``min_per_concept`` grounded items.
+
+        ``concept_ids`` scopes generation to the concepts the caller actually asked
+        about. Without it, a request for one concept's practice question still
+        considered (and spent provider calls on) every concept in the document, so
+        the requested concept frequently ended up with no question at all.
         """
         bank = existing or QuestionBank(document_id=context.document_id, chapter_id=chapter_id)
         bank.document_id = context.document_id
         bank.chapter_id = chapter_id
+
+        # Scope to the requested concepts, dropping any that this document does not
+        # have. An empty/None scope means "the whole document".
+        scope: Optional[List[str]] = None
+        if concept_ids is not None:
+            scope = [cid for cid in dict.fromkeys(concept_ids) if cid in context.concepts]
+            if not scope:
+                logger.info(
+                    "None of the requested concepts exist in %s; nothing to generate.",
+                    context.document_id,
+                )
+                return bank
 
         # 1. Reuse every already-valid, grounded question.
         for item in bank.get_grounded_questions():
@@ -108,7 +132,7 @@ class QuestionBankBuilder:
             )
 
         covered = self._concept_coverage(bank)
-        shortfalls = self._concepts_needing_questions(context, covered, target_count)
+        shortfalls = self._concepts_needing_questions(context, covered, target_count, scope)
         if not shortfalls:
             return bank
 
@@ -268,14 +292,18 @@ class QuestionBankBuilder:
         retriever: EvidenceRetriever,
         shortfalls: List[str],
     ) -> None:
-        rounds = 0
         # Fingerprints already in the bank, so a model that repeats itself across
         # rounds cannot fill the bank with copies of the same question.
         seen = {QuestionBankDeduplicator.compute_fingerprint(q.question_text) for q in bank.questions.values()}
 
+        deferred: List[str] = []
         for concept_id in shortfalls:
-            if rounds >= _MAX_GENERATION_ROUNDS:
-                break
+            if self._llm_calls >= _MAX_LLM_CALLS_PER_BUILD:
+                # Report what was left undone instead of quietly returning a partial
+                # bank. The next build resumes from the persisted bank, so the
+                # remaining concepts are still reached - just not all at once.
+                deferred.append(concept_id)
+                continue
             concept = context.concepts.get(concept_id)
             if concept is None:
                 continue
@@ -294,7 +322,6 @@ class QuestionBankBuilder:
                 continue
 
             generated = self._generate_for_concept(context, concept_id, chunks, chapter_id)
-            rounds += 1
             for item in generated:
                 fingerprint = QuestionBankDeduplicator.compute_fingerprint(item.question_text)
                 if fingerprint in seen:
@@ -306,6 +333,16 @@ class QuestionBankBuilder:
                     continue
                 seen.add(fingerprint)
                 bank.add_question(item)
+
+        if deferred:
+            logger.warning(
+                "Reached the %d-request limit for this build: %d concept(s) still need "
+                "questions and were deferred to the next build (%s%s).",
+                _MAX_LLM_CALLS_PER_BUILD,
+                len(deferred),
+                ", ".join(deferred[:5]),
+                ", ..." if len(deferred) > 5 else "",
+            )
 
     def _generate_for_concept(
         self,
@@ -457,13 +494,20 @@ class QuestionBankBuilder:
         context: LearningContext,
         coverage: Dict[str, int],
         target_count: int,
+        scope: Optional[Sequence[str]] = None,
     ) -> List[str]:
         if not context.concepts:
             return []
-        per_concept = max(1, min(4, target_count // max(1, len(context.concepts))))
+        candidates = list(scope) if scope is not None else list(context.concepts)
+        if not candidates:
+            return []
+        # The budget is shared across the concepts actually in play. Dividing by the
+        # document's *total* concept count made every per-concept target collapse to 1
+        # for any large document, so concepts were never considered well covered.
+        per_concept = max(1, min(4, target_count // len(candidates)))
         return [
             concept_id
-            for concept_id in context.concepts
+            for concept_id in candidates
             if coverage.get(concept_id, 0) < per_concept
         ]
 

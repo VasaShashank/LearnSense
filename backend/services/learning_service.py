@@ -87,6 +87,11 @@ class LearningService:
             target_count=max(1, len(target_ids)),
             retriever=retriever,
             existing=existing,
+            # Generate for the concepts this caller asked about. Without this the
+            # builder considered every concept in the document, so a request for one
+            # concept's practice question could spend all its provider calls on
+            # unrelated concepts and still return "no questions" for the real one.
+            concept_ids=target_ids,
         )
 
         if bank.get_grounded_questions():
