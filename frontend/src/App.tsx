@@ -17,25 +17,13 @@ import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit } from 'lucide-react';
 
 export default function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [learnerId] = useState<string>('student_alex');
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isOnboarded, setIsOnboarded] = useState<boolean>(false);
 
-  // Sync theme to <html> element for CSS variable cascading
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    } else {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    }
-  }, [theme]);
-
   const [activeView, setActiveView] = useState<'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES'>('DASHBOARD');
+  // Resume / Rehydration State
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
   const [progress, setProgress] = useState<LearnerProgress | null>(null);
   const [gaps, setGaps] = useState<KnowledgeGap[]>([]);
@@ -60,6 +48,9 @@ export default function App() {
   // Final Assessment State
   const [isFinalAssessmentOpen, setIsFinalAssessmentOpen] = useState<boolean>(false);
   const [activeAssessmentId, setActiveAssessmentId] = useState<string | null>(null);
+
+  // Interrupted diagnostic session awaiting resume after refresh (Batch 13).
+  const [resumeInitSession, setResumeInitSession] = useState<{ session_id: string; subject_id: string } | null>(null);
 
   // Resume / Rehydration State
   const [isResuming, setIsResuming] = useState<boolean>(true);
@@ -109,6 +100,12 @@ export default function App() {
           if (resumeData.active_assessment_id) {
             setActiveAssessmentId(resumeData.active_assessment_id);
           }
+          const activeInit = (resumeData as unknown as { active_init_session?: { session_id: string; subject_id: string; diagnostic_completed?: boolean } | null }).active_init_session;
+          if (activeInit && activeInit.diagnostic_completed === false) {
+            setResumeInitSession({ session_id: activeInit.session_id, subject_id: activeInit.subject_id });
+            setIsResuming(false);
+            return;
+          }
           setIsOnboarded(true);
           setActiveView('DASHBOARD');
         }
@@ -151,6 +148,7 @@ export default function App() {
   const handleCompleteOnboarding = (subjectId: string) => {
     const sub = subjects.find((s) => s.id === subjectId) || subjects[0];
     setSelectedSubject(sub);
+    setResumeInitSession(null);
     setIsOnboarded(true);
     setActiveView('DASHBOARD');
   };
@@ -200,11 +198,12 @@ export default function App() {
     );
   }
 
-  if (!isOnboarded) {
+  if (!isOnboarded || resumeInitSession) {
     return (
       <OnboardingWorkflow
         subjects={subjects}
         onCompleteOnboarding={handleCompleteOnboarding}
+        resumeInitSession={resumeInitSession}
       />
     );
   }
@@ -220,8 +219,6 @@ export default function App() {
         activeView={activeView}
         onNavigate={setActiveView}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-        theme={theme}
-        onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
       />
 
       {/* Main Workspace Universe Viewport */}

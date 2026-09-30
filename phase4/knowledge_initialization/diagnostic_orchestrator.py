@@ -11,11 +11,44 @@ from phase3.learner.kt import KnowledgeTracer
 from phase3.learner.models import LearnerState
 from phase3.question_bank.models import QuestionBank, QuestionBankItem
 from phase4.config import phase4_config
-from phase4.models import KnowledgeInitializationSession, KnowledgeSufficiencyStatus
+from phase4.models import (
+    ConfidenceLevel,
+    KnowledgeInitializationSession,
+    KnowledgeSufficiencyStatus,
+    SelfAssessmentStatus,
+)
+
+# Deterministic verification priority per (self-assessment, confidence).
+# Higher = probe earlier. Unsure+low-confidence first (uncertainty reduction);
+# claimed-strong concepts precede unsure ones at equal confidence so that
+# verification confirms claimed knowledge before exploring uncertainty.
+# Confident-strong (KNOW+HIGH) is still probed, but capped to one quick check.
+_VERIFICATION_PRIORITY: Dict[tuple, float] = {
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.LOW): 1.0,
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.LOW): 0.9,
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.MEDIUM): 0.8,
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.HIGH): 0.7,
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.MEDIUM): 0.6,
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.HIGH): 0.55,
+}
+
+# Per-concept question caps: confident-strong claims get a single quick check;
+# shaky/unsure claims get up to two probes.
+_QUESTIONS_PER_CONCEPT: Dict[tuple, int] = {
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.HIGH): 1,
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.MEDIUM): 2,
+    (SelfAssessmentStatus.KNOW, ConfidenceLevel.LOW): 2,
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.LOW): 2,
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.MEDIUM): 2,
+    (SelfAssessmentStatus.UNANSWERED, ConfidenceLevel.HIGH): 2,
+}
+
+CALIBRATION_THRESHOLD = 0.5
+STRONG_THRESHOLD = 0.7
 
 
 class DiagnosticOrchestrator:
-    """Orchestrates diagnostic quiz creation for KNOW concepts and updates initial KT state."""
+    """Orchestrates diagnostic quiz creation for verification concepts and updates initial KT state."""
 
     def __init__(
         self,
@@ -27,6 +60,36 @@ class DiagnosticOrchestrator:
         self.tracer = tracer or KnowledgeTracer()
         self.config = config or phase4_config
 
+    def verification_concepts(self, init_session: KnowledgeInitializationSession) -> List[str]:
+        """Concepts the diagnostic verifies: KNOW + UNANSWERED. DONT_KNOW excluded."""
+        return list(init_session.know_concept_ids) + [
+            cid for cid in init_session.unanswered_concept_ids
+            if cid not in init_session.know_concept_ids
+        ]
+
+    def concept_priority(self, init_session: KnowledgeInitializationSession, concept_id: str) -> float:
+        """Deterministic probe priority from self-assessment x confidence."""
+        assessment = init_session.self_assessments.get(concept_id)
+        status = assessment.status if assessment else SelfAssessmentStatus.UNANSWERED
+        conf = init_session.confidences.get(concept_id, ConfidenceLevel.MEDIUM)
+        if isinstance(conf, str):
+            try:
+                conf = ConfidenceLevel(conf)
+            except ValueError:
+                conf = ConfidenceLevel.MEDIUM
+        return _VERIFICATION_PRIORITY.get((status, conf), 0.5)
+
+    def concept_question_cap(self, init_session: KnowledgeInitializationSession, concept_id: str) -> int:
+        assessment = init_session.self_assessments.get(concept_id)
+        status = assessment.status if assessment else SelfAssessmentStatus.UNANSWERED
+        conf = init_session.confidences.get(concept_id, ConfidenceLevel.MEDIUM)
+        if isinstance(conf, str):
+            try:
+                conf = ConfidenceLevel(conf)
+            except ValueError:
+                conf = ConfidenceLevel.MEDIUM
+        return _QUESTIONS_PER_CONCEPT.get((status, conf), 2)
+
     def filter_question_bank_for_know_concepts(
         self,
         question_bank: QuestionBank,
@@ -34,14 +97,15 @@ class DiagnosticOrchestrator:
     ) -> List[QuestionBankItem]:
         """
         Filters candidate questions from Phase 3 QuestionBank that assess ONLY the concepts
-        marked "KNOW" by the learner.
+        in the verification set (KNOW + UNANSWERED).
+        Kept for backward compatibility; new code prefers verification_concepts().
         """
-        know_set = set(know_concept_ids)
+        verify_set = set(know_concept_ids)
         eligible = []
         for q_id, item in question_bank.questions.items():
-            # Item is eligible if at least one of its assessed concepts is in know_set
+            # Item is eligible if at least one of its assessed concepts is in verify_set
             item_concepts = set(item.concept_ids)
-            if item_concepts.intersection(know_set):
+            if item_concepts.intersection(verify_set):
                 eligible.append(item)
         return eligible
 
@@ -51,48 +115,84 @@ class DiagnosticOrchestrator:
         question_bank: QuestionBank,
     ) -> List[QuestionBankItem]:
         """
-        Creates diagnostic assessment question list based on selected "KNOW" concepts.
-        If zero KNOW concepts, returns an empty list (no diagnostic run).
+        Creates diagnostic assessment question list over the verification set
+        (KNOW + UNANSWERED), ordered by self-assessment x confidence priority
+        with per-concept caps. DONT_KNOW concepts are never probed.
+        If the verification set is empty, returns [] (no diagnostic run).
         """
-        if not init_session.know_concept_ids:
-            # Case 1 & Case 4: No KNOW concepts selected -> No diagnostic assessment
+        verify_ids = self.verification_concepts(init_session)
+        if not verify_ids:
+            # No KNOW and no UNANSWERED concepts -> No diagnostic assessment
             init_session.diagnostic_completed = True
             init_session.sufficiency_status = KnowledgeSufficiencyStatus.UNINITIALIZED
+            init_session.verify_concept_ids = []
+            init_session.diagnostic_priorities = {}
+            init_session.diagnostic_question_ids = []
             return []
 
+        verify_set = set(verify_ids)
         candidates = self.filter_question_bank_for_know_concepts(
-            question_bank, init_session.know_concept_ids
+            question_bank, verify_ids
         )
 
         if not candidates:
-            # Case 6: Diagnostic has insufficient question candidates -> graceful handling
+            # Diagnostic has insufficient question candidates -> graceful handling
             init_session.diagnostic_completed = True
             init_session.sufficiency_status = KnowledgeSufficiencyStatus.INSUFFICIENT_EVIDENCE
+            init_session.verify_concept_ids = verify_ids
+            init_session.diagnostic_priorities = {
+                cid: self.concept_priority(init_session, cid) for cid in verify_ids
+            }
+            init_session.diagnostic_question_ids = []
             return []
 
-        # Prioritize candidates by Information Gain (Shannon entropy & coverage of target concepts)
+        priorities = {cid: self.concept_priority(init_session, cid) for cid in verify_ids}
+
+        # Prioritize candidates by verification priority first, then information
+        # gain (coverage of verification concepts + difficulty discriminability).
         def calculate_item_info_gain(item: QuestionBankItem) -> float:
             score = 1.0
             if item.concept_ids:
-                matching = [cid for cid in item.concept_ids if cid in init_session.know_concept_ids]
+                matching = [cid for cid in item.concept_ids if cid in verify_set]
                 score += len(matching) * 2.0
             diff = getattr(item, "difficulty", 0.5)
             # Maximum informational discriminability around difficulty 0.5
             score += 1.0 - abs(diff - 0.5) * 1.5
             return score
 
-        candidates.sort(key=calculate_item_info_gain, reverse=True)
+        def sort_key(item: QuestionBankItem) -> tuple:
+            item_prio = max(
+                (priorities.get(cid, 0.0) for cid in (item.concept_ids or []) if cid in verify_set),
+                default=0.0,
+            )
+            return (item_prio, calculate_item_info_gain(item))
 
-        # Ensure each question item has the "I don't know" option appended if options exist
+        candidates.sort(key=sort_key, reverse=True)
+
+        # Greedy selection respecting per-concept caps, then the global max.
+        caps = {cid: self.concept_question_cap(init_session, cid) for cid in verify_ids}
+        used: Dict[str, int] = {cid: 0 for cid in verify_ids}
         selected_questions = []
         max_q = min(self.config.DIAGNOSTIC_MAX_QUESTIONS, len(candidates))
-        for item in candidates[:max_q]:
+        for item in candidates:
+            if len(selected_questions) >= max_q:
+                break
+            item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
+            if not item_concepts:
+                continue
+            if all(used.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
+                continue
             item_copy = item.model_copy()
             if item_copy.options is not None and "I don't know" not in item_copy.options:
                 item_copy.options = list(item_copy.options) + ["I don't know"]
             selected_questions.append(item_copy)
+            for cid in item_concepts:
+                used[cid] = used.get(cid, 0) + 1
 
         init_session.diagnostic_session_id = f"diag_{uuid.uuid4().hex[:10]}"
+        init_session.verify_concept_ids = verify_ids
+        init_session.diagnostic_priorities = priorities
+        init_session.diagnostic_question_ids = [q.question_id for q in selected_questions]
         return selected_questions
 
     def submit_diagnostic_responses(
@@ -112,6 +212,7 @@ class DiagnosticOrchestrator:
 
         total_score = 0.0
         updated_masteries = {}
+        per_concept_scores: Dict[str, List[float]] = {}
 
         for q_id, correctness in question_responses.items():
             total_score += correctness
@@ -124,8 +225,14 @@ class DiagnosticOrchestrator:
                     correctness=correctness,
                 )
                 updated_masteries.update(concept_updates)
+                for cid in item.concept_ids:
+                    per_concept_scores.setdefault(cid, []).append(float(correctness))
 
         avg_score = round(total_score / len(question_responses), 4)
+        # Fallback applies ONLY to KNOW concepts lacking direct question coverage:
+        # a claimed-strong concept inherits the session average as weak
+        # verification. UNANSWERED concepts without coverage get NO update --
+        # manufacturing evidence for untested concepts would violate Batch 5.
         for cid in init_session.know_concept_ids:
             if cid not in updated_masteries:
                 concept_updates = self.tracer.update(
@@ -138,5 +245,45 @@ class DiagnosticOrchestrator:
         init_session.diagnostic_completed = True
         init_session.diagnostic_score = avg_score
         init_session.sufficiency_status = KnowledgeSufficiencyStatus.INITIALIZED
+        init_session.diagnostic_responses = {qid: float(score) for qid, score in question_responses.items()}
+
+        # Confidence x competence calibration (CC / CI / UC / UI) over the full
+        # verification set (KNOW + UNANSWERED).
+        calibration: Dict[str, str] = {}
+        confirmed: List[str] = []
+        contradicted: List[str] = []
+        verify_ids = self.verification_concepts(init_session)
+        for cid in verify_ids:
+            scores = per_concept_scores.get(cid)
+            avg = round(sum(scores) / len(scores), 4) if scores else avg_score
+            assessment = init_session.self_assessments.get(cid)
+            status = assessment.status if assessment else SelfAssessmentStatus.UNANSWERED
+            conf = init_session.confidences.get(cid, ConfidenceLevel.MEDIUM)
+            if isinstance(conf, str):
+                try:
+                    conf = ConfidenceLevel(conf)
+                except ValueError:
+                    conf = ConfidenceLevel.MEDIUM
+            confident = conf == ConfidenceLevel.HIGH
+            correct = avg >= CALIBRATION_THRESHOLD
+            if confident and correct:
+                calibration[cid] = "CC"
+            elif confident and not correct:
+                calibration[cid] = "CI"
+            elif not confident and correct:
+                calibration[cid] = "UC"
+            else:
+                calibration[cid] = "UI"
+            if status == SelfAssessmentStatus.KNOW and avg < CALIBRATION_THRESHOLD:
+                contradicted.append(cid)
+            elif status == SelfAssessmentStatus.KNOW and avg >= CALIBRATION_THRESHOLD:
+                confirmed.append(cid)
+            elif status != SelfAssessmentStatus.KNOW and avg >= STRONG_THRESHOLD:
+                contradicted.append(cid)
+            elif status != SelfAssessmentStatus.KNOW and avg < CALIBRATION_THRESHOLD:
+                confirmed.append(cid)
+        init_session.calibration = calibration
+        init_session.confirmed_concept_ids = confirmed
+        init_session.contradicted_concept_ids = contradicted
 
         return updated_masteries

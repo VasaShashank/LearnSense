@@ -313,8 +313,9 @@ export const ApiClient = {
     subject_id: string;
     selections: Record<string, string>;
     all_subject_concept_ids: string[];
+    confidences?: Record<string, string>;
   }) =>
-    fetchJson<{ session_id: string; know_concept_ids: string[] }>('/initialization/self-assessment', {
+    fetchJson<{ session_id: string; know_concept_ids: string[]; unanswered_concept_ids?: string[]; verify_concept_ids?: string[]; confidences?: Record<string, string> }>('/initialization/self-assessment', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -324,7 +325,7 @@ export const ApiClient = {
    * ownership check can never be skipped by omitting it.
    */
   startDiagnostic: (sessionId: string, learnerId: string) =>
-    fetchJson<{ session_id: string; question_count: number; questions: Question[] }>(
+    fetchJson<{ session_id: string; question_count: number; questions: Question[]; know_concepts?: string[]; verify_concepts?: string[]; diagnostic_priorities?: Record<string, number> }>(
       '/initialization/diagnostic/start',
       {
         method: 'POST',
@@ -503,6 +504,15 @@ export const ApiClient = {
     subject_id: string | null;
     progress: LearnerProgress | null;
     active_assessment_id: string | null;
+    active_init_session?: {
+      session_id: string;
+      subject_id: string;
+      know_concept_ids: string[];
+      unanswered_concept_ids: string[];
+      verify_concept_ids: string[];
+      diagnostic_completed: boolean;
+      diagnostic_question_ids: string[];
+    } | null;
   }> =>
     fetchJson(`/learners/${learnerId}/resume${subjectId ? `?subject_id=${subjectId}` : ''}`),
 

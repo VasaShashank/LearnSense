@@ -14,6 +14,7 @@ from phase3.errors import (
     ContentValidationError,
     KnowledgeNotFoundError,
     LearnSenseError,
+    QuestionBankError,
     RetrievalError,
 )
 from phase3.question_bank.builder import QuestionBankBuilder
@@ -22,7 +23,7 @@ import uuid
 from phase3.question_bank.models import QuestionBank, QuestionBankItem, QuestionType, SourceCitation
 from phase3.retrieval.evidence_retriever import EvidenceRetriever
 from phase4.integration.phase3_adapter import Phase3Adapter
-from phase4.models import KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession
+from phase4.models import ConfidenceLevel, KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession
 from phase5.validation import IdempotencyTracker, LearnerStateValidator, PlanningValidator
 from storage.repositories import QuestionBankRepository, SessionRepository
 
@@ -81,18 +82,32 @@ class LearningService:
                     scoped.add_question(item)
             existing = scoped if scoped.questions else None
 
-        bank = builder.build_bank_for_chapter(
-            ctx,
-            chapter_id="ch_all",
-            target_count=max(1, len(target_ids)),
-            retriever=retriever,
-            existing=existing,
-            # Generate for the concepts this caller asked about. Without this the
-            # builder considered every concept in the document, so a request for one
-            # concept's practice question could spend all its provider calls on
-            # unrelated concepts and still return "no questions" for the real one.
-            concept_ids=target_ids,
-        )
+        try:
+            bank = builder.build_bank_for_chapter(
+                ctx,
+                chapter_id="ch_all",
+                target_count=max(1, len(target_ids)),
+                retriever=retriever,
+                existing=existing,
+                # Generate for the concepts this caller asked about. Without this the
+                # builder considered every concept in the document, so a request for one
+                # concept's practice question could spend all its provider calls on
+                # unrelated concepts and still return "no questions" for the real one.
+                concept_ids=target_ids,
+            )
+        except QuestionBankError:
+            # The persisted grounded bank is still honest evidence: when fresh
+            # generation is impossible (e.g. retriever artifacts missing) but
+            # valid grounded questions already exist, serve those instead of
+            # failing the whole request.
+            if existing is not None and existing.get_grounded_questions():
+                logger.warning(
+                    "Falling back to %d persisted grounded questions for '%s'.",
+                    len(existing.get_grounded_questions()),
+                    subject_id,
+                )
+                return existing
+            raise
 
         if bank.get_grounded_questions():
             self.bank_repo.save_bank(bank)
@@ -112,10 +127,13 @@ class LearningService:
         subject_id: str,
         selections: Dict[str, SelfAssessmentStatus],
         all_concept_ids: Optional[List[str]] = None,
+        confidences: Optional[Dict[str, Any]] = None,
     ) -> KnowledgeInitializationSession:
         """
         Submits learner concept self-assessment. Server is authoritative for concept IDs.
         Rejects foreign concept IDs not belonging to the subject.
+        ``confidences`` (Low/Medium/High per concept) is stored as a separate
+        hypothesis signal; it never sets KT mastery.
         """
         ctx = self.knowledge_service.get_learning_context(subject_id)
         authoritative_concepts = list(ctx.concepts.keys()) if ctx and ctx.concepts else (all_concept_ids or list(selections.keys()))
@@ -130,12 +148,33 @@ class LearningService:
         if not val_res.is_valid:
             raise ValueError(val_res.errors[0])
 
+        parsed_confidences: Dict[str, ConfidenceLevel] = {}
+        for cid, conf in (confidences or {}).items():
+            if cid not in authoritative_concepts:
+                continue
+            if isinstance(conf, ConfidenceLevel):
+                parsed_confidences[cid] = conf
+            else:
+                try:
+                    parsed_confidences[cid] = ConfidenceLevel(str(conf).upper())
+                except ValueError:
+                    parsed_confidences[cid] = ConfidenceLevel.MEDIUM
+
         session = self.adapter.self_assessment_handler.create_session(
             learner_id=learner_id,
             subject_id=subject_id,
             selections=selections,
             all_subject_concept_ids=authoritative_concepts,
+            confidences=parsed_confidences,
         )
+        # Publish the deterministic verification set (KNOW + UNANSWERED) and its
+        # confidence-driven priorities on the session itself, so the frontend
+        # contract carries the hypothesis before the diagnostic starts.
+        session.verify_concept_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
+        session.diagnostic_priorities = {
+            cid: self.adapter.diagnostic_orchestrator.concept_priority(session, cid)
+            for cid in session.verify_concept_ids
+        }
         self.session_repo.save_session(session)
         # Ensure learner state exists
         self.learner_service.get_or_create_learner_state(learner_id, authoritative_concepts)
@@ -161,7 +200,8 @@ class LearningService:
         if session.learner_id != learner_id:
             raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
 
-        bank = self.get_or_create_question_bank(session.subject_id, session.know_concept_ids)
+        verify_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
+        bank = self.get_or_create_question_bank(session.subject_id, verify_ids or session.know_concept_ids)
         questions = self.adapter.diagnostic_orchestrator.create_diagnostic_quiz(session, bank)
 
         val_res = self.planning_validator.validate_diagnostic_quiz_creation(session, questions)
@@ -182,6 +222,8 @@ class LearningService:
         return {
             "session_id": session.session_id,
             "know_concepts": session.know_concept_ids,
+            "verify_concepts": session.verify_concept_ids,
+            "diagnostic_priorities": {k: float(v) for k, v in session.diagnostic_priorities.items()},
             "question_count": len(questions),
             "questions": dumped_questions,
         }
@@ -209,7 +251,8 @@ class LearningService:
 
         all_concepts = session.know_concept_ids + session.dont_know_concept_ids + session.unanswered_concept_ids
         learner_state = self.learner_service.get_or_create_learner_state(session.learner_id, all_concepts)
-        bank = self.get_or_create_question_bank(session.subject_id, session.know_concept_ids)
+        verify_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
+        bank = self.get_or_create_question_bank(session.subject_id, verify_ids or session.know_concept_ids)
 
         evaluated_responses: Dict[str, float] = {}
         for qid, resp in responses.items():
@@ -246,6 +289,36 @@ class LearningService:
             question_bank=bank,
         )
 
+        # Prerequisite-aware verification (Batch 9): for each failed verification
+        # concept, check its prerequisites from the knowledge graph. A failure on C
+        # with an untested/weak B surfaces B as needing verification instead of
+        # concluding C alone is weak. Reuses the existing graph; no new system.
+        session.prerequisite_verification = self.compute_prerequisite_verification(
+            session.subject_id, learner_state, bank, evaluated_responses
+        )
+
+        # Evidence verdicts per tested concept (Batch 8): a single wrong answer
+        # yields INSUFFICIENT_EVIDENCE until MIN_EVIDENCE_COUNT attempts accrue.
+        from phase4.config import phase4_config as _p4config
+
+        evidence_verdicts: Dict[str, Dict[str, Any]] = {}
+        for cid in session.verify_concept_ids or list(updated_masteries.keys()):
+            cs = learner_state.concept_states.get(cid)
+            if cs is None:
+                continue
+            if cs.attempt_count < _p4config.MIN_EVIDENCE_COUNT:
+                verdict = "insufficient_evidence"
+            elif cs.mastery_probability >= _p4config.MASTERY_THRESHOLD:
+                verdict = "verified_strong"
+            else:
+                verdict = "likely_weak"
+            evidence_verdicts[cid] = {
+                "verdict": verdict,
+                "mastery": round(cs.mastery_probability, 4),
+                "attempts": cs.attempt_count,
+                "calibration": session.calibration.get(cid),
+            }
+
         self.session_repo.save_session(session)
         self.learner_service.save_learner_state(learner_state)
 
@@ -254,7 +327,63 @@ class LearningService:
             "diagnostic_completed": session.diagnostic_completed,
             "diagnostic_score": session.diagnostic_score,
             "updated_masteries": updated_masteries,
+            "calibration": session.calibration,
+            "confirmed_concept_ids": session.confirmed_concept_ids,
+            "contradicted_concept_ids": session.contradicted_concept_ids,
+            "prerequisite_verification": session.prerequisite_verification,
+            "evidence_verdicts": evidence_verdicts,
         }
+
+    def compute_prerequisite_verification(
+        self,
+        subject_id: str,
+        learner_state: Any,
+        bank: QuestionBank,
+        evaluated_responses: Dict[str, float],
+    ) -> List[Dict[str, Any]]:
+        """Flag prerequisites needing verification after failed diagnostic items.
+
+        Deterministic and side-effect free: for every failed response on concept
+        C, each prerequisite B of C whose mastery is below threshold (or which
+        has never been attempted) is reported as ``verification_needed``.
+        """
+        hints: List[Dict[str, Any]] = []
+        try:
+            learning_context = self.knowledge_service.get_learning_context(subject_id)
+            prereq_map: Dict[str, List[str]] = {}
+            if learning_context is not None:
+                for link in learning_context.prerequisites:
+                    prereq_map.setdefault(link.target_concept_id, []).append(link.source_concept_id)
+            for qid, score in evaluated_responses.items():
+                if score >= 0.5:
+                    continue
+                q_item = bank.get_question(qid)
+                if not q_item or not q_item.concept_ids:
+                    continue
+                for cid in q_item.concept_ids:
+                    for pid in prereq_map.get(cid, []):
+                        p_state = learner_state.concept_states.get(pid)
+                        p_mastery = p_state.mastery_probability if p_state else 0.3
+                        p_attempts = p_state.attempt_count if p_state else 0
+                        if p_mastery < 0.5 or p_attempts == 0:
+                            hints.append({
+                                "concept_id": cid,
+                                "prerequisite_id": pid,
+                                "status": "verification_needed",
+                                "prerequisite_mastery": round(p_mastery, 4),
+                                "prerequisite_attempts": p_attempts,
+                            })
+            seen = set()
+            deduped = []
+            for entry in hints:
+                key = (entry["concept_id"], entry["prerequisite_id"])
+                if key not in seen:
+                    seen.add(key)
+                    deduped.append(entry)
+            return deduped
+        except Exception as exc:
+            logger.warning("Prerequisite verification hints skipped: %s", exc)
+            return []
 
     def process_activity_response(
         self,

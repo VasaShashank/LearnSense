@@ -20,7 +20,7 @@ from backend.services.learning_service import LearningService
 from backend.services.tutor_service import TutorService
 from backend.services.source_service import SourceService
 from phase3.errors import LearnSenseError
-from phase4.models import SelfAssessmentStatus
+from phase4.models import ConfidenceLevel, SelfAssessmentStatus
 import logging
 from storage.job_repository import JobRepository
 
@@ -42,6 +42,9 @@ class SelfAssessmentApiRequest(BaseModel):
     subject_id: str
     selections: Dict[str, SelfAssessmentStatus]
     all_subject_concept_ids: Optional[List[str]] = None
+    # Confidence per concept (LOW/MEDIUM/HIGH), stored as a separate hypothesis
+    # signal. Optional for backward compatibility with older clients/tests.
+    confidences: Optional[Dict[str, ConfidenceLevel]] = None
 
 
 class DiagnosticStartApiRequest(BaseModel):
@@ -174,7 +177,9 @@ async def get_path_and_gaps(learner_id: str, subject_id: str):
 @router.post("/initialization/self-assessment")
 async def submit_self_assessment(req: SelfAssessmentApiRequest):
     """
-    Submits concept self-assessment (KNOW, DONT_KNOW, UNANSWERED) and creates initialization session.
+    Submits concept self-assessment (KNOW, DONT_KNOW, UNANSWERED) plus optional
+    per-concept confidence, and creates an initialization session.
+    Self-assessment is stored as a hypothesis; it never sets KT mastery.
     Server is authoritative for valid concepts.
     """
     try:
@@ -183,6 +188,7 @@ async def submit_self_assessment(req: SelfAssessmentApiRequest):
             subject_id=req.subject_id,
             selections=req.selections,
             all_concept_ids=req.all_subject_concept_ids,
+            confidences=req.confidences,
         )
         return session.model_dump(mode="json")
     except ValueError as exc:
@@ -192,7 +198,9 @@ async def submit_self_assessment(req: SelfAssessmentApiRequest):
 @router.post("/initialization/diagnostic/start")
 async def start_diagnostic(req: DiagnosticStartApiRequest):
     """
-    Generates diagnostic assessment questions restricted strictly to KNOW concepts.
+    Generates diagnostic assessment questions over the verification set
+    (KNOW + UNANSWERED), prioritized by self-assessment x confidence.
+    DONT_KNOW concepts are never probed.
     P0 Security: correct_answer is never leaked before submission.
     """
     try:

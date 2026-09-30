@@ -42,23 +42,24 @@ class PlanningValidator:
         generated_questions: List[Dict],
     ) -> ValidationResult:
         """
-        Validates that diagnostic assessment questions are strictly restricted to selected KNOW concepts.
+        Validates that diagnostic assessment questions are restricted to the
+        verification set (KNOW + UNANSWERED). DONT_KNOW concepts are never probed.
         And verifies that self-reporting KNOW/DON'T_KNOW never directly sets KT mastery=1.0 or 0.0.
         """
         result = ValidationResult(status=ValidationStatus.VALID, is_valid=True)
-        know_set = set(session.know_concept_ids)
+        verify_set = set(session.know_concept_ids) | set(session.unanswered_concept_ids)
 
-        if len(session.know_concept_ids) == 0:
+        if len(verify_set) == 0:
             if len(generated_questions) > 0:
-                result.add_error("Diagnostic generated questions when zero KNOW concepts were selected.")
+                result.add_error("Diagnostic generated questions when the verification set was empty.")
             return result
 
         for q in generated_questions:
             q_concepts = q.concept_ids if hasattr(q, "concept_ids") else q.get("concept_ids", [])
             for c_id in q_concepts:
-                if c_id not in know_set:
+                if c_id not in verify_set:
                     result.add_error(
-                        f"Diagnostic question contains concept '{c_id}' which was NOT reported as KNOW by the learner."
+                        f"Diagnostic question contains concept '{c_id}' outside the verification set (KNOW + UNANSWERED)."
                     )
 
         if not result.is_valid:

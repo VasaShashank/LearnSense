@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Subject } from '../../api/client';
-import { Compass, BookOpen, Map, Sun, Moon, Search, Command, Upload, Sparkles, Orbit } from 'lucide-react';
+import { Compass, BookOpen, Map, Search, Command, Upload, Sparkles, Orbit } from 'lucide-react';
 
 export interface TopNavbarProps {
   subjects: Subject[];
@@ -9,8 +9,6 @@ export interface TopNavbarProps {
   activeView: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES';
   onNavigate: (view: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES') => void;
   onOpenCommandPalette: () => void;
-  theme: 'dark' | 'light';
-  onToggleTheme: () => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
@@ -20,8 +18,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   activeView,
   onNavigate,
   onOpenCommandPalette,
-  theme,
-  onToggleTheme,
 }) => {
   const navItems = [
     { id: 'DASHBOARD' as const, label: 'Overview', icon: Compass, technicalCode: '01' },
@@ -140,15 +136,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             <kbd className="px-1.5 py-0.5 rounded bg-space-950 border border-white/[0.08] text-[9px] font-mono text-universe-slate flex items-center gap-0.5">
               <Command className="w-2.5 h-2.5" /> K
             </kbd>
-          </button>
-
-          <button
-            onClick={onToggleTheme}
-            className="p-2 rounded-lg bg-space-850 hover:bg-space-750 border border-white/[0.07] text-universe-slate hover:text-universe-text transition-colors"
-            title="Toggle Visual Mode"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-cyan-400" />}
           </button>
         </div>
 

@@ -226,8 +226,14 @@ def test_planning_validator():
     res1 = validator.validate_diagnostic_quiz_creation(session, valid_q)
     assert res1.is_valid is True
 
-    # Invalid question introducing DON'T KNOW concept
+    # Invalid question introducing DON'T KNOW concept (outside KNOW + UNANSWERED)
     invalid_q = [{"question_id": "q2", "concept_ids": ["c2"]}]
     res2 = validator.validate_diagnostic_quiz_creation(session, invalid_q)
     assert res2.is_valid is False
-    assert "was NOT reported as KNOW" in res2.errors[0]
+    assert "outside the verification set" in res2.errors[0]
+
+    # UNANSWERED concepts are part of the verification set (uncertainty reduction)
+    session.unanswered_concept_ids = ["c3"]
+    unsure_q = [{"question_id": "q3", "concept_ids": ["c3"]}]
+    res3 = validator.validate_diagnostic_quiz_creation(session, unsure_q)
+    assert res3.is_valid is True

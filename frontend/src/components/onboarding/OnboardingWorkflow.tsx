@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Subject, Question, ConceptNode } from '../../api/client';
 import { ApiClient } from '../../api/client';
 import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldCheck, Upload, RefreshCw, Orbit } from 'lucide-react';
@@ -6,17 +6,31 @@ import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldC
 export interface OnboardingWorkflowProps {
   subjects: Subject[];
   onCompleteOnboarding: (subjectId: string, learnerId: string) => void;
+  resumeInitSession?: {
+    session_id: string;
+    subject_id: string;
+  } | null;
+}
+
+type Confidence = 'Low' | 'Medium' | 'High';
+
+const CONFIDENCE_ORDER: Confidence[] = ['Low', 'Medium', 'High'];
+
+function draftKey(learnerId: string, subjectId: string): string {
+  return `learnsense.self_assessment_draft.${learnerId}.${subjectId}`;
 }
 
 export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   subjects,
   onCompleteOnboarding,
+  resumeInitSession,
 }) => {
   const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>('SELECT_SUBJECT');
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [learnerId] = useState<string>('student_alex');
   const [concepts, setConcepts] = useState<ConceptNode[]>([]);
   const [selfAssessmentSelections, setSelfAssessmentSelections] = useState<Record<string, string>>({});
+  const [confidenceSelections, setConfidenceSelections] = useState<Record<string, Confidence>>({});
   const [sessionId, setSessionId] = useState<string>('');
   const [diagnosticQuestions, setDiagnosticQuestions] = useState<Question[]>([]);
   const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, string>>({});
@@ -26,6 +40,62 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [uploadStage, setUploadStage] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const setLevel = (conceptId: string, level: string) => {
+    setSelfAssessmentSelections((prev) => {
+      const next = { ...prev, [conceptId]: level };
+      persistDraft(selectedSubject?.id, next, confidenceSelections);
+      return next;
+    });
+  };
+
+  const setConfidence = (conceptId: string, confidence: Confidence) => {
+    setConfidenceSelections((prev) => {
+      const next = { ...prev, [conceptId]: confidence };
+      persistDraft(selectedSubject?.id, selfAssessmentSelectionsRef.current, next);
+      return next;
+    });
+  };
+
+  // Ref mirror so persistDraft inside setConfidence sees latest levels.
+  const selfAssessmentSelectionsRef = React.useRef(selfAssessmentSelections);
+  React.useEffect(() => {
+    selfAssessmentSelectionsRef.current = selfAssessmentSelections;
+  }, [selfAssessmentSelections]);
+
+  const persistDraft = (
+    subjectId: string | undefined,
+    levels: Record<string, string>,
+    confidences: Record<string, Confidence>,
+  ) => {
+    if (!subjectId) return;
+    try {
+      localStorage.setItem(draftKey(learnerId, subjectId), JSON.stringify({ levels, confidences }));
+    } catch {
+      // Draft persistence is best-effort.
+    }
+  };
+
+  const loadDraft = (subjectId: string): { levels: Record<string, string>; confidences: Record<string, Confidence> } | null => {
+    try {
+      const raw = localStorage.getItem(draftKey(learnerId, subjectId));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.levels === 'object') return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const clearDraft = (subjectId: string) => {
+    try {
+      localStorage.removeItem(draftKey(learnerId, subjectId));
+      localStorage.removeItem(`learnsense.diagnostic_session.${learnerId}.${subjectId}`);
+    } catch {
+      // best-effort
+    }
+  };
+
   // 1. Select Subject
   const handleSelectSubject = async (sub: Subject) => {
     setSelectedSubject(sub);
@@ -33,11 +103,17 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     try {
       const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
       setConcepts(graph.concepts);
+      const draft = loadDraft(sub.id);
       const initMap: Record<string, string> = {};
+      const initConf: Record<string, Confidence> = {};
       graph.concepts.forEach((c) => {
-        initMap[c.concept_id] = 'UNANSWERED';
+        initMap[c.concept_id] = draft?.levels?.[c.concept_id] || 'UNANSWERED';
+        const dc = draft?.confidences?.[c.concept_id];
+        initConf[c.concept_id] = dc === 'Low' || dc === 'Medium' || dc === 'High' ? dc : 'Medium';
       });
       setSelfAssessmentSelections(initMap);
+      selfAssessmentSelectionsRef.current = initMap;
+      setConfidenceSelections(initConf);
       setStep('SELF_ASSESSMENT');
     } catch (err) {
       console.error('Failed to load subject graph', err);
@@ -46,7 +122,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // 1b. Handle PDF/File Upload
+  // 1b. Handle PDF/File Upload — ingestion states: uploading → processing →
+  // extracting → ready for self-assessment. Self-assessment is only shown once
+  // the concept graph exists; failures surface a clear error with retry.
   const handleOnboardingPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -54,7 +132,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     setUploadError(null);
 
     try {
+      setUploadStage('uploading');
       const res = await ApiClient.uploadSource(file, (stage) => setUploadStage(stage));
+      setUploadStage('extracting concepts');
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').toUpperCase();
       const newSub: Subject = {
         id: res.document_id,
@@ -63,10 +143,12 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         page_count: res.page_count || 1,
         has_ekr: true,
       };
+      setUploadStage('preparing assessment');
       await handleSelectSubject(newSub);
+      setUploadStage('ready for self-assessment');
     } catch (err: any) {
       console.error('Failed to process uploaded file', err);
-      setUploadError(err.message || 'Failed to synthesize Knowledge Atlas from document.');
+      setUploadError(err.message || 'Ingestion failed. Check the file and try again.');
     } finally {
       setUploadingPdf(false);
       setUploadStage('');
@@ -74,29 +156,104 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // 2. Submit Self Assessment
+  // Resume an interrupted diagnostic after browser refresh (Batch 13).
+  useEffect(() => {
+    if (!resumeInitSession) return;
+    let cancelled = false;
+    const resume = async () => {
+      setLoading(true);
+      try {
+        const sub: Subject = {
+          id: resumeInitSession.subject_id,
+          title: resumeInitSession.subject_id.replace(/_/g, ' ').toUpperCase(),
+          concept_count: 0,
+          page_count: 1,
+          has_ekr: true,
+        };
+        setSelectedSubject(sub);
+        try {
+          const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
+          if (!cancelled) setConcepts(graph.concepts);
+        } catch {
+          // Graph load is best-effort during resume.
+        }
+        setSessionId(resumeInitSession.session_id);
+        try {
+          localStorage.setItem(
+            `learnsense.diagnostic_session.${learnerId}.${sub.id}`,
+            resumeInitSession.session_id,
+          );
+        } catch {
+          // best-effort
+        }
+        const diagData = await ApiClient.startDiagnostic(resumeInitSession.session_id, learnerId);
+        if (cancelled) return;
+        if (!diagData.questions || diagData.questions.length === 0) {
+          onCompleteOnboarding(sub.id, learnerId);
+        } else {
+          setDiagnosticQuestions(diagData.questions);
+          setCurrentQuestionIdx(0);
+          setDiagnosticAnswers({});
+          setStep('DIAGNOSTIC');
+        }
+      } catch (err) {
+        console.error('Failed to resume diagnostic', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    resume();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeInitSession?.session_id]);
+
+  // 2. Submit Self Assessment — self-assessment + confidence is the initial
+  // hypothesis only. The server stores it separately from BKT evidence and the
+  // diagnostic below verifies it before any learning path is generated.
   const handleSubmitSelfAssessment = async () => {
     if (!selectedSubject) return;
     setLoading(true);
     try {
       const allConceptIds = concepts.map((c) => c.concept_id);
+      const apiConfidences: Record<string, string> = {};
+      allConceptIds.forEach((cid) => {
+        const c = confidenceSelections[cid] || 'Medium';
+        apiConfidences[cid] = c.toUpperCase();
+      });
       const session = await ApiClient.submitSelfAssessment({
         learner_id: learnerId,
         subject_id: selectedSubject.id,
         selections: selfAssessmentSelections,
         all_subject_concept_ids: allConceptIds,
+        confidences: apiConfidences,
       });
 
       setSessionId(session.session_id);
+      try {
+        localStorage.setItem(
+          `learnsense.diagnostic_session.${learnerId}.${selectedSubject.id}`,
+          session.session_id,
+        );
+      } catch {
+        // best-effort
+      }
 
-      const knowCount = Object.values(selfAssessmentSelections).filter((v) => v === 'KNOW').length;
-      if (knowCount === 0) {
+      // Verification set = Strong claims + Unsure concepts. Confident Weak
+      // (DONT_KNOW) needs no probing: its gap already drives the path.
+      const verifyCount = Object.values(selfAssessmentSelections).filter(
+        (v) => v === 'KNOW' || v === 'UNANSWERED',
+      ).length;
+      if (verifyCount === 0) {
+        clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
         return;
       }
 
       const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
       if (!diagData.questions || diagData.questions.length === 0) {
+        clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
       } else {
         setDiagnosticQuestions(diagData.questions);
@@ -128,6 +285,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       const payload = finalAnswers || diagnosticAnswers;
       await ApiClient.submitDiagnosticRaw(sessionId, learnerId, payload);
       if (selectedSubject) {
+        clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
       }
     } catch (err) {
@@ -140,10 +298,14 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
+  const verifyCount = Object.values(selfAssessmentSelections).filter(
+    (v) => v === 'KNOW' || v === 'UNANSWERED',
+  ).length;
+
   return (
     <div className="min-h-screen universe-canvas flex items-center justify-center p-4 sm:p-8 text-white antialiased">
       <div className="w-full max-w-3xl universe-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)] border border-white/[0.08]">
-        
+
         {/* Subtle Ambient Light Orb */}
         <div className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -191,9 +353,15 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   </h3>
                   <p className="text-xs text-universe-slate max-w-md mx-auto font-sans leading-relaxed">
                     {uploadingPdf
-                      ? uploadStage.startsWith('processing (')
-                        ? `Extracting content: ${uploadStage.replace('processing (', '').replace(')', '')}`
-                        : 'Extracting chapters, prerequisite concepts, and generating grounded curriculum question bank...'
+                      ? uploadStage === 'uploading'
+                        ? 'Uploading your document...'
+                        : uploadStage.startsWith('processing (')
+                          ? `Processing / ingesting: ${uploadStage.replace('processing (', '').replace(')', '')}`
+                          : uploadStage === 'extracting concepts'
+                            ? 'Extracting concepts from your document...'
+                            : uploadStage === 'preparing assessment'
+                              ? 'Preparing your self-assessment...'
+                              : 'Extracting chapters, prerequisite concepts, and generating grounded curriculum question bank...'
                       : 'Drop any course material or textbook file to generate your grounded personalized learning universe.'}
                   </p>
                 </div>
@@ -208,8 +376,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
             </div>
 
             {uploadError && (
-              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 font-mono text-center">
-                {uploadError}
+              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 font-mono text-center space-y-2">
+                <p>Ingestion failed: {uploadError}</p>
+                <p className="text-rose-300/70">Check the file and try again — no partial learning state was created.</p>
               </div>
             )}
 
@@ -251,7 +420,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
           </div>
         )}
 
-        {/* Step 2: Concept Familiarity Self Assessment */}
+        {/* Step 2: Concept Familiarity Self Assessment + Confidence */}
         {step === 'SELF_ASSESSMENT' && selectedSubject && (
           <div className="space-y-6 animate-fade-in relative z-10">
             <div className="pb-4 border-b border-white/[0.08] flex items-center justify-between">
@@ -262,101 +431,116 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                 <h2 className="text-xl sm:text-2xl font-display font-bold text-white mt-1">
                   Baseline Knowledge Calibration
                 </h2>
-                <p className="text-xs text-universe-slate font-sans mt-0.5">
-                  Indicate your current familiarity. Only <strong className="text-cyan-300 font-mono">KNOW</strong> concepts are verified diagnostically.
+                <p className="text-xs text-universe-slate font-sans mt-1 max-w-xl leading-relaxed">
+                  Before we build your learning path, tell us how confident you feel about these
+                  concepts. We&apos;ll use a short adaptive assessment to verify your current
+                  understanding. Your self-assessment is a starting point, not a final judgment.
                 </p>
               </div>
-              <Orbit className="w-6 h-6 text-cyan-400" />
+              <Orbit className="w-6 h-6 text-cyan-400 shrink-0" />
             </div>
 
             <div className="max-h-96 overflow-y-auto space-y-2.5 pr-2">
               {concepts.map((c) => {
                 const currentStatus = selfAssessmentSelections[c.concept_id] || 'UNANSWERED';
+                const currentConf: Confidence = confidenceSelections[c.concept_id] || 'Medium';
                 return (
                   <div
                     key={c.concept_id}
-                    className="p-3.5 rounded-xl bg-space-950/60 border border-white/[0.06] flex items-center justify-between gap-4"
+                    className="p-3.5 rounded-xl bg-space-950/60 border border-white/[0.06] flex flex-col gap-3"
                   >
-                    <div>
-                      <h4 className="text-xs font-display font-bold text-white">{c.name}</h4>
-                      <p className="text-[11px] text-universe-slate line-clamp-1 font-sans">{c.definition}</p>
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h4 className="text-xs font-display font-bold text-white">{c.name}</h4>
+                        <p className="text-[11px] text-universe-slate line-clamp-1 font-sans">{c.definition}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => setLevel(c.concept_id, 'KNOW')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
+                            currentStatus === 'KNOW'
+                              ? 'bg-emerald-500 text-space-950 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                              : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Strong</span>
+                        </button>
+
+                        <button
+                          onClick={() => setLevel(c.concept_id, 'UNANSWERED')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
+                            currentStatus === 'UNANSWERED'
+                              ? 'bg-amber-400 text-space-950 shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-300'
+                              : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
+                          }`}
+                        >
+                          <HelpCircle className="w-3 h-3" />
+                          <span>Unsure</span>
+                        </button>
+
+                        <button
+                          onClick={() => setLevel(c.concept_id, 'DONT_KNOW')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
+                            currentStatus === 'DONT_KNOW'
+                              ? 'bg-rose-500 text-space-950 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+                              : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
+                          }`}
+                        >
+                          <XCircle className="w-3 h-3" />
+                          <span>Weak</span>
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        onClick={() =>
-                          setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'KNOW' }))
-                        }
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
-                          currentStatus === 'KNOW'
-                            ? 'bg-emerald-500 text-space-950 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
-                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>KNOW</span>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'DONT_KNOW' }))
-                        }
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
-                          currentStatus === 'DONT_KNOW'
-                            ? 'bg-rose-500 text-space-950 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
-                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
-                        }`}
-                      >
-                        <XCircle className="w-3 h-3" />
-                        <span>UNFAMILIAR</span>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setSelfAssessmentSelections((prev) => ({ ...prev, [c.concept_id]: 'UNANSWERED' }))
-                        }
-                        className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all ${
-                          currentStatus === 'UNANSWERED'
-                            ? 'bg-amber-400 text-space-950 shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-300'
-                            : 'bg-space-850 text-universe-slate hover:text-white border border-white/[0.06]'
-                        }`}
-                      >
-                        <HelpCircle className="w-3 h-3" />
-                        <span>UNSURE</span>
-                      </button>
+                    <div className="flex items-center gap-2 pl-0.5">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-universe-slate/70">
+                        Confidence:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {CONFIDENCE_ORDER.map((level) => (
+                          <button
+                            key={level}
+                            onClick={() => setConfidence(c.concept_id, level)}
+                            className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-bold transition-all ${
+                              currentConf === level
+                                ? 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/50'
+                                : 'text-universe-slate hover:text-white border border-transparent'
+                            }`}
+                          >
+                            {level}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {(() => {
-              const knowCount = Object.values(selfAssessmentSelections).filter((v) => v === 'KNOW').length;
-              return (
-                <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
-                  <div className="text-xs text-universe-slate font-sans">
-                    {knowCount > 0 ? (
-                      <span>
-                        <strong className="text-cyan-400 font-mono font-bold">{knowCount}</strong> concepts queued for diagnostic verification.
-                      </span>
-                    ) : (
-                      <span>
-                        All concepts set to baseline. Click below to begin personalized learning vector.
-                      </span>
-                    )}
-                  </div>
+            <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
+              <div className="text-xs text-universe-slate font-sans">
+                {verifyCount > 0 ? (
+                  <span>
+                    <strong className="text-cyan-400 font-mono font-bold">{verifyCount}</strong> concepts queued for diagnostic verification.
+                  </span>
+                ) : (
+                  <span>
+                    All concepts set to baseline. Click below to begin personalized learning vector.
+                  </span>
+                )}
+              </div>
 
-                  <button
-                    onClick={handleSubmitSelfAssessment}
-                    disabled={loading}
-                    className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all shrink-0 disabled:opacity-50"
-                  >
-                    <span>{knowCount > 0 ? `Begin Diagnostic (${knowCount})` : 'Construct Learning Atlas'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })()}
+              <button
+                onClick={handleSubmitSelfAssessment}
+                disabled={loading}
+                className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all shrink-0 disabled:opacity-50"
+              >
+                <span>{verifyCount > 0 ? `Begin Diagnostic (${verifyCount})` : 'Construct Learning Atlas'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -416,10 +600,14 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                         DIAGNOSTIC QUESTION {currentQuestionIdx + 1} OF {diagnosticQuestions.length}
                       </span>
                       <h2 className="text-xl font-display font-bold text-white mt-0.5">
-                        Authentic Mastery Calibration
+                        Verify Your Understanding
                       </h2>
+                      <p className="text-[11px] text-universe-slate font-sans mt-0.5">
+                        Your answers help us estimate what you already know — this verifies your
+                        self-assessment rather than judging it.
+                      </p>
                     </div>
-                    <Brain className="w-5 h-5 text-emerald-400" />
+                    <Brain className="w-5 h-5 text-emerald-400 shrink-0" />
                   </div>
 
                   <div className="space-y-4">
@@ -451,7 +639,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                           className="w-full p-3.5 rounded-xl border border-amber-500/30 bg-amber-950/30 hover:bg-amber-900/40 text-left text-xs font-mono text-amber-200 transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                           <ShieldCheck className="w-4 h-4 text-amber-400" />
-                          <span>I don't know this concept yet</span>
+                          <span>I don&apos;t know this concept yet</span>
                         </button>
                       )}
                     </div>

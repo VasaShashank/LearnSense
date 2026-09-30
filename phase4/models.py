@@ -15,9 +15,23 @@ class SelfAssessmentStatus(str, Enum):
     UNANSWERED = "UNANSWERED"
 
 
+class ConfidenceLevel(str, Enum):
+    """Learner-reported confidence in a self-assessment judgment.
+
+    Stored separately from perceived level AND from objective BKT evidence.
+    HIGH maps to the CONFIDENT row of the confidence x competence matrix;
+    MEDIUM/LOW map to UNSURE.
+    """
+
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
 class ConceptSelfAssessment(BaseModel):
     concept_id: str
     status: SelfAssessmentStatus = SelfAssessmentStatus.UNANSWERED
+    confidence: ConfidenceLevel = ConfidenceLevel.MEDIUM
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -35,6 +49,19 @@ class KnowledgeInitializationSession(BaseModel):
     know_concept_ids: List[str] = Field(default_factory=list)
     dont_know_concept_ids: List[str] = Field(default_factory=list)
     unanswered_concept_ids: List[str] = Field(default_factory=list)
+    # Confidence is stored as a separate signal, never merged into mastery.
+    confidences: Dict[str, ConfidenceLevel] = Field(default_factory=dict)
+    # Ordered diagnostic coverage (KNOW + UNANSWERED prioritized by confidence).
+    verify_concept_ids: List[str] = Field(default_factory=list)
+    diagnostic_priorities: Dict[str, float] = Field(default_factory=dict)
+    diagnostic_question_ids: List[str] = Field(default_factory=list)
+    diagnostic_responses: Dict[str, Any] = Field(default_factory=dict)
+    # Confidence x competence calibration per concept: CC | CI | UC | UI.
+    calibration: Dict[str, str] = Field(default_factory=dict)
+    confirmed_concept_ids: List[str] = Field(default_factory=list)
+    contradicted_concept_ids: List[str] = Field(default_factory=list)
+    # Prerequisite-aware verification hints produced at diagnostic submit time.
+    prerequisite_verification: List[Dict[str, Any]] = Field(default_factory=list)
     diagnostic_session_id: Optional[str] = None
     diagnostic_completed: bool = False
     diagnostic_score: Optional[float] = None

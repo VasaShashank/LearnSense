@@ -140,6 +140,7 @@ class LearnerService:
                 "subject_id": subject_id,
                 "progress": None,
                 "active_assessment_id": None,
+                "active_init_session": None,
             }
 
         active_subject = subject_id
@@ -161,6 +162,15 @@ class LearnerService:
             if active_final:
                 active_assessment_id = active_final.assessment_id
 
+        active_init_session = None
+        if active_subject:
+            try:
+                active_init = session_repo.find_active_init_session(learner_id, active_subject)
+                if active_init:
+                    active_init_session = active_init.model_dump(mode="json")
+            except Exception:
+                active_init_session = None
+
         is_onboarded = bool(state and state.concept_states)
 
         return {
@@ -170,4 +180,5 @@ class LearnerService:
             "subject_id": active_subject,
             "progress": progress,
             "active_assessment_id": active_assessment_id,
+            "active_init_session": active_init_session,
         }
