@@ -53,8 +53,17 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
       
       {/* 1. Header & Ingestion Deck */}
       <div className="universe-panel rounded-3xl p-6 lg:p-8 flex flex-wrap items-center justify-between gap-6">
-        <div className="space-y-1 max-w-xl">
+        <div className="space-y-1 max-w-xl flex-1 min-w-0">
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.history.back()}
+              className="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 border border-white/[0.07] hover:border-cyan-400/30 text-cyan-400 hover:text-cyan-300 transition-all flex items-center justify-center"
+              title="Go back"
+              aria-label="Go back"
+            >
+              <ArrowRight className="w-4 h-4 rotate-180" />
+            </button>
             <Sparkles className="w-4 h-4 text-cyan-400" />
             <span className="text-[10px] font-mono tracking-widest text-cyan-300 uppercase font-bold">
               KNOWLEDGE INGESTION & CITATIONS
