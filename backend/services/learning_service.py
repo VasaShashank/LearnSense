@@ -34,6 +34,11 @@ import threading
 
 logger = logging.getLogger(__name__)
 
+# Upper bound on how many concepts get a generated question when the diagnostic
+# starts. The quiz itself is capped far lower (DIAGNOSTIC_MAX_QUESTIONS); this
+# only limits how much question-bank work is done up front.
+MAX_DIAGNOSTIC_BUILD_CONCEPTS = 12
+
 
 class LearningService:
     def __init__(
@@ -178,8 +183,11 @@ class LearningService:
         self.session_repo.save_session(session)
         # Ensure learner state exists
         self.learner_service.get_or_create_learner_state(learner_id, authoritative_concepts)
-        # Pre-populate question bank for all concepts of this subject
-        self.get_or_create_question_bank(subject_id, authoritative_concepts)
+        # NOTE: the question bank is deliberately NOT built here. Building it for
+        # every concept in a large document is an LLM-bound operation that can
+        # exceed the request timeout (the frontend saw 502 and a dead "Begin
+        # Diagnostic" button). It is built lazily, scoped to the verification set
+        # only, when the diagnostic actually starts.
         return session
 
     def get_calibration_status(self, learner_id: str, subject_id: str) -> Dict[str, Any]:
@@ -220,7 +228,19 @@ class LearningService:
         if session.learner_id != learner_id:
             raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
 
+        # The diagnostic asks at most DIAGNOSTIC_MAX_QUESTIONS questions, so only
+        # the highest-priority slice of the verification set needs a question.
+        # Scoping the bank build to that slice keeps start fast and bounded even
+        # when a document yields hundreds of concepts.
         verify_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
+        if verify_ids:
+            verify_ids = sorted(
+                verify_ids,
+                key=lambda cid: (
+                    -self.adapter.diagnostic_orchestrator.concept_priority(session, cid),
+                    cid,
+                ),
+            )[: MAX_DIAGNOSTIC_BUILD_CONCEPTS]
         bank = self.get_or_create_question_bank(session.subject_id, verify_ids or session.know_concept_ids)
         questions = self.adapter.diagnostic_orchestrator.create_diagnostic_quiz(session, bank)
 

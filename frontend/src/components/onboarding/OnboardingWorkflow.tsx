@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { Subject, Question, ConceptNode, TopicTerritory } from '../../api/client';
-import { ApiClient } from '../../api/client';
-import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldCheck, Upload, RefreshCw, Orbit } from 'lucide-react';
+import { ApiClient, ApiError } from '../../api/client';
+import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldCheck, Upload, RefreshCw, Orbit, AlertTriangle } from 'lucide-react';
 
 export interface OnboardingWorkflowProps {
   subjects: Subject[];
@@ -44,6 +44,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [uploadingPdf, setUploadingPdf] = useState<boolean>(false);
   const [uploadStage, setUploadStage] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const setLevel = (conceptId: string, level: string) => {
     setSelfAssessmentSelections((prev) => {
@@ -282,6 +283,11 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       }
     } catch (err) {
       console.error('Failed to submit self assessment', err);
+      setSubmitError(
+        err instanceof ApiError
+          ? `Could not start the verification test: ${err.message}`
+          : 'Could not start the verification test. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -602,9 +608,26 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               ))}
             </div>
 
+            {submitError && (
+              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-200 font-sans flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p>{submitError}</p>
+                  <button
+                    onClick={() => setSubmitError(null)}
+                    className="text-rose-300 hover:text-rose-100 underline font-mono text-[11px]"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
               <div className="text-xs text-universe-slate font-sans">
-                {verifyCount > 0 ? (
+                {loading ? (
+                  <span className="font-mono text-cyan-400">Preparing your verification test…</span>
+                ) : verifyCount > 0 ? (
                   <span>
                     <strong className="text-cyan-400 font-mono font-bold">{verifyCount}</strong> concepts queued for diagnostic verification.
                   </span>
@@ -616,12 +639,21 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               </div>
 
               <button
-                onClick={handleSubmitSelfAssessment}
+                onClick={() => {
+                  setSubmitError(null);
+                  handleSubmitSelfAssessment();
+                }}
                 disabled={loading}
                 className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all shrink-0 disabled:opacity-50"
               >
-                <span>{verifyCount > 0 ? `Begin Diagnostic (${verifyCount})` : 'Construct Learning Atlas'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>
+                  {loading
+                    ? 'Starting…'
+                    : verifyCount > 0
+                      ? `Begin Diagnostic (${verifyCount})`
+                      : 'Construct Learning Atlas'}
+                </span>
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               </button>
             </div>
           </div>
