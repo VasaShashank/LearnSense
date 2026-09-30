@@ -29,7 +29,21 @@ from phase2.utils.id_generator import (
 
 STOPWORDS = {
     "system", "method", "process", "thing", "item", "example", "chapter",
-    "section", "figure", "table", "definition", "equation", "problem", "solution"
+    "section", "figure", "table", "definition", "equation", "problem", "solution",
+    # Document boilerplate that capitalized-phrase matching otherwise promotes
+    # into the concept graph (headers, footers, cover pages, exam furniture).
+    "page", "pages", "paper", "annexure", "appendix", "syllabus", "curriculum",
+    "textbook", "reference", "references", "bibliography", "index", "content",
+    "contents", "preface", "foreword", "acknowledgement", "certificate",
+    "university", "college", "school", "department", "institute", "board",
+    "professor", "lecturer", "teacher", "student", "students", "author",
+    "authors", "name", "names", "date", "dates", "time", "hours", "minutes",
+    "marks", "mark", "total", "grade", "score", "question", "questions",
+    "answer", "answers", "note", "notes", "remark", "remarks", "instruction",
+    "instructions", "hour", "minute", "second", "year", "month", "day",
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+    "sunday", "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
 }
 
 # Determiners / quantifiers / interrogatives that must never begin a concept name.
