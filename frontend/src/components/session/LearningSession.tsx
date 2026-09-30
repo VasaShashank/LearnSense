@@ -326,8 +326,15 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                 <p className="text-xs text-universe-slate font-mono">Retrieving grounded questions from question bank...</p>
               </div>
             ) : activeOptions.length === 0 ? (
-              <div className="py-10 text-center text-xs text-universe-slate font-mono">
-                The ingested material does not contain enough evidence to test this concept directly.
+              <div className="py-10 text-center space-y-3">
+                <p className="text-xs text-universe-slate font-mono">
+                  {question?.no_questions
+                    ? `No grounded questions available for ${concept.name} yet. Try another concept or upload more material.`
+                    : `No questions available for ${concept.name}.`}
+                </p>
+                <p className="text-[10px] text-universe-slate/60 font-mono">
+                  The question bank is built from your uploaded material. Concepts with sufficient evidence will have practice questions.
+                </p>
               </div>
             ) : (
               <div className="space-y-3">

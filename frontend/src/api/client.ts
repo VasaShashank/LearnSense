@@ -403,6 +403,7 @@ export const ApiClient = {
       block_id: string;
       quote: string;
     }>;
+    no_questions?: boolean;
   }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question`),
 
   getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>

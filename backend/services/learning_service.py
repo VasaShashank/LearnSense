@@ -407,16 +407,22 @@ class LearningService:
         """
         Return a grounded multiple-choice question for a concept.
         P0 Assessment Security: correct_answer and explanation are NEVER returned here!
+
+        If the concept has no grounded questions, returns a valid response with
+        empty options and a 'no_questions' flag so the frontend can handle it
+        gracefully instead of showing an error.
         """
         bank = self.get_or_create_question_bank(subject_id, [concept_id])
         candidates = bank.get_by_concept(concept_id)
         if not candidates:
-            raise ContentValidationError(
-                f"The uploaded material does not contain enough information to write a "
-                f"question about '{concept_id}'. Add material covering this concept and "
-                f"try again.",
-                details={"document_id": subject_id, "concept_id": concept_id},
-            )
+            return {
+                "question_id": "",
+                "concept_id": concept_id,
+                "question_text": "",
+                "options": [],
+                "source_citations": [],
+                "no_questions": True,
+            }
 
         q = candidates[0]
         return {
@@ -426,6 +432,7 @@ class LearningService:
             "options": q.options,
             # P0: correct_answer is strictly omitted before submission
             "source_citations": [c.model_dump(mode="json") for c in q.source_citations],
+            "no_questions": False,
         }
 
     def get_concept_learning_content(self, subject_id: str, concept_id: str) -> Dict[str, Any]:
