@@ -23,6 +23,18 @@ export default function App() {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isOnboarded, setIsOnboarded] = useState<boolean>(false);
 
+  // Sync theme to <html> element for CSS variable cascading
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    }
+  }, [theme]);
+
   const [activeView, setActiveView] = useState<'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES'>('DASHBOARD');
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
   const [progress, setProgress] = useState<LearnerProgress | null>(null);
@@ -198,7 +210,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${theme} universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300 relative selection:bg-cyan-500/30 selection:text-cyan-200`}>
+    <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300 relative selection:bg-cyan-500/30 selection:text-cyan-200">
       
       {/* Top Futuristic Navigation Command Bar */}
       <TopNavbar
@@ -217,14 +229,19 @@ export default function App() {
         
         {/* Signature "Knowledge Changed" Cosmic Signal */}
         {knowledgeChangedNotification && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-cyan-950/60 to-space-900 border border-emerald-500/50 shadow-[0_0_32px_rgba(16,185,129,0.2)] flex items-center justify-between gap-3 animate-fade-in">
+          <div className="p-4 rounded-2xl flex items-center justify-between gap-3 animate-fade-in"
+               style={{
+                 background: 'linear-gradient(90deg, color-mix(in srgb, var(--accent-emerald) 50%, var(--panel-space)) 0%, color-mix(in srgb, var(--accent-cyan) 30%, var(--panel-space)) 50%, var(--panel-space) 100%)',
+                 border: '1px solid var(--accent-emerald)',
+                 boxShadow: '0 0 32px -4px color-mix(in srgb, var(--accent-emerald) 20%, transparent)'
+               }}>
             <div className="flex items-center gap-3">
-              <Zap className="w-5 h-5 text-emerald-400 shrink-0 animate-bounce" />
-              <span className="text-xs font-mono font-bold text-emerald-200 tracking-wider">
+              <Zap className="w-5 h-5 animate-bounce" style={{ color: 'var(--accent-emerald)' }} />
+              <span className="text-xs font-mono font-bold tracking-wider" style={{ color: 'var(--accent-emerald)' }}>
                 {knowledgeChangedNotification}
               </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400/70 uppercase">
+            <span className="text-[10px] font-mono uppercase" style={{ color: 'color-mix(in srgb, var(--accent-emerald) 70%, transparent)' }}>
               BKT Updated
             </span>
           </div>

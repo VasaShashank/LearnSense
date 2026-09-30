@@ -4,17 +4,36 @@
   :root {
     --bg-space: #05070D;
     --surface-space: #0E1422;
+    --panel-space: #111827;
     --border-space: rgba(255, 255, 255, 0.07);
     --text-primary: #F4F7FB;
     --text-muted: #8D99AA;
+    --text-inverse: #0A0F1D;
+    --accent-cyan: #00F0FF;
+    --accent-emerald: #10B981;
+    --accent-amber: #F59E0B;
+    --accent-rose: #F43F5E;
+    --accent-violet: #8B5CF6;
   }
 
   .light {
     --bg-space: #F6F8FC;
     --surface-space: #FFFFFF;
+    --panel-space: #F1F5F9;
     --border-space: rgba(0, 0, 0, 0.08);
     --text-primary: #0A0F1D;
     --text-muted: #5A667A;
+    --text-inverse: #F4F7FB;
+    --accent-cyan: #00B4D8;
+    --accent-emerald: #059669;
+    --accent-amber: #D97706;
+    --accent-rose: #E11D48;
+    --accent-violet: #7C3AED;
+  }
+
+  /* Ensure html/body take full height for theme backgrounds */
+  html, body, #root {
+    height: 100%;
   }
 
   body {
@@ -33,15 +52,21 @@
   code, kbd, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  /* Selection colors */
+  ::selection {
+    background-color: var(--accent-cyan);
+    color: var(--text-inverse);
+  }
 }
 
 /* Background Atmosphere - Living Universe Canvas */
 .universe-canvas {
-  background-color: #05070D;
+  background-color: var(--bg-space);
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(14, 30, 60, 0.5), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 85% 85%, rgba(139, 92, 246, 0.04), transparent 60%),
-    radial-gradient(ellipse 50% 30% at 15% 75%, rgba(0, 240, 255, 0.03), transparent 60%);
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--panel-space) 50%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 85%, color-mix(in srgb, var(--accent-violet) 4%, transparent), transparent 60%),
+    radial-gradient(ellipse 50% 30% at 15% 75%, color-mix(in srgb, var(--accent-cyan) 3%, transparent), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -49,57 +74,57 @@
 .grid-bg-fine {
   background-size: 32px 32px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in srgb, var(--text-primary) 2%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--text-primary) 2%, transparent) 1px, transparent 1px);
 }
 
 /* Precision Panel Surfaces */
 .universe-panel {
-  background: rgba(14, 20, 34, 0.7);
+  background: color-mix(in srgb, var(--panel-space) 85%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-space);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 
 .universe-panel-solid {
-  background: #0E1422;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: var(--panel-space);
+  border: 1px solid var(--border-space);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 4%, transparent);
 }
 
 .universe-panel-interactive {
-  background: rgba(14, 20, 34, 0.6);
+  background: color-mix(in srgb, var(--panel-space) 75%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-space);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .universe-panel-interactive:hover {
-  background: rgba(18, 26, 44, 0.8);
-  border-color: rgba(0, 240, 255, 0.3);
+  background: color-mix(in srgb, var(--panel-space) 95%, transparent);
+  border-color: var(--accent-cyan);
   transform: translateY(-2px);
-  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 0 24px -4px rgba(0, 240, 255, 0.12);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 0 24px -4px color-mix(in srgb, var(--accent-cyan) 12%, transparent);
 }
 
 /* Restrained, purposeful halos */
 .halo-target {
-  box-shadow: 0 0 32px -4px rgba(56, 189, 248, 0.25), inset 0 0 24px rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 32px -4px color-mix(in srgb, var(--accent-cyan) 25%, transparent), inset 0 0 24px color-mix(in srgb, var(--accent-cyan) 8%, transparent);
 }
 
 .halo-mastered {
-  box-shadow: 0 0 24px -4px rgba(16, 185, 129, 0.2), inset 0 0 16px rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 24px -4px color-mix(in srgb, var(--accent-emerald) 20%, transparent), inset 0 0 16px color-mix(in srgb, var(--accent-emerald) 5%, transparent);
 }
 
 .halo-gap {
-  box-shadow: 0 0 24px -4px rgba(245, 158, 11, 0.2), inset 0 0 16px rgba(245, 158, 11, 0.05);
+  box-shadow: 0 0 24px -4px color-mix(in srgb, var(--accent-amber) 20%, transparent), inset 0 0 16px color-mix(in srgb, var(--accent-amber) 5%, transparent);
 }
 
 /* Fine technical divider */
 .technical-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08) 20%, rgba(255, 255, 255, 0.08) 80%, transparent);
+  background: linear-gradient(90deg, transparent, var(--border-space) 20%, var(--border-space) 80%, transparent);
 }
 
 /* Custom Sleek Scrollbar */
@@ -111,31 +136,31 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: color-mix(in srgb, var(--text-primary) 25%, transparent);
 }
 
 /* React Flow Styled Elements */
 .react-flow__controls {
-  background: rgba(14, 20, 34, 0.85) !important;
+  background: color-mix(in srgb, var(--panel-space) 95%, transparent) !important;
   backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--border-space) !important;
   border-radius: 12px !important;
   box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6) !important;
 }
 
 .react-flow__controls-button {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  fill: #8D99AA !important;
+  border-bottom: 1px solid var(--border-space) !important;
+  fill: var(--text-muted) !important;
   transition: all 0.2s ease !important;
 }
 
 .react-flow__controls-button:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  fill: #00F0FF !important;
+  background: color-mix(in srgb, var(--panel-space) 90%, transparent) !important;
+  fill: var(--accent-cyan) !important;
 }
 
 /* Reduced Motion Safety */
