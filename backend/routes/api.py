@@ -46,13 +46,17 @@ class SelfAssessmentApiRequest(BaseModel):
 
 class DiagnosticStartApiRequest(BaseModel):
     session_id: str
-    learner_id: Optional[str] = None
+    # P0 SECURITY: learner identity is MANDATORY. It was previously optional, which
+    # allowed the ownership check to be skipped entirely by omitting the field.
+    # NOTE: this is an explicit caller-supplied identity, NOT authentication.
+    learner_id: str
 
 
 class DiagnosticSubmitApiRequest(BaseModel):
     session_id: str
     responses: Dict[str, Any]
-    learner_id: Optional[str] = None
+    # P0 SECURITY: learner identity is MANDATORY (see DiagnosticStartApiRequest).
+    learner_id: str
 
 
 class ActivityResponseApiRequest(BaseModel):
@@ -63,7 +67,13 @@ class ActivityResponseApiRequest(BaseModel):
     selected_option: Optional[str] = None
     selected_index: Optional[int] = None
     is_dont_know: bool = False
-    correctness: Optional[float] = None
+    # P0 SECURITY: client-reported correctness is NOT part of the production API.
+    # Correctness is always derived server-side from `question_id` + the answer.
+    # A client must never be able to assert its own mastery.
+    correctness: Optional[float] = Field(
+        default=None,
+        description="Rejected unless question_id is supplied; correctness is always evaluated server-side.",
+    )
     all_subject_concept_ids: Optional[List[str]] = None
     request_id: Optional[str] = None
 
@@ -205,9 +215,23 @@ async def submit_diagnostic(req: DiagnosticSubmitApiRequest):
 @router.post("/learners/activity-response")
 async def submit_activity_response(req: ActivityResponseApiRequest):
     """
-    Submits activity/quiz response. Evaluates correctness server-side when question_id is provided.
+    Submits activity/quiz response. Correctness is ALWAYS evaluated server-side from
+    question_id; client-reported correctness cannot influence BKT.
     Triggers Phase 3 KT update & Phase 4 replanning with durable idempotency.
+
+    P0 SECURITY: the HTTP path passes allow_client_correctness=False, so a request
+    carrying `correctness` without a real `question_id` is rejected outright
+    instead of being trusted as authoritative learner evidence.
     """
+    if not req.question_id:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "question_id is required. Correctness is evaluated server-side from the "
+                "question bank; client-reported correctness is not accepted."
+            ),
+        )
+
     try:
         return learning_service.process_activity_response(
             learner_id=req.learner_id,
@@ -220,6 +244,7 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
             selected_option=req.selected_option,
             selected_index=req.selected_index,
             is_dont_know=req.is_dont_know,
+            allow_client_correctness=False,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -265,10 +290,19 @@ async def submit_final_assessment(req: FinalAssessmentSubmitApiRequest):
 
 
 @router.get("/assessment/final/status/{assessment_id}")
-async def get_final_assessment_status(assessment_id: str, learner_id: Optional[str] = Query(None)):
+async def get_final_assessment_status(assessment_id: str, learner_id: str = Query(...)):
     """
     Retrieves status / scorecard of a Final Assessment.
+
+    P0 SECURITY: `learner_id` is a REQUIRED query parameter and ownership is always
+    verified. The service additionally strips correct_answer/explanation from the
+    payload, so this endpoint can never be used to read an answer key.
     """
+    if not learner_id:
+        raise HTTPException(
+            status_code=400,
+            detail="learner_id is required to read Final Assessment status.",
+        )
     try:
         return learning_service.get_final_assessment_status(assessment_id, learner_id=learner_id)
     except ValueError as exc:

@@ -125,20 +125,32 @@ export interface SourceDocument {
   is_demo?: boolean;
 }
 
+export interface SourceEvidenceProvenance {
+  document_id: string;
+  page?: number;
+  block_id?: string;
+  section?: string;
+  evidence_ids?: string[];
+}
+
+export interface SourceEvidence {
+  text: string;
+  provenance: SourceEvidenceProvenance;
+}
+
+/**
+ * Source-grounded learning content.
+ *
+ * The backend NEVER fabricates educational claims. It returns only the concept's
+ * own definition and verbatim source passages with provenance. If insufficient
+ * evidence exists, the API returns 422 and the frontend shows an error state.
+ */
 export interface ConceptLearningContent {
   concept_id: string;
   concept_name: string;
-  subject_id: string;
-  overview: string;
-  intuition: string;
-  key_principles: string[];
-  worked_example: {
-    problem: string;
-    steps: string[];
-    solution: string;
-  };
-  common_misconceptions: string[];
-  key_takeaway: string;
+  definition: string | null;
+  source_evidence: SourceEvidence[];
+  grounded: boolean;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
@@ -307,21 +319,25 @@ export const ApiClient = {
       body: JSON.stringify(data),
     }),
 
-  startDiagnostic: (sessionId: string) =>
+  /**
+   * Security: the server REQUIRES learner_id for all diagnostic operations so the
+   * ownership check can never be skipped by omitting it.
+   */
+  startDiagnostic: (sessionId: string, learnerId: string) =>
     fetchJson<{ session_id: string; question_count: number; questions: Question[] }>(
       '/initialization/diagnostic/start',
       {
         method: 'POST',
-        body: JSON.stringify({ session_id: sessionId }),
+        body: JSON.stringify({ session_id: sessionId, learner_id: learnerId }),
       }
     ),
 
-  submitDiagnostic: (sessionId: string, responses: Record<string, number>) =>
+  submitDiagnostic: (sessionId: string, learnerId: string, responses: Record<string, number>) =>
     fetchJson<{ session_id: string; diagnostic_completed: boolean; diagnostic_score: number; updated_masteries: Record<string, number> }>(
       '/initialization/diagnostic/submit',
       {
         method: 'POST',
-        body: JSON.stringify({ session_id: sessionId, responses }),
+        body: JSON.stringify({ session_id: sessionId, learner_id: learnerId, responses }),
       }
     ),
 
@@ -329,12 +345,12 @@ export const ApiClient = {
    * Submit diagnostic with raw option text for server-side authoritative evaluation.
    * This is the production flow — the server evaluates correctness, never the client.
    */
-  submitDiagnosticRaw: (sessionId: string, responses: Record<string, string>) =>
+  submitDiagnosticRaw: (sessionId: string, learnerId: string, responses: Record<string, string>) =>
     fetchJson<{ session_id: string; diagnostic_completed: boolean; diagnostic_score: number; updated_masteries: Record<string, number> }>(
       '/initialization/diagnostic/submit',
       {
         method: 'POST',
-        body: JSON.stringify({ session_id: sessionId, responses }),
+        body: JSON.stringify({ session_id: sessionId, learner_id: learnerId, responses }),
       }
     ),
 
@@ -498,6 +514,8 @@ export const ApiClient = {
     subject_id: string;
     resumed: boolean;
     question_count: number;
+    submitted_responses?: Record<string, string>;
+    current_question_index?: number;
     questions: Array<{
       item_id?: string;
       question_id?: string;

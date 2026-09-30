@@ -21,36 +21,75 @@ def test_api_upload_invalid_file_rejected():
     assert "PDF" in response.json()["detail"]
 
 
-def test_api_activity_response_idempotency():
-    """Verify duplicate activity response submission is handled idempotently without double KT update."""
-    from phase3.knowledge.phase2_adapter import ConceptView, LearningContext
-    from storage.repositories import LearningContextRepository
-    repo = LearningContextRepository()
-    ctx = LearningContext(document_id="subj_p5_test", knowledge_document_id="kdoc_p5_test")
-    ctx.concepts["c1"] = ConceptView(concept_id="c1", canonical_name="Concept 1", type="concept")
-    ctx.concepts["c2"] = ConceptView(concept_id="c2", canonical_name="Concept 2", type="concept")
-    repo.save_context(ctx)
+def test_api_activity_response_idempotency(ingested_calculus):
+    """
+    Verify duplicate activity response submission is handled idempotently without
+    double KT update.
+
+    Exercises the REAL server-authoritative path: a question_id plus the selected
+    option. The legacy `correctness`-only shortcut is no longer reachable over HTTP.
+    """
+    from backend.services.knowledge_service import KnowledgeService
+    from backend.services.learner_service import LearnerService
+    from backend.services.learning_service import LearningService
+
+    subject_id = ingested_calculus.document_id
+    concept_id = ingested_calculus.concept_ids[0]
+
+    ks = KnowledgeService()
+    learning = LearningService(
+        learner_service=LearnerService(knowledge_service=ks), knowledge_service=ks
+    )
+    question = learning.get_or_create_question_bank(subject_id).get_grounded_questions()[0]
 
     payload = {
-        "learner_id": "learner_p5_test",
-        "subject_id": "subj_p5_test",
-        "concept_ids": ["c1"],
-        "correctness": 1.0,
-        "all_subject_concept_ids": ["c1", "c2"],
+        "learner_id": f"learner_p5_test_{int(time.time())}",
+        "subject_id": subject_id,
+        "concept_ids": [concept_id],
+        "question_id": question.question_id,
+        "selected_option": question.correct_answer,
+        "all_subject_concept_ids": list(ingested_calculus.concept_ids),
         "request_id": f"req_unique_token_{int(time.time() * 1000)}",
     }
 
     # First attempt
     res1 = client.post("/api/learners/activity-response", json=payload)
-    assert res1.status_code == 200
+    assert res1.status_code == 200, res1.text
     data1 = res1.json()
     assert "duplicate_submission" not in data1 or data1.get("duplicate_submission") is False
+    first_masteries = data1["updated_masteries"]
 
     # Second duplicate attempt with same request_id
     res2 = client.post("/api/learners/activity-response", json=payload)
-    assert res2.status_code == 200
+    assert res2.status_code == 200, res2.text
     data2 = res2.json()
     assert data2.get("duplicate_submission") is True
+    # The cached replay must not apply a second BKT update.
+    assert data2["updated_masteries"] == first_masteries
+
+
+def test_api_activity_response_rejects_client_correctness(ingested_calculus):
+    """
+    P0 SECURITY: the API must never accept client-reported correctness.
+    This is the exact bypass that previously let a client forge mastery.
+    """
+    subject_id = ingested_calculus.document_id
+    concept_id = ingested_calculus.concept_ids[0]
+
+    res = client.post(
+        "/api/learners/activity-response",
+        json={
+            "learner_id": f"learner_p5_forge_{int(time.time())}",
+            "subject_id": subject_id,
+            "concept_ids": [concept_id],
+            "correctness": 1.0,
+            "all_subject_concept_ids": list(ingested_calculus.concept_ids),
+        },
+    )
+    assert res.status_code == 400, (
+        f"SECURITY VIOLATION: client correctness accepted: {res.text}"
+    )
+    assert "question_id" in res.json()["detail"]
 
 
 def test_end_to_end_graph_cycle_recovery_pipeline():

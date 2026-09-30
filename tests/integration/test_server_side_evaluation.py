@@ -225,7 +225,8 @@ class TestDiagnosticServerSideEvaluation:
             subject_id=sid,
             selections=selections,
         )
-        diag = learning.start_diagnostic(session.session_id)
+        # learner_id is REQUIRED: ownership can no longer be skipped by omitting it.
+        diag = learning.start_diagnostic(session.session_id, learner_id="test_diag_strip")
 
         for q in diag.get("questions", []):
             assert "correct_answer" not in q, (

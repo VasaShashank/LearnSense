@@ -23,6 +23,7 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
     """
     subject_id = ingested_calculus.document_id
     all_concept_ids = ingested_calculus.concept_ids
+    LEARNER_ID = "test_quiz_learner_real"
 
     # Pick the first two concept IDs; we will mark them KNOW so the diagnostic runs.
     know_ids = all_concept_ids[:2]
@@ -35,7 +36,7 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
     sa_res = client.post(
         "/api/initialization/self-assessment",
         json={
-            "learner_id": "test_quiz_learner_real",
+            "learner_id": LEARNER_ID,
             "subject_id": subject_id,
             "selections": selections,
             "all_subject_concept_ids": all_concept_ids,
@@ -47,7 +48,10 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
     assert set(sa_data["know_concept_ids"]) == set(know_ids)
 
     # 2. Start diagnostic quiz — must produce questions only for KNOW concepts
-    diag_res = client.post("/api/initialization/diagnostic/start", json={"session_id": session_id})
+    diag_res = client.post(
+        "/api/initialization/diagnostic/start",
+        json={"session_id": session_id, "learner_id": LEARNER_ID},
+    )
     assert diag_res.status_code == 200, diag_res.text
     diag_data = diag_res.json()
     # There should be at least one grounded question (may be fewer than len(know_ids)
@@ -73,7 +77,11 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
 
     sub_res = client.post(
         "/api/initialization/diagnostic/submit",
-        json={"session_id": session_id, "responses": responses},
+        json={
+            "session_id": session_id,
+            "responses": responses,
+            "learner_id": LEARNER_ID,
+        },
     )
     assert sub_res.status_code == 200, sub_res.text
     sub_data = sub_res.json()
@@ -108,6 +116,9 @@ def test_onboarding_zero_know_concepts(ingested_calculus):
     session_id = sa_res.json()["session_id"]
     assert sa_res.json()["know_concept_ids"] == []
 
-    diag_res = client.post("/api/initialization/diagnostic/start", json={"session_id": session_id})
+    diag_res = client.post(
+        "/api/initialization/diagnostic/start",
+        json={"session_id": session_id, "learner_id": "test_zero_know_learner"},
+    )
     assert diag_res.status_code == 200, diag_res.text
     assert diag_res.json()["question_count"] == 0

@@ -13,6 +13,9 @@ import io
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import app
+from backend.services.knowledge_service import KnowledgeService
+from backend.services.learner_service import LearnerService
+from backend.services.learning_service import LearningService
 from storage.repositories import SessionRepository, LearningContextRepository
 from phase3.storage.learner_repository import LearnerStateRepository
 from phase3.knowledge.phase2_adapter import LearningContext, PrerequisiteLink
@@ -134,9 +137,10 @@ def test_e2e_new_learner_complete_journey():
     assert set(sa_data["unanswered_concept_ids"]) == {"c_chain_rule", "c_integrals"}
 
     # 2. Start Diagnostic for KNOW concepts only
+    # learner_id is REQUIRED: ownership must be explicit, not assumed.
     diag_start_res = client.post(
         "/api/initialization/diagnostic/start",
-        json={"session_id": session_id},
+        json={"session_id": session_id, "learner_id": learner_id},
     )
     assert diag_start_res.status_code == 200
     diag_start_data = diag_start_res.json()
@@ -150,6 +154,7 @@ def test_e2e_new_learner_complete_journey():
         json={
             "session_id": session_id,
             "responses": {q_id: 1.0},
+            "learner_id": learner_id,
         },
     )
     assert diag_sub_res.status_code == 200
@@ -167,28 +172,34 @@ def test_e2e_new_learner_complete_journey():
     assert gaps_data["next_target"] is not None
 
     # 5. Submit Learning Activity Response
+    # Use the question_id from the diagnostic start -- it is guaranteed to be in
+    # the bank because the server returned it from there.
+    # Real server-authoritative path: a grounded question_id plus the correct option.
+    # Client-reported correctness is no longer accepted by the API.
     act_res = client.post(
         "/api/learners/activity-response",
         json={
             "learner_id": learner_id,
             "subject_id": subject_id,
-            "concept_ids": ["c_derivatives"],
-            "correctness": 1.0,
+            "concept_ids": ["c_limits"],
+            "question_id": q_id,
+            "selected_option": diag_start_data["questions"][0]["options"][0],
             "all_subject_concept_ids": all_concepts,
         },
     )
-    assert act_res.status_code == 200
+    assert act_res.status_code == 200, act_res.text
     act_data = act_res.json()
-    assert "c_derivatives" in act_data["updated_masteries"]
-    assert act_data["updated_masteries"]["c_derivatives"] > 0.15
+    assert act_data["is_correct"] is True
+    assert "c_limits" in act_data["updated_masteries"]
+    assert act_data["updated_masteries"]["c_limits"] > 0.15
 
     # 6. Verify Learning Atlas reflects authoritative backend state
     atlas_res = client.get(f"/api/subjects/{subject_id}/graph?learner_id={learner_id}")
     assert atlas_res.status_code == 200
     atlas_data = atlas_res.json()
 
-    c_deriv_node = next(c for c in atlas_data["concepts"] if c["concept_id"] == "c_derivatives")
-    assert c_deriv_node["mastery"] == act_data["updated_masteries"]["c_derivatives"]
+    c_limits_node = next(c for c in atlas_data["concepts"] if c["concept_id"] == "c_limits")
+    assert c_limits_node["mastery"] == act_data["updated_masteries"]["c_limits"]
 
 
 def test_e2e_zero_knowledge_learner():
@@ -223,7 +234,7 @@ def test_e2e_zero_knowledge_learner():
     # 2. Start diagnostic -> returns 0 questions
     diag_res = client.post(
         "/api/initialization/diagnostic/start",
-        json={"session_id": session_id},
+        json={"session_id": session_id, "learner_id": learner_id},
     )
     assert diag_res.status_code == 200
     assert diag_res.json()["question_count"] == 0
@@ -257,17 +268,25 @@ def test_e2e_returning_learner():
     create_sample_learning_context(subject_id)
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
 
-    # 1. Simulate initial activity for student
-    client.post(
+    # 1. Simulate initial activity for student (server-authoritative path)
+    _ks = KnowledgeService()
+    _learning = LearningService(
+        learner_service=LearnerService(knowledge_service=_ks), knowledge_service=_ks
+    )
+    _q_limits = _learning.get_or_create_question_bank(subject_id).get_by_concept("c_limits")[0]
+    act = client.post(
         "/api/learners/activity-response",
         json={
             "learner_id": learner_id,
             "subject_id": subject_id,
             "concept_ids": ["c_limits"],
-            "correctness": 1.0,
+            "question_id": _q_limits.question_id,
+            "selected_option": _q_limits.correct_answer,
             "all_subject_concept_ids": all_concepts,
         },
     )
+    assert act.status_code == 200, act.text
+    assert act.json()["is_correct"] is True
 
     # 2. Re-fetch learner progress and path (simulating page reload / application restart)
     prog_res = client.get(f"/api/learners/{learner_id}/progress?subject_id={subject_id}")
@@ -292,18 +311,29 @@ def test_e2e_mixed_knowledge_learner():
     create_sample_learning_context(subject_id)
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
 
-    # Master 'c_limits' by submitting multiple correct responses
-    for _ in range(4):
-        client.post(
+    # Master 'c_limits' by submitting multiple correct responses.
+    # Each attempt uses a distinct question_id so the server evaluates real evidence
+    # and idempotency does not collapse them into cached replays.
+    _ks = KnowledgeService()
+    _learning = LearningService(
+        learner_service=LearnerService(knowledge_service=_ks), knowledge_service=_ks
+    )
+    _q_limits = _learning.get_or_create_question_bank(subject_id).get_by_concept("c_limits")
+    assert len(_q_limits) >= 4, "need at least 4 grounded questions for c_limits"
+    for _q in _q_limits[:4]:
+        act = client.post(
             "/api/learners/activity-response",
             json={
                 "learner_id": learner_id,
                 "subject_id": subject_id,
                 "concept_ids": ["c_limits"],
-                "correctness": 1.0,
+                "question_id": _q.question_id,
+                "selected_option": _q.correct_answer,
                 "all_subject_concept_ids": all_concepts,
             },
         )
+        assert act.status_code == 200, act.text
+        assert act.json()["is_correct"] is True
 
     path_res = client.get(f"/api/learners/{learner_id}/path-and-gaps?subject_id={subject_id}")
     assert path_res.status_code == 200

@@ -100,8 +100,8 @@ class TutorService:
                                 SourceChunk(
                                     chunk_id=ev_id,
                                     document_id=subject_id,
-                                    page=ev.page,
-                                    section=ev.section or "",
+                                    page_index=ev.page_index if hasattr(ev, 'page_index') else 0,
+                                    section_title=ev.section_title if hasattr(ev, 'section_title') else "",
                                     block_id=ev.block_id,
                                     text=ev.excerpt or "",
                                     score=1.0,
@@ -132,8 +132,8 @@ class TutorService:
         evidence_lines = []
         valid_pages = set()
         for idx, ch in enumerate(retrieved_chunks, 1):
-            valid_pages.add(ch.page)
-            evidence_lines.append(f"[{idx}] Page {ch.page} ({ch.section or 'Section'}): \"{ch.text.strip()}\"")
+            valid_pages.add(ch.page_index)
+            evidence_lines.append(f"[{idx}] Page {ch.page_index + 1} ({ch.section_title or 'Section'}): \"{ch.text.strip()}\"")
         evidence_block = "\n".join(evidence_lines) if evidence_lines else "No direct passages found."
 
         system_prompt = (
@@ -172,10 +172,10 @@ class TutorService:
         cited_pages: List[int] = []
 
         try:
+            combined_prompt = f"{system_prompt}\n\n{user_prompt}"
             llm_result = self.llm_adapter.generate_json(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                schema_template=schema_template,
+                combined_prompt,
+                schema_template,
                 config={"temperature": 0.2, "max_tokens": 800},
             )
             response_text = str(llm_result.get("response_text", "")).strip()
@@ -186,15 +186,16 @@ class TutorService:
         except Exception as exc:
             logger.warning("Live LLM tutor generation failed (%s); formatting grounded response", exc)
             # Resilient fallback grounded strictly in retrieved passages
+            first_page = retrieved_chunks[0].page_index + 1 if retrieved_chunks else 1
             if intent == "HINT":
                 hint_snip = retrieved_chunks[0].text[:180] if retrieved_chunks else c_def
-                response_text = f"💡 **Hint for {c_name}**:\n{hint_snip} (See Page {retrieved_chunks[0].page if retrieved_chunks else 1})."
+                response_text = f"💡 **Hint for {c_name}**:\n{hint_snip} (See Page {first_page})."
             elif intent == "ANALOGY":
-                response_text = f"🎨 **Analogy for {c_name}**:\nThink of {c_name} as {c_def or 'a foundational component'}. As described on Page {retrieved_chunks[0].page if retrieved_chunks else 1}, it governs how elements interact."
+                response_text = f"🎨 **Analogy for {c_name}**:\nThink of {c_name} as {c_def or 'a foundational component'}. As described on Page {first_page}, it governs how elements interact."
             elif intent == "WHY_WRONG":
-                response_text = f"🔍 **Reviewing {c_name}**:\nCommon traps occur when not checking boundary conditions. The source material on Page {retrieved_chunks[0].page if retrieved_chunks else 1} defines: \"{retrieved_chunks[0].text[:150] if retrieved_chunks else c_def}\"."
+                response_text = f"🔍 **Reviewing {c_name}**:\nCommon traps occur when not checking boundary conditions. The source material on Page {first_page} defines: \"{retrieved_chunks[0].text[:150] if retrieved_chunks else c_def}\"."
             else:
-                passages_summary = f" Based on Page {retrieved_chunks[0].page}: \"{retrieved_chunks[0].text[:200]}\"." if retrieved_chunks else ""
+                passages_summary = f" Based on Page {first_page}: \"{retrieved_chunks[0].text[:200]}\"." if retrieved_chunks else ""
                 response_text = f"**{c_name}** ({int(mastery * 100)}% mastery): {c_def}.{passages_summary}"
                 if sanitized_msg:
                     response_text += f"\n\nRegarding your question: '{sanitized_msg}' is addressed in the study material."
@@ -208,12 +209,12 @@ class TutorService:
         validated_citations: List[Dict[str, Any]] = []
         for ch in retrieved_chunks:
             # If the LLM cited this page, or if this chunk was the primary retrieval
-            if ch.page in cited_pages or not cited_pages:
+            if ch.page_index in cited_pages or not cited_pages:
                 validated_citations.append(
                     {
                         "document_id": ch.document_id,
-                        "page": ch.page,
-                        "section": ch.section or "Content",
+                        "page": ch.page_index + 1,
+                        "section": ch.section_title or "Content",
                         "block_id": ch.block_id,
                         "quote": ch.text[:200].strip(),
                     }

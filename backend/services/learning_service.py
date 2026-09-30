@@ -141,12 +141,19 @@ class LearningService:
     def start_diagnostic(self, session_id: str, learner_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Creates diagnostic quiz questions. NEVER returns correct_answer to the client.
-        Enforces learner session ownership.
+
+        Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
+        The previous guard was ``if learner_id and ...``, so omitting the field
+        skipped the ownership check entirely and let any caller start -- and then
+        submit -- another learner's diagnostic.
         """
+        if not learner_id:
+            raise ValueError("learner_id is required to start a diagnostic.")
+
         session = self.session_repo.load_session(session_id)
         if not session:
             raise ValueError("Initialization session not found.")
-        if learner_id and session.learner_id != learner_id:
+        if session.learner_id != learner_id:
             raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
 
         bank = self.get_or_create_question_bank(session.subject_id, session.know_concept_ids)
@@ -183,11 +190,16 @@ class LearningService:
         """
         Evaluates diagnostic responses AUTHORITATIVELY on the server.
         Accepts selected options or don't-know signals and checks against authoritative question bank.
+
+        Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
         """
+        if not learner_id:
+            raise ValueError("learner_id is required to submit a diagnostic.")
+
         session = self.session_repo.load_session(session_id)
         if not session:
             raise ValueError("Initialization session not found.")
-        if learner_id and session.learner_id != learner_id:
+        if session.learner_id != learner_id:
             raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
 
         all_concepts = session.know_concept_ids + session.dont_know_concept_ids + session.unanswered_concept_ids
@@ -251,12 +263,25 @@ class LearningService:
         selected_option: Optional[str] = None,
         selected_index: Optional[int] = None,
         is_dont_know: bool = False,
+        allow_client_correctness: bool = True,
     ) -> Dict[str, Any]:
         """
         Authoritatively evaluates activity/quiz response, triggers BKT update & replanning.
         If question_id is provided, correctness is calculated server-side; client correctness is ignored.
         Guarded by durable idempotency tracker and per-learner thread lock.
+
+        Security (P0) -- ``allow_client_correctness``:
+        The ``correctness`` parameter is retained ONLY for legacy in-process callers
+        (unit tests, internal services). The HTTP API must never be able to assert
+        its own mastery, so the route passes ``allow_client_correctness=False``
+        and the ``correctness``-only branch below becomes unreachable from HTTP.
         """
+        if not allow_client_correctness and correctness is not None and not question_id:
+            raise ValueError(
+                "Client-reported correctness is not accepted. Supply question_id so the "
+                "server can evaluate the answer authoritatively."
+            )
+
         with self._get_learner_lock(learner_id):
             # 1. Idempotency Check: return cached replay if already processed
             if request_id and self.idempotency_tracker.is_duplicate(request_id):
@@ -405,43 +430,73 @@ class LearningService:
 
     def get_concept_learning_content(self, subject_id: str, concept_id: str) -> Dict[str, Any]:
         """
-        Return pedagogical curriculum content for a concept grounded in source material.
+        Return source-grounded learning content for a concept.
+
+        Anti-fabrication policy (phase3/errors.py):
+          "No error in this module ever implies that substitute educational content
+           is acceptable. When an LLM-backed artifact cannot be produced, the error
+           propagates. Inventing content is a bug, not a recovery strategy."
+
+        This function therefore NEVER generates generic educational claims. It
+        returns only:
+          * the concept's own definition from the knowledge graph, and
+          * verbatim source passages retrieved from the uploaded document,
+            each labelled as source evidence with its provenance.
+
+        If the source material cannot supply enough evidence, it raises
+        ContentValidationError instead of filling the response with invented
+        intuition, worked examples, misconceptions or takeaways.
         """
         from backend.services.knowledge_build_service import KnowledgeBuildService
 
         graph = self.knowledge_service.get_subject_graph(subject_id)
         c_node = next((c for c in graph["concepts"] if c["concept_id"] == concept_id), None)
-        c_name = c_node["name"] if c_node else concept_id.replace("_", " ").title()
-        c_def = c_node["definition"] if c_node else ""
+        if c_node is None:
+            raise ContentValidationError(
+                f"Concept '{concept_id}' was not found in the knowledge graph for "
+                f"'{subject_id}'.",
+                details={"document_id": subject_id, "concept_id": concept_id},
+            )
 
-        retrieved_passages = []
-        try:
-            retriever = KnowledgeBuildService().get_retriever(subject_id)
-            chunks = retriever.retrieve_for_concept(concept_id, concept_name=c_name, top_k=3)
-            retrieved_passages = [c.text for c in chunks]
-        except Exception:
-            pass
+        c_name = c_node["name"]
+        c_def = c_node.get("definition") or ""
 
-        ex_passage = retrieved_passages[0] if retrieved_passages else c_def
-        intuition_passage = retrieved_passages[1] if len(retrieved_passages) > 1 else ex_passage
+        # Retrieve real source evidence. A retrieval failure must propagate, not be
+        # silently replaced with template text.
+        retriever = KnowledgeBuildService().get_retriever(subject_id)
+        chunks = retriever.retrieve_for_concept(concept_id, concept_name=c_name, top_k=3)
+        if not chunks:
+            raise ContentValidationError(
+                f"The uploaded material does not contain enough source evidence to "
+                f"build learning content for '{c_name}'. Add material covering this "
+                f"concept and try again.",
+                details={"document_id": subject_id, "concept_id": concept_id},
+            )
 
-        return {
+        source_evidence = []
+        for chunk in chunks:
+            citation = chunk.citation() if hasattr(chunk, "citation") else {}
+            source_evidence.append({
+                "text": chunk.text,
+                "provenance": {
+                    "document_id": chunk.document_id,
+                    "page": citation.get("page"),
+                    "block_id": chunk.block_id,
+                    "section": citation.get("section"),
+                    "evidence_ids": chunk.evidence_ids,
+                },
+            })
+
+        # Only fields with real evidence are populated. Everything the system
+        # cannot ground is omitted rather than invented.
+        content: Dict[str, Any] = {
             "concept_id": concept_id,
             "concept_name": c_name,
-            "definition": c_def,
-            "overview": f"Comprehensive educational study of {c_name} in {subject_id.replace('_', ' ').title()}.",
-            "intuition": f"Core intuition: {intuition_passage[:280]}...",
-            "worked_example": {
-                "title": f"Applied Problem in {c_name}",
-                "problem": f"Consider the relationship and constraints defined for {c_name}.",
-                "solution": f"Step 1: Identify boundary conditions. Step 2: Apply principle: {ex_passage[:180]}...",
-            },
-            "common_misconceptions": [
-                f"Confusing static definitions with dynamic rates when studying {c_name}.",
-                f"Applying simplified formulas outside their designated boundary scope.",
-            ],
-            "key_takeaway": f"Mastery of {c_name} requires verifying governing principles and source conditions.",
+            "definition": c_def or None,
+            "source_evidence": source_evidence,
+            "grounded": True,
         }
+        return content
 
     def start_final_assessment(self, learner_id: str, subject_id: str) -> Dict[str, Any]:
         """
@@ -471,12 +526,26 @@ class LearningService:
                     q_dict["item_id"] = q_dict.get("question_id", "")
                     q_dict["prompt"] = q_dict.get("question_text", "")
                     questions.append(q_dict)
+            # Return submitted responses so the frontend can restore progress.
+            # The current question index is derived server-side as the first
+            # unanswered question, so the frontend never needs to persist it.
+            submitted_responses = dict(active_sess.responses or {})
+            answered_ids = set(submitted_responses.keys())
+            first_unanswered = 0
+            for idx, qid in enumerate(active_sess.question_ids):
+                if qid not in answered_ids:
+                    first_unanswered = idx
+                    break
+            else:
+                first_unanswered = len(active_sess.question_ids)
             return {
                 "assessment_id": active_sess.assessment_id,
                 "subject_id": subject_id,
                 "resumed": True,
                 "question_count": len(questions),
                 "questions": questions,
+                "submitted_responses": submitted_responses,
+                "current_question_index": first_unanswered,
             }
 
         # Select grounded questions covering concepts
@@ -544,13 +613,13 @@ class LearningService:
         Updates BKT masteries across all tested concepts and marks assessment complete.
         Protected by durable idempotency and per-learner thread locks.
         """
-        if request_id and self.idempotency_tracker.is_duplicate(request_id):
-            cached = self.idempotency_tracker.get_cached_response(request_id)
-            if cached:
-                cached["duplicate_submission"] = True
-                return cached
-
         with self._get_learner_lock(learner_id):
+            if request_id and self.idempotency_tracker.is_duplicate(request_id):
+                cached = self.idempotency_tracker.get_cached_response(request_id)
+                if cached:
+                    cached["duplicate_submission"] = True
+                    return cached
+
             session = self.session_repo.load_final_assessment(assessment_id)
             if not session:
                 raise ValueError(f"Final Assessment session '{assessment_id}' not found.")
@@ -650,11 +719,30 @@ class LearningService:
     def get_final_assessment_status(self, assessment_id: str, learner_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Retrieves status of a Final Assessment.
+
+        Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
+        A previous implementation made ``learner_id`` optional and only compared it
+        when supplied, so omitting it returned the full session dump -- including
+        ``concept_results[*].correct_answer`` and ``concept_results[*].explanation``
+        -- to any unauthenticated caller. The answer key is now stripped unconditionally.
         """
+        if not learner_id:
+            raise ValueError("learner_id is required to read Final Assessment status.")
+
         session = self.session_repo.load_final_assessment(assessment_id)
         if not session:
             raise ValueError(f"Final Assessment session '{assessment_id}' not found.")
-        if learner_id and session.learner_id != learner_id:
+        if session.learner_id != learner_id:
             raise ValueError(f"Assessment '{assessment_id}' does not belong to learner '{learner_id}'.")
 
-        return session.model_dump(mode="json")
+        payload = session.model_dump(mode="json")
+
+        # Strip the authoritative answer key. The learner may see their own submitted
+        # answers and the resulting scores, never the expected answers or explanations.
+        for concept_id, concept_result in (payload.get("concept_results") or {}).items():
+            if isinstance(concept_result, dict):
+                concept_result.pop("correct_answer", None)
+                concept_result.pop("explanation", None)
+
+        payload["answer_key_disclosed"] = False
+        return payload

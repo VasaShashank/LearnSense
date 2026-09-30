@@ -46,8 +46,10 @@ def test_full_phase4_adaptive_loop_flow(ingested_calculus):
     session_id = session_data["session_id"]
 
     # 2. Start Diagnostic for KNOW concepts
+    # learner_id is REQUIRED so the ownership check can never be skipped.
     resp_diag_start = client.post(
-        "/api/initialization/diagnostic/start", json={"session_id": session_id}
+        "/api/initialization/diagnostic/start",
+        json={"session_id": session_id, "learner_id": learner_id},
     )
     assert resp_diag_start.status_code == 200, resp_diag_start.text
     diag_data = resp_diag_start.json()
@@ -63,7 +65,7 @@ def test_full_phase4_adaptive_loop_flow(ingested_calculus):
     responses = {q["question_id"]: 1.0 for q in diag_data["questions"]}
     resp_diag_sub = client.post(
         "/api/initialization/diagnostic/submit",
-        json={"session_id": session_id, "responses": responses},
+        json={"session_id": session_id, "responses": responses, "learner_id": learner_id},
     )
     assert resp_diag_sub.status_code == 200, resp_diag_sub.text
     diag_sub_data = resp_diag_sub.json()
@@ -79,16 +81,32 @@ def test_full_phase4_adaptive_loop_flow(ingested_calculus):
     assert gaps_data["next_target"] is not None
 
     # 5. Submit Activity Response & Re-plan
-    act_payload = {
-        "learner_id": learner_id,
-        "subject_id": subject_id,
-        "concept_ids": dont_ids,
-        "correctness": 1.0,
-        "all_subject_concept_ids": all_concept_ids,
-    }
-    resp_act = client.post("/api/learners/activity-response", json=act_payload)
-    assert resp_act.status_code == 200, resp_act.text
-    act_data = resp_act.json()
+    # Server-authoritative path: submit a real grounded answer per DONT_KNOW concept.
+    from backend.services.knowledge_service import KnowledgeService
+    from backend.services.learner_service import LearnerService
+    from backend.services.learning_service import LearningService
+
+    _ks = KnowledgeService()
+    _learning = LearningService(
+        learner_service=LearnerService(knowledge_service=_ks), knowledge_service=_ks
+    )
+    _bank = _learning.get_or_create_question_bank(subject_id)
+
     for cid in dont_ids:
+        candidates = _bank.get_by_concept(cid)
+        if not candidates:
+            continue
+        q = candidates[0]
+        act_payload = {
+            "learner_id": learner_id,
+            "subject_id": subject_id,
+            "concept_ids": [cid],
+            "question_id": q.question_id,
+            "selected_option": q.correct_answer,
+            "all_subject_concept_ids": all_concept_ids,
+        }
+        resp_act = client.post("/api/learners/activity-response", json=act_payload)
+        assert resp_act.status_code == 200, resp_act.text
+        act_data = resp_act.json()
         assert cid in act_data["updated_masteries"]
-    assert act_data["updated_masteries"][dont_ids[0]] > 0.15
+        assert act_data["updated_masteries"][cid] > 0.15

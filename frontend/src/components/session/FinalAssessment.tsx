@@ -59,12 +59,12 @@ interface AssessmentResult {
 export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
   subject,
   learnerId,
-  activeAssessmentId: _activeAssessmentId,
+  activeAssessmentId,
   onComplete,
   onClose,
 }) => {
   const [phase, setPhase] = useState<'LOADING' | 'IN_PROGRESS' | 'SUBMITTING' | 'RESULTS'>('LOADING');
-  const [assessmentId, setAssessmentId] = useState<string>('');
+  const [assessmentId, setAssessmentId] = useState<string>(activeAssessmentId || '');
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -79,8 +79,16 @@ export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
       const data = await ApiClient.startFinalAssessment(learnerId, subject.id);
       setAssessmentId(data.assessment_id);
       setQuestions(data.questions);
-      setCurrentIdx(0);
-      setResponses({});
+      // Restore progress when resuming an active assessment.
+      // The server returns submitted_responses and current_question_index
+      // derived from the first unanswered question.
+      if (data.resumed && data.submitted_responses) {
+        setResponses(data.submitted_responses);
+        setCurrentIdx(data.current_question_index || 0);
+      } else {
+        setCurrentIdx(0);
+        setResponses({});
+      }
       setSelectedOption(null);
       setPhase('IN_PROGRESS');
     } catch (err: any) {
@@ -130,7 +138,10 @@ export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
     setPhase('SUBMITTING');
     setError(null);
     try {
-      const requestId = `final_${assessmentId}_${Date.now()}`;
+      // Stable request ID: one logical submission = one ID.
+      // Using Date.now() here meant every retry got a fresh ID, which
+      // defeated idempotency and allowed duplicate BKT mutations.
+      const requestId = `final_${assessmentId}`;
       const res = await ApiClient.submitFinalAssessment({
         assessment_id: assessmentId,
         learner_id: learnerId,

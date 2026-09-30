@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ConceptNode, Subject, ConceptLearningContent } from '../../api/client';
 import { ApiClient } from '../../api/client';
-import { BookOpen, GraduationCap, CheckCircle2, XCircle, ArrowRight, Sparkles, MessageSquare, ShieldAlert, Zap, RefreshCw, Lightbulb, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { BookOpen, GraduationCap, CheckCircle2, XCircle, ArrowRight, Sparkles, MessageSquare, ShieldAlert, Zap, RefreshCw, ArrowLeft } from 'lucide-react';
 
 export interface LearningSessionProps {
   concept: ConceptNode;
@@ -117,7 +117,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
         selected_option: selectedOption,
         selected_index: selectedOptionIdx ?? undefined,
         is_dont_know: isDontKnow,
-        request_id: `req_${concept.concept_id}_${Date.now()}`,
+        request_id: `req_${concept.concept_id}`,
       });
 
       const newM = res.updated_masteries[concept.concept_id] ?? concept.mastery;
@@ -240,98 +240,39 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                     </h3>
                   </div>
                   <div className="text-sm text-universe-text leading-relaxed font-sans whitespace-pre-line p-5 rounded-2xl bg-space-950/60 border border-white/[0.05]">
-                    {learningContent?.overview || concept.definition}
+                    {learningContent?.definition || concept.definition || 'No definition available.'}
                   </div>
                 </div>
 
-                {/* Mental Model & Intuition */}
-                {learningContent?.intuition && (
-                  <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/30 via-space-950 to-space-900 border border-amber-500/30 space-y-2">
-                    <h4 className="text-xs font-mono font-bold text-amber-300 uppercase flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
-                      Intuitive Mental Model
-                    </h4>
-                    <p className="text-xs text-universe-text leading-relaxed font-sans">
-                      {learningContent.intuition}
-                    </p>
-                  </div>
-                )}
-
-                {/* Key Principles */}
-                {learningContent?.key_principles && learningContent.key_principles.length > 0 && (
+                {/* Source Evidence */}
+                {learningContent?.source_evidence && learningContent.source_evidence.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="text-xs font-mono font-bold text-cyan-300 uppercase flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                      Core Principles
+                      <BookOpen className="w-4 h-4 text-cyan-400" />
+                      Source Evidence
                     </h4>
-                    <div className="grid grid-cols-1 gap-2.5">
-                      {learningContent.key_principles.map((principle, idx) => (
+                    <div className="space-y-2.5">
+                      {learningContent.source_evidence.map((evidence, idx) => (
                         <div
                           key={idx}
-                          className="p-3.5 rounded-xl bg-space-950/70 border border-white/[0.05] text-xs text-universe-text flex items-start gap-3"
+                          className="p-4 rounded-xl bg-space-950/70 border border-white/[0.05] space-y-2"
                         >
-                          <span className="w-5 h-5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono flex items-center justify-center shrink-0 mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <span className="leading-relaxed font-sans">{principle}</span>
+                          <div className="text-xs text-universe-text leading-relaxed font-sans whitespace-pre-line">
+                            {evidence.text}
+                          </div>
+                          {evidence.provenance && (
+                            <div className="text-[10px] font-mono text-universe-slate/60 flex items-center gap-2">
+                              <span>Page {evidence.provenance.page ?? 'unknown'}</span>
+                              {evidence.provenance.section && (
+                                <span>· {evidence.provenance.section}</span>
+                              )}
+                              {evidence.provenance.block_id && (
+                                <span>· {evidence.provenance.block_id}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Worked Problem */}
-                {learningContent?.worked_example && (
-                  <div className="p-5 rounded-2xl bg-space-950/70 border border-white/[0.06] space-y-4">
-                    <h4 className="text-xs font-mono font-bold text-violet-300 uppercase flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-violet-400" />
-                      Step-by-Step Worked Problem
-                    </h4>
-
-                    <div className="p-3 rounded-xl bg-violet-950/30 border border-violet-500/30 text-xs font-mono text-violet-200">
-                      <strong>Problem:</strong> {learningContent.worked_example.problem}
-                    </div>
-
-                    <div className="space-y-2">
-                      {learningContent.worked_example.steps.map((step, sIdx) => (
-                        <div key={sIdx} className="text-xs text-universe-slate pl-3 border-l-2 border-white/[0.1] leading-relaxed font-sans">
-                          {step}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 font-mono">
-                      <strong>Solution:</strong> {learningContent.worked_example.solution}
-                    </div>
-                  </div>
-                )}
-
-                {/* Misconceptions */}
-                {learningContent?.common_misconceptions && learningContent.common_misconceptions.length > 0 && (
-                  <div className="p-5 rounded-2xl bg-rose-950/20 border border-rose-500/30 space-y-2.5">
-                    <h4 className="text-xs font-mono font-bold text-rose-300 uppercase flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-                      Common Pitfalls & Misconceptions
-                    </h4>
-                    <ul className="space-y-1.5 list-disc list-inside text-xs text-rose-200/90 leading-relaxed font-sans">
-                      {learningContent.common_misconceptions.map((misc, mIdx) => (
-                        <li key={mIdx}>{misc}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Key Takeaway */}
-                {learningContent?.key_takeaway && (
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-space-950 to-space-900 border border-emerald-500/40 flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-emerald-400 shrink-0" />
-                    <div>
-                      <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider block font-bold">
-                        KEY RULE OF THUMB
-                      </span>
-                      <p className="text-xs font-sans text-white mt-0.5">
-                        {learningContent.key_takeaway}
-                      </p>
                     </div>
                   </div>
                 )}

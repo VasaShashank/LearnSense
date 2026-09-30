@@ -95,7 +95,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         return;
       }
 
-      const diagData = await ApiClient.startDiagnostic(session.session_id);
+      const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
       if (!diagData.questions || diagData.questions.length === 0) {
         onCompleteOnboarding(selectedSubject.id, learnerId);
       } else {
@@ -126,7 +126,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     setLoading(true);
     try {
       const payload = finalAnswers || diagnosticAnswers;
-      await ApiClient.submitDiagnosticRaw(sessionId, payload);
+      await ApiClient.submitDiagnosticRaw(sessionId, learnerId, payload);
       if (selectedSubject) {
         onCompleteOnboarding(selectedSubject.id, learnerId);
       }
