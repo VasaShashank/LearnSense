@@ -24,6 +24,58 @@ from phase2.pipeline.stage4_candidates import Stage4ExtractionResult
 from phase2.utils.id_generator import generate_concept_id, generate_evidence_id
 
 
+def _fold_plural(key: str) -> str:
+    """Fold a normalized key's final token to a crude singular form.
+
+    Merges clusters like "derivative" / "derivatives" that exact matching
+    would otherwise keep as two separate concepts. Conservative on purpose:
+    only pure-alphabetic tails longer than 4 chars are folded, so "calculus",
+    "news" or short tokens are never mangled.
+    """
+    parts = key.split()
+    if not parts:
+        return key
+    tail = parts[-1]
+    if not tail.isalpha() or len(tail) <= 4:
+        return key
+    if tail.endswith(("us", "is", "ss")):
+        # Latin/Greek endings ("calculus", "analysis", "class") are not plurals.
+        return key
+    singular = tail
+    if tail.endswith("ies") and len(tail) > 5:
+        singular = tail[:-3] + "y"
+    elif tail.endswith("es") and tail[-3] in "sxz" or tail.endswith(("ches", "shes")):
+        singular = tail[:-2]
+    elif tail.endswith("s") and not tail.endswith("ss"):
+        singular = tail[:-1]
+    if singular == tail:
+        return key
+    return " ".join(parts[:-1] + [singular])
+
+
+def _merge_plural_variants(
+    clusters: Dict[str, List[ConceptMention]],
+    canonical_names: Dict[str, str],
+) -> None:
+    """Fold singular/plural duplicate clusters in place.
+
+    The surviving cluster keeps the most frequent surface form as its
+    canonical name (first-seen wins ties), so "Derivative" x3 + "Derivatives"
+    x1 canonicalizes to "Derivative" with 4 mentions.
+    """
+    folded_to_keys: Dict[str, List[str]] = {}
+    for key in list(clusters.keys()):
+        folded_to_keys.setdefault(_fold_plural(key), []).append(key)
+    for folded, keys in folded_to_keys.items():
+        if len(keys) < 2:
+            continue
+        keys.sort(key=lambda k: (-len(clusters[k]), k))
+        keep = keys[0]
+        for drop in keys[1:]:
+            clusters[keep].extend(clusters.pop(drop))
+            canonical_names.pop(drop, None)
+
+
 def run_stage5_entity_resolution(
     norm_doc: NormalizedDocumentContext,
     candidates: Stage4ExtractionResult
@@ -45,6 +97,20 @@ def run_stage5_entity_resolution(
             clusters[norm_key] = []
             canonical_names[norm_key] = raw_name
         clusters[norm_key].append(mention)
+
+    # Second pass: merge singular/plural variants of the same term.
+    _merge_plural_variants(clusters, canonical_names)
+
+    # Canonical name = most frequent surface form (first-seen wins ties).
+    for norm_key, mentions in clusters.items():
+        counts: Dict[str, int] = {}
+        order: List[str] = []
+        for m in mentions:
+            if m.surface_form not in counts:
+                counts[m.surface_form] = 0
+                order.append(m.surface_form)
+            counts[m.surface_form] += 1
+        canonical_names[norm_key] = max(order, key=lambda name: counts[name])
 
     concepts: List[Concept] = []
     merge_records: List[MergeRecord] = []

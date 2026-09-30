@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { Subject, Question, ConceptNode } from '../../api/client';
+import type { Subject, Question, ConceptNode, TopicTerritory } from '../../api/client';
 import { ApiClient } from '../../api/client';
 import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Brain, ShieldCheck, Upload, RefreshCw, Orbit } from 'lucide-react';
 
@@ -33,6 +33,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [learnerId] = useState<string>('student_alex');
   const [concepts, setConcepts] = useState<ConceptNode[]>([]);
+  const [topics, setTopics] = useState<TopicTerritory[]>([]);
   const [selfAssessmentSelections, setSelfAssessmentSelections] = useState<Record<string, string>>({});
   const [confidenceSelections, setConfidenceSelections] = useState<Record<string, Confidence>>({});
   const [sessionId, setSessionId] = useState<string>('');
@@ -107,6 +108,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     try {
       const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
       setConcepts(graph.concepts);
+      setTopics(graph.topics || []);
       const draft = loadDraft(sub.id);
       const initMap: Record<string, string> = {};
       const initConf: Record<string, Confidence> = {};
@@ -176,7 +178,10 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         setSelectedSubject(sub);
         try {
           const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
-          if (!cancelled) setConcepts(graph.concepts);
+          if (!cancelled) {
+            setConcepts(graph.concepts);
+            setTopics(graph.topics || []);
+          }
         } catch {
           // Graph load is best-effort during resume.
         }
@@ -316,6 +321,45 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     (v) => v === 'KNOW' || v === 'UNANSWERED',
   ).length;
 
+  // Group concepts under their extracted topics so the learner rates
+  // knowledge topic by topic. Concepts without a topic fall under Other.
+  const topicGroups: { key: string; title: string; concepts: ConceptNode[] }[] = (() => {
+    if (topics.length === 0) {
+      return [{ key: 'all', title: '', concepts }];
+    }
+    const byId = new Map(topics.map((t) => [t.id, t]));
+    const grouped = new Map<string, ConceptNode[]>();
+    const other: ConceptNode[] = [];
+    concepts.forEach((c) => {
+      const tid = c.topic_id || '';
+      if (tid && byId.has(tid)) {
+        const arr = grouped.get(tid) || [];
+        arr.push(c);
+        grouped.set(tid, arr);
+      } else {
+        other.push(c);
+      }
+    });
+    const groups = topics
+      .filter((t) => grouped.has(t.id))
+      .map((t) => ({ key: t.id, title: t.name, concepts: grouped.get(t.id) || [] }));
+    if (other.length > 0) {
+      groups.push({ key: 'other', title: 'Other concepts', concepts: other });
+    }
+    return groups.length > 0 ? groups : [{ key: 'all', title: '', concepts }];
+  })();
+
+  const markTopic = (conceptIds: string[], level: string) => {
+    setSelfAssessmentSelections((prev) => {
+      const next = { ...prev };
+      conceptIds.forEach((cid) => {
+        next[cid] = level;
+      });
+      persistDraft(selectedSubject?.id, next, confidenceSelections);
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-screen universe-canvas flex items-center justify-center p-4 sm:p-8 text-white antialiased">
       <div className="w-full max-w-3xl universe-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)] border border-white/[0.08]">
@@ -446,16 +490,39 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   Baseline Knowledge Calibration
                 </h2>
                 <p className="text-xs text-universe-slate font-sans mt-1 max-w-xl leading-relaxed">
-                  Before we build your learning path, tell us how confident you feel about these
-                  concepts. We&apos;ll use a short adaptive assessment to verify your current
-                  understanding. Your self-assessment is a starting point, not a final judgment.
+                  Before we build your learning path, rate your knowledge in each extracted
+                  topic below and tell us how confident you feel. We&apos;ll use a short
+                  adaptive assessment to verify your current understanding. Your
+                  self-assessment is a starting point, not a final judgment.
                 </p>
               </div>
               <Orbit className="w-6 h-6 text-cyan-400 shrink-0" />
             </div>
 
-            <div className="max-h-96 overflow-y-auto space-y-2.5 pr-2">
-              {concepts.map((c) => {
+            <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
+              {topicGroups.map((group) => (
+                <div key={group.key} className="space-y-2.5">
+                  {group.title && (
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                      <h3 className="text-[11px] font-mono font-bold uppercase tracking-widest text-cyan-300">
+                        {group.title}
+                        <span className="text-universe-slate/60 font-normal"> ({group.concepts.length})</span>
+                      </h3>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-mono text-universe-slate/60 mr-1">Mark all:</span>
+                        {(['KNOW', 'UNANSWERED', 'DONT_KNOW'] as const).map((level) => (
+                          <button
+                            key={level}
+                            onClick={() => markTopic(group.concepts.map((c) => c.concept_id), level)}
+                            className="px-2 py-0.5 rounded-md text-[10px] font-mono text-universe-slate hover:text-cyan-300 hover:bg-cyan-400/10 border border-transparent hover:border-cyan-400/30 transition-all"
+                          >
+                            {level === 'KNOW' ? 'Strong' : level === 'UNANSWERED' ? 'Unsure' : 'Weak'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {group.concepts.map((c) => {
                 const currentStatus = selfAssessmentSelections[c.concept_id] || 'UNANSWERED';
                 const currentConf: Confidence = confidenceSelections[c.concept_id] || 'Medium';
                 return (
@@ -531,6 +598,8 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   </div>
                 );
               })}
+                </div>
+              ))}
             </div>
 
             <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">

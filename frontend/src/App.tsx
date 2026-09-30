@@ -148,6 +148,29 @@ export default function App() {
     }
   }, [isOnboarded, selectedSubject, refreshSubjectData]);
 
+  // Calibration gate on subject selection: any subject without a submitted
+  // self-assessment (e.g. freshly uploaded material, or material ingested
+  // before this gate existed) routes to strength rating + verification test
+  // instead of showing default 30% mastery. Runs once per subject selection.
+  const gateCheckedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isOnboarded || !selectedSubject || pendingCalibration || resumeInitSession) return;
+    const key = `${learnerId}:${selectedSubject.id}`;
+    if (gateCheckedFor.current === key) return;
+    gateCheckedFor.current = key;
+    ApiClient.getCalibrationStatus(learnerId, selectedSubject.id)
+      .then((status) => {
+        if (status.needs_calibration) {
+          setPendingCalibration(selectedSubject);
+        } else if (!status.diagnostic_completed && status.session_id) {
+          setResumeInitSession({ session_id: status.session_id, subject_id: selectedSubject.id });
+        }
+      })
+      .catch(() => {
+        // Gate is best-effort: never block learning on a failed check.
+      });
+  }, [isOnboarded, selectedSubject, pendingCalibration, resumeInitSession, learnerId]);
+
   // Handle Onboarding Completion
   const handleCompleteOnboarding = (subjectId: string) => {
     const sub = subjects.find((s) => s.id === subjectId) || subjects[0];
