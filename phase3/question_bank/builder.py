@@ -139,7 +139,12 @@ class QuestionBankBuilder:
         self._generate_for_concepts(context, bank, chapter_id, target_count, retriever, shortfalls)
 
         grounded = len(bank.get_grounded_questions())
-        if not grounded:
+        # For an unscoped build, zero grounded questions means the entire document
+        # cannot support any grounded teaching - that is a real failure.
+        # For a scoped build (e.g. practice tab requesting one concept), zero grounded
+        # questions just means *that concept* lacks evidence; we return the empty bank
+        # so the caller can surface a friendly "no questions" message.
+        if not grounded and scope is None:
             raise QuestionBankError(
                 "No question could be grounded in the uploaded material. The document may "
                 "be too short, scanned without readable text, or unrelated to the concepts "
