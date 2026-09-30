@@ -1,12 +1,12 @@
 {
-  "document_id": "probe_calc",
-  "knowledge_document_id": "kr_probe_calc",
-  "document_title": "Calc",
-  "source_filename": "calc.pdf",
+  "document_id": "subj_prereq_t10",
+  "knowledge_document_id": "kr_test_fixture_calculus",
+  "document_title": "Fixture Calculus",
+  "source_filename": "fixture_calculus.pdf",
   "chapters": [
     {
       "chapter_id": "ch_1",
-      "title": "Calc",
+      "title": "Fixture Calculus",
       "topic_ids": [
         "sec_page_1"
       ]
@@ -23,25 +23,25 @@
   "topics": [
     {
       "topic_id": "sec_page_1",
-      "title": "Limits & Continuity & Derivatives",
+      "title": "Limits +3 more",
       "concept_ids": [
-        "c_32d11674fb08",
-        "c_cbe4460e287f",
-        "c_e1b197db6135",
-        "c_05fa7e9b7927"
+        "c_bb936b957a19",
+        "c_9b6ceb723ce6",
+        "c_11ff3254f9d3",
+        "c_fd612557db56"
       ]
     }
   ],
   "concepts": {
-    "c_32d11674fb08": {
-      "concept_id": "c_32d11674fb08",
+    "c_bb936b957a19": {
+      "concept_id": "c_bb936b957a19",
       "canonical_name": "Limits",
       "aliases": [],
       "type": "concept",
-      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "description": "Limits\nA limit describes the value a function approaches as its input becomes arbitrarily close to a given point.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient as the increment approaches zero\nChain Rule\nThe chain rule states that the derivative of a co…",
       "skill_ids": [],
       "evidence_ids": [
-        "ev_7f84cc3f466b"
+        "ev_b3a8745e5d15"
       ],
       "page_indices": [
         0
@@ -51,33 +51,15 @@
       ],
       "section_titles": []
     },
-    "c_cbe4460e287f": {
-      "concept_id": "c_cbe4460e287f",
-      "canonical_name": "Continuity",
-      "aliases": [],
-      "type": "concept",
-      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
-      "skill_ids": [],
-      "evidence_ids": [
-        "ev_82ae3bee4b1a"
-      ],
-      "page_indices": [
-        0
-      ],
-      "block_ids": [
-        "blk_p0000_nat_0001"
-      ],
-      "section_titles": []
-    },
-    "c_e1b197db6135": {
-      "concept_id": "c_e1b197db6135",
+    "c_9b6ceb723ce6": {
+      "concept_id": "c_9b6ceb723ce6",
       "canonical_name": "Derivatives",
       "aliases": [],
       "type": "concept",
-      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "description": "Limits\nA limit describes the value a function approaches as its input becomes arbitrarily close to a given point.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient as the increment approaches zero\nChain Rule\nThe chain rule states that the derivative of a co…",
       "skill_ids": [],
       "evidence_ids": [
-        "ev_01a43f9a07c7"
+        "ev_a2f85fb966f8"
       ],
       "page_indices": [
         0
@@ -87,15 +69,33 @@
       ],
       "section_titles": []
     },
-    "c_05fa7e9b7927": {
-      "concept_id": "c_05fa7e9b7927",
+    "c_11ff3254f9d3": {
+      "concept_id": "c_11ff3254f9d3",
+      "canonical_name": "Chain Rule",
+      "aliases": [],
+      "type": "concept",
+      "description": "Limits\nA limit describes the value a function approaches as its input becomes arbitrarily close to a given point.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient as the increment approaches zero\nChain Rule\nThe chain rule states that the derivative of a co…",
+      "skill_ids": [],
+      "evidence_ids": [
+        "ev_f9068e4839ab"
+      ],
+      "page_indices": [
+        0
+      ],
+      "block_ids": [
+        "blk_p0000_nat_0001"
+      ],
+      "section_titles": []
+    },
+    "c_fd612557db56": {
+      "concept_id": "c_fd612557db56",
       "canonical_name": "Definite Integrals",
       "aliases": [],
       "type": "concept",
-      "description": "Limits and Continuity\nA limit describes the value a function approaches as its input becomes arbitrarily close to a point.\nA function is continuous at a point when its limit there equals the function value.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient …",
+      "description": "Limits\nA limit describes the value a function approaches as its input becomes arbitrarily close to a given point.\nDerivatives\nThe derivative of a function at a point is the limit of the difference quotient as the increment approaches zero\nChain Rule\nThe chain rule states that the derivative of a co…",
       "skill_ids": [],
       "evidence_ids": [
-        "ev_75d8399a207d"
+        "ev_313782eaa505"
       ],
       "page_indices": [
         0
@@ -109,8 +109,8 @@
   "skills": {},
   "formulas": {},
   "educational_units": {
-    "u_307dd4be80b4": {
-      "unit_id": "u_307dd4be80b4",
+    "u_32fffd009d75": {
+      "unit_id": "u_32fffd009d75",
       "unit_type": "explanation",
       "section_id": "sec_page_1",
       "source": [
@@ -119,26 +119,26 @@
           "span": {
             "field": "normalized_text",
             "start": 0,
-            "end": 668
+            "end": 484
           }
         }
       ],
       "parent_unit_id": null,
       "concept_links": [
         {
-          "concept_id": "c_32d11674fb08",
+          "concept_id": "c_bb936b957a19",
           "link": "mentions"
         },
         {
-          "concept_id": "c_cbe4460e287f",
+          "concept_id": "c_9b6ceb723ce6",
           "link": "mentions"
         },
         {
-          "concept_id": "c_e1b197db6135",
+          "concept_id": "c_11ff3254f9d3",
           "link": "mentions"
         },
         {
-          "concept_id": "c_05fa7e9b7927",
+          "concept_id": "c_fd612557db56",
           "link": "mentions"
         }
       ]
@@ -147,8 +147,8 @@
   "assessable_items": {},
   "concept_definitions": [],
   "evidence": {
-    "ev_7f84cc3f466b": {
-      "evidence_id": "ev_7f84cc3f466b",
+    "ev_b3a8745e5d15": {
+      "evidence_id": "ev_b3a8745e5d15",
       "block_id": "blk_p0000_nat_0001",
       "span": {
         "field": "normalized_text",
@@ -160,39 +160,39 @@
       "kind": "explicit_statement",
       "source_confidence": 1.0
     },
-    "ev_82ae3bee4b1a": {
-      "evidence_id": "ev_82ae3bee4b1a",
+    "ev_a2f85fb966f8": {
+      "evidence_id": "ev_a2f85fb966f8",
       "block_id": "blk_p0000_nat_0001",
       "span": {
         "field": "normalized_text",
-        "start": 11,
-        "end": 21
-      },
-      "excerpt": "Continuity",
-      "level": "EXPLICIT",
-      "kind": "explicit_statement",
-      "source_confidence": 1.0
-    },
-    "ev_01a43f9a07c7": {
-      "evidence_id": "ev_01a43f9a07c7",
-      "block_id": "blk_p0000_nat_0001",
-      "span": {
-        "field": "normalized_text",
-        "start": 207,
-        "end": 218
+        "start": 114,
+        "end": 125
       },
       "excerpt": "Derivatives",
       "level": "EXPLICIT",
       "kind": "explicit_statement",
       "source_confidence": 1.0
     },
-    "ev_75d8399a207d": {
-      "evidence_id": "ev_75d8399a207d",
+    "ev_f9068e4839ab": {
+      "evidence_id": "ev_f9068e4839ab",
       "block_id": "blk_p0000_nat_0001",
       "span": {
         "field": "normalized_text",
-        "start": 445,
-        "end": 463
+        "start": 239,
+        "end": 249
+      },
+      "excerpt": "Chain Rule",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 1.0
+    },
+    "ev_313782eaa505": {
+      "evidence_id": "ev_313782eaa505",
+      "block_id": "blk_p0000_nat_0001",
+      "span": {
+        "field": "normalized_text",
+        "start": 365,
+        "end": 383
       },
       "excerpt": "Definite Integrals",
       "level": "EXPLICIT",
@@ -200,6 +200,13 @@
       "source_confidence": 1.0
     }
   },
-  "prerequisites": [],
+  "prerequisites": [
+    {
+      "source_concept_id": "c_9b6ceb723ce6",
+      "target_concept_id": "c_11ff3254f9d3",
+      "confidence": 1.0,
+      "evidence_ids": []
+    }
+  ],
   "trusted_relationships": []
 }

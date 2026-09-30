@@ -74,20 +74,17 @@ class SourceService:
                         status = "PARTIAL"
                         recovery_state = "PARTIAL_RECOVERY"
 
-                    title = doc_id.replace("_", " ").title()
                     fn = ""
                     if struct_doc:
-                        # ``DocumentMetadata.title`` is a TitleMetadata object
-                        # (``{"value": ..., "source": ...}``), NOT a string. Handing
-                        # that object to the client made the React UI render an object
-                        # as a child, which throws and unmounts the entire app - the
-                        # "blank pale screen" the upload button appeared to cause.
-                        title = _title_text(struct_doc.get("metadata") or {}) or title
                         # ``filename`` lives on ``StructuredDocument.source``
                         # (SourceMetadata), a sibling of ``metadata`` - reading it from
                         # ``metadata`` always returned "", so every upload was
                         # mislabelled as a PDF.
                         fn = _source_filename(struct_doc) or fn
+
+                    # Title = real uploaded filename (extension stripped). Never
+                    # generate a name from doc_id or PDF metadata.
+                    title = fn.rsplit(".", 1)[0] if fn else doc_id.replace("_", " ").title()
 
                     file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
 
