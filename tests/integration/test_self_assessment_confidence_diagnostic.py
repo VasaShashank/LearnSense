@@ -405,6 +405,33 @@ def test_14_no_answer_key_leak(ingested_calculus):
         assert "explanation" not in q
 
 
+# --- Test 16: calibration gate routes new uploads to self-assessment ------------
+def test_16_calibration_gate_for_new_subject(ingested_calculus):
+    subject_id = ingested_calculus.document_id
+    learner_id = _learner("t16_learner")
+    all_ids = ingested_calculus.concept_ids
+
+    # Fresh subject: calibration required before learning starts.
+    status = client.get(
+        f"/api/initialization/status?learner_id={learner_id}&subject_id={subject_id}"
+    )
+    assert status.status_code == 200, status.text
+    body = status.json()
+    assert body["needs_calibration"] is True
+    assert body["session_id"] is None
+
+    # After self-assessment, the gate opens (diagnostic may still resume).
+    selections = {cid: "DONT_KNOW" for cid in all_ids}
+    data = _sa(learner_id, subject_id, selections, all_ids=all_ids)
+    status2 = client.get(
+        f"/api/initialization/status?learner_id={learner_id}&subject_id={subject_id}"
+    )
+    assert status2.status_code == 200, status2.text
+    body2 = status2.json()
+    assert body2["needs_calibration"] is False
+    assert body2["session_id"] == data["session_id"]
+
+
 # --- Test 15: Light Mode control is absent ---------------------------------------
 def test_15_light_mode_control_absent():
     navbar = (FRONTEND / "components" / "navigation" / "TopNavbar.tsx").read_text()

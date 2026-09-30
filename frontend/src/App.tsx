@@ -52,6 +52,10 @@ export default function App() {
   // Interrupted diagnostic session awaiting resume after refresh (Batch 13).
   const [resumeInitSession, setResumeInitSession] = useState<{ session_id: string; subject_id: string } | null>(null);
 
+  // Newly ingested subject that still needs self-assessment -> diagnostic
+  // before learning starts. While set, the calibration flow takes over the UI.
+  const [pendingCalibration, setPendingCalibration] = useState<Subject | null>(null);
+
   // Resume / Rehydration State
   const [isResuming, setIsResuming] = useState<boolean>(true);
   const resumeAttempted = useRef<boolean>(false);
@@ -149,8 +153,31 @@ export default function App() {
     const sub = subjects.find((s) => s.id === subjectId) || subjects[0];
     setSelectedSubject(sub);
     setResumeInitSession(null);
+    setPendingCalibration(null);
     setIsOnboarded(true);
     setActiveView('DASHBOARD');
+  };
+
+  // Calibration gate: no subject may enter learning without self-assessment +
+  // diagnostic verification. Uncalibrated subjects route to the onboarding flow;
+  // interrupted diagnostics resume where they left off.
+  const openSubject = async (sub: Subject, targetView: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES' = 'ATLAS') => {
+    setSelectedSubject(sub);
+    try {
+      const status = await ApiClient.getCalibrationStatus(learnerId, sub.id);
+      if (status.needs_calibration) {
+        setPendingCalibration(sub);
+        return;
+      }
+      if (!status.diagnostic_completed && status.session_id) {
+        setResumeInitSession({ session_id: status.session_id, subject_id: sub.id });
+        return;
+      }
+    } catch {
+      // Gate is best-effort: if the backend is unreachable, fall through to
+      // normal navigation rather than blocking learning.
+    }
+    setActiveView(targetView);
   };
 
   // Handle Final Assessment Completion
@@ -198,12 +225,13 @@ export default function App() {
     );
   }
 
-  if (!isOnboarded || resumeInitSession) {
+  if (!isOnboarded || resumeInitSession || pendingCalibration) {
     return (
       <OnboardingWorkflow
         subjects={subjects}
         onCompleteOnboarding={handleCompleteOnboarding}
         resumeInitSession={resumeInitSession}
+        initialSubject={resumeInitSession ? undefined : (pendingCalibration ?? undefined)}
       />
     );
   }
@@ -215,7 +243,7 @@ export default function App() {
       <TopNavbar
         subjects={subjects}
         selectedSubject={selectedSubject}
-        onSelectSubject={(s) => setSelectedSubject(s)}
+        onSelectSubject={(s) => openSubject(s, activeView)}
         activeView={activeView}
         onNavigate={setActiveView}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
@@ -365,8 +393,7 @@ export default function App() {
                 setSubjects(subs);
                 const sub = subs.find((s) => s.id === subjectId);
                 if (sub) {
-                  setSelectedSubject(sub);
-                  setActiveView('ATLAS');
+                  await openSubject(sub, 'ATLAS');
                 }
               } catch (err) {
                 console.error('Failed to switch subject', err);

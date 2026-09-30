@@ -321,6 +321,19 @@ export const ApiClient = {
     }),
 
   /**
+   * Per-subject onboarding gate: true when the learner has never submitted
+   * self-assessment for this subject.
+   */
+  getCalibrationStatus: (learnerId: string, subjectId: string): Promise<{
+    learner_id: string;
+    subject_id: string;
+    needs_calibration: boolean;
+    session_id: string | null;
+    diagnostic_completed: boolean;
+  }> =>
+    fetchJson(`/initialization/status?learner_id=${learnerId}&subject_id=${subjectId}`),
+
+  /**
    * Security: the server REQUIRES learner_id for all diagnostic operations so the
    * ownership check can never be skipped by omitting it.
    */

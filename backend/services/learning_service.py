@@ -182,6 +182,26 @@ class LearningService:
         self.get_or_create_question_bank(subject_id, authoritative_concepts)
         return session
 
+    def get_calibration_status(self, learner_id: str, subject_id: str) -> Dict[str, Any]:
+        """Per-subject onboarding gate: True when this learner has never submitted
+        self-assessment for this subject (no init session exists yet)."""
+        session = self.session_repo.find_any_init_session(learner_id, subject_id)
+        if session is None:
+            return {
+                "learner_id": learner_id,
+                "subject_id": subject_id,
+                "needs_calibration": True,
+                "session_id": None,
+                "diagnostic_completed": False,
+            }
+        return {
+            "learner_id": learner_id,
+            "subject_id": subject_id,
+            "needs_calibration": False,
+            "session_id": session.session_id,
+            "diagnostic_completed": session.diagnostic_completed,
+        }
+
     def start_diagnostic(self, session_id: str, learner_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Creates diagnostic quiz questions. NEVER returns correct_answer to the client.

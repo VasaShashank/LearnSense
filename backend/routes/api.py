@@ -195,6 +195,16 @@ async def submit_self_assessment(req: SelfAssessmentApiRequest):
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@router.get("/initialization/status")
+async def calibration_status(learner_id: str = Query(...), subject_id: str = Query(...)):
+    """
+    Per-subject onboarding gate. Returns needs_calibration=True when the learner
+    has never submitted self-assessment for this subject, in which case the UI
+    must route through self-assessment -> diagnostic before learning starts.
+    """
+    return learning_service.get_calibration_status(learner_id, subject_id)
+
+
 @router.post("/initialization/diagnostic/start")
 async def start_diagnostic(req: DiagnosticStartApiRequest):
     """

@@ -10,6 +10,9 @@ export interface OnboardingWorkflowProps {
     session_id: string;
     subject_id: string;
   } | null;
+  // When set, skip subject selection and jump straight to self-assessment for
+  // this subject (used when an already-onboarded learner adds new material).
+  initialSubject?: Subject | null;
 }
 
 type Confidence = 'Low' | 'Medium' | 'High';
@@ -24,6 +27,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   subjects,
   onCompleteOnboarding,
   resumeInitSession,
+  initialSubject,
 }) => {
   const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>('SELECT_SUBJECT');
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
@@ -158,8 +162,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
   // Resume an interrupted diagnostic after browser refresh (Batch 13).
   useEffect(() => {
-    if (!resumeInitSession) return;
-    let cancelled = false;
+    if (!resumeInitSession) return;    let cancelled = false;
     const resume = async () => {
       setLoading(true);
       try {
@@ -208,6 +211,17 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeInitSession?.session_id]);
+
+  // Jump straight to self-assessment for a newly ingested subject when the
+  // learner is already onboarded (calibration gate from the Sources view).
+  const initialSubjectHandled = React.useRef<string | null>(null);
+  useEffect(() => {
+    if (!initialSubject || resumeInitSession) return;
+    if (initialSubjectHandled.current === initialSubject.id) return;
+    initialSubjectHandled.current = initialSubject.id;
+    handleSelectSubject(initialSubject);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSubject?.id]);
 
   // 2. Submit Self Assessment — self-assessment + confidence is the initial
   // hypothesis only. The server stores it separately from BKT evidence and the

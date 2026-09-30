@@ -86,8 +86,8 @@ class SessionRepository:
                 continue
         return None
 
-    def find_active_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
-        """Find the most recent uncompleted diagnostic init session for resume."""
+    def find_any_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
+        """Most recent init session for (learner, subject), completed or not."""
         if not self.base_dir.exists():
             return None
         candidates = []
@@ -96,14 +96,20 @@ class SessionRepository:
                 with open(file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
-                        if not data.get("diagnostic_completed", False):
-                            candidates.append(data)
+                        candidates.append(data)
             except Exception:
                 continue
         if not candidates:
             return None
         candidates.sort(key=lambda d: d.get("created_at", ""), reverse=True)
         return KnowledgeInitializationSession.model_validate(candidates[0])
+
+    def find_active_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
+        """Find the most recent uncompleted diagnostic init session for resume."""
+        session = self.find_any_init_session(learner_id, subject_id)
+        if session is not None and not session.diagnostic_completed:
+            return session
+        return None
 
 
 class QuestionBankRepository:
