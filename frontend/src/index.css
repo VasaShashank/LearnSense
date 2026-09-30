@@ -17,14 +17,14 @@
   }
 
   .light {
-    --bg-space: #F6F8FC;
+    --bg-space: #F8FAFC;
     --surface-space: #FFFFFF;
     --panel-space: #F1F5F9;
-    --border-space: rgba(0, 0, 0, 0.08);
-    --text-primary: #0A0F1D;
-    --text-muted: #5A667A;
-    --text-inverse: #F4F7FB;
-    --accent-cyan: #00B4D8;
+    --border-space: rgba(15, 23, 42, 0.12);
+    --text-primary: #0F172A;
+    --text-muted: #475569;
+    --text-inverse: #F8FAFC;
+    --accent-cyan: #0891B2;
     --accent-emerald: #059669;
     --accent-amber: #D97706;
     --accent-rose: #E11D48;
@@ -70,6 +70,14 @@
   background-attachment: fixed;
 }
 
+/* Light mode specific background - softer, cleaner gradients */
+.light .universe-canvas {
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--accent-cyan) 8%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 85%, color-mix(in srgb, var(--accent-violet) 6%, transparent), transparent 60%),
+    radial-gradient(ellipse 50% 30% at 15% 75%, color-mix(in srgb, var(--accent-emerald) 5%, transparent), transparent 60%);
+}
+
 /* Architectural Grid & Section Styling */
 .grid-bg-fine {
   background-size: 32px 32px;
@@ -108,6 +116,23 @@
   box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 0 0 24px -4px color-mix(in srgb, var(--accent-cyan) 12%, transparent);
 }
 
+/* Light mode panel adjustments - softer shadows, proper light-mode elevations */
+.light .universe-panel {
+  box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.15), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.light .universe-panel-solid {
+  box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.12), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.light .universe-panel-interactive {
+  box-shadow: 0 12px 32px -10px rgba(15, 23, 42, 0.1);
+}
+
+.light .universe-panel-interactive:hover {
+  box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.18), 0 0 24px -4px color-mix(in srgb, var(--accent-cyan) 20%, transparent);
+}
+
 /* Restrained, purposeful halos */
 .halo-target {
   box-shadow: 0 0 32px -4px color-mix(in srgb, var(--accent-cyan) 25%, transparent), inset 0 0 24px color-mix(in srgb, var(--accent-cyan) 8%, transparent);
@@ -143,6 +168,14 @@
   background: color-mix(in srgb, var(--text-primary) 25%, transparent);
 }
 
+/* Light mode scrollbar - more visible */
+.light ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-primary) 20%, transparent);
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-primary) 35%, transparent);
+}
+
 /* React Flow Styled Elements */
 .react-flow__controls {
   background: color-mix(in srgb, var(--panel-space) 95%, transparent) !important;
@@ -161,6 +194,19 @@
 .react-flow__controls-button:hover {
   background: color-mix(in srgb, var(--panel-space) 90%, transparent) !important;
   fill: var(--accent-cyan) !important;
+}
+
+/* Light mode React Flow controls */
+.light .react-flow__controls {
+  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12) !important;
+}
+
+.light .react-flow__controls-button {
+  border-bottom: 1px solid var(--border-space) !important;
+}
+
+.light .react-flow__controls-button:hover {
+  background: color-mix(in srgb, var(--panel-space) 85%, transparent) !important;
 }
 
 /* Reduced Motion Safety */
