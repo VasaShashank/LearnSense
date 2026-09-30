@@ -39,6 +39,11 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
         concept_count: res.concept_count || 0,
       });
       onReloadSources();
+      // Every upload routes straight into strength rating + verification test.
+      // The banner below remains as a backup entry point.
+      if (onSelectSubject && res.document_id) {
+        onSelectSubject(res.document_id);
+      }
     } catch (err: any) {
       console.error('File upload failed', err);
       setUploadError(err.message || 'Failed to parse and extract knowledge graph from source document.');

@@ -105,28 +105,9 @@ class SourceService:
                         "is_demo": is_demo,
                     })
 
-        # Provide standard demonstration sources only if storage directory is completely empty
-        if not sources:
-            sources = [
-                {
-                    "document_id": "calculus_101",
-                    "title": "Calculus: Early Transcendentals (Textbook)",
-                    "status": "READY",
-                    "recovery_state": "COMPLETED",
-                    "page_count": 42,
-                    "file_size_bytes": 10485760,
-                    "is_demo": True,
-                },
-                {
-                    "document_id": "machine_learning",
-                    "title": "Introduction to Statistical Machine Learning",
-                    "status": "READY",
-                    "recovery_state": "COMPLETED",
-                    "page_count": 58,
-                    "file_size_bytes": 15728640,
-                    "is_demo": True,
-                }
-            ]
+        # No demo fallback: when nothing has been uploaded, the library is
+        # empty. Fabricated entries ("42 pages, 10 MB") would teach material
+        # the learner never uploaded.
         return sources
 
     def save_uploaded_source(self, document_id: str, file_bytes: bytes, filename: str) -> Dict[str, Any]:
