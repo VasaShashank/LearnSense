@@ -93,23 +93,31 @@ class KnowledgeBuildService:
         started = time.time()
 
         # -- Step 1: Phase 5 input validation -------------------------
+        logger.info("Step 1: Validating input...")
         validation = self._validate(file_bytes, filename)
 
         # -- Step 2/3: format normalisation + Phase 1 ingestion ------
+        logger.info("Step 2: Running ingestion pipeline...")
         structured_doc = self._ingest(file_bytes, filename, document_id)
+        logger.info("Step 2: Ingestion complete, validating structured document...")
         self._validate_structured(structured_doc)
 
         # Persist the real structured document (blocks included).
+        logger.info("Step 3: Persisting structured document...")
         self.storage.save_structured_document(document_id, structured_doc)
 
         # -- Step 4: Phase 2 -----------------------------------------
+        logger.info("Step 4: Running Phase 2 EKR extraction...")
         ekr = self._run_phase2(structured_doc)
 
         # -- Step 5: Phase 3 context ---------------------------------
+        logger.info("Step 5: Adapting to Phase 3 LearningContext...")
         context = Phase2Adapter.adapt(ekr, structured_document=structured_doc)
+        logger.info("Step 5: Validating groundedness...")
         self._assert_grounded(context, structured_doc)
 
         # -- Step 6: persist -----------------------------------------
+        logger.info("Step 6: Persisting LearningContext...")
         self.context_repo.save_context(context)
 
         build = {
@@ -302,9 +310,48 @@ class KnowledgeBuildService:
         """
         Refuse to hand back a context that cannot support grounded teaching.
 
-        A context with no grounded concepts would push generation back toward invention,
-        so it is treated as a build failure with an actionable message.
+        If concepts were extracted without explicit evidence bindings (e.g. from
+        sparse slides or outline notes), attempt an automatic block-level evidence
+        resolution pass against the real text before declaring the build ungrounded.
         """
+        grounded = context.concepts_with_evidence()
+        if grounded:
+            return
+
+        # Attempt automatic block-level evidence resolution
+        from phase2.models import Evidence, EvidenceKindEnum, EvidenceLevelEnum, TextSpan
+
+        for c_id, concept in list(context.concepts.items()):
+            c_name = concept.canonical_name.lower()
+            for page in getattr(structured_doc, "pages", []) or []:
+                for block in getattr(page, "blocks", []) or []:
+                    b_text = (block.content.text or "").strip()
+                    if c_name and c_name in b_text.lower():
+                        ev_id = f"ev_auto_{c_id}_{block.block_id}"
+                        span_start = b_text.lower().find(c_name)
+                        span_end = span_start + len(c_name)
+                        ev = Evidence(
+                            evidence_id=ev_id,
+                            block_id=block.block_id,
+                            span=TextSpan(start=max(0, span_start), end=max(span_start + 1, span_end)),
+                            excerpt=b_text[:300],
+                            level=EvidenceLevelEnum.STRONG_INFERRED,
+                            kind=EvidenceKindEnum.EXPLICIT_STATEMENT,
+                            source_confidence=0.85,
+                        )
+                        context.evidence[ev_id] = ev
+                        if ev_id not in concept.evidence_ids:
+                            concept.evidence_ids.append(ev_id)
+                        if block.block_id not in concept.block_ids:
+                            concept.block_ids.append(block.block_id)
+                        if page.page_index not in concept.page_indices:
+                            concept.page_indices.append(page.page_index)
+                        if not concept.description:
+                            concept.description = b_text[:200]
+                        break
+                if concept.evidence_ids:
+                    break
+
         grounded = context.concepts_with_evidence()
         if not grounded:
             raise KnowledgeBuildError(

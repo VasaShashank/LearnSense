@@ -65,6 +65,9 @@ class TestLearnerResumeFlow:
         assert data["is_onboarded"] is False
         assert data["progress"] is None
         assert data["active_assessment_id"] is None
+        # A source exists but this learner has never verified against it, so the
+        # routing state is "needs calibration" -- NOT the dashboard.
+        assert data["entry_state"] == "NEEDS_CALIBRATION"
 
     def test_onboarded_learner_resume_returns_state_and_progress(self, services, ingested_calculus):
         learning, ks, ls = services
@@ -80,10 +83,14 @@ class TestLearnerResumeFlow:
 
         assert data["learner_id"] == learner_id
         assert data["has_state"] is True
-        assert data["is_onboarded"] is True
         assert data["subject_id"] == subject_id
         assert data["progress"] is not None
         assert "average_mastery" in data["progress"]
+        # Regression guard: merely HAVING a concept state must not read as
+        # "onboarded". That conflation is what let an unverified learner land on
+        # the dashboard with default 30% mastery and zero evidence.
+        assert data["is_onboarded"] is False
+        assert data["entry_state"] == "NEEDS_CALIBRATION"
 
     def test_active_uncompleted_final_assessment_resumed(self, services, ingested_calculus):
         learning, ks, ls = services
@@ -97,7 +104,6 @@ class TestLearnerResumeFlow:
         data = ls.resume_learner_state(learner_id, subject_id=subject_id)
 
         assert data["has_state"] is True
-        assert data["is_onboarded"] is True
         assert data["active_assessment_id"] == assessment_id
 
     def test_completed_final_assessment_not_reported_as_active(self, services, ingested_calculus):
@@ -126,7 +132,6 @@ class TestLearnerResumeFlow:
         data = ls.resume_learner_state(learner_id, subject_id=subject_id)
 
         assert data["has_state"] is True
-        assert data["is_onboarded"] is True
         # Completed assessment must NOT be returned as active_assessment_id
         assert data["active_assessment_id"] is None
 

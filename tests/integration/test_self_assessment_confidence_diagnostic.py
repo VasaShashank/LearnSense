@@ -225,27 +225,98 @@ def test_8_single_wrong_answer_insufficient_evidence(ingested_calculus):
     assert verdict["verdict"] == "insufficient_evidence"
 
 
-# --- Test 9: repeated evidence CAN establish weakness --------------------------
-def test_9_repeated_evidence_establishes_weakness(ingested_calculus):
+# --- Test 9: repeated DISTINCT evidence CAN establish weakness -----------------
+def test_9_repeated_evidence_establishes_weakness(ingested_calculus, purge_subject):
+    """
+    Weakness needs MIN_EVIDENCE_COUNT distinct observations of a concept.
+
+    Note the word DISTINCT: re-submitting the SAME question_id is a duplicate
+    submission and must NOT add evidence (CASE 14). This test therefore seeds a
+    bank with three different questions on one concept and answers all three.
+    """
+    from storage.repositories import LearningContextRepository, QuestionBankRepository
+
+    all_ids = ingested_calculus.concept_ids
+    target = all_ids[0]
+    subject_id = purge_subject("subj_t9_evidence")
+    learner_id = _learner("t9_learner")
+
+    src_ctx = LearningContextRepository().load_context(ingested_calculus.document_id)
+    assert src_ctx is not None
+    LearningContextRepository().save_context(
+        src_ctx.model_copy(update={"document_id": subject_id})
+    )
+
+    view = src_ctx.concepts[target]
+    page = (view.page_indices[0] + 1) if view.page_indices else 1
+    block = view.block_ids[0] if view.block_ids else "b_t9"
+    quote = (view.description or view.canonical_name)[:200]
+
+    bank = QuestionBank(document_id=subject_id, chapter_id="ch_all")
+    for i in range(3):
+        bank.add_question(
+            QuestionBankItem(
+                question_id=f"t9_q_{i}",
+                chapter_id="ch_all",
+                concept_ids=[target],
+                question_text=f"Seeded verification question {i}?",
+                options=["opt_a", "opt_b"],
+                correct_answer="opt_a",
+                explanation="Seeded.",
+                difficulty=0.5,
+                source_citations=[
+                    SourceCitation(document_id=subject_id, page=page, block_id=block, quote=quote)
+                ],
+            )
+        )
+    QuestionBankRepository().save_bank(bank)
+
+    selections = {cid: ("KNOW" if cid == target else "DONT_KNOW") for cid in all_ids}
+    data = _sa(learner_id, subject_id, selections, all_ids=all_ids)
+    assert _start(data["session_id"], learner_id)["question_count"] > 0
+
+    result = _submit(
+        data["session_id"], learner_id, {f"t9_q_{i}": 0.0 for i in range(3)}
+    )
+    verdict = result["evidence_verdicts"][target]
+    assert verdict["attempts"] >= 3
+    assert verdict["verdict"] == "likely_weak"
+    assert result["updated_masteries"][target] < 0.5
+
+
+# --- Test 9b: a duplicated submission adds NO evidence -------------------------
+def test_9b_duplicate_diagnostic_submission_is_idempotent(ingested_calculus):
+    """
+    Re-submitting the same question must not move the learner model again.
+    Before the fix, posting the same responses three times produced three BKT
+    updates and let one learner manufacture arbitrary evidence.
+    """
     subject_id = ingested_calculus.document_id
     all_ids = ingested_calculus.concept_ids
     know = all_ids[:1]
+    learner_id = _learner("t9b_learner")
     selections = {cid: ("KNOW" if cid in know else "DONT_KNOW") for cid in all_ids}
-    data = _sa(_learner("t9_learner"), subject_id, selections, all_ids=all_ids)
-    started = _start(data["session_id"], _learner("t9_learner"))
+    data = _sa(learner_id, subject_id, selections, all_ids=all_ids)
+    started = _start(data["session_id"], learner_id)
     qid = started["questions"][0].get("question_id") or started["questions"][0].get("item_id")
-    result = None
-    for _ in range(3):
-        result = _submit(data["session_id"], _learner("t9_learner"), {qid: 0.0})
-    assert result is not None
-    verdict = result["evidence_verdicts"][know[0]]
-    assert verdict["attempts"] >= 3
-    assert verdict["verdict"] == "likely_weak"
-    assert result["updated_masteries"][know[0]] < 0.5
+
+    first = _submit(data["session_id"], learner_id, {qid: 0.0})
+    again = _submit(data["session_id"], learner_id, {qid: 0.0})
+    again2 = _submit(data["session_id"], learner_id, {qid: 0.0})
+
+    attempts = again2["evidence_verdicts"][know[0]]["attempts"]
+    assert first["evidence_verdicts"][know[0]]["attempts"] == attempts
+    assert again["evidence_verdicts"][know[0]]["attempts"] == attempts
+    assert attempts == 1
+    # Once the run is finalized, later submits replay the stored verdict instead
+    # of regrading -- no second BKT update, no forged extra evidence.
+    assert again["duplicate_submission"] is True
+    assert again2["duplicate_submission"] is True
+    assert again2["diagnostic_score"] == again["diagnostic_score"]
 
 
 # --- Test 10: prerequisite failure redirects path ------------------------------
-def test_10_prerequisite_failure_redirects_path(ingested_calculus):
+def test_10_prerequisite_failure_redirects_path(ingested_calculus, purge_subject):
     """Copies the real fixture context under a new subject, adds a B->C
     prerequisite link, seeds grounded questions for B and C citing real
     provenance, then fails C: B must be flagged and repaired first."""
@@ -257,7 +328,9 @@ def test_10_prerequisite_failure_redirects_path(ingested_calculus):
     concept_b = ingested_calculus.id_for("Derivatives")
     concept_c = ingested_calculus.id_for("Chain Rule")
     assert concept_b != concept_c
-    subject_id = "subj_prereq_t10"
+    # Registered for cleanup: this synthetic subject must not survive the run
+    # and appear in the learner's real library.
+    subject_id = purge_subject("subj_prereq_t10")
     learner_id = _learner("t10_learner")
 
     src_ctx = LearningContextRepository().load_context(ingested_calculus.document_id)

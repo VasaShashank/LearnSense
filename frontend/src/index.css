@@ -218,3 +218,25 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Native Select Dropdown Dark Theme */
+select option {
+  background-color: var(--panel-space);
+  color: var(--text-primary);
+}
+
+select option:checked {
+  background-color: var(--accent-cyan);
+  color: var(--text-inverse);
+}
+
+/* Light mode select dropdown */
+.light select option {
+  background-color: var(--panel-space);
+  color: var(--text-primary);
+}
+
+.light select option:checked {
+  background-color: var(--accent-cyan);
+  color: var(--text-inverse);
+}

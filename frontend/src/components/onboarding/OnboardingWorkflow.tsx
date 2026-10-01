@@ -13,6 +13,21 @@ export interface OnboardingWorkflowProps {
   // When set, skip subject selection and jump straight to self-assessment for
   // this subject (used when an already-onboarded learner adds new material).
   initialSubject?: Subject | null;
+  /**
+   * Which half of onboarding this render represents.
+   *
+   * `SOURCE_SELECTION` shows the existing source library + ingestion panel.
+   * `CALIBRATION` shows strength rating and verification ONLY.
+   *
+   * This prop exists because the component's default step used to be
+   * `SELECT_SUBJECT`, so *every* unresolved state -- no learner, resume error,
+   * resume timeout -- rendered the upload page and made ingestion the generic
+   * fallback route. The parent now decides which half is valid; the component
+   * can no longer fall into it by accident.
+   */
+  mode?: 'SOURCE_SELECTION' | 'CALIBRATION';
+  /** Notifies the parent that the subject list changed (e.g. after an upload). */
+  onSubjectsChanged?: () => void;
 }
 
 type Confidence = 'Low' | 'Medium' | 'High';
@@ -28,8 +43,13 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   onCompleteOnboarding,
   resumeInitSession,
   initialSubject,
+  mode = 'SOURCE_SELECTION',
+  onSubjectsChanged,
 }) => {
-  const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>('SELECT_SUBJECT');
+  // Default step is decided by mode, never "SELECT_SUBJECT" unconditionally.
+  const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>(
+    mode === 'CALIBRATION' ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
+  );
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [learnerId] = useState<string>('student_alex');
   const [concepts, setConcepts] = useState<ConceptNode[]>([]);
@@ -37,9 +57,23 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [selfAssessmentSelections, setSelfAssessmentSelections] = useState<Record<string, string>>({});
   const [confidenceSelections, setConfidenceSelections] = useState<Record<string, Confidence>>({});
   const [sessionId, setSessionId] = useState<string>('');
-  const [diagnosticQuestions, setDiagnosticQuestions] = useState<Question[]>([]);
-  const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, string>>({});
-  const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
+  // `diagnosticQuestions` is the plan the server produced; `diagnosticNext` is the
+  // item it wants answered RIGHT NOW. The next item is chosen from the learner's
+  // post-answer state, so it is not necessarily the next entry in the plan.
+  const [_diagnosticQuestions, setDiagnosticQuestions] = useState<Question[]>([]);
+  const [diagnosticNext, setDiagnosticNext] = useState<Question | null>(null);
+  const [_diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, string>>({});
+  const [answeredCount, setAnsweredCount] = useState<number>(0);
+  const [totalPlanned, setTotalPlanned] = useState<number>(0);
+  const [answering, setAnswering] = useState<boolean>(false);
+  const [diagnosticError, setDiagnosticError] = useState<string | null>(null);
+  // The option currently being submitted, kept so a failed request can be retried
+  // without asking the learner to pick again.
+  const [pendingAnswer, setPendingAnswer] = useState<{
+    questionId: string;
+    option: string;
+    isDontKnow: boolean;
+  } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [uploadingPdf, setUploadingPdf] = useState<boolean>(false);
   const [uploadStage, setUploadStage] = useState<string>('');
@@ -222,6 +256,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setUploadStage('ingestion complete');
       // Only proceed to self-assessment after successful ingestion verification
       setStep('SELF_ASSESSMENT');
+      // Let the parent re-resolve routing state: the new source now exists and
+      // this learner needs calibration for it.
+      onSubjectsChanged?.();
     } catch (err: any) {
       console.error('Failed to process uploaded file', err);
       setUploadError(err.message || 'Ingestion failed. Check the file and try again.');
@@ -266,16 +303,38 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         }
         const diagData = await ApiClient.startDiagnostic(resumeInitSession.session_id, learnerId);
         if (cancelled) return;
-        if (!diagData.questions || diagData.questions.length === 0) {
-          onCompleteOnboarding(sub.id, learnerId);
-        } else {
-          setDiagnosticQuestions(diagData.questions);
-          setCurrentQuestionIdx(0);
-          setDiagnosticAnswers({});
+        setDiagnosticQuestions(diagData.questions ?? []);
+        setAnsweredCount(diagData.answered_count ?? 0);
+        setTotalPlanned(diagData.total_planned ?? diagData.question_count ?? 0);
+        // Previously the resume handler reset answers and the index to 0, so a
+        // refresh mid-quiz silently discarded everything the learner had done.
+        // Position now comes from the server.
+        setDiagnosticAnswers(
+          Object.fromEntries((diagData.answered_question_ids ?? []).map((qid) => [qid, ''])),
+        );
+
+        if (diagData.status === 'error') {
+          setDiagnosticError(diagData.error ?? 'The verification test could not be prepared. Please retry.');
+          setDiagnosticNext(null);
           setStep('DIAGNOSTIC');
+          return;
         }
+        if (diagData.status === 'completed' || !diagData.next_question) {
+          clearDraft(sub.id);
+          onCompleteOnboarding(sub.id, learnerId);
+          return;
+        }
+        setDiagnosticNext(diagData.next_question);
+        setStep('DIAGNOSTIC');
       } catch (err) {
         console.error('Failed to resume diagnostic', err);
+        // Surface a retry instead of dropping the learner on the upload page.
+        setDiagnosticError(
+          err instanceof ApiError
+            ? `Could not resume your verification test: ${err.message}`
+            : 'Could not resume your verification test. Please retry.',
+        );
+        setStep('DIAGNOSTIC');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -351,25 +410,33 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
       console.log('[CALIBRATION] Starting diagnostic generation...');
       const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
-      console.log('[CALIBRATION] Diagnostic response received:', diagData);
-      console.log('[CALIBRATION] Questions array:', diagData.questions);
-      if (diagData.questions && diagData.questions.length > 0) {
-        console.log('[CALIBRATION] First question object:', diagData.questions[0]);
-        console.log('[CALIBRATION] First question keys:', Object.keys(diagData.questions[0]));
+
+      // A generation failure is an ERROR state, not a pass. Previously both
+      // `start_diagnostic` (server) and this branch (client) treated "no
+      // questions" as "verification complete", so an LLM/bank failure silently
+      // promoted an unverified learner straight to the dashboard.
+      if (diagData.status === 'error') {
+        setDiagnosticError(
+          diagData.error ?? 'The verification test could not be prepared. Please retry.',
+        );
+        setDiagnosticQuestions([]);
+        setDiagnosticNext(null);
+        setStep('DIAGNOSTIC');
+        return;
       }
-      
-      if (!diagData.questions || diagData.questions.length === 0) {
-        console.log('[CALIBRATION] No questions returned, skipping to onboarding completion');
+
+      setDiagnosticQuestions(diagData.questions ?? []);
+      setAnsweredCount(diagData.answered_count ?? 0);
+      setTotalPlanned(diagData.total_planned ?? diagData.question_count ?? 0);
+
+      if (!diagData.next_question) {
+        // Genuinely nothing to verify (empty verification set) -> proceed.
         clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
-      } else {
-        console.log('[CALIBRATION] Setting', diagData.questions.length, 'diagnostic questions');
-        setDiagnosticQuestions(diagData.questions);
-        setCurrentQuestionIdx(0);
-        setDiagnosticAnswers({});
-        setStep('DIAGNOSTIC');
-        console.log('[CALIBRATION] Transitioned to DIAGNOSTIC step');
+        return;
       }
+      setDiagnosticNext(diagData.next_question);
+      setStep('DIAGNOSTIC');
     } catch (err) {
       console.error('[CALIBRATION] Failed to submit self assessment', err);
       setSubmitError(
@@ -383,31 +450,108 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // 3. Submit Diagnostic Answer
-  const handleAnswerDiagnosticQuestion = (item_id: string, selectedOption: string) => {
-    const nextAnswers = { ...diagnosticAnswers, [item_id]: selectedOption };
-    setDiagnosticAnswers(nextAnswers);
-    if (currentQuestionIdx + 1 < diagnosticQuestions.length) {
-      setCurrentQuestionIdx((prev) => prev + 1);
-    } else {
-      handleSubmitDiagnostic(nextAnswers);
+  // 3. Submit ONE diagnostic answer.
+  //
+  // The quiz is per-answer rather than batched:
+  //   * the server grades the response and updates BKT immediately,
+  //   * the next question is selected from the learner's post-answer state,
+  //   * a refresh re-enters the same assessment with the same answers,
+  //   * re-sending a question is reported as a duplicate and changes nothing.
+  //
+  // Correctness is never computed here. The previous implementation collected
+  // every answer in local React state and posted them all at the end, which made
+  // the quiz a fixed batch, lost everything on refresh, and had no way to
+  // protect against a double submit.
+  const handleAnswerDiagnosticQuestion = async (
+    questionId: string,
+    selectedOption: string,
+    isDontKnow = false,
+  ) => {
+    if (answering || pendingAnswer) return;
+    setAnswering(true);
+    setDiagnosticError(null);
+    setPendingAnswer({ questionId, option: selectedOption, isDontKnow });
+
+    try {
+      const res = await ApiClient.submitDiagnosticAnswer(
+        sessionId,
+        learnerId,
+        questionId,
+        isDontKnow ? null : selectedOption,
+        isDontKnow,
+      );
+
+      setDiagnosticAnswers((prev) => ({ ...prev, [questionId]: selectedOption }));
+      setAnsweredCount(res.answered_count);
+      setTotalPlanned(res.total_planned || totalPlanned);
+      setPendingAnswer(null);
+
+      if (res.complete) {
+        if (selectedSubject) {
+          clearDraft(selectedSubject.id);
+          onCompleteOnboarding(selectedSubject.id, learnerId);
+        }
+        return;
+      }
+
+      if (!res.next_question) {
+        // Server stopped without finalizing -> surface it rather than guessing.
+        setDiagnosticError('The verification test stopped unexpectedly. Please retry.');
+        return;
+      }
+      setDiagnosticNext(res.next_question);
+    } catch (err) {
+      console.error('Failed to submit diagnostic answer', err);
+      setDiagnosticError(
+        err instanceof ApiError
+          ? `Your answer was not saved: ${err.message}`
+          : 'Your answer was not saved. Retry to submit it again.',
+      );
+      // `pendingAnswer` is intentionally kept so Retry can re-send the exact
+      // same response. The server de-duplicates, so a retry is always safe.
+    } finally {
+      setAnswering(false);
     }
   };
 
-  const handleSubmitDiagnostic = async (finalAnswers?: Record<string, string>) => {
+  const retryPendingAnswer = () => {
+    const p = pendingAnswer;
+    if (!p) return;
+    setPendingAnswer(null);
+    void handleAnswerDiagnosticQuestion(p.questionId, p.option, p.isDontKnow);
+  };
+
+  /**
+   * Retry after question-generation or resume failure.
+   * Re-runs start_diagnostic on the same session, which reuses the existing
+   * plan and reports the answers already recorded.
+   */
+  const retryDiagnostic = async () => {
+    setDiagnosticError(null);
     setLoading(true);
     try {
-      const payload = finalAnswers || diagnosticAnswers;
-      await ApiClient.submitDiagnosticRaw(sessionId, learnerId, payload);
-      if (selectedSubject) {
-        clearDraft(selectedSubject.id);
-        onCompleteOnboarding(selectedSubject.id, learnerId);
+      const diagData = await ApiClient.startDiagnostic(sessionId, learnerId);
+      if (diagData.status === 'error') {
+        setDiagnosticError(diagData.error ?? 'The verification test could not be prepared. Please retry.');
+        return;
       }
+      setDiagnosticQuestions(diagData.questions ?? []);
+      setAnsweredCount(diagData.answered_count ?? 0);
+      setTotalPlanned(diagData.total_planned ?? diagData.question_count ?? 0);
+      if (!diagData.next_question) {
+        if (selectedSubject) {
+          clearDraft(selectedSubject.id);
+          onCompleteOnboarding(selectedSubject.id, learnerId);
+        }
+        return;
+      }
+      setDiagnosticNext(diagData.next_question);
     } catch (err) {
-      console.error('Failed to submit diagnostic', err);
-      if (selectedSubject) {
-        onCompleteOnboarding(selectedSubject.id, learnerId);
-      }
+      setDiagnosticError(
+        err instanceof ApiError
+          ? `Could not load the verification test: ${err.message}`
+          : 'Could not load the verification test. Please retry.',
+      );
     } finally {
       setLoading(false);
     }
@@ -464,8 +608,10 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         <div className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Step 1: Upload Material or Select Subject */}
-        {step === 'SELECT_SUBJECT' && (
+        {/* Step 1: Upload Material or Select Subject.
+            Only reachable in SOURCE_SELECTION mode: the calibration stages must
+            never render the ingestion panel as their fallback. */}
+        {step === 'SELECT_SUBJECT' && mode === 'SOURCE_SELECTION' && (
           <div className="space-y-8 animate-fade-in relative z-10">
             <div className="text-center max-w-lg mx-auto space-y-2">
               <span className="px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold tracking-widest uppercase">
@@ -772,45 +918,70 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
           </div>
         )}
 
-        {/* Step 3: Diagnostic Assessment */}
+        {/* Step 3: Adaptive Verification Assessment */}
         {step === 'DIAGNOSTIC' && (
           <div className="space-y-6 animate-fade-in relative z-10">
-            {diagnosticQuestions.length === 0 ? (
-              <div className="text-center py-12 space-y-3">
-                <p className="text-xs text-universe-slate font-mono">No diagnostic items required.</p>
-                <button
-                  onClick={() => selectedSubject && onCompleteOnboarding(selectedSubject.id, learnerId)}
-                  className="py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs"
-                >
-                  Enter Learning Atlas
-                </button>
-              </div>
-            ) : (() => {
-              const q = diagnosticQuestions[currentQuestionIdx];
-              console.log('[DIAGNOSTIC] Current question object:', q);
-              console.log('[DIAGNOSTIC] Question keys:', q ? Object.keys(q) : 'no question');
-              
+            {(() => {
+              // ERROR state first: a failed question generation or a failed answer
+              // submission must offer RETRY, never silently advance to the Atlas.
+              if (diagnosticError) {
+                return (
+                  <div className="text-center py-10 space-y-5">
+                    <div className="flex items-center justify-center gap-3">
+                      <AlertTriangle className="w-6 h-6 text-amber-400" />
+                      <h2 className="text-lg font-display font-bold text-white">
+                        Verification could not continue
+                      </h2>
+                    </div>
+                    <p className="text-xs text-universe-slate font-sans leading-relaxed max-w-md mx-auto">
+                      {diagnosticError}
+                    </p>
+                    <p className="text-[11px] text-universe-slate/80 font-sans leading-relaxed max-w-md mx-auto">
+                      {answeredCount > 0
+                        ? `${answeredCount} answer${answeredCount === 1 ? '' : 's'} already saved on the server. Retrying reuses them.`
+                        : 'Nothing has been recorded yet, so retrying is safe.'}
+                    </p>
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                      <button
+                        onClick={retryPendingAnswer}
+                        disabled={!pendingAnswer || answering}
+                        className="py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs disabled:opacity-40"
+                      >
+                        {answering ? 'Submitting...' : 'Retry Answer'}
+                      </button>
+                      <button
+                        onClick={() => void retryDiagnostic()}
+                        disabled={loading || answering}
+                        className="py-2.5 px-5 rounded-xl bg-space-850 border border-white/10 text-universe-text font-display font-bold text-xs disabled:opacity-40"
+                      >
+                        {loading ? 'Loading...' : 'Reload Verification'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // The item the SERVER wants answered now. It is chosen from the
+              // learner's post-answer state, so it is not simply questions[idx+1].
+              const q = diagnosticNext;
+
               if (!q) {
                 return (
                   <div className="text-center py-12 space-y-3">
-                    <p className="text-xs text-universe-slate font-mono">Diagnostic assessment completed.</p>
+                    <p className="text-xs text-universe-slate font-mono">No verification items required.</p>
                     <button
-                      onClick={() => handleSubmitDiagnostic()}
+                      onClick={() => selectedSubject && onCompleteOnboarding(selectedSubject.id, learnerId)}
                       className="py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs"
                     >
-                      Calibrate Knowledge State
+                      Enter Learning Atlas
                     </button>
                   </div>
                 );
               }
 
               const qText = q.question_text || q.prompt || 'Assess your understanding of this concept:';
-              const qId = q.question_id || q.item_id || `q_${currentQuestionIdx}`;
+              const qId = q.question_id || q.item_id || 'q_current';
               const rawOptions = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
-              
-              console.log('[DIAGNOSTIC] Question text:', qText);
-              console.log('[DIAGNOSTIC] Question ID:', qId);
-              console.log('[DIAGNOSTIC] Raw options:', rawOptions);
 
               const isDontKnowText = (text: string) => {
                 const lower = text.toLowerCase();
@@ -820,11 +991,11 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               const hasDontKnowInOptions = rawOptions.some(isDontKnowText);
 
               const onOptionClick = (optText: string) => {
-                if (isDontKnowText(optText)) {
-                  handleAnswerDiagnosticQuestion(qId, "I don't know");
-                  return;
-                }
-                handleAnswerDiagnosticQuestion(qId, optText.trim());
+                void handleAnswerDiagnosticQuestion(
+                  qId,
+                  isDontKnowText(optText) ? "I don't know" : optText.trim(),
+                  isDontKnowText(optText),
+                );
               };
 
               return (
@@ -832,14 +1003,15 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                   <div className="pb-4 border-b border-white/[0.08] flex items-center justify-between">
                     <div>
                       <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                        DIAGNOSTIC QUESTION {currentQuestionIdx + 1} OF {diagnosticQuestions.length}
+                        VERIFICATION {answeredCount + 1}
+                        {totalPlanned > 0 ? ` // UP TO ${totalPlanned}` : ''}
                       </span>
                       <h2 className="text-xl font-display font-bold text-white mt-0.5">
                         Verify Your Understanding
                       </h2>
                       <p className="text-[11px] text-universe-slate font-sans mt-0.5">
-                        Your answers help us estimate what you already know — this verifies your
-                        self-assessment rather than judging it.
+                        Each question is chosen based on what you have answered so far, so the test
+                        adapts to you. Answers are saved as you go.
                       </p>
                     </div>
                     <Brain className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -856,7 +1028,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                       {rawOptions.map((opt, optIdx) => (
                         <button
                           key={optIdx}
-                          disabled={loading}
+                          disabled={answering}
                           onClick={() => onOptionClick(opt)}
                           className={`w-full p-3.5 rounded-xl border border-white/[0.06] bg-space-950/50 hover:bg-space-850 hover:border-cyan-400/40 text-left text-xs text-universe-text transition-all font-sans flex items-center justify-between disabled:opacity-50 break-words overflow-wrap-anywhere ${
                             isDontKnowText(opt) ? 'text-amber-300 hover:border-amber-400/40 bg-amber-950/20' : ''
@@ -869,13 +1041,19 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
                       {q.allow_dont_know_option && !hasDontKnowInOptions && (
                         <button
-                          disabled={loading}
-                          onClick={() => handleAnswerDiagnosticQuestion(qId, "I don't know")}
+                          disabled={answering}
+                          onClick={() => void handleAnswerDiagnosticQuestion(qId, "I don't know", true)}
                           className="w-full p-3.5 rounded-xl border border-amber-500/30 bg-amber-950/30 hover:bg-amber-900/40 text-left text-xs font-mono text-amber-200 transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                           <ShieldCheck className="w-4 h-4 text-amber-400" />
                           <span>I don&apos;t know this concept yet</span>
                         </button>
+                      )}
+
+                      {answering && (
+                        <p className="text-[11px] font-mono text-cyan-300 text-center pt-2">
+                          Saving your answer...
+                        </p>
                       )}
                     </div>
                   </div>

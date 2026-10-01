@@ -62,6 +62,22 @@ class DiagnosticSubmitApiRequest(BaseModel):
     learner_id: str
 
 
+class DiagnosticAnswerApiRequest(BaseModel):
+    """
+    ONE verification answer.
+
+    Deliberately has no ``correctness`` field: a client that wants to assert its
+    own mastery cannot even express it here. The option the learner picked is
+    graded against the authoritative question bank on the server.
+    """
+
+    session_id: str
+    learner_id: str
+    question_id: str
+    selected_option: Optional[str] = None
+    is_dont_know: bool = False
+
+
 class ActivityResponseApiRequest(BaseModel):
     learner_id: str
     subject_id: str
@@ -205,12 +221,46 @@ async def calibration_status(learner_id: str = Query(...), subject_id: str = Que
     return learning_service.get_calibration_status(learner_id, subject_id)
 
 
+@router.get("/learners/{learner_id}/entry-state")
+async def get_entry_state(learner_id: str, subject_id: Optional[str] = Query(None)):
+    """
+    Server-authoritative routing state: where this learner belongs right now.
+
+    This is what the frontend renders instead of inferring "am I onboarded?" from
+    local flags. One of:
+      SOURCE_SELECTION            - no usable knowledge source yet
+      NEEDS_CALIBRATION           - source ready, self-assessment not submitted
+      VERIFICATION_IN_PROGRESS    - adaptive verification started, resume it
+      VERIFICATION_ERROR          - question generation failed, retry
+      VERIFICATION_COMPLETE       - verified, dashboard is valid
+    """
+    try:
+        return learning_service.get_entry_state(learner_id, subject_id=subject_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/learners/{learner_id}/active-subject")
+async def set_active_subject(learner_id: str, subject_id: str = Query(...)):
+    """
+    Records the learner's current knowledge source server-side, so reopening the
+    app resumes the same subject instead of an arbitrary one.
+    """
+    learner_service.active_subject_repo.set_active_subject(learner_id, subject_id)
+    return {"learner_id": learner_id, "subject_id": subject_id}
+
+
 @router.post("/initialization/diagnostic/start")
 async def start_diagnostic(req: DiagnosticStartApiRequest):
     """
-    Generates diagnostic assessment questions over the verification set
-    (KNOW + UNANSWERED), prioritized by self-assessment x confidence.
+    Starts (or resumes) the adaptive verification assessment over the verification
+    set (KNOW + UNANSWERED), prioritized by self-assessment x confidence.
     DONT_KNOW concepts are never probed.
+
+    Resuming returns the SAME plan plus ``answered_question_ids`` and the
+    ``next_question`` the learner should see, so a browser refresh continues the
+    existing assessment instead of restarting it.
+
     P0 Security: correct_answer is never leaked before submission.
     """
     try:
@@ -219,10 +269,33 @@ async def start_diagnostic(req: DiagnosticStartApiRequest):
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@router.post("/initialization/diagnostic/answer")
+async def answer_diagnostic(req: DiagnosticAnswerApiRequest):
+    """
+    Records ONE verification answer and returns the next adaptively selected item.
+
+    Correctness is derived from the authoritative question bank; the request model
+    has no correctness field. Re-sending an already-recorded question is reported
+    as a duplicate and leaves the learner model untouched.
+    """
+    try:
+        return learning_service.submit_diagnostic_answer(
+            session_id=req.session_id,
+            learner_id=req.learner_id,
+            question_id=req.question_id,
+            selected_option=req.selected_option,
+            is_dont_know=req.is_dont_know,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 @router.post("/initialization/diagnostic/submit")
 async def submit_diagnostic(req: DiagnosticSubmitApiRequest):
     """
-    Submits diagnostic responses. Evaluates correctness AUTHORITATIVELY on the server.
+    Batch-submits diagnostic responses. Kept for older clients; correctness is
+    still AUTHORITATIVELY evaluated on the server, and responses already recorded
+    via /answer are not applied to the learner model twice.
     """
     try:
         return learning_service.submit_diagnostic(req.session_id, req.responses, learner_id=req.learner_id)
@@ -389,7 +462,26 @@ async def upload_source(file: UploadFile = File(...), document_id: Optional[str]
         try:
             if job_repo.is_cancelled(job_id):
                 return
+            
+            # Update job to show ingestion started
+            current_job = job_repo.load_job(job_id) or job
+            current_job["stage"] = "Validating and extracting document content..."
+            current_job["progress_pct"] = 10
+            job_repo.save_job(current_job)
+            
+            if job_repo.is_cancelled(job_id):
+                return
+            
             result = source_service.save_uploaded_source(doc_id, content, filename)
+            
+            # Update to show build complete before final status
+            current_job = job_repo.load_job(job_id) or job
+            if current_job.get("cancelled"):
+                return
+            current_job["stage"] = "Finalizing Knowledge Atlas..."
+            current_job["progress_pct"] = 90
+            job_repo.save_job(current_job)
+            
             current_job = job_repo.load_job(job_id) or job
             if current_job.get("cancelled"):
                 return

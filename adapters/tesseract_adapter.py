@@ -41,6 +41,15 @@ class TesseractOCRAdapter:
         _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         return thresh
 
+    @staticmethod
+    def is_available() -> bool:
+        """Checks if pytesseract and Tesseract binary are operational."""
+        try:
+            pytesseract.get_tesseract_version()
+            return True
+        except Exception:
+            return False
+
     def ocr_image(
         self,
         image_bytes: bytes,
@@ -51,7 +60,12 @@ class TesseractOCRAdapter:
         Executes Tesseract OCR on preprocessed image bytes, returning word/line bounding boxes,
         extracted text strings, and confidence scores.
         """
-        thresh_img = self.preprocess_image(image_bytes)
+        try:
+            thresh_img = self.preprocess_image(image_bytes)
+        except Exception:
+            # Fallback if image preprocessing / decoding fails
+            return []
+
         lang = "+".join(languages) if languages else self.lang_str
         config = f"--psm {psm} -l {lang}"
 

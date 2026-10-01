@@ -132,6 +132,7 @@ def _purge(document_id: str) -> None:
         f"storage/question_banks/{document_id}.json",
         f"storage/question_banks/{document_id}",
         f"storage/sessions/{document_id}.json",
+        f"storage/learner_states/{document_id}.json",
     ):
         path = Path(relative)
         if path.is_dir():
@@ -141,3 +142,48 @@ def _purge(document_id: str) -> None:
                 path.unlink()
             except OSError:
                 pass
+
+
+@pytest.fixture
+def purge_subject():
+    """
+    Remove a subject a test created under the shared ``storage/`` tree.
+
+    Tests that copy or synthesise a learning context (rather than ingesting a
+    document) leave a real, visible subject behind. Without this the next run --
+    and the running application -- sees test fixtures in the learner's library,
+    so every such test must clean up after itself.
+    """
+    created: List[str] = []
+
+    def _register(subject_id: str) -> str:
+        created.append(subject_id)
+        return subject_id
+
+    yield _register
+
+    for subject_id in created:
+        _purge(subject_id)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _purge_leaked_test_subjects():
+    """
+    Belt-and-braces sweep for subject IDs that earlier test runs leaked.
+
+    ``storage/`` is shared between the test suite and the running application,
+    so a subject left behind by a previous run is indistinguishable from a real
+    upload. This clears them when the session starts and again when it ends.
+    """
+    leaked = (
+        "subj_calculus_e2e",
+        "subj_prereq_t10",
+        "subj_calculus",
+        "doc_ass_001",
+        "doc_e2e_001",
+    )
+    for subject_id in leaked:
+        _purge(subject_id)
+    yield
+    for subject_id in leaked:
+        _purge(subject_id)

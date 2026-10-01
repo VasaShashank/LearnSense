@@ -88,8 +88,6 @@ class SourceService:
 
                     file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
 
-                    is_demo = doc_id in ("calculus_101", "machine_learning", "subj_algebra", "subj_calculus_e2e")
-
                     sources.append({
                         "document_id": doc_id,
                         "title": title,
@@ -99,7 +97,10 @@ class SourceService:
                         "recovery_state": recovery_state,
                         "page_count": page_count,
                         "file_size_bytes": pdf_path.stat().st_size if pdf_path.exists() else 0,
-                        "is_demo": is_demo,
+                        # Everything listed here was really uploaded; there are no
+                        # demo/seed entries. Hard-coding a set of "demo" IDs used to
+                        # mislabel a test fixture as sample data.
+                        "is_demo": False,
                     })
 
         # No demo fallback: when nothing has been uploaded, the library is

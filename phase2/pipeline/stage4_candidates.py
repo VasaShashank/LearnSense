@@ -49,6 +49,81 @@ STOPWORDS = {
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
     "sunday", "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december",
+    # Figure/diagram furniture that appears as a caption heading.
+    "diagram", "visual", "picture", "image", "flowchart", "chart", "graph",
+    # Generic academic/textbook terms that shouldn't be standalone concepts
+    "measure", "measures", "measurement", "measurements", "long", "short", "high", "low", 
+    "developing", "developed", "effects", "effect", "causes", "cause", "advantages", "advantage",
+    "disadvantages", "disadvantage", "benefits", "benefit", "limitations", "limitation",
+    "features", "feature", "characteristics", "characteristic", "types", "type",
+    "applications", "application", "uses", "use", "importance", "need", "needs",
+    "role", "roles", "functions", "function", "objective", "objectives", "goal", "goals",
+    "aim", "aims", "purpose", "purposes", "principle", "principles", "concept", "concepts",
+    "overview", "introduction", "conclusion", "summary", "background", "history", "evolution",
+    "statistics", "statistic", "data", "information", "details", "detail", "description",
+    "descriptions", "definitions", "meaning", "meanings", "differences", "difference",
+    "similarities", "similarity", "comparison", "comparisons", "classification", "classifications",
+    "categories", "category", "components", "component", "elements", "element", "parts", "part",
+    "structure", "structures", "properties", "property", "nature", "scope", "significance",
+    "impact", "impacts", "consequences", "consequence", "outcomes", "outcome", "results", "result",
+    "reasons", "reason", "factors", "factor", "issues", "issue", "problems", "challenges",
+    "challenge", "solutions", "methods", "techniques", "technique", "tools", "tool",
+    "processes", "steps", "step", "stages", "stage", "phases", "phase", "actions", "action",
+    "activities", "activity", "tasks", "task", "operations", "operation", "events", "event",
+    "situations", "situation", "conditions", "condition", "cases", "case", "scenarios", "scenario",
+    "illustrations", "illustration", "demonstrations", "demonstration", "practices", "practice",
+    "implementations", "implementation", "deployments", "deployment", "executions", "execution",
+    "performances", "performance", "evaluations", "evaluation", "assessments", "assessment",
+    "tests", "test", "examinations", "examination", "inspections", "inspection", "reviews", "review",
+    "audits", "audit", "checks", "check", "controls", "control", "monitoring", "monitor",
+    "tracking", "track", "tracing", "trace", "observations", "observation", "analysis", "analyses",
+    "studies", "study", "research", "researches", "investigations", "investigation", "inquiries",
+    "inquiry", "surveys", "survey", "experiments", "experiment", "trials", "trial",
+    # Contractions and mis-extractions
+    "don", "doesn", "didn", "isn", "aren", "wasn", "weren", "hasn", "haven", "hadn", "won", 
+    "wouldn", "couldn", "shouldn", "mightn", "mustn", "significant", "important", "key",
+}
+
+# Discourse connectives and sentence adverbs. These are capitalised at the start
+# of nearly every sentence in mathematical prose, so capitalized-phrase matching
+# promotes them into the concept graph ("Thus", "Hence", "Since", "Assuming").
+# They are a closed class in English and are never teachable subject matter.
+DISCOURSE_WORDS = {
+    "after", "again", "against", "along", "already", "also", "although",
+    "always", "among", "another", "anyway", "apart", "apart", "around",
+    "because", "before", "behind", "below", "beside", "beyond", "both",
+    "briefly", "but", "certainly", "clearly", "consequently", "considering",
+    "correspondingly", "currently", "definitely", "else", "especially",
+    "even", "eventually", "evidently", "finally", "first", "firstly",
+    "following", "for", "former", "formerly", "further", "furthermore",
+    "generally", "given", "hence", "here", "hereafter", "hereby",
+    "however", "indeed", "instead", "instead", "just", "last", "later",
+    "latter", "likewise", "meanwhile", "moreover", "namely", "nearby",
+    "neither", "nevertheless", "next", "nonetheless", "normally", "notably",
+    "now", "nowhere", "otherwise", "overall", "particularly", "perhaps",
+    "please", "previously", "primarily", "rather", "recently", "similarly",
+    "since", "somehow", "specifically", "still", "subsequently", "such",
+    "suppose", "surely", "then", "thereafter", "thereby", "therefore",
+    "thus", "together", "typically", "unless", "unlike", "until", "usually",
+    "versus", "whenever", "whereas", "whereby", "while", "yet",
+    # Instructional / presentational verbs. Textbook prose is full of "Place
+    # the pivot", "Select the largest", "Assume the input is sorted"; each is
+    # capitalised at the start of an example or bullet and is not a topic.
+    "assuming", "obviously", "place", "select", "note", "choose", "compute",
+    "find", "denote", "consider", "apply", "use", "used", "show", "keep",
+    "look", "see", "follow", "return", "compare", "sort", "order", "start",
+    "begin", "result", "results", "case", "cases", "way", "ways", "give",
+    "take", "make", "made", "call", "called", "set", "put", "add", "remove",
+    "check", "ensure", "conduct", "count", "going", "grand", "let", "supposing",
+}
+
+# Words that describe a figure or a document part rather than a subject. A term
+# built on one of these is a caption, not a topic ("Visual Diagram").
+_FURNITURE_WORDS = {
+    "diagram", "visual", "picture", "image", "figures", "flowchart", "chart",
+    "graphs", "table", "tab", "exhibit", "box", "panel", "screen", "output",
+    "input", "step", "steps", "slide", "page", "note", "notes", "example",
+    "examples", "exercise", "exercises", "problem", "problems", "answer",
 }
 
 # Determiners / quantifiers / interrogatives that must never begin a concept name.
@@ -91,6 +166,44 @@ def _is_single_common_word(term: str) -> bool:
     if " " in term:
         return False
     return term.lower() in LEADING_FUNCTION_WORDS
+
+
+def _is_pure_discourse(term: str) -> bool:
+    """
+    True when every content word of the term is a discourse connective.
+
+    Mathematical prose opens sentences with these constantly ("Thus the result
+    follows", "Hence a recurrence"), and each is capitalised, so without this
+    check "Thus", "Hence" and "Assuming" become atlas topics.
+    """
+    words = [w for w in term.split() if w.lower() not in LEADING_FUNCTION_WORDS]
+    if not words:
+        return False
+    return all(w.lower() in DISCOURSE_WORDS for w in words)
+
+
+def _is_ocr_garbage(term: str) -> bool:
+    """
+    Reject tokens that are scanner/OCR noise rather than words.
+
+    Three signals, all deterministic:
+      * digits embedded in a word ("But3333", "Clot2", "M22") -- math symbols
+        and OCR fragments, never a concept name;
+      * a run of three or more capitalised letters glued to digits ("Thm12");
+      * tokens with no vowel at all ("Pfi", "Nos", "Fos"), which cannot be an
+        English technical term.
+    """
+    for token in term.split():
+        if any(ch.isdigit() for ch in token):
+            return True
+        if re.fullmatch(r"[A-Z]{3,}\d+", token):
+            return True
+        letters = [c for c in token if c.isalpha()]
+        # Only apply the vowel test to longer tokens; short abbreviations such as
+        # "SQL" or "RSA" legitimately have no vowel.
+        if len(letters) >= 4 and not any(c.lower() in "aeiouy" for c in letters):
+            return True
+    return False
 
 
 # Block types / roles that carry page furniture rather than subject matter.
@@ -420,6 +533,10 @@ def extract_candidates(
             if term.lower() in STOPWORDS or len(term) < 3:
                 continue
             if _is_single_common_word(term):
+                continue
+            if _is_pure_discourse(term):
+                continue
+            if _is_ocr_garbage(term):
                 continue
             if _is_person_name(term, person_name_keys):
                 continue

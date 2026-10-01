@@ -189,12 +189,15 @@ class BM25Index:
         return out
 
 
+from phase3.retrieval.hybrid_retriever import HybridRetriever, SemanticChunk
+
+
 class EvidenceRetriever:
     """
-    Builds and queries the retrieval index for a single ingested document.
+    Builds and queries the hybrid retrieval index for a single ingested document.
 
-    The index is derived from the real Phase 1 ``StructuredDocument`` and the Phase 2
-    ``EducationalKnowledgeRepresentation``; it is not built from a sample of the file.
+    Combines BM25 lexical ranking over semantic chunks and atomic blocks, sublinear
+    vector cosine similarity, Phase 2 EKR graph traversal, and Reciprocal Rank Fusion.
     """
 
     def __init__(
@@ -208,6 +211,7 @@ class EvidenceRetriever:
         self.index = BM25Index()
         self._chunks_by_block: Dict[str, SourceChunk] = {}
         self._build()
+        self._hybrid_retriever = HybridRetriever(structured_document, ekr)
 
     # -- construction -------------------------------------------------------
 
@@ -267,12 +271,6 @@ class EvidenceRetriever:
     def _concept_terms(self, concept_id: str) -> List[str]:
         """
         Search terms for a concept: its canonical name plus its aliases.
-
-        Aliases arrive in two shapes. A real ``EducationalKnowledgeRepresentation`` uses
-        ``Alias`` objects with a ``.text`` field, while the lightweight EKR shim used by
-        the knowledge-build service exposes plain strings. Both are accepted, because
-        reading ``.text`` off a string raises ``AttributeError`` and would otherwise turn
-        every concept that has an alias into a retrieval failure.
         """
         terms: List[str] = []
         for concept in getattr(self.ekr, "concepts", []) or []:
@@ -286,6 +284,22 @@ class EvidenceRetriever:
                     terms.append(getattr(alias, "text", "") or "")
             break
         return [t.strip() for t in terms if t and t.strip()]
+
+    def _to_source_chunk(self, sem: SemanticChunk) -> SourceChunk:
+        return SourceChunk(
+            chunk_id=sem.chunk_id,
+            document_id=sem.document_id,
+            page_index=sem.primary_page,
+            block_id=sem.primary_block_id,
+            section_title=sem.section_title,
+            text=sem.text,
+            score=sem.score,
+            evidence_ids=sem.evidence_ids,
+            evidence_levels=sem.evidence_levels,
+            roles=sem.roles,
+            block_types=sem.block_types,
+            concept_ids=sem.concept_ids,
+        )
 
     def retrieve_for_concept(
         self,
@@ -307,13 +321,16 @@ class EvidenceRetriever:
                 details={"concept_id": concept_id},
             )
 
-        hits = self.index.search(" ".join(terms), top_k=top_k)
+        query_str = " ".join(terms)
+        hybrid_hits = self._hybrid_retriever.search_hybrid(query_str, top_k=top_k)
 
-        if not hits:
-            # Fall back to name-only matching before failing, so a concept named with
-            # an unusual surface form still retrieves.
-            if concept_name:
-                hits = self.index.search(concept_name, top_k=top_k)
+        if hybrid_hits:
+            return [self._to_source_chunk(hit) for hit in hybrid_hits]
+
+        hits = self.index.search(query_str, top_k=top_k)
+        if not hits and concept_name:
+            hits = self.index.search(concept_name, top_k=top_k)
+
         if not hits:
             raise RetrievalError(
                 "No source passages in the uploaded material relate to this concept, so "
@@ -323,6 +340,10 @@ class EvidenceRetriever:
         return hits
 
     def retrieve_by_text(self, query: str, top_k: int = 6) -> List[SourceChunk]:
+        hybrid_hits = self._hybrid_retriever.search_hybrid(query, top_k=top_k)
+        if hybrid_hits:
+            return [self._to_source_chunk(hit) for hit in hybrid_hits]
+
         hits = self.index.search(query, top_k=top_k)
         if not hits:
             raise RetrievalError(

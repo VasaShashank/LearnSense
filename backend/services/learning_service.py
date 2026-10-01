@@ -23,7 +23,7 @@ import uuid
 from phase3.question_bank.models import QuestionBank, QuestionBankItem, QuestionType, SourceCitation
 from phase3.retrieval.evidence_retriever import EvidenceRetriever
 from phase4.integration.phase3_adapter import Phase3Adapter
-from phase4.models import ConfidenceLevel, KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession
+from phase4.models import ConfidenceLevel, KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession, KnowledgeSufficiencyStatus
 from phase5.validation import IdempotencyTracker, LearnerStateValidator, PlanningValidator
 from storage.repositories import QuestionBankRepository, SessionRepository
 
@@ -192,7 +192,11 @@ class LearningService:
 
     def get_calibration_status(self, learner_id: str, subject_id: str) -> Dict[str, Any]:
         """Per-subject onboarding gate: True when this learner has never submitted
-        self-assessment for this subject (no init session exists yet)."""
+        self-assessment for this subject (no init session exists yet).
+
+        Also reports how far the verification quiz got, so a client resuming a
+        quiz can restore its position from the server instead of local state.
+        """
         session = self.session_repo.find_any_init_session(learner_id, subject_id)
         if session is None:
             return {
@@ -201,6 +205,11 @@ class LearningService:
                 "needs_calibration": True,
                 "session_id": None,
                 "diagnostic_completed": False,
+                "diagnostic_score": None,
+                "answered_count": 0,
+                "answered_question_ids": [],
+                "total_planned": 0,
+                "diagnostic_generation_error": None,
             }
         return {
             "learner_id": learner_id,
@@ -208,133 +217,202 @@ class LearningService:
             "needs_calibration": False,
             "session_id": session.session_id,
             "diagnostic_completed": session.diagnostic_completed,
+            "diagnostic_score": session.diagnostic_score,
+            "answered_count": len(session.diagnostic_responses),
+            "answered_question_ids": list(session.diagnostic_responses.keys()),
+            "total_planned": len(session.diagnostic_question_ids),
+            "diagnostic_generation_error": session.diagnostic_generation_error,
         }
+
+    @staticmethod
+    def _with_dont_know_option(item) -> Any:
+        """Serve a bank item with an explicit don't-know escape hatch."""
+        item_copy = item.model_copy()
+        if item_copy.options is not None and "I don't know" not in item_copy.options:
+            item_copy.options = list(item_copy.options) + ["I don't know"]
+        return item_copy
+
+    @staticmethod
+    def _dump_question_for_client(q) -> Dict[str, Any]:
+        q_dict = q.model_dump(mode="json")
+        # P0 Assessment Security: Strip correct_answer and explanation before submission!
+        q_dict.pop("correct_answer", None)
+        q_dict.pop("explanation", None)
+        q_dict["item_id"] = q_dict.get("question_id", "")
+        q_dict["prompt"] = q_dict.get("question_text", "")
+        return q_dict
+
+    def _build_diagnostic_bank(self, session) -> Any:
+        """Bank scoped to the highest-priority slice of the verification set."""
+        # The diagnostic asks at most DIAGNOSTIC_MAX_QUESTIONS questions, so only
+        # the highest-priority slice of the verification set needs a question.
+        # Scoping the bank build to that slice keeps start fast and bounded even
+        # when a document yields hundreds of concepts.
+        orch = self.adapter.diagnostic_orchestrator
+        verify_ids = orch.verification_concepts(session)
+        if verify_ids:
+            verify_ids = sorted(
+                verify_ids,
+                key=lambda cid: (-orch.concept_priority(session, cid), cid),
+            )[:MAX_DIAGNOSTIC_BUILD_CONCEPTS]
+        return self.get_or_create_question_bank(
+            session.subject_id, verify_ids or session.know_concept_ids
+        )
+
+    def _diagnostic_learner_state(self, session) -> Any:
+        all_concepts = (
+            session.know_concept_ids + session.dont_know_concept_ids + session.unanswered_concept_ids
+        )
+        return self.learner_service.get_or_create_learner_state(session.learner_id, all_concepts)
+
+    def _load_owned_session(self, session_id: str, learner_id: Optional[str], action: str):
+        if not learner_id:
+            raise ValueError(f"learner_id is required to {action}.")
+        session = self.session_repo.load_session(session_id)
+        if not session:
+            raise ValueError("Initialization session not found.")
+        if session.learner_id != learner_id:
+            raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
+        return session
 
     def start_diagnostic(self, session_id: str, learner_id: Optional[str] = None) -> Dict[str, Any]:
         """
-        Creates diagnostic quiz questions. NEVER returns correct_answer to the client.
+        Creates (or RESUMES) the diagnostic verification run. NEVER returns
+        correct_answer to the client.
+
+        Resume semantics: once a plan exists on the session it is reused verbatim,
+        so refreshing the browser mid-quiz re-enters the SAME assessment instead of
+        reshuffling it. Answers already recorded on the server are reported back so
+        the client can restore its position instead of restarting.
 
         Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
         The previous guard was ``if learner_id and ...``, so omitting the field
         skipped the ownership check entirely and let any caller start -- and then
         submit -- another learner's diagnostic.
         """
-        if not learner_id:
-            raise ValueError("learner_id is required to start a diagnostic.")
+        session = self._load_owned_session(session_id, learner_id, "start a diagnostic")
+        orch = self.adapter.diagnostic_orchestrator
 
-        session = self.session_repo.load_session(session_id)
-        if not session:
-            raise ValueError("Initialization session not found.")
-        if session.learner_id != learner_id:
-            raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
-
-        # The diagnostic asks at most DIAGNOSTIC_MAX_QUESTIONS questions, so only
-        # the highest-priority slice of the verification set needs a question.
-        # Scoping the bank build to that slice keeps start fast and bounded even
-        # when a document yields hundreds of concepts.
-        verify_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
-        if verify_ids:
-            verify_ids = sorted(
-                verify_ids,
-                key=lambda cid: (
-                    -self.adapter.diagnostic_orchestrator.concept_priority(session, cid),
-                    cid,
-                ),
-            )[: MAX_DIAGNOSTIC_BUILD_CONCEPTS]
-        bank = self.get_or_create_question_bank(session.subject_id, verify_ids or session.know_concept_ids)
-        questions = self.adapter.diagnostic_orchestrator.create_diagnostic_quiz(session, bank)
-
-        val_res = self.planning_validator.validate_diagnostic_quiz_creation(session, questions)
-        if not val_res.is_valid:
-            raise ValueError(val_res.errors[0])
-
-        dumped_questions = []
-        for q in questions:
-            q_dict = q.model_dump(mode="json")
-            # P0 Assessment Security: Strip correct_answer and explanation before submission!
-            q_dict.pop("correct_answer", None)
-            q_dict.pop("explanation", None)
-            q_dict["item_id"] = q_dict.get("question_id", "")
-            q_dict["prompt"] = q_dict.get("question_text", "")
-            dumped_questions.append(q_dict)
-
-        self.session_repo.save_session(session)
-        return {
+        base = {
             "session_id": session.session_id,
+            "learner_id": session.learner_id,
+            "subject_id": session.subject_id,
             "know_concepts": session.know_concept_ids,
             "verify_concepts": session.verify_concept_ids,
             "diagnostic_priorities": {k: float(v) for k, v in session.diagnostic_priorities.items()},
-            "question_count": len(questions),
-            "questions": dumped_questions,
+            "diagnostic_completed": session.diagnostic_completed,
+            "diagnostic_score": session.diagnostic_score,
+            "answered_count": len(session.diagnostic_responses),
+            "answered_question_ids": list(session.diagnostic_responses.keys()),
+            "total_planned": len(session.diagnostic_question_ids),
         }
 
-    def submit_diagnostic(
-        self,
-        session_id: str,
-        responses: Dict[str, Any],
-        learner_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """
-        Evaluates diagnostic responses AUTHORITATIVELY on the server.
-        Accepts selected options or don't-know signals and checks against authoritative question bank.
+        if session.diagnostic_completed:
+            return {
+                **base,
+                "status": "completed",
+                "error": None,
+                "question_count": 0,
+                "questions": [],
+                "next_question": None,
+            }
 
-        Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
-        """
-        if not learner_id:
-            raise ValueError("learner_id is required to submit a diagnostic.")
+        try:
+            bank = self._build_diagnostic_bank(session)
 
-        session = self.session_repo.load_session(session_id)
-        if not session:
-            raise ValueError("Initialization session not found.")
-        if session.learner_id != learner_id:
-            raise ValueError(f"Session '{session_id}' does not belong to learner '{learner_id}'.")
-
-        all_concepts = session.know_concept_ids + session.dont_know_concept_ids + session.unanswered_concept_ids
-        learner_state = self.learner_service.get_or_create_learner_state(session.learner_id, all_concepts)
-        verify_ids = self.adapter.diagnostic_orchestrator.verification_concepts(session)
-        bank = self.get_or_create_question_bank(session.subject_id, verify_ids or session.know_concept_ids)
-
-        evaluated_responses: Dict[str, float] = {}
-        for qid, resp in responses.items():
-            q_item = bank.get_question(qid)
-            if isinstance(resp, (int, float)):
-                # Backward-compatibility for raw numeric test calls
-                evaluated_responses[qid] = float(resp)
-            elif isinstance(resp, str):
-                resp_clean = resp.strip()
-                if resp_clean.lower() in ("i don't know", "dont know", "unsure", "unknown", ""):
-                    evaluated_responses[qid] = 0.0
-                elif q_item:
-                    is_corr = (resp_clean == str(q_item.correct_answer).strip())
-                    evaluated_responses[qid] = 1.0 if is_corr else 0.0
-                else:
-                    evaluated_responses[qid] = 0.0
-            elif isinstance(resp, dict):
-                if resp.get("is_dont_know", False):
-                    evaluated_responses[qid] = 0.0
-                else:
-                    opt = str(resp.get("selected_option", "")).strip()
-                    if q_item:
-                        is_corr = (opt == str(q_item.correct_answer).strip())
-                        evaluated_responses[qid] = 1.0 if is_corr else 0.0
-                    else:
-                        evaluated_responses[qid] = 0.0
+            if session.diagnostic_question_ids:
+                # Reuse the existing plan: a refresh must not reshuffle the quiz.
+                questions = []
+                for qid in session.diagnostic_question_ids:
+                    item = bank.questions.get(qid)
+                    if item is not None:
+                        questions.append(self._with_dont_know_option(item))
             else:
-                evaluated_responses[qid] = 0.0
+                questions = [
+                    self._with_dont_know_option(q)
+                    for q in orch.create_diagnostic_quiz(session, bank)
+                ]
+                val_res = self.planning_validator.validate_diagnostic_quiz_creation(
+                    session, questions
+                )
+                if not val_res.is_valid:
+                    raise ValueError(val_res.errors[0])
 
-        updated_masteries = self.adapter.diagnostic_orchestrator.submit_diagnostic_responses(
-            init_session=session,
-            learner_state=learner_state,
-            question_responses=evaluated_responses,
-            question_bank=bank,
-        )
+            session.diagnostic_generation_error = None
 
-        # Prerequisite-aware verification (Batch 9): for each failed verification
-        # concept, check its prerequisites from the knowledge graph. A failure on C
-        # with an untested/weak B surfaces B as needing verification instead of
-        # concluding C alone is weak. Reuses the existing graph; no new system.
+            learner_state = self._diagnostic_learner_state(session)
+            next_item = orch.select_next_diagnostic_question(session, bank, learner_state)
+
+            self.session_repo.save_session(session)
+            return {
+                **base,
+                "status": "completed" if session.diagnostic_completed else "in_progress",
+                "error": None,
+                "question_count": len(questions),
+                "questions": [self._dump_question_for_client(q) for q in questions],
+                "next_question": (
+                    self._dump_question_for_client(next_item) if next_item is not None else None
+                ),
+                "total_planned": len(session.diagnostic_question_ids),
+                "diagnostic_completed": session.diagnostic_completed,
+            }
+        except Exception as exc:
+            # A generation failure is an ERROR state the learner can retry. It is
+            # deliberately NOT recorded as "verification complete" any more: doing
+            # so silently treated an ingestion/generation failure as a pass and let
+            # the learner reach the dashboard with no evidence at all.
+            logger.error("Diagnostic question generation failed: %s", exc)
+            session.diagnostic_generation_error = str(exc)
+            session.sufficiency_status = KnowledgeSufficiencyStatus.INSUFFICIENT_EVIDENCE
+            self.session_repo.save_session(session)
+            return {
+                **base,
+                "status": "error",
+                "error": str(exc),
+                "question_count": 0,
+                "questions": [],
+                "next_question": None,
+            }
+
+    def _evaluate_response(
+        self,
+        q_item,
+        resp: Any,
+    ) -> float:
+        """
+        Server-authoritative correctness. The client never supplies correctness;
+        it only supplies the option the learner picked (or a don't-know signal).
+        """
+        if isinstance(resp, (int, float)):
+            # Backward-compatibility for raw numeric test calls
+            return float(resp)
+        if isinstance(resp, str):
+            resp_clean = resp.strip()
+            if resp_clean.lower() in ("i don't know", "dont know", "unsure", "unknown", ""):
+                return 0.0
+            if q_item:
+                return 1.0 if resp_clean == str(q_item.correct_answer).strip() else 0.0
+            return 0.0
+        if isinstance(resp, dict):
+            if resp.get("is_dont_know", False):
+                return 0.0
+            opt = str(resp.get("selected_option", "")).strip()
+            if q_item:
+                return 1.0 if opt == str(q_item.correct_answer).strip() else 0.0
+            return 0.0
+        return 0.0
+
+    def _diagnostic_result_payload(
+        self,
+        session,
+        learner_state,
+        updated_masteries: Dict[str, float],
+        bank,
+        evidence: Dict[str, float],
+    ) -> Dict[str, Any]:
+        """Post-grading bookkeeping shared by the batch and per-answer paths."""
         session.prerequisite_verification = self.compute_prerequisite_verification(
-            session.subject_id, learner_state, bank, evaluated_responses
+            session.subject_id, learner_state, bank, evidence
         )
 
         # Evidence verdicts per tested concept (Batch 8): a single wrong answer
@@ -359,9 +437,6 @@ class LearningService:
                 "calibration": session.calibration.get(cid),
             }
 
-        self.session_repo.save_session(session)
-        self.learner_service.save_learner_state(learner_state)
-
         return {
             "session_id": session.session_id,
             "diagnostic_completed": session.diagnostic_completed,
@@ -373,6 +448,236 @@ class LearningService:
             "prerequisite_verification": session.prerequisite_verification,
             "evidence_verdicts": evidence_verdicts,
         }
+
+    def submit_diagnostic(
+        self,
+        session_id: str,
+        responses: Dict[str, Any],
+        learner_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Evaluates diagnostic responses AUTHORITATIVELY on the server.
+        Accepts selected options or don't-know signals and checks against the
+        authoritative question bank.
+
+        Idempotent: responses already recorded on the session (for example via
+        ``submit_diagnostic_answer``) are never applied to the learner model a
+        second time, so a duplicated submit cannot double-count BKT evidence.
+
+        Security (P0): ``learner_id`` is REQUIRED and ownership is ALWAYS enforced.
+        """
+        session = self._load_owned_session(session_id, learner_id, "submit a diagnostic")
+        orch = self.adapter.diagnostic_orchestrator
+
+        with self._get_learner_lock(session.learner_id):
+            session = self.session_repo.load_session(session_id)
+            if session.learner_id != learner_id:
+                raise ValueError(
+                    f"Session '{session_id}' does not belong to learner '{learner_id}'."
+                )
+
+            learner_state = self._diagnostic_learner_state(session)
+            bank = self._build_diagnostic_bank(session)
+
+            if session.diagnostic_completed:
+                # Already finalized: report the stored verdict instead of regrading.
+                self.session_repo.save_session(session)
+                self.learner_service.save_learner_state(learner_state)
+                return {
+                    **self._diagnostic_result_payload(session, learner_state, {}, bank, {}),
+                    "duplicate_submission": True,
+                }
+
+            evaluated_responses: Dict[str, float] = {}
+            for qid, resp in responses.items():
+                evaluated_responses[qid] = self._evaluate_response(bank.get_question(qid), resp)
+
+            # Grade every piece of evidence on the session, not just this payload.
+            evidence: Dict[str, float] = dict(session.diagnostic_responses)
+            evidence.update(evaluated_responses)
+
+            updated_masteries = orch.submit_diagnostic_responses(
+                init_session=session,
+                learner_state=learner_state,
+                question_responses=evidence,
+                question_bank=bank,
+            )
+
+            payload = self._diagnostic_result_payload(
+                session, learner_state, updated_masteries, bank, evidence
+            )
+            self.session_repo.save_session(session)
+            self.learner_service.save_learner_state(learner_state)
+            return {**payload, "duplicate_submission": False}
+
+    def submit_diagnostic_answer(
+        self,
+        session_id: str,
+        learner_id: Optional[str],
+        question_id: str,
+        selected_option: Optional[str] = None,
+        is_dont_know: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Record ONE verification answer and return the next adaptively selected item.
+
+        This is what makes the verification quiz adaptive and refresh-safe: the
+        response is graded and applied to BKT immediately, persisted, and the next
+        question is selected from the learner's post-answer state.
+
+        Correctness is derived here from the authoritative question bank; a
+        client-supplied correctness value is never read. Re-sending a question_id
+        that is already recorded is reported as a duplicate and changes nothing.
+        """
+        session = self._load_owned_session(session_id, learner_id, "answer a diagnostic")
+        orch = self.adapter.diagnostic_orchestrator
+
+        with self._get_learner_lock(session.learner_id):
+            session = self.session_repo.load_session(session_id)
+            if session.learner_id != learner_id:
+                raise ValueError(
+                    f"Session '{session_id}' does not belong to learner '{learner_id}'."
+                )
+
+            learner_state = self._diagnostic_learner_state(session)
+            bank = self._build_diagnostic_bank(session)
+
+            already_answered = question_id in session.diagnostic_responses
+            q_item = bank.questions.get(question_id)
+            if q_item is None:
+                raise ValueError(f"Question '{question_id}' is not part of this assessment.")
+
+            correctness = self._evaluate_response(
+                q_item, {"is_dont_know": is_dont_know, "selected_option": selected_option}
+            )
+            record = session.diagnostic_answer_records.get(question_id) or {}
+            concept_ids = list(record.get("concept_ids") or (q_item.concept_ids or []))
+
+            if not already_answered and not session.diagnostic_completed:
+                orch.apply_diagnostic_response(
+                    session, learner_state, bank, question_id, correctness
+                )
+                session.diagnostic_answer_records.setdefault(
+                    question_id, {"concept_ids": list(q_item.concept_ids or [])}
+                )["selected_option"] = selected_option
+                session.diagnostic_answer_records[question_id]["is_dont_know"] = bool(is_dont_know)
+                self.session_repo.save_session(session)
+                self.learner_service.save_learner_state(learner_state)
+
+            # Adaptive next question, computed from the learner's post-answer state.
+            next_item = None
+            if not session.diagnostic_completed:
+                next_item = orch.select_next_diagnostic_question(session, bank, learner_state)
+
+            complete = session.diagnostic_completed or next_item is None
+            result: Dict[str, Any] = {
+                "session_id": session.session_id,
+                "subject_id": session.subject_id,
+                "question_id": question_id,
+                "concept_ids": concept_ids,
+                "is_correct": bool(correctness >= 1.0),
+                "duplicate_submission": already_answered,
+                "answered_count": len(session.diagnostic_responses),
+                "total_planned": len(session.diagnostic_question_ids),
+                "diagnostic_completed": session.diagnostic_completed,
+                "updated_masteries": {
+                    cid: learner_state.concept_states[cid].mastery_probability
+                    for cid in concept_ids
+                    if cid in learner_state.concept_states
+                },
+                "next_question": (
+                    self._dump_question_for_client(next_item) if next_item is not None else None
+                ),
+                "complete": complete,
+            }
+
+            if complete and not session.diagnostic_completed:
+                # Finalize: grade everything recorded so far and persist verdicts.
+                orch.submit_diagnostic_responses(
+                    init_session=session,
+                    learner_state=learner_state,
+                    question_responses=dict(session.diagnostic_responses),
+                    question_bank=bank,
+                )
+                result.update(
+                    self._diagnostic_result_payload(
+                        session,
+                        learner_state,
+                        dict(result["updated_masteries"]),
+                        bank,
+                        dict(session.diagnostic_responses),
+                    )
+                )
+                result["complete"] = True
+                self.session_repo.save_session(session)
+                self.learner_service.save_learner_state(learner_state)
+
+            return result
+
+    # ------------------------------------------------------------------
+    # Server-authoritative routing state
+    # ------------------------------------------------------------------
+    def get_entry_state(self, learner_id: str, subject_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        The single authoritative answer to "where should this learner be right now?".
+
+        The frontend renders this instead of inferring onboarding state from local
+        booleans, so a stale browser tab cannot redirect a learner into the
+        ingestion screen or past an unfinished verification.
+        """
+        subjects = self.knowledge_service.list_subjects()
+        has_any_source = bool(subjects)
+        subject = None
+        if subject_id:
+            subject = next((s for s in subjects if s["id"] == subject_id), None)
+
+        state = {
+            "learner_id": learner_id,
+            "subject_id": subject["id"] if subject else None,
+            "subject_title": subject.get("title") if subject else None,
+            "has_source": has_any_source,
+            # With no knowledge source there is nowhere to go but source
+            # selection. (`NO_USER` is reserved for a future identity layer; the
+            # learner id is always present today, so it is never emitted.)
+            "entry_state": "SOURCE_SELECTION",
+            "needs_calibration": True,
+            "session_id": None,
+            "diagnostic_completed": False,
+            "diagnostic_score": None,
+            "answered_count": 0,
+            "answered_question_ids": [],
+            "total_planned": 0,
+            "diagnostic_generation_error": None,
+            "active_assessment_id": None,
+        }
+        if subject is None:
+            return state
+
+        session = self.session_repo.find_any_init_session(learner_id, subject["id"])
+        state["needs_calibration"] = session is None
+        if session is None:
+            state["entry_state"] = "NEEDS_CALIBRATION"
+            return state
+
+        state.update(
+            {
+                "session_id": session.session_id,
+                "diagnostic_completed": session.diagnostic_completed,
+                "diagnostic_score": session.diagnostic_score,
+                "answered_count": len(session.diagnostic_responses),
+                "answered_question_ids": list(session.diagnostic_responses.keys()),
+                "total_planned": len(session.diagnostic_question_ids),
+                "diagnostic_generation_error": session.diagnostic_generation_error,
+            }
+        )
+
+        if session.diagnostic_completed:
+            state["entry_state"] = "VERIFICATION_COMPLETE"
+        elif session.diagnostic_generation_error:
+            state["entry_state"] = "VERIFICATION_ERROR"
+        else:
+            state["entry_state"] = "VERIFICATION_IN_PROGRESS"
+        return state
 
     def compute_prerequisite_verification(
         self,
@@ -586,7 +891,35 @@ class LearningService:
         empty options and a 'no_questions' flag so the frontend can handle it
         gracefully instead of showing an error.
         """
-        bank = self.get_or_create_question_bank(subject_id, [concept_id])
+        try:
+            bank = self.get_or_create_question_bank(subject_id, [concept_id])
+        except Exception as e:
+            logger.error("Failed to get or create question bank for %s: %s", concept_id, e)
+            # Try to load existing bank as fallback
+            try:
+                existing = self.bank_repo.load_grounded_bank(subject_id)
+                if existing:
+                    bank = existing
+                else:
+                    return {
+                        "question_id": "",
+                        "concept_id": concept_id,
+                        "question_text": "",
+                        "options": [],
+                        "source_citations": [],
+                        "no_questions": True,
+                    }
+            except Exception as fallback_err:
+                logger.error("Fallback bank load also failed: %s", fallback_err)
+                return {
+                    "question_id": "",
+                    "concept_id": concept_id,
+                    "question_text": "",
+                    "options": [],
+                    "source_citations": [],
+                    "no_questions": True,
+                }
+        
         candidates = bank.get_by_concept(concept_id)
         if not candidates:
             return {
@@ -644,8 +977,13 @@ class LearningService:
 
         # Retrieve real source evidence. A retrieval failure must propagate, not be
         # silently replaced with template text.
-        retriever = KnowledgeBuildService().get_retriever(subject_id)
-        chunks = retriever.retrieve_for_concept(concept_id, concept_name=c_name, top_k=3)
+        try:
+            retriever = KnowledgeBuildService().get_retriever(subject_id)
+            chunks = retriever.retrieve_for_concept(concept_id, concept_name=c_name, top_k=3)
+        except Exception as e:
+            logger.error("Failed to retrieve evidence for concept %s: %s", concept_id, e)
+            chunks = []
+        
         if not chunks:
             raise ContentValidationError(
                 f"The uploaded material does not contain enough source evidence to "

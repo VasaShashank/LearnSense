@@ -8,6 +8,7 @@ from phase3.storage.learner_repository import LearnerStateRepository
 from phase3.learner.models import LearnerState
 from phase4.integration.phase3_adapter import Phase3Adapter
 from backend.services.knowledge_service import KnowledgeService
+from storage.repositories import ActiveSubjectRepository
 
 
 class LearnerService:
@@ -15,9 +16,11 @@ class LearnerService:
         self,
         repo: Optional[LearnerStateRepository] = None,
         knowledge_service: Optional[KnowledgeService] = None,
+        active_subject_repo: Optional[ActiveSubjectRepository] = None,
     ):
         self.repo = repo or LearnerStateRepository()
         self.knowledge_service = knowledge_service or KnowledgeService()
+        self.active_subject_repo = active_subject_repo or ActiveSubjectRepository()
         self.adapter = Phase3Adapter()
 
     def get_or_create_learner_state(self, learner_id: str, concept_ids: List[str]) -> LearnerState:
@@ -128,25 +131,50 @@ class LearnerService:
         """
         Determines whether the learner has persisted progress / initialized subjects on the server.
         Allows frontend to restore active learning state and dashboard after browser refresh.
+
+        ``is_onboarded`` historically meant "the learner has ANY concept state",
+        which becomes true the moment a graph or progress endpoint is read. That is
+        not verification, so the payload now carries a server-authoritative
+        ``entry_state`` that the frontend routes on instead of guessing.
+
+        The active subject is the learner's last selected source, persisted
+        server-side. Falling back to ``subjects[0]`` used to reopen the app on an
+        arbitrary unrelated document.
         """
         from storage.repositories import SessionRepository
 
+        subjects = self.knowledge_service.list_subjects()
+        valid_subject_ids = {s["id"] for s in subjects}
+
+        active_subject = subject_id if subject_id in valid_subject_ids else None
+        if not active_subject:
+            remembered = self.active_subject_repo.get_active_subject(learner_id)
+            if remembered in valid_subject_ids:
+                active_subject = remembered
+        if not active_subject:
+            active_subject = subjects[0]["id"] if subjects else None
+        if active_subject:
+            try:
+                self.active_subject_repo.set_active_subject(learner_id, active_subject)
+            except OSError:
+                pass
+
         state = self.repo.load_state(learner_id)
+
         if not state or not state.concept_states:
+            # No learner state yet. Do NOT compute progress here: progress reads
+            # through get_or_create_learner_state, which would materialise state
+            # and make every subsequent resume claim the learner was onboarded.
             return {
                 "learner_id": learner_id,
                 "has_state": False,
                 "is_onboarded": False,
-                "subject_id": subject_id,
+                "entry_state": "NEEDS_CALIBRATION" if subjects else "SOURCE_SELECTION",
+                "subject_id": active_subject,
                 "progress": None,
                 "active_assessment_id": None,
                 "active_init_session": None,
             }
-
-        active_subject = subject_id
-        if not active_subject:
-            subjects = self.knowledge_service.list_subjects()
-            active_subject = subjects[0]["id"] if subjects else None
 
         progress = None
         if active_subject:
@@ -165,20 +193,60 @@ class LearnerService:
         active_init_session = None
         if active_subject:
             try:
-                active_init = session_repo.find_active_init_session(learner_id, active_subject)
-                if active_init:
-                    active_init_session = active_init.model_dump(mode="json")
+                # Any session (completed or not): a COMPLETED verification must be
+                # visible here, otherwise resume would report NEEDS_CALIBRATION for
+                # an already-verified learner and re-run onboarding forever.
+                latest_init = session_repo.find_any_init_session(learner_id, active_subject)
+                if latest_init:
+                    active_init_session = latest_init.model_dump(mode="json")
             except Exception:
                 active_init_session = None
 
-        is_onboarded = bool(state and state.concept_states)
+        entry_state = self._resolve_entry_state(
+            has_source=bool(subjects),
+            active_subject=active_subject,
+            has_learner_state=bool(state and state.concept_states),
+            active_init_session=active_init_session,
+        )
 
         return {
             "learner_id": learner_id,
-            "has_state": True,
-            "is_onboarded": is_onboarded,
+            "has_state": bool(state and state.concept_states),
+            # True only when the learner's verification is actually complete. A
+            # concept state alone is not onboarding.
+            "is_onboarded": entry_state == "VERIFICATION_COMPLETE",
+            "entry_state": entry_state,
             "subject_id": active_subject,
             "progress": progress,
             "active_assessment_id": active_assessment_id,
             "active_init_session": active_init_session,
         }
+
+    @staticmethod
+    def _resolve_entry_state(
+        has_source: bool,
+        active_subject: Optional[str],
+        has_learner_state: bool,
+        active_init_session: Optional[Dict[str, Any]],
+    ) -> str:
+        """
+        The routing state machine, in one place.
+
+        NO_SOURCE                     -> SOURCE_SELECTION
+        SOURCE + no verification init -> NEEDS_CALIBRATION (self-assessment first)
+        SOURCE + incomplete diagnostic -> VERIFICATION_IN_PROGRESS (resume)
+        SOURCE + completed diagnostic -> VERIFICATION_COMPLETE (dashboard)
+        """
+        if not has_source or not active_subject:
+            return "SOURCE_SELECTION"
+        if active_init_session:
+            if active_init_session.get("diagnostic_generation_error"):
+                return "VERIFICATION_ERROR"
+            return (
+                "VERIFICATION_COMPLETE"
+                if active_init_session.get("diagnostic_completed")
+                else "VERIFICATION_IN_PROGRESS"
+            )
+        # A learner state with no verification session means the source was
+        # ingested but never verified. That must NOT read as "onboarded".
+        return "NEEDS_CALIBRATION"
