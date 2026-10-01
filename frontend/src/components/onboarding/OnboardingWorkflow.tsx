@@ -45,6 +45,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const [uploadStage, setUploadStage] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [subjectCalibrationStatus, setSubjectCalibrationStatus] = useState<Record<string, { needs_calibration: boolean; diagnostic_completed: boolean }>>({});
 
   const setLevel = (conceptId: string, level: string) => {
     setSelfAssessmentSelections((prev) => {
@@ -102,7 +103,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // 1. Select Subject
+  // 1. Select Subject - loads data and checks calibration status
   const handleSelectSubject = async (sub: Subject) => {
     setSelectedSubject(sub);
     setLoading(true);
@@ -110,6 +111,18 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       const graph = await ApiClient.getSubjectGraph(sub.id, learnerId);
       setConcepts(graph.concepts);
       setTopics(graph.topics || []);
+
+      // Check if this subject needs calibration
+      const calibrationStatus = await ApiClient.getCalibrationStatus(learnerId, sub.id);
+
+      if (!calibrationStatus.needs_calibration && calibrationStatus.diagnostic_completed) {
+        // Subject already calibrated - allow direct continuation to learning
+        clearDraft(sub.id);
+        onCompleteOnboarding(sub.id, learnerId);
+        return;
+      }
+
+      // Subject needs calibration - load self-assessment data and auto-proceed
       const draft = loadDraft(sub.id);
       const initMap: Record<string, string> = {};
       const initConf: Record<string, Confidence> = {};
@@ -121,6 +134,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setSelfAssessmentSelections(initMap);
       selfAssessmentSelectionsRef.current = initMap;
       setConfidenceSelections(initConf);
+      // Auto-proceed to self-assessment for existing subjects that need calibration
       setStep('SELF_ASSESSMENT');
     } catch (err) {
       console.error('Failed to load subject graph', err);
@@ -129,9 +143,35 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
+  // Check calibration status for all subjects on mount to show badges
+  useEffect(() => {
+    const checkAllCalibrationStatus = async () => {
+      const statusMap: Record<string, { needs_calibration: boolean; diagnostic_completed: boolean }> = {};
+      await Promise.all(
+        subjects.map(async (s) => {
+          try {
+            const status = await ApiClient.getCalibrationStatus(learnerId, s.id);
+            statusMap[s.id] = {
+              needs_calibration: status.needs_calibration,
+              diagnostic_completed: status.diagnostic_completed,
+            };
+          } catch {
+            // Best-effort - if check fails, assume needs calibration
+            statusMap[s.id] = { needs_calibration: true, diagnostic_completed: false };
+          }
+        })
+      );
+      setSubjectCalibrationStatus(statusMap);
+    };
+    checkAllCalibrationStatus();
+  }, [subjects, learnerId]);
+
   // 1b. Handle PDF/File Upload — ingestion states: uploading → processing →
   // extracting → ready for self-assessment. Self-assessment is only shown once
   // the concept graph exists; failures surface a clear error with retry.
+  // CRITICAL: The backend uploadSource handles the full ingestion pipeline
+  // (OCR → chunking → embedding → indexing) and only returns when complete.
+  // We then verify the concept graph is available before proceeding.
   const handleOnboardingPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -140,8 +180,10 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
     try {
       setUploadStage('uploading');
+      // Backend runs full pipeline: OCR → chunking → embedding → indexing
+      // This call waits for complete ingestion before returning
       const res = await ApiClient.uploadSource(file, (stage) => setUploadStage(stage));
-      setUploadStage('extracting concepts');
+      setUploadStage('verifying ingestion complete');
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ').toUpperCase();
       const newSub: Subject = {
         id: res.document_id,
@@ -150,9 +192,36 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         page_count: res.page_count || 1,
         has_ekr: true,
       };
-      setUploadStage('preparing assessment');
-      await handleSelectSubject(newSub);
-      setUploadStage('ready for self-assessment');
+      setSelectedSubject(newSub);
+      
+      // Verify concept graph is available (ingestion must be complete)
+      setUploadStage('loading knowledge graph');
+      const graph = await ApiClient.getSubjectGraph(newSub.id, learnerId);
+      
+      // Verify graph has concepts (ingestion successful)
+      if (!graph.concepts || graph.concepts.length === 0) {
+        throw new Error('Ingestion completed but no concepts were extracted. The document may be empty or unsupported.');
+      }
+      
+      setConcepts(graph.concepts);
+      setTopics(graph.topics || []);
+      
+      // Load self-assessment data
+      setUploadStage('preparing self-assessment');
+      const draft = loadDraft(newSub.id);
+      const initMap: Record<string, string> = {};
+      const initConf: Record<string, Confidence> = {};
+      graph.concepts.forEach((c) => {
+        initMap[c.concept_id] = draft?.levels?.[c.concept_id] || 'UNANSWERED';
+        const dc = draft?.confidences?.[c.concept_id];
+        initConf[c.concept_id] = dc === 'Low' || dc === 'Medium' || dc === 'High' ? dc : 'Medium';
+      });
+      setSelfAssessmentSelections(initMap);
+      selfAssessmentSelectionsRef.current = initMap;
+      setConfidenceSelections(initConf);
+      setUploadStage('ingestion complete');
+      // Only proceed to self-assessment after successful ingestion verification
+      setStep('SELF_ASSESSMENT');
     } catch (err: any) {
       console.error('Failed to process uploaded file', err);
       setUploadError(err.message || 'Ingestion failed. Check the file and try again.');
@@ -218,13 +287,16 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeInitSession?.session_id]);
 
-  // Jump straight to self-assessment for a newly ingested subject when the
-  // learner is already onboarded (calibration gate from the Sources view).
+  // REMOVED: Automatic transition to self-assessment for initialSubject
+  // The calibration gate from App.tsx now only loads the subject data.
+  // The user must explicitly click to start self-assessment.
+  // This prevents automatic quiz/diagnostic start after ingestion.
   const initialSubjectHandled = React.useRef<string | null>(null);
   useEffect(() => {
     if (!initialSubject || resumeInitSession) return;
     if (initialSubjectHandled.current === initialSubject.id) return;
     initialSubjectHandled.current = initialSubject.id;
+    // Only load the subject data, do NOT auto-transition to self-assessment
     handleSelectSubject(initialSubject);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSubject?.id]);
@@ -235,7 +307,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   const handleSubmitSelfAssessment = async () => {
     if (!selectedSubject) return;
     setLoading(true);
+    setSubmitError(null);
     try {
+      console.log('[CALIBRATION] Submitting self-assessment...');
       const allConceptIds = concepts.map((c) => c.concept_id);
       const apiConfidences: Record<string, string> = {};
       allConceptIds.forEach((cid) => {
@@ -249,6 +323,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
         all_subject_concept_ids: allConceptIds,
         confidences: apiConfidences,
       });
+      console.log('[CALIBRATION] Self-assessment submitted, session ID:', session.session_id);
 
       setSessionId(session.session_id);
       try {
@@ -265,24 +340,38 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       const verifyCount = Object.values(selfAssessmentSelections).filter(
         (v) => v === 'KNOW' || v === 'UNANSWERED',
       ).length;
+      console.log('[CALIBRATION] Verification count:', verifyCount);
+      
       if (verifyCount === 0) {
+        console.log('[CALIBRATION] No concepts need verification, skipping to onboarding completion');
         clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
         return;
       }
 
+      console.log('[CALIBRATION] Starting diagnostic generation...');
       const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
+      console.log('[CALIBRATION] Diagnostic response received:', diagData);
+      console.log('[CALIBRATION] Questions array:', diagData.questions);
+      if (diagData.questions && diagData.questions.length > 0) {
+        console.log('[CALIBRATION] First question object:', diagData.questions[0]);
+        console.log('[CALIBRATION] First question keys:', Object.keys(diagData.questions[0]));
+      }
+      
       if (!diagData.questions || diagData.questions.length === 0) {
+        console.log('[CALIBRATION] No questions returned, skipping to onboarding completion');
         clearDraft(selectedSubject.id);
         onCompleteOnboarding(selectedSubject.id, learnerId);
       } else {
+        console.log('[CALIBRATION] Setting', diagData.questions.length, 'diagnostic questions');
         setDiagnosticQuestions(diagData.questions);
         setCurrentQuestionIdx(0);
         setDiagnosticAnswers({});
         setStep('DIAGNOSTIC');
+        console.log('[CALIBRATION] Transitioned to DIAGNOSTIC step');
       }
     } catch (err) {
-      console.error('Failed to submit self assessment', err);
+      console.error('[CALIBRATION] Failed to submit self assessment', err);
       setSubmitError(
         err instanceof ApiError
           ? `Could not start the verification test: ${err.message}`
@@ -290,6 +379,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       );
     } finally {
       setLoading(false);
+      console.log('[CALIBRATION] Loading state cleared');
     }
   };
 
@@ -423,9 +513,11 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                           ? `Processing / ingesting: ${uploadStage.replace('processing (', '').replace(')', '')}`
                           : uploadStage === 'extracting concepts'
                             ? 'Extracting concepts from your document...'
-                            : uploadStage === 'preparing assessment'
-                              ? 'Preparing your self-assessment...'
-                              : 'Extracting chapters, prerequisite concepts, and generating grounded curriculum question bank...'
+                            : uploadStage === 'loading knowledge base'
+                              ? 'Loading knowledge base...'
+                              : uploadStage === 'ready for self-assessment'
+                                ? 'Ready for self-assessment...'
+                                : 'Extracting chapters, prerequisite concepts, and generating grounded curriculum question bank...'
                       : 'Drop any course material or textbook file to generate your grounded personalized learning universe.'}
                   </p>
                 </div>
@@ -456,30 +548,51 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {subjects.map((s) => (
-                <div
-                  key={s.id}
-                  onClick={() => handleSelectSubject(s)}
-                  className="p-4 rounded-2xl universe-panel-interactive cursor-pointer flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-space-950 border border-white/[0.08] text-cyan-400 group-hover:text-cyan-300 transition-colors">
-                      <BookOpen className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-display font-bold text-white group-hover:text-cyan-300 transition-colors">
-                        {s.title}
-                      </h4>
-                      <div className="flex items-center gap-2 text-[10px] text-universe-slate mt-0.5 font-mono">
-                        <span>{s.concept_count} Concepts</span>
-                        <span>•</span>
-                        <span>{s.page_count} Pages</span>
+              {subjects.map((s) => {
+                const status = subjectCalibrationStatus[s.id];
+                const isReady = status && !status.needs_calibration && status.diagnostic_completed;
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => handleSelectSubject(s)}
+                    className="p-4 rounded-2xl universe-panel-interactive cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-space-950 border border-white/[0.08] text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-xs font-display font-bold text-white group-hover:text-cyan-300 transition-colors">
+                          {s.title}
+                        </h4>
+                        <div className="flex items-center gap-2 text-[10px] text-universe-slate mt-0.5 font-mono">
+                          <span>{s.concept_count} Concepts</span>
+                          <span>•</span>
+                          <span>{s.page_count} Pages</span>
+                        </div>
+                        {status && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            {isReady ? (
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 text-[9px] font-mono font-bold border border-emerald-500/30">
+                                READY TO CONTINUE
+                              </span>
+                            ) : status.needs_calibration ? (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 text-[9px] font-mono font-bold border border-amber-500/30">
+                                NEEDS CALIBRATION
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 text-[9px] font-mono font-bold border border-cyan-500/30">
+                                IN PROGRESS
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
+                    <ArrowRight className="w-4 h-4 text-universe-slate group-hover:text-cyan-400 transition-colors" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-universe-slate group-hover:text-cyan-400 transition-colors" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -674,6 +787,9 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               </div>
             ) : (() => {
               const q = diagnosticQuestions[currentQuestionIdx];
+              console.log('[DIAGNOSTIC] Current question object:', q);
+              console.log('[DIAGNOSTIC] Question keys:', q ? Object.keys(q) : 'no question');
+              
               if (!q) {
                 return (
                   <div className="text-center py-12 space-y-3">
@@ -691,6 +807,10 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               const qText = q.question_text || q.prompt || 'Assess your understanding of this concept:';
               const qId = q.question_id || q.item_id || `q_${currentQuestionIdx}`;
               const rawOptions = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
+              
+              console.log('[DIAGNOSTIC] Question text:', qText);
+              console.log('[DIAGNOSTIC] Question ID:', qId);
+              console.log('[DIAGNOSTIC] Raw options:', rawOptions);
 
               const isDontKnowText = (text: string) => {
                 const lower = text.toLowerCase();
@@ -727,7 +847,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
                   <div className="space-y-4">
                     <div className="p-5 rounded-2xl bg-space-950/70 border border-white/[0.06]">
-                      <p className="text-xs sm:text-sm font-sans text-universe-text leading-relaxed">
+                      <p className="text-xs sm:text-sm font-sans text-universe-text leading-relaxed break-words overflow-wrap-anywhere">
                         {qText}
                       </p>
                     </div>
@@ -738,12 +858,12 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
                           key={optIdx}
                           disabled={loading}
                           onClick={() => onOptionClick(opt)}
-                          className={`w-full p-3.5 rounded-xl border border-white/[0.06] bg-space-950/50 hover:bg-space-850 hover:border-cyan-400/40 text-left text-xs text-universe-text transition-all font-sans flex items-center justify-between disabled:opacity-50 ${
+                          className={`w-full p-3.5 rounded-xl border border-white/[0.06] bg-space-950/50 hover:bg-space-850 hover:border-cyan-400/40 text-left text-xs text-universe-text transition-all font-sans flex items-center justify-between disabled:opacity-50 break-words overflow-wrap-anywhere ${
                             isDontKnowText(opt) ? 'text-amber-300 hover:border-amber-400/40 bg-amber-950/20' : ''
                           }`}
                         >
-                          <span>{opt}</span>
-                          {isDontKnowText(opt) && <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />}
+                          <span className="flex-1">{opt}</span>
+                          {isDontKnowText(opt) && <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 ml-2" />}
                         </button>
                       ))}
 
