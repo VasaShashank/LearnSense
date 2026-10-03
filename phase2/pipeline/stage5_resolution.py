@@ -76,44 +76,31 @@ def _merge_plural_variants(
             canonical_names.pop(drop, None)
 
 
+from phase2.pipeline.semantic_entity_resolver import SemanticEntityResolver
+
+
 def run_stage5_entity_resolution(
     norm_doc: NormalizedDocumentContext,
     candidates: Stage4ExtractionResult
 ) -> Tuple[List[Concept], List[MergeRecord]]:
-    # Group mentions by normalized surface form key
-    clusters: Dict[str, List[ConceptMention]] = {}
-    canonical_names: Dict[str, str] = {}
-
+    # Acronym expansion pass before resolution
     for mention in candidates.mentions:
         raw_name = mention.surface_form
         norm_key = norm_doc.normalize_text_key(raw_name)
-
-        # Expand acronym if present
         if norm_key.upper() in candidates.acronyms:
-            raw_name = candidates.acronyms[norm_key.upper()]
-            norm_key = norm_doc.normalize_text_key(raw_name)
+            mention.surface_form = candidates.acronyms[norm_key.upper()]
 
-        if norm_key not in clusters:
-            clusters[norm_key] = []
-            canonical_names[norm_key] = raw_name
-        clusters[norm_key].append(mention)
+    # Execute multi-stage semantic entity resolution
+    resolver = SemanticEntityResolver()
+    clusters, canonical_names, semantic_merge_records = resolver.resolve_mentions(
+        candidates.mentions, candidates.evidence
+    )
 
-    # Second pass: merge singular/plural variants of the same term.
+    # Second pass: merge singular/plural variants of the same term
     _merge_plural_variants(clusters, canonical_names)
 
-    # Canonical name = most frequent surface form (first-seen wins ties).
-    for norm_key, mentions in clusters.items():
-        counts: Dict[str, int] = {}
-        order: List[str] = []
-        for m in mentions:
-            if m.surface_form not in counts:
-                counts[m.surface_form] = 0
-                order.append(m.surface_form)
-            counts[m.surface_form] += 1
-        canonical_names[norm_key] = max(order, key=lambda name: counts[name])
-
     concepts: List[Concept] = []
-    merge_records: List[MergeRecord] = []
+    merge_records: List[MergeRecord] = list(semantic_merge_records)
 
     for norm_key, mentions in clusters.items():
         can_name = canonical_names[norm_key]

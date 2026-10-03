@@ -324,24 +324,25 @@ class Phase3LLMAdapter:
                 "Inferring provider from API keys is forbidden per no-fallback policy §1.2 #5."
             )
 
+        model_env = os.environ.get("LLM_MODEL", "").strip() or None
         if self.model_name_is_valid(model_name):
             self.model_name = model_name
+        elif model_env:
+            self.model_name = model_env
         elif self.provider == "groq":
             self.model_name = os.environ.get("GROQ_MODEL", "").strip() or None
             if not self.model_name and self.mode != "mock":
                 raise LLMConfigurationError(
-                    "GROQ_MODEL is required when LLM_PROVIDER=groq. Do not default model names."
+                    "LLM_MODEL (or GROQ_MODEL) is required when LLM_PROVIDER=groq. Do not default model names."
                 )
         elif self.provider == "openai":
             self.model_name = os.environ.get("OPENAI_MODEL", "").strip() or None
             if not self.model_name and self.mode != "mock":
                 raise LLMConfigurationError(
-                    "OPENAI_MODEL is required when LLM_PROVIDER=openai. Do not default model names."
+                    "LLM_MODEL (or OPENAI_MODEL) is required when LLM_PROVIDER=openai. Do not default model names."
                 )
         elif self.mode != "mock":
-            self.model_name = os.environ.get("LLM_MODEL", "").strip() or None
-            if not self.model_name:
-                raise LLMConfigurationError("LLM_MODEL is required when LLM_PROVIDER is custom.")
+            raise LLMConfigurationError("LLM_MODEL is required when LLM_PROVIDER is configured.")
         else:
             self.model_name = model_name or "mock-model"
 

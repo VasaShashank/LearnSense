@@ -517,7 +517,7 @@
       "status": "accepted",
       "evidence_level": "EXPLICIT",
       "confidence": {
-        "value": 0.85,
+        "value": 0.9,
         "components": {
           "source_quality": 0.95,
           "extraction": 0.9,

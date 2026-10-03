@@ -283,6 +283,115 @@ class StartupPreflightError(LearnSenseError):
     recoverable = False
 
 
+# ---------------------------------------------------------------------------
+# Section 39 Canonical Structured Errors
+# ---------------------------------------------------------------------------
+
+class ConfigurationError(LearnSenseError):
+    """Authoritative configuration error (provider, model, or parameter missing/invalid)."""
+    code = "CONFIGURATION_ERROR"
+    http_status = 503
+    recoverable = False
+
+
+class ValidationError(LearnSenseError):
+    """Generic or domain validation failure."""
+    code = "VALIDATION_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class OCRFailure(LearnSenseError):
+    """OCR execution or engine failure."""
+    code = "OCR_FAILURE"
+    http_status = 503
+    recoverable = False
+
+
+class VLMFailure(LearnSenseError):
+    """VLM execution or routing failure."""
+    code = "VLM_FAILURE"
+    http_status = 502
+    recoverable = True
+
+
+class ExtractionFailure(LearnSenseError):
+    """Document block, text, table, or math extraction failure."""
+    code = "EXTRACTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class SemanticResolutionFailure(LearnSenseError):
+    """Entity resolution or canonicalization failure."""
+    code = "SEMANTIC_RESOLUTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class RelationshipResolutionFailure(LearnSenseError):
+    """CKG relationship extraction or verification failure."""
+    code = "RELATIONSHIP_RESOLUTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class RetrievalFailure(RetrievalError):
+    """Evidence retrieval failure matching Section 39."""
+    code = "RETRIEVAL_FAILURE"
+    http_status = 503
+    recoverable = True
+
+
+class LLMOutputValidationError(LLMOutputError):
+    """LLM output failed schema or semantic validation."""
+    code = "LLM_OUTPUT_VALIDATION_ERROR"
+    http_status = 502
+    recoverable = True
+
+
+class GroundingValidationError(ValidationError):
+    """Citation or claim failed evidence-grounding verification."""
+    code = "GROUNDING_VALIDATION_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class LearnerStateError(LearnSenseError):
+    """Learner state corruption, missing concept state, or invalid transition."""
+    code = "LEARNER_STATE_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class PersistenceError(LearnSenseError):
+    """Storage, database, or repository persistence failure."""
+    code = "PERSISTENCE_ERROR"
+    http_status = 500
+    recoverable = True
+
+
+class AuthorizationError(LearnSenseError):
+    """Unauthorized learner or resource access attempt."""
+    code = "AUTHORIZATION_ERROR"
+    http_status = 403
+    recoverable = False
+
+
+class ConcurrencyError(LearnSenseError):
+    """Concurrent submission or state mutation conflict."""
+    code = "CONCURRENCY_ERROR"
+    http_status = 409
+    recoverable = True
+
+
+class CancellationError(LearnSenseError):
+    """Job, pipeline, or session cancelled upon user/system signal."""
+    code = "CANCELLATION_ERROR"
+    http_status = 499
+    recoverable = False
+
+
 __all__ = [
     "LearnSenseError",
     "LLMConfigurationError",
@@ -309,4 +418,20 @@ __all__ = [
     "MathExtractionError",
     "TutorGenerationError",
     "StartupPreflightError",
+    "ConfigurationError",
+    "ValidationError",
+    "OCRFailure",
+    "VLMFailure",
+    "ExtractionFailure",
+    "SemanticResolutionFailure",
+    "RelationshipResolutionFailure",
+    "RetrievalFailure",
+    "LLMOutputValidationError",
+    "GroundingValidationError",
+    "LearnerStateError",
+    "PersistenceError",
+    "AuthorizationError",
+    "ConcurrencyError",
+    "CancellationError",
 ]
+

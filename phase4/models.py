@@ -107,6 +107,38 @@ class KnowledgeGap(BaseModel):
     weak_prerequisite_ids: List[str] = Field(default_factory=list)
 
 
+class DiagnosticHypothesis(BaseModel):
+    """
+    Hypothesis for root-gap diagnosis per Section 23 of TAPROOT.
+    Represents a candidate root-cause gap in the prerequisite hierarchy.
+    """
+    hypothesis_id: str
+    concept_id: str
+    prior_probability: float = Field(ge=0.0, le=1.0)
+    evidence: List[str] = Field(default_factory=list)
+    posterior_probability: float = Field(ge=0.0, le=1.0)
+    status: str = "active"  # "active", "confirmed", "eliminated"
+
+
+class DecisionTrace(BaseModel):
+    """
+    Internal audit artifact per Section 24 of TAPROOT.
+    Records every adaptive question selection decision and its mathematical rationale.
+    """
+    decision_id: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    target_concept: str
+    candidate_actions: List[Dict[str, Any]] = Field(default_factory=list)
+    learner_state_snapshot: Dict[str, Any] = Field(default_factory=dict)
+    hypotheses: List[Dict[str, Any]] = Field(default_factory=list)
+    selected_action: Dict[str, Any] = Field(default_factory=dict)
+    selection_reason: str
+    expected_value: float = 0.0
+    information_gain: float = 0.0
+    actual_outcome: Optional[Dict[str, Any]] = None
+    policy_version: str = "2026.09.0"
+
+
 class LearningGoal(BaseModel):
     goal_id: str
     subject_id: str

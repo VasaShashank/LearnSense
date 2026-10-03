@@ -13,10 +13,10 @@ Under the strict no-fallback mandate, every silent fallback, synthetic placehold
 
 | Metric | Baseline | Final State |
 |---|---|---|
-| **Pytest Full Suite** | 187 passed, 11 failed | **198 passed, 0 failed** (100% green) |
+| **Pytest Full Suite** | 187 passed, 11 failed | **309 passed, 0 failed** (100% green across all unit, failure, integration, and security suites) |
 | **Frontend Production Build** | Unverified | **Clean Build** (`tsc -b && vite build`, 2056 modules transformed, exit code 0) |
 | **Static Guard (`test_no_fallbacks.py`)** | Did not exist | **Active & Passing** (enforces no bare except, no swallow-all except, no production imports from tests) |
-| **Live Feature Probes (`scripts/verify_features.py`)** | Did not exist | **8 PASS, 0 FAIL, 2 Truthful Config/Environment States** (Live Groq LLM `openai/gpt-oss-120b` verified) |
+| **Live Feature Probes (`scripts/verify_features.py`)** | Did not exist | **9 PASS, 0 FAIL, 1 Truthful Config State** (`VLM_MODE=disabled` truthfully recorded; Live Groq LLM & Tesseract v5.5.3 verified) |
 | **Startup Preflight & Feature Status** | Returned `healthy` even for mocks | Real preflight probe; `/health` degrades honestly; `/api/system/feature-status` returns real probe evidence |
 
 ---
