@@ -290,6 +290,13 @@ class SemanticEntityResolver:
                         merged_into[target_key] = canon_key
                         target_key = canon_key
                         cluster_canonical[target_key] = canon_name
+
+                        # Extract grounded evidence references from mentions
+                        ev_refs: List[str] = []
+                        for m in m_list:
+                            if m.block_id in evidence_by_block:
+                                ev_refs.extend([e.evidence_id for e in evidence_by_block[m.block_id]])
+
                         rec = MergeRecord(
                             record_id=f"mrg_{uuid.uuid4().hex[:12]}",
                             inputs=[cluster_canonical[key_i], canon_name],
@@ -299,6 +306,7 @@ class SemanticEntityResolver:
                                 "canonical_concept": canon_name,
                                 "confidence": conf,
                                 "reason": reason,
+                                "evidence_refs": list(dict.fromkeys(ev_refs)),
                                 "resolver_version": self.resolver_version,
                                 "verification_status": "VERIFIED",
                             },

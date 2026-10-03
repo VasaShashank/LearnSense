@@ -52,14 +52,22 @@ class TutorService:
         learner_state = self.learner_service.get_or_create_learner_state(learner_id, all_concept_ids)
 
         c_node = next((c for c in graph["concepts"] if c["concept_id"] == concept_id), None)
-        c_name = c_node["name"] if c_node else concept_id.replace("_", " ").title()
-        c_def = c_node.get("definition", "") if c_node else ""
+        if not c_node:
+            raise KnowledgeNotFoundError(
+                f"Concept '{concept_id}' not found in subject '{subject_id}'",
+                details={"subject_id": subject_id, "concept_id": concept_id},
+            )
+        c_name = c_node["name"]
+        c_def = c_node.get("definition", "") or ""
 
-        cs = learner_state.concept_states.get(concept_id)
-        mastery = cs.mastery_probability if cs else 0.15
+        cs = learner_state.get_concept_state(concept_id)
+        mastery = cs.mastery_probability
 
-        prereqs = c_node.get("prerequisites", []) if c_node else []
-        prereq_names = [p.replace("_", " ").title() for p in prereqs]
+        prereqs = c_node.get("prerequisites", []) or []
+        prereq_names = []
+        for p in prereqs:
+            p_node = next((c for c in graph["concepts"] if c["concept_id"] == p), None)
+            prereq_names.append(p_node["name"] if p_node else p)
 
         # 1. Sanitize user message against prompt injection
         raw_msg = (user_message or "").strip()
@@ -180,7 +188,9 @@ class TutorService:
                 config={"temperature": 0.2, "max_tokens": 800},
             )
             response_text = str(llm_result.get("response_text", "")).strip()
-            suggested_actions = ["Give me a concrete example", "Test me with a quick question", "Explain using an analogy"]
+            # Product-defined UI affordances vs LLM-suggested actions (Section 21)
+            default_affordances = ["Give me a concrete example", "Test me with a quick question", "Explain using an analogy"]
+            suggested_actions = default_affordances
             if isinstance(llm_result.get("suggested_actions"), list):
                 actions = [str(a) for a in llm_result["suggested_actions"] if str(a).strip()]
                 if actions:
@@ -200,11 +210,19 @@ class TutorService:
             if marker not in response_text:
                 response_text += f" {marker}"
 
-        # 5. Citation validation: filter out any page citations not present in retrieved chunks
+        # 5. Citation validation: extract pages from structured cited_pages and [Page X] markers
+        # Fail-closed citation validation (§20): never auto-accept uncited chunks
+        extracted_pages = set(cited_pages)
+        for match in re.finditer(r"\[Page\s*(\d+)\]", response_text, re.IGNORECASE):
+            try:
+                extracted_pages.add(int(match.group(1)))
+            except ValueError:
+                pass
+
         validated_citations: List[Dict[str, Any]] = []
         for ch in retrieved_chunks:
-            # If the LLM cited this page, or if this chunk was the primary retrieval
-            if ch.page_index in cited_pages or not cited_pages:
+            # Check if LLM cited this chunk's 1-indexed page or 0-indexed page
+            if (ch.page_index + 1) in extracted_pages or ch.page_index in extracted_pages:
                 validated_citations.append(
                     {
                         "document_id": ch.document_id,
@@ -221,7 +239,7 @@ class TutorService:
             "intent": intent,
             "mastery": mastery,
             "response_text": response_text,
-            "suggested_actions": suggested_actions or ["Review example", "Take quiz"],
+            "suggested_actions": suggested_actions,
             "source_citations": validated_citations[:4],
             "grounded": bool(validated_citations),
         }

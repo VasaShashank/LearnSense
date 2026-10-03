@@ -237,34 +237,49 @@ class DiagnosticOrchestrator:
                 usage[cid] = usage.get(cid, 0) + 1
         return usage
 
-    def _live_information_gain(
+    def calculate_mathematical_information_gain(
+        self,
+        item: QuestionBankItem,
+        learner_state: LearnerState,
+    ) -> float:
+        """
+        Computes mathematically exact Shannon Information Gain in bits:
+        IG(Q) = H_prior - E[H_posterior]
+        via InformationGainPolicy per Section 25.
+        """
+        from phase3.assessment.information_gain import InformationGainPolicy
+        return InformationGainPolicy.calculate_information_gain(item, learner_state).information_gain
+
+    def _verification_probe_policy_score(
         self,
         item: QuestionBankItem,
         learner_state: LearnerState,
         item_concepts: List[str],
     ) -> float:
         """
-        Information gain from asking ``item`` to ``learner_state`` right now.
-
-        Uncertain and never-probed concepts carry the most information; a concept
-        that has already reached MIN_EVIDENCE_COUNT attempts carries much less, so
-        the quiz stops burning items on concepts it has already resolved.
+        Separately named policy feature (Section 4): balances mathematical Shannon
+        information gain with unprobed concept coverage.
         """
-        score = 0.0
+        shannon_ig = self.calculate_mathematical_information_gain(item, learner_state)
+        # Explicit policy coverage factor: prioritize unprobed verification concepts
+        unprobed_bonus = 0.0
         for cid in item_concepts:
             cs = learner_state.concept_states.get(cid)
-            uncertainty = cs.uncertainty if cs is not None else 0.5
             attempts = cs.attempt_count if cs is not None else 0
-            weight = 0.25 if attempts >= self.config.MIN_EVIDENCE_COUNT else 1.0
-            score += uncertainty * weight
             if attempts == 0:
-                # Completely unprobed: maximum uncertainty reduction available.
-                score += 0.5
-        diff = getattr(item, "difficulty", 0.5)
-        # Maximum discriminability around difficulty 0.5, same shape as the
-        # static heuristic in create_diagnostic_quiz().
-        score += 1.0 - abs(diff - 0.5) * 1.5
-        return score
+                unprobed_bonus += 0.5
+            elif attempts < self.config.MIN_EVIDENCE_COUNT:
+                unprobed_bonus += 0.1
+        return round(shannon_ig + unprobed_bonus, 6)
+
+    def _live_information_gain(
+        self,
+        item: QuestionBankItem,
+        learner_state: LearnerState,
+        item_concepts: List[str],
+    ) -> float:
+        """Backward-compatible delegate to _verification_probe_policy_score."""
+        return self._verification_probe_policy_score(item, learner_state, item_concepts)
 
     def select_next_diagnostic_question(
         self,

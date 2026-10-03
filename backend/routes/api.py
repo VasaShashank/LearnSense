@@ -110,6 +110,12 @@ class FinalAssessmentStartApiRequest(BaseModel):
     subject_id: str
 
 
+class RootGapDiagnosisApiRequest(BaseModel):
+    subject_id: str
+    target_concept_id: str
+    confidence_threshold: Optional[float] = 0.70
+
+
 class FinalAssessmentSubmitApiRequest(BaseModel):
     assessment_id: str
     learner_id: str
@@ -186,6 +192,23 @@ async def get_path_and_gaps(learner_id: str, subject_id: str):
     Returns Phase 4 prioritized knowledge gaps, cycle-safe learning path, and active next target.
     """
     return learner_service.get_gaps_and_path(learner_id, subject_id)
+
+
+@router.post("/learners/{learner_id}/diagnose-root-gap")
+async def diagnose_root_gap(learner_id: str, req: RootGapDiagnosisApiRequest):
+    """
+    Authoritative Phase 4 Root-Gap Diagnosis using Bayesian competing hypotheses,
+    mathematical Shannon Information Gain, and DecisionTrace generation per Section 23/24/25.
+    """
+    try:
+        return learner_service.diagnose_root_gap(
+            learner_id=learner_id,
+            subject_id=req.subject_id,
+            target_concept_id=req.target_concept_id,
+            confidence_threshold=req.confidence_threshold or 0.70,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 # --- ONBOARDING & ASSESSMENT ROUTES ---

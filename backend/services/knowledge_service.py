@@ -139,7 +139,7 @@ class KnowledgeService:
 
         concepts_out: List[Dict[str, Any]] = []
         for concept_id, concept in ctx.concepts.items():
-            mastery = float(masteries.get(concept_id, 0.15))
+            mastery = float(masteries.get(concept_id, 0.0))
             prereqs = [
                 p for p in prereqs_by_target.get(concept_id, []) if p in ctx.concepts
             ]

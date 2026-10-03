@@ -204,6 +204,10 @@ class RootGapDiagnoser:
             cstate = learner_state.get_concept_state(cid)
             # Prior weight is high if mastery is low and uncertainty is high, with epsilon baseline
             w = (1.0 - cstate.mastery_probability) * (0.5 + 0.5 * cstate.uncertainty) + 0.1
+            # Active supported misconceptions provide diagnostic evidence (§9)
+            supported_miscs = learner_state.get_supported_misconceptions(cid)
+            if supported_miscs:
+                w += 0.3 * len(supported_miscs)
             raw_weights.append(w)
 
         total_w = sum(raw_weights)
@@ -215,12 +219,18 @@ class RootGapDiagnoser:
             is_target = (cid == target_concept_id)
             desc = f"Target-specific gap in {cname}" if is_target else f"Prerequisite gap in {cname}"
 
+            ev_list = [desc]
+            for m in learner_state.get_supported_misconceptions(cid):
+                ev_list.append(f"Supported misconception: {m.description}")
+            if cstate.attempt_count > 0:
+                ev_list.append(f"BKT mastery={cstate.mastery_probability:.2f} (attempts={cstate.attempt_count})")
+
             hypotheses.append(
                 DiagnosticHypothesis(
                     hypothesis_id=f"H_{idx + 1}_{cid}",
                     concept_id=cid,
                     prior_probability=round(p, 4),
-                    evidence=[desc],
+                    evidence=ev_list,
                     posterior_probability=round(p, 4),
                     status="active",
                 )

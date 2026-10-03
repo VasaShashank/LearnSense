@@ -143,6 +143,9 @@ class MockLLMAdapter:
                     self._render(prompt, item_schema, config, i, field=field)
                     for i in range(count)
                 ]
+            if field_low in ("cited_pages", "pages", "page_numbers"):
+                pages_found = [int(p) for p in re.findall(r"Page\s*(\d+)", prompt, re.IGNORECASE)]
+                return [pages_found[0]] if pages_found else [1]
             count = self._requested_count(prompt, config)
             return [
                 self._render(prompt, item_schema, config, salt * 100 + i, field=field)

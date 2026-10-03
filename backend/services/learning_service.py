@@ -101,13 +101,11 @@ class LearningService:
                 concept_ids=target_ids,
             )
         except QuestionBankError:
-            # The persisted grounded bank is still honest evidence: when fresh
-            # generation is impossible (e.g. retriever artifacts missing) but
-            # valid grounded questions already exist, serve those instead of
-            # failing the whole request.
+            # Section 16 & Section 2: Reusing authoritative persisted grounded questions
+            # when fresh generation cannot proceed is legitimate artifact reuse, not a semantic fallback.
             if existing is not None and existing.get_grounded_questions():
-                logger.warning(
-                    "Falling back to %d persisted grounded questions for '%s'.",
+                logger.info(
+                    "Reusing %d authoritative persisted grounded questions for '%s'.",
                     len(existing.get_grounded_questions()),
                     subject_id,
                 )
@@ -866,6 +864,28 @@ class LearningService:
                 concept_ids=concept_ids,
                 correctness=eval_correctness,
             )
+
+            # 5b. Misconception Lifecycle Tracking (Section 8)
+            if q_item:
+                if not is_correct:
+                    opt_text = selected_option or (
+                        q_item.options[selected_index]
+                        if selected_index is not None and 0 <= selected_index < len(q_item.options or [])
+                        else "incorrect option"
+                    )
+                    for cid in concept_ids:
+                        disc = f"Selected incorrect response '{opt_text}' for question {q_item.question_id}"
+                        learner_state.record_misconception(
+                            concept_id=cid,
+                            description=disc,
+                            evidence_ref=q_item.question_id,
+                            initial_confidence=0.4,
+                        )
+                else:
+                    # Verified correct response resolves active suspected/supported misconceptions
+                    for cid in concept_ids:
+                        for rec in learner_state.get_active_misconceptions(cid):
+                            learner_state.resolve_misconception(rec.misconception_id)
 
             self.learner_service.save_learner_state(learner_state)
 
