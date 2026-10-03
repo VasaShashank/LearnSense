@@ -38,6 +38,8 @@ class MisconceptionRecord(BaseModel):
     expected_answer: Optional[str] = None
     learner_response: Optional[str] = None
     error_signal: Optional[str] = None
+    counter_evidence_refs: List[str] = Field(default_factory=list)
+    counter_evidence_history: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class ConceptState(BaseModel):
@@ -189,35 +191,91 @@ class LearnerState(BaseModel):
         question_id: str,
         concept_id: str,
         confidence_reduction: float = 0.30,
+        misconception_id: Optional[str] = None,
+        misconception_target: Optional[str] = None,
+        q_item: Optional[Any] = None,
+        learner_response: Optional[str] = None,
+        expected_reasoning: Optional[str] = None,
     ) -> List[MisconceptionRecord]:
         """
-        Applies counter-evidence from a correct answer to misconceptions
-        related to the SPECIFIC question answered correctly.
+        Applies genuine counter-evidence from a correct answer to the specific
+        misconception(s) targeted by the question.
 
         Rules:
-        - Only misconceptions whose evidence_refs include this question_id
-          are affected (question-specific resolution).
-        - Confidence is reduced by confidence_reduction per correct counter-evidence.
-        - If confidence drops below 0.15, the misconception is resolved.
-        - Unrelated misconceptions are NOT affected.
+        - A question can explicitly target a misconception via `misconception_id`,
+          `tested_misconception_id`, or `misconception_target`.
+        - If no explicit target is set, but the question is a direct re-test of
+          a question previously evidencing the misconception (question_id in evidence_refs),
+          it also qualifies as genuine counter-evidence.
+        - Generic correct answers with no relation to the misconception do NOT reduce or resolve it.
+        - Targeted correct evidence decreases confidence by confidence_reduction.
+        - If confidence drops below 0.15, the misconception transitions to RESOLVED.
+        - Unrelated misconceptions remain untouched.
+        - All counter-evidence provenance is preserved in counter_evidence_refs and counter_evidence_history.
 
         Returns the list of misconception records that were modified.
         """
         modified = []
         now = datetime.now(timezone.utc)
+
+        effective_misc_id = misconception_id or (getattr(q_item, "tested_misconception_id", None) if q_item else None)
+        effective_target = misconception_target or (getattr(q_item, "misconception_target", None) if q_item else None)
+        effective_purpose = getattr(q_item, "diagnostic_purpose", None) if q_item else None
+        effective_reasoning = expected_reasoning or (getattr(q_item, "expected_reasoning", None) if q_item else None)
+
         for rec in self.misconceptions.values():
             if rec.status == MisconceptionStatusEnum.RESOLVED:
                 continue
-            if rec.concept_id != concept_id:
-                continue
-            # Only affect misconceptions evidenced by this specific question
-            if question_id not in rec.evidence_refs:
+            if concept_id and rec.concept_id != concept_id:
+                if not (effective_misc_id and rec.misconception_id == effective_misc_id):
+                    continue
+
+            is_match = False
+            if effective_misc_id and rec.misconception_id == effective_misc_id:
+                is_match = True
+            elif effective_target:
+                tgt_norm = effective_target.strip().lower()
+                desc_norm = rec.description.strip().lower()
+                if tgt_norm == rec.misconception_id.lower():
+                    is_match = True
+                elif tgt_norm == desc_norm or tgt_norm in desc_norm or desc_norm in tgt_norm:
+                    is_match = True
+            elif question_id and (question_id in rec.evidence_refs):
+                is_match = True
+
+            if not is_match:
                 continue
 
-            rec.confidence = max(0.0, rec.confidence - confidence_reduction)
+            if question_id and question_id not in rec.counter_evidence_refs:
+                rec.counter_evidence_refs.append(question_id)
+
+            conf_before = rec.confidence
+            conf_after = max(0.0, round(rec.confidence - confidence_reduction, 4))
+            status_before = rec.status
+
+            rec.confidence = conf_after
             rec.last_detected = now
+
             if rec.confidence < 0.15:
                 rec.status = MisconceptionStatusEnum.RESOLVED
+            elif rec.status == MisconceptionStatusEnum.SUPPORTED and rec.confidence < 0.65:
+                rec.status = MisconceptionStatusEnum.SUSPECTED
+
+            history_entry = {
+                "question_id": question_id,
+                "concept_id": concept_id,
+                "misconception_id": rec.misconception_id,
+                "misconception_target": effective_target or effective_misc_id or "evidence_ref_retest",
+                "diagnostic_purpose": effective_purpose,
+                "confidence_before": conf_before,
+                "confidence_after": conf_after,
+                "status_before": status_before.value if hasattr(status_before, "value") else str(status_before),
+                "status_after": rec.status.value if hasattr(rec.status, "value") else str(rec.status),
+                "learner_response": learner_response,
+                "expected_reasoning": effective_reasoning,
+                "timestamp": now.isoformat(),
+            }
+            rec.counter_evidence_history.append(history_entry)
             modified.append(rec)
 
         if modified:

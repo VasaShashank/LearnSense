@@ -922,12 +922,25 @@ class LearningService:
                             )
                 else:
                     # Evidence-based resolution: a correct answer provides counter-evidence
-                    # ONLY for misconceptions whose evidence_refs include this question.
+                    # ONLY for targeted misconceptions or misconceptions evidenced by this question.
                     # Unrelated misconceptions on the same concept are NOT affected.
+                    m_target = getattr(q_item, "misconception_target", None) if q_item else None
+                    m_id = getattr(q_item, "tested_misconception_id", None) if q_item else None
+                    q_reasoning = getattr(q_item, "expected_reasoning", None) if q_item else None
+                    opt_ans = str(selected_option or (
+                        q_item.options[selected_index]
+                        if selected_index is not None and q_item and q_item.options and 0 <= selected_index < len(q_item.options)
+                        else "correct"
+                    ))
                     for cid in concept_ids:
                         learner_state.apply_correct_answer_evidence(
                             question_id=q_item.question_id,
                             concept_id=cid,
+                            misconception_id=m_id,
+                            misconception_target=m_target,
+                            q_item=q_item,
+                            learner_response=opt_ans,
+                            expected_reasoning=q_reasoning,
                         )
 
             self.learner_service.save_learner_state(learner_state)

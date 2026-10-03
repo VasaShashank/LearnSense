@@ -337,6 +337,227 @@ class TestMisconceptionRuntimeLifecycle:
         assert active_after[0].question_id == "q_limit_eval_2"
 
 
+class TestMisconceptionCounterEvidenceLifecycle:
+    """
+    Verifies full misconception lifecycle and targeted counter-evidence:
+    1. Question A creates misconception X.
+    2. Question B targets X and is answered correctly.
+    3. X confidence decreases.
+    4. Question C targets unrelated misconception Y and does not affect X.
+    5. Repeated targeted correct evidence can resolve X.
+    6. A generic correct answer does not resolve X.
+    7. Two misconceptions on the same concept can coexist independently.
+    8. Provenance of all counter-evidence is strictly preserved.
+    """
+
+    def test_full_lifecycle_and_targeted_counter_evidence(self, ingested_calculus):
+        import uuid
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+        learner_id = f"test_lifecycle_{uuid.uuid4().hex[:8]}"
+        ls = LearnerService()
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+
+        # 1. Question A creates misconception X
+        q_a_id = f"q_A_{uuid.uuid4().hex[:6]}"
+        misc_x = l_state.record_misconception(
+            concept_id=cid,
+            description="Confuses derivative with antiderivative",
+            evidence_ref=q_a_id,
+            initial_confidence=0.40,
+            question_id=q_a_id,
+            expected_answer="f'(x)",
+            learner_response="F(x)",
+            error_signal="actual_misconception",
+        )
+        # Repeated wrong evidence elevates it to SUPPORTED
+        misc_x = l_state.record_misconception(
+            concept_id=cid,
+            description="Confuses derivative with antiderivative",
+            evidence_ref=q_a_id,
+            initial_confidence=0.40,
+            question_id=q_a_id,
+            expected_answer="f'(x)",
+            learner_response="F(x)",
+            error_signal="actual_misconception",
+        )
+        assert misc_x.status == MisconceptionStatusEnum.SUPPORTED
+        assert misc_x.confidence >= 0.65
+        initial_conf = misc_x.confidence
+
+        # 6. A generic correct answer does not resolve or affect X
+        q_generic_id = f"q_generic_{uuid.uuid4().hex[:6]}"
+        modified_generic = l_state.apply_correct_answer_evidence(
+            question_id=q_generic_id,
+            concept_id=cid,
+            confidence_reduction=0.30,
+        )
+        assert len(modified_generic) == 0, "Generic correct answer must NOT affect targeted misconception"
+        assert misc_x.confidence == initial_conf
+
+        # 4. Question C targets unrelated misconception Y and does not affect X
+        q_c_id = f"q_C_{uuid.uuid4().hex[:6]}"
+        modified_unrelated = l_state.apply_correct_answer_evidence(
+            question_id=q_c_id,
+            concept_id=cid,
+            confidence_reduction=0.30,
+            misconception_target="Believes all continuous functions are differentiable",
+        )
+        assert len(modified_unrelated) == 0, "Question C targeting unrelated misconception Y must NOT affect X"
+        assert misc_x.confidence == initial_conf
+
+        # 2 & 3. Question B targets X and is answered correctly -> X confidence decreases
+        q_b_id = f"q_B_{uuid.uuid4().hex[:6]}"
+        modified_b = l_state.apply_correct_answer_evidence(
+            question_id=q_b_id,
+            concept_id=cid,
+            confidence_reduction=0.30,
+            misconception_target="Confuses derivative with antiderivative",
+        )
+        assert len(modified_b) == 1
+        assert modified_b[0].misconception_id == misc_x.misconception_id
+        assert modified_b[0].confidence == pytest.approx(initial_conf - 0.30, abs=1e-3)
+        assert modified_b[0].confidence < initial_conf
+
+        # Provenance verification
+        assert q_b_id in misc_x.counter_evidence_refs
+        assert len(misc_x.counter_evidence_history) == 1
+        history_b = misc_x.counter_evidence_history[0]
+        assert history_b["question_id"] == q_b_id
+        assert history_b["misconception_id"] == misc_x.misconception_id
+        assert history_b["confidence_before"] == pytest.approx(initial_conf, abs=1e-3)
+        assert history_b["confidence_after"] == pytest.approx(initial_conf - 0.30, abs=1e-3)
+
+        # 5. Repeated targeted correct evidence can resolve X
+        q_b2_id = f"q_B2_{uuid.uuid4().hex[:6]}"
+        modified_b2 = l_state.apply_correct_answer_evidence(
+            question_id=q_b2_id,
+            concept_id=cid,
+            confidence_reduction=0.30,
+            misconception_id=misc_x.misconception_id,
+        )
+        assert len(modified_b2) == 1
+        if misc_x.confidence >= 0.15:
+            q_b3_id = f"q_B3_{uuid.uuid4().hex[:6]}"
+            modified_b3 = l_state.apply_correct_answer_evidence(
+                question_id=q_b3_id,
+                concept_id=cid,
+                confidence_reduction=0.30,
+                misconception_id=misc_x.misconception_id,
+            )
+            assert len(modified_b3) == 1
+        assert misc_x.confidence < 0.15
+        assert misc_x.status == MisconceptionStatusEnum.RESOLVED
+        assert q_b2_id in misc_x.counter_evidence_refs
+
+    def test_two_misconceptions_on_same_concept_coexist_and_resolve_independently(self, ingested_calculus):
+        import uuid
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+        learner_id = f"test_coexist_indep_{uuid.uuid4().hex[:8]}"
+        ls = LearnerService()
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+
+        # Create Misconception X and Misconception Y on the SAME concept
+        misc_x = l_state.record_misconception(
+            concept_id=cid,
+            description="Power rule: forgot to decrease exponent",
+            evidence_ref="q_power_1",
+            initial_confidence=0.45,
+            question_id="q_power_1",
+            error_signal="actual_misconception",
+        )
+        misc_y = l_state.record_misconception(
+            concept_id=cid,
+            description="Chain rule: forgot to multiply by inner derivative",
+            evidence_ref="q_chain_1",
+            initial_confidence=0.45,
+            question_id="q_chain_1",
+            error_signal="actual_misconception",
+        )
+        # 7. Two misconceptions on the same concept can coexist independently
+        active = l_state.get_active_misconceptions(cid)
+        assert len(active) == 2
+
+        # Question targets ONLY X
+        l_state.apply_correct_answer_evidence(
+            question_id="q_power_corrective",
+            concept_id=cid,
+            confidence_reduction=0.35,  # 0.45 - 0.35 = 0.10 < 0.15 -> resolves X
+            misconception_target="Power rule: forgot to decrease exponent",
+        )
+
+        active_after = l_state.get_active_misconceptions(cid)
+        assert len(active_after) == 1
+        assert active_after[0].misconception_id == misc_y.misconception_id
+        assert active_after[0].confidence == pytest.approx(0.45, abs=1e-3)
+        assert misc_x.status == MisconceptionStatusEnum.RESOLVED
+
+    def test_runtime_learning_service_targeted_counter_evidence(self, ingested_calculus):
+        """End-to-end integration via LearningService.process_activity_response."""
+        import uuid
+        from phase3.question_bank.models import QuestionBankItem, QuestionType
+        learning = LearningService()
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+        learner_id = f"test_rt_counter_{uuid.uuid4().hex[:8]}"
+
+        ls = LearnerService()
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+
+        # Create misconception X
+        misc_x = l_state.record_misconception(
+            concept_id=cid,
+            description="Reverses quotient rule numerator order",
+            evidence_ref="q_quotient_initial",
+            initial_confidence=0.40,
+            question_id="q_quotient_initial",
+            error_signal="actual_misconception",
+        )
+        ls.save_learner_state(l_state)
+
+        # Build Question B specifically targeting X
+        bank = learning.get_or_create_question_bank(sid)
+        existing_citations = list(bank.questions.values())[0].source_citations
+
+        q_b = QuestionBankItem(
+            question_id=f"q_target_b_{uuid.uuid4().hex[:6]}",
+            chapter_id="ch_1",
+            concept_ids=[cid],
+            question_type=QuestionType.MCQ,
+            question_text="What is the quotient rule for (u/v)'?",
+            options=["(u'v - uv') / v^2", "(uv' - u'v) / v^2", "u'/v'", "uv / v^2"],
+            correct_answer="(u'v - uv') / v^2",
+            misconception_target="Reverses quotient rule numerator order",
+            diagnostic_purpose="counter_evidence_probe",
+            source_citations=existing_citations,
+        )
+
+        # Inject into persisted bank
+        bank.add_question(q_b)
+        learning.bank_repo.save_bank(bank)
+
+        # Learner answers Question B correctly
+        res = learning.process_activity_response(
+            learner_id=learner_id,
+            subject_id=sid,
+            concept_ids=[cid],
+            question_id=q_b.question_id,
+            selected_option="(u'v - uv') / v^2",
+            request_id=f"req_{uuid.uuid4().hex[:6]}",
+        )
+        assert res["is_correct"] is True
+
+        # Verify X confidence decreased and counter-evidence provenance recorded
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        rec = l_state.misconceptions[misc_x.misconception_id]
+        assert rec.confidence == pytest.approx(0.10, abs=1e-3)  # 0.40 - 0.30 = 0.10 < 0.15
+        assert rec.status == MisconceptionStatusEnum.RESOLVED
+        assert q_b.question_id in rec.counter_evidence_refs
+        assert len(rec.counter_evidence_history) == 1
+        assert rec.counter_evidence_history[0]["diagnostic_purpose"] == "counter_evidence_probe"
+
+
 class TestQuestionBankAuthoritativeReuse:
     """Verifies authoritative persisted artifact reuse per Issue 6."""
 
