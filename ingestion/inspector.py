@@ -5,9 +5,12 @@ garbage ratio, image coverage ratio, vector path count) to classify page_type fo
 Matches Section 10 & 15 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 """
 
+import logging
 from typing import Dict, Any, Tuple, List
 import fitz  # PyMuPDF
 import numpy as np
+
+logger = logging.getLogger("LearnSense.Inspector")
 
 
 class PageInspectionMetrics:
@@ -28,6 +31,8 @@ class PageInspectionMetrics:
         visual_complexity_score: float = 0.0,
         requires_vlm: bool = False,
         vlm_reason: str = "",
+        page_type_confidence: float = 1.0,
+        classification_reason: str = "",
     ):
         self.page_index = page_index
         self.width = width
@@ -44,6 +49,8 @@ class PageInspectionMetrics:
         self.visual_complexity_score = visual_complexity_score
         self.requires_vlm = requires_vlm
         self.vlm_reason = vlm_reason
+        self.page_type_confidence = page_type_confidence
+        self.classification_reason = classification_reason
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -58,6 +65,8 @@ class PageInspectionMetrics:
             "image_coverage_ratio": round(self.image_coverage_ratio, 4),
             "vector_path_count": self.vector_path_count,
             "page_type": self.page_type,
+            "page_type_confidence": round(self.page_type_confidence, 2),
+            "classification_reason": self.classification_reason,
             "visual_complexity_score": round(self.visual_complexity_score, 4),
             "requires_vlm": self.requires_vlm,
             "vlm_reason": self.vlm_reason,
@@ -118,7 +127,7 @@ class PageInspector:
         vector_path_count = len(drawings)
 
         # 5. Classify Page Type according to Section 15 threshold rules
-        page_type = self._classify_page_type(
+        page_type, page_type_conf, page_type_reason = self._classify_page_type(
             char_count=char_count,
             garbage_ratio=garbage_ratio,
             ink_ratio=ink_ratio,
@@ -160,6 +169,8 @@ class PageInspector:
             visual_complexity_score=visual_complexity,
             requires_vlm=requires_vlm,
             vlm_reason=vlm_reason,
+            page_type_confidence=page_type_conf,
+            classification_reason=page_type_reason,
         )
 
     def _calculate_garbage_ratio(self, text: str) -> float:
@@ -187,8 +198,8 @@ class PageInspector:
                 rects = page.get_image_rects(img[0])
                 for r in rects:
                     total_image_area += r.width * r.height
-            except Exception:
-                pass
+            except (ValueError, KeyError, fitz.FileDataError) as exc:
+                logger.debug("Failed to calculate image rect for %s: %s", img, exc)
 
         return min(1.0, float(total_image_area / page_area))
 
@@ -199,27 +210,28 @@ class PageInspector:
         ink_ratio: float,
         image_coverage_ratio: float,
         vector_path_count: int,
-    ) -> str:
+    ) -> Tuple[str, float, str]:
         # Rule 1: Blank / Near-Blank
         if ink_ratio < self.blank_ink_threshold and char_count < 10 and vector_path_count < 5:
-            return "blank"
+            return "blank", 0.98, "Below blank ink, character, and vector path thresholds"
 
-        # Rule 2: If PyMuPDF extracted any usable text, always prefer native extraction.
-        # OCR (Tesseract) is 10-50x slower and produces worse results on digital PDFs.
-        # Only escalate to OCR when the PDF has NO extractable text at all.
+        # Rule 2: Usable native text with low or high image coverage
         if char_count > 0 and garbage_ratio < self.garbled_text_ratio_threshold:
-            # Has real native text — classify as native or hybrid based on image coverage
             if image_coverage_ratio >= 0.25:
-                return "hybrid"
-            return "native"
+                return "hybrid", 0.90, f"Native text with high image coverage ({image_coverage_ratio:.2f})"
+            return "native", 0.95, f"Clean native text ({char_count} chars, garbage_ratio={garbage_ratio:.3f})"
 
         # Rule 3: True scanned page — no native text, mostly image area
         if char_count == 0 and image_coverage_ratio >= self.scanned_image_coverage_threshold:
-            return "scanned"
+            return "scanned", 0.95, f"Zero native characters with high image coverage ({image_coverage_ratio:.2f})"
 
         # Rule 4: Garbled text layer → OCR
         if char_count >= 50 and garbage_ratio >= self.garbled_text_ratio_threshold:
-            return "scanned"
+            return "scanned", 0.90, f"Garbled text layer (garbage_ratio={garbage_ratio:.3f} >= threshold)"
 
-        # Default fallback — treat as native to avoid slow OCR on borderline pages
-        return "native" if char_count > 0 else "scanned"
+        # Rule 5: Explicit deterministic boundary rule (§2 #7) with reported confidence and reason
+        if char_count > 0:
+            conf = round(max(0.60, 1.0 - garbage_ratio), 2)
+            return "native", conf, f"Borderline native text: {char_count} chars, garbage_ratio={garbage_ratio:.3f}"
+        conf = round(max(0.60, image_coverage_ratio), 2)
+        return "scanned", conf, f"No native text: image_coverage={image_coverage_ratio:.2f}"

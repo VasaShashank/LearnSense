@@ -162,5 +162,6 @@ class LearningPath(BaseModel):
     subject_id: str
     nodes: List[LearningPathNode] = Field(default_factory=list)
     target_concept_id: Optional[str] = None
+    status: str = "ACTIVE"  # ACTIVE | PATH_COMPLETE
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -308,12 +308,6 @@ class EvidenceRetriever:
             )
 
         hits = self.index.search(" ".join(terms), top_k=top_k)
-
-        if not hits:
-            # Fall back to name-only matching before failing, so a concept named with
-            # an unusual surface form still retrieves.
-            if concept_name:
-                hits = self.index.search(concept_name, top_k=top_k)
         if not hits:
             raise RetrievalError(
                 "No source passages in the uploaded material relate to this concept, so "

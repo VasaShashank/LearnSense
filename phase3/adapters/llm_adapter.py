@@ -91,10 +91,24 @@ def _clean_key(raw: Optional[str]) -> Optional[str]:
     return value
 
 
+def _is_test_harness() -> bool:
+    """Return True only when running under the test harness."""
+    return (
+        os.environ.get("LEARNSENSE_TEST_HARNESS", "").strip() == "1"
+        or os.environ.get("PYTEST_CURRENT_TEST", "") != ""
+    )
+
+
 def resolve_mode() -> str:
-    """Resolve the adapter mode. ``mock`` is only reachable via explicit ``LLM_MODE=mock``."""
+    """Resolve the adapter mode. 'mock' is rejected unless in the test harness."""
     explicit = os.environ.get("LLM_MODE", "").strip().lower()
     if explicit == "mock":
+        if not _is_test_harness():
+            raise LLMConfigurationError(
+                "LLM_MODE='mock' is only permitted when running under the test harness "
+                "(LEARNSENSE_TEST_HARNESS=1 or PYTEST_CURRENT_TEST set). "
+                "Production must run with LLM_MODE=live."
+            )
         return "mock"
     return "live"
 
@@ -304,20 +318,32 @@ class Phase3LLMAdapter:
         self.openai_api_key = _clean_key(os.environ.get("OPENAI_API_KEY"))
 
         self.provider = (provider or os.environ.get("LLM_PROVIDER") or "").strip().lower() or None
-        if self.provider is None:
-            if self.groq_api_key:
-                self.provider = "groq"
-            elif self.openai_api_key:
-                self.provider = "openai"
+        if self.provider is None and self.mode != "mock":
+            raise LLMConfigurationError(
+                "LLM_PROVIDER is required (e.g. LLM_PROVIDER=groq or LLM_PROVIDER=openai). "
+                "Inferring provider from API keys is forbidden per no-fallback policy §1.2 #5."
+            )
 
         if self.model_name_is_valid(model_name):
             self.model_name = model_name
         elif self.provider == "groq":
-            self.model_name = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+            self.model_name = os.environ.get("GROQ_MODEL", "").strip() or None
+            if not self.model_name and self.mode != "mock":
+                raise LLMConfigurationError(
+                    "GROQ_MODEL is required when LLM_PROVIDER=groq. Do not default model names."
+                )
         elif self.provider == "openai":
-            self.model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+            self.model_name = os.environ.get("OPENAI_MODEL", "").strip() or None
+            if not self.model_name and self.mode != "mock":
+                raise LLMConfigurationError(
+                    "OPENAI_MODEL is required when LLM_PROVIDER=openai. Do not default model names."
+                )
+        elif self.mode != "mock":
+            self.model_name = os.environ.get("LLM_MODEL", "").strip() or None
+            if not self.model_name:
+                raise LLMConfigurationError("LLM_MODEL is required when LLM_PROVIDER is custom.")
         else:
-            self.model_name = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+            self.model_name = model_name or "mock-model"
 
         self.timeout_seconds = float(
             timeout_seconds if timeout_seconds is not None else os.environ.get("LLM_TIMEOUT_SECONDS", 60)
@@ -354,7 +380,14 @@ class Phase3LLMAdapter:
 
     def _require_live(self) -> None:
         if self.mode == "mock":
-            return
+            if _shared_adapter is not None and getattr(_shared_adapter, "is_mock", False) and _shared_adapter is not self:
+                return
+            raise LLMConfigurationError(
+                "Phase3LLMAdapter cannot execute directly with mode='mock'. "
+                "Test doubles must be injected via set_llm_adapter(MockLLMAdapter())."
+            )
+        if not self.provider:
+            raise LLMConfigurationError("No LLM provider could be resolved from configuration.")
         if not self.has_credentials():
             raise LLMConfigurationError(
                 "No LLM API key is configured. Set GROQ_API_KEY (or OPENAI_API_KEY) in the "
@@ -362,8 +395,6 @@ class Phase3LLMAdapter:
                 "content without a real model.",
                 details={"hint": "GROQ_API_KEY / OPENAI_API_KEY"},
             )
-        if not self.provider:
-            raise LLMConfigurationError("No LLM provider could be resolved from configuration.")
 
     # -- HTTP ---------------------------------------------------------------
 
@@ -505,7 +536,7 @@ class Phase3LLMAdapter:
                     retry_after: Optional[float] = None
                     try:
                         body = exc.read().decode("utf-8", "replace")[:400]
-                    except Exception:  # pragma: no cover - defensive
+                    except (OSError, ValueError, AttributeError):  # pragma: no cover - defensive
                         pass
                     try:
                         raw_retry = exc.headers.get("Retry-After") if exc.headers else None
@@ -649,12 +680,7 @@ class Phase3LLMAdapter:
         self._require_live()
 
         if self.mode == "mock":
-            # Explicit, isolated test double. Only reachable via LLM_MODE=mock.
-            from tests.support.mock_llm import MockLLMAdapter as _MockAdapter  # local import
-
-            return _MockAdapter(schema_template=schema_template).generate_json_response(
-                prompt, schema_template, cfg
-            )
+            return _shared_adapter.generate_json(prompt, schema_template, config=cfg, validate=validate)
 
         system_prompt = (
             f"{self.SYSTEM_PREAMBLE}\n"
@@ -688,9 +714,7 @@ class Phase3LLMAdapter:
         self._require_live()
 
         if self.mode == "mock":
-            from tests.support.mock_llm import MockLLMAdapter as _MockAdapter
-
-            return _MockAdapter(schema_template={"response_text": "string"}).generate_text_response(prompt)
+            return _shared_adapter.generate_text(prompt, system_prompt=system_prompt, config=cfg)
 
         content = self._post_completion(
             system_prompt=system_prompt or self.SYSTEM_PREAMBLE,
@@ -706,10 +730,10 @@ class Phase3LLMAdapter:
     generate_json_response = generate_json
 
 
-_shared_adapter: Optional[Phase3LLMAdapter] = None
+_shared_adapter: Optional[Any] = None
 
 
-def get_llm_adapter() -> Phase3LLMAdapter:
+def get_llm_adapter() -> Any:
     """Process-wide singleton so credentials/connection settings are resolved once."""
     global _shared_adapter
     if _shared_adapter is None:
@@ -717,7 +741,14 @@ def get_llm_adapter() -> Phase3LLMAdapter:
     return _shared_adapter
 
 
+def set_llm_adapter(adapter: Optional[Any]) -> None:
+    """Test hook: inject a test double adapter (e.g. MockLLMAdapter) during tests."""
+    global _shared_adapter
+    _shared_adapter = adapter
+
+
 def reset_llm_adapter() -> None:
     """Test hook: drop the cached adapter so new env values take effect."""
     global _shared_adapter
     _shared_adapter = None
+

@@ -13,6 +13,7 @@ from collections import Counter
 import re
 from typing import Dict, Any, List, Optional, Tuple
 import fitz  # PyMuPDF
+from phase3.errors import IngestionError
 from schemas.document import (
     BlockTypeEnum,
     DocumentBlock,
@@ -43,18 +44,10 @@ class PassBAggregator:
         Executes Pass B cross-page aggregation on extracted page blocks.
         """
         if not pages:
-            # Empty pages fallback
-            doc_meta = DocumentMetadata(
-                page_count=0,
-                title=TitleMetadata(value=source_meta.filename, source=TitleSourceEnum.INFERRED),
-                processing_status=ProcessingStatusEnum.COMPLETED,
-            )
-            return StructuredDocument(
-                document_id=document_id,
-                source=source_meta,
-                metadata=doc_meta,
-                outline=[],
-                pages=[],
+            # Zero pages after validation is an error, not a document (§2 #26)
+            raise IngestionError(
+                f"Document '{document_id}' contains zero valid pages. "
+                "Cannot build a StructuredDocument without pages."
             )
 
         # 1. Classify Repeated Headers, Footers, and Page Numbers
@@ -71,12 +64,13 @@ class PassBAggregator:
 
         # 5. Check Document-Level Warnings
         document_warnings = self._collect_document_warnings(pages)
-        status = ProcessingStatusEnum.COMPLETED_WITH_WARNINGS if document_warnings else ProcessingStatusEnum.COMPLETED
+        status = ProcessingStatusEnum.COMPLETED
 
         doc_meta = DocumentMetadata(
             page_count=len(pages),
             title=TitleMetadata(value=title_val, source=title_src),
             processing_status=status,
+            warnings=document_warnings,
         )
 
         return StructuredDocument(

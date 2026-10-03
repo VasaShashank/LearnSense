@@ -45,7 +45,52 @@ class MockLLMAdapter:
         self.schema_template = schema_template or {}
         self.calls: List[str] = []
 
+    @property
+    def is_mock(self) -> bool:
+        return True
+
+    @property
+    def is_live(self) -> bool:
+        return False
+
+    @property
+    def mode(self) -> str:
+        return "mock"
+
+    @property
+    def provider(self) -> str:
+        return "mock"
+
+    def has_credentials(self) -> bool:
+        return True
+
+    def health(self) -> Dict[str, Any]:
+        return {
+            "mode": "mock",
+            "provider": "mock",
+            "model": self.model_name,
+            "has_credentials": True,
+        }
+
     # -- public API ---------------------------------------------------------
+
+    def generate_json(
+        self,
+        prompt: str,
+        schema_template: Dict[str, Any],
+        config: Optional[Dict[str, Any]] = None,
+        validate: bool = True,
+    ) -> Dict[str, Any]:
+        return self.generate_json_response(prompt, schema_template, config)
+
+    def generate_text(
+        self,
+        prompt: str,
+        *,
+        system_prompt: Optional[str] = None,
+        config: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        return self.generate_text_response(prompt)
 
     def generate_json_response(
         self,

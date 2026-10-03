@@ -397,7 +397,7 @@ class LearningService:
         selected_option: Optional[str] = None,
         selected_index: Optional[int] = None,
         is_dont_know: bool = False,
-        allow_client_correctness: bool = True,
+        allow_client_correctness: bool = False,
     ) -> Dict[str, Any]:
         """
         Authoritatively evaluates activity/quiz response, triggers BKT update & replanning.
@@ -406,9 +406,9 @@ class LearningService:
 
         Security (P0) -- ``allow_client_correctness``:
         The ``correctness`` parameter is retained ONLY for legacy in-process callers
-        (unit tests, internal services). The HTTP API must never be able to assert
-        its own mastery, so the route passes ``allow_client_correctness=False``
-        and the ``correctness``-only branch below becomes unreachable from HTTP.
+        (unit tests that explicitly opt in). The default is False (safe by default).
+        The HTTP API always passes ``allow_client_correctness=False``.
+        When False, raw correctness without a question_id is rejected.
         """
         if not allow_client_correctness and correctness is not None and not question_id:
             raise ValueError(
@@ -472,7 +472,14 @@ class LearningService:
                 else:
                     raise ValueError("Must provide selected_option, selected_index, or is_dont_know.")
             else:
-                # Fallback for direct test calls passing correctness directly
+                # No question_id: correctness must be computed server-side.
+                # Only legacy in-process callers that explicitly opt in may pass raw
+                # correctness (allow_client_correctness=True at call site).
+                if not allow_client_correctness:
+                    raise ValueError(
+                        "question_id is required. Server-side evaluation is mandatory; "
+                        "raw correctness values are not accepted."
+                    )
                 if correctness is None:
                     raise ValueError("Must provide either question_id or correctness.")
                 eval_correctness = float(correctness)

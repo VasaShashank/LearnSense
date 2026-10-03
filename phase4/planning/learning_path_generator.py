@@ -68,9 +68,15 @@ class LearningPathGenerator:
             if f_state.mastery_probability < self.config.MASTERY_THRESHOLD and f_id not in candidate_ids:
                 candidate_ids.append(f_id)
 
-        # Fallback: If learner mastered everything, include remaining unmastered or foundational concept
+        # §2 #22: When all concepts are mastered, return explicit PATH_COMPLETE
+        # (never silently fabricate/insert the first concept as a target).
         if not candidate_ids and subject_concept_ids:
-            candidate_ids = [subject_concept_ids[0]]
+            return LearningPath(
+                path_id=f"path_{uuid.uuid4().hex[:10]}",
+                learner_id=learner_state.learner_id,
+                subject_id=learning_context.document_id,
+                status="PATH_COMPLETE",
+            )
 
         # Step 3: Topologically sort candidate concepts cycle-safely
         ordered_concept_ids = self.resolver.cycle_safe_topological_sort(learning_context, candidate_ids)

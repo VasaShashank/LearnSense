@@ -12,8 +12,8 @@ from typing import Any, Dict, List, Optional
 
 from backend.services.knowledge_service import KnowledgeService
 from backend.services.learner_service import LearnerService
-from phase3.adapters.llm_adapter import Phase3LLMAdapter
-from phase3.errors import LearnSenseError, RetrievalError
+from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
+from phase3.errors import LearnSenseError, RetrievalError, TutorGenerationError, KnowledgeNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class TutorService:
     ):
         self.knowledge_service = knowledge_service or KnowledgeService()
         self.learner_service = learner_service or LearnerService()
-        self.llm_adapter = llm_adapter or Phase3LLMAdapter()
+        self.llm_adapter = llm_adapter or get_llm_adapter()
 
     def generate_contextual_response(
         self,
@@ -72,6 +72,7 @@ class TutorService:
         sanitized_msg = sanitized_msg[:500]
 
         # 2. Retrieve authoritative source evidence chunks via EvidenceRetriever
+        # Single authoritative retrieval path (§2 #16)
         retrieved_chunks = []
         try:
             from backend.services.knowledge_build_service import KnowledgeBuildService
@@ -85,30 +86,34 @@ class TutorService:
                 extra_terms=query_terms,
                 top_k=4,
             )
+        except (RetrievalError, KnowledgeNotFoundError):
+            retrieved_chunks = []
         except Exception as exc:
-            logger.debug("EvidenceRetriever lookup for %s / %s skipped (%s); checking context", subject_id, concept_id, exc)
-            # Fallback: check context evidence records
-            try:
-                ctx = self.knowledge_service.get_learning_context(subject_id)
-                concept_view = ctx.concepts.get(concept_id)
-                if concept_view:
-                    for ev_id in concept_view.evidence_ids[:3]:
-                        ev = ctx.evidence.get(ev_id)
-                        if ev:
-                            from phase3.retrieval.evidence_retriever import SourceChunk
-                            retrieved_chunks.append(
-                                SourceChunk(
-                                    chunk_id=ev_id,
-                                    document_id=subject_id,
-                                    page_index=ev.page_index if hasattr(ev, 'page_index') else 0,
-                                    section_title=ev.section_title if hasattr(ev, 'section_title') else "",
-                                    block_id=ev.block_id,
-                                    text=ev.excerpt or "",
-                                    score=1.0,
-                                )
-                            )
-            except Exception:
-                pass
+            logger.error("EvidenceRetriever lookup failed for %s / %s: %s", subject_id, concept_id, exc)
+            raise RetrievalError(
+                f"Evidence retrieval failed for concept '{c_name}': {exc}",
+                details={"subject_id": subject_id, "concept_id": concept_id, "cause": str(exc)},
+            ) from exc
+
+        if not retrieved_chunks:
+            # Document genuinely contains no extractable evidence for this concept
+            resp_text = (
+                f"The uploaded study material contains no direct passages or evidence covering '{c_name}'. "
+                "LearnSense refuses to fabricate answers without source grounding."
+            )
+            for marker in filtered_markers:
+                if marker not in resp_text:
+                    resp_text += f" {marker}"
+            return {
+                "concept_id": concept_id,
+                "concept_name": c_name,
+                "intent": intent,
+                "mastery": mastery,
+                "response_text": resp_text,
+                "suggested_actions": ["Review concepts with source coverage", "Upload supplementary document"],
+                "source_citations": [],
+                "grounded": False,
+            }
 
         # 3. Construct pedagogical framing tailored to learner mastery
         if mastery < 0.35:
@@ -134,7 +139,7 @@ class TutorService:
         for idx, ch in enumerate(retrieved_chunks, 1):
             valid_pages.add(ch.page_index)
             evidence_lines.append(f"[{idx}] Page {ch.page_index + 1} ({ch.section_title or 'Section'}): \"{ch.text.strip()}\"")
-        evidence_block = "\n".join(evidence_lines) if evidence_lines else "No direct passages found."
+        evidence_block = "\n".join(evidence_lines)
 
         system_prompt = (
             "You are LearnSense AI Tutor, an authoritative, pedagogical educational tutor. "
@@ -166,11 +171,7 @@ class TutorService:
             "cited_pages": ["number"],
         }
 
-        # 4. Invoke LLM (Groq in live mode, Mock double in mock mode)
-        response_text = ""
-        suggested_actions = ["Give me a concrete example", "Test me with a quick question", "Explain using an analogy"]
-        cited_pages: List[int] = []
-
+        # 4. Invoke LLM (fail-loud per §2 #15: never return canned template prose or fake pages)
         try:
             combined_prompt = f"{system_prompt}\n\n{user_prompt}"
             llm_result = self.llm_adapter.generate_json(
@@ -179,26 +180,20 @@ class TutorService:
                 config={"temperature": 0.2, "max_tokens": 800},
             )
             response_text = str(llm_result.get("response_text", "")).strip()
+            suggested_actions = ["Give me a concrete example", "Test me with a quick question", "Explain using an analogy"]
             if isinstance(llm_result.get("suggested_actions"), list):
-                suggested_actions = [str(a) for a in llm_result["suggested_actions"] if str(a).strip()][:4]
+                actions = [str(a) for a in llm_result["suggested_actions"] if str(a).strip()]
+                if actions:
+                    suggested_actions = actions[:4]
+            cited_pages: List[int] = []
             if isinstance(llm_result.get("cited_pages"), list):
                 cited_pages = [int(p) for p in llm_result["cited_pages"] if isinstance(p, (int, float))]
         except Exception as exc:
-            logger.warning("Live LLM tutor generation failed (%s); formatting grounded response", exc)
-            # Resilient fallback grounded strictly in retrieved passages
-            first_page = retrieved_chunks[0].page_index + 1 if retrieved_chunks else 1
-            if intent == "HINT":
-                hint_snip = retrieved_chunks[0].text[:180] if retrieved_chunks else c_def
-                response_text = f"💡 **Hint for {c_name}**:\n{hint_snip} (See Page {first_page})."
-            elif intent == "ANALOGY":
-                response_text = f"🎨 **Analogy for {c_name}**:\nThink of {c_name} as {c_def or 'a foundational component'}. As described on Page {first_page}, it governs how elements interact."
-            elif intent == "WHY_WRONG":
-                response_text = f"🔍 **Reviewing {c_name}**:\nCommon traps occur when not checking boundary conditions. The source material on Page {first_page} defines: \"{retrieved_chunks[0].text[:150] if retrieved_chunks else c_def}\"."
-            else:
-                passages_summary = f" Based on Page {first_page}: \"{retrieved_chunks[0].text[:200]}\"." if retrieved_chunks else ""
-                response_text = f"**{c_name}** ({int(mastery * 100)}% mastery): {c_def}.{passages_summary}"
-                if sanitized_msg:
-                    response_text += f"\n\nRegarding your question: '{sanitized_msg}' is addressed in the study material."
+            logger.error("LLM tutor generation failed for %s / %s: %s", subject_id, concept_id, exc)
+            raise TutorGenerationError(
+                f"Tutor could not generate guidance for '{c_name}': {exc}",
+                details={"subject_id": subject_id, "concept_id": concept_id, "cause": str(exc)},
+            ) from exc
 
         # If security sanitization occurred, guarantee markers are preserved for security tests
         for marker in filtered_markers:

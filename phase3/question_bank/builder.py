@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, Sequence
 
-from phase3.adapters.llm_adapter import Phase3LLMAdapter
+from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
 from phase3.errors import QuestionBankError, RetrievalError
 from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.question_bank.models import (
@@ -60,7 +60,7 @@ class QuestionBankBuilder:
     """
 
     def __init__(self, llm_adapter: Optional[Phase3LLMAdapter] = None) -> None:
-        self.llm_adapter = llm_adapter or Phase3LLMAdapter()
+        self.llm_adapter = llm_adapter or get_llm_adapter()
         self._llm_calls = 0
 
     @property
@@ -252,31 +252,12 @@ class QuestionBankBuilder:
             if chunk is not None:
                 citation = SourceCitation(**chunk.citation())
                 texts.append(chunk.text)
+                citations.append(citation)
             else:
-                # Fall back to the EKR evidence excerpt for this block.
-                excerpt = next(
-                    (
-                        ev.excerpt
-                        for ev in context.evidence.values()
-                        if ev.block_id == block_id and ev.excerpt
-                    ),
-                    "",
+                logger.warning(
+                    "Block %s cited by question item has no authoritative SourceChunk; rejected per §2 #18",
+                    block_id,
                 )
-                if not excerpt:
-                    continue
-                concept = next(
-                    (c for c in context.concepts.values() if block_id in c.block_ids), None
-                )
-                citation = SourceCitation(
-                    document_id=context.document_id,
-                    page=(concept.page_indices[0] + 1) if concept and concept.page_indices else 1,
-                    block_id=block_id,
-                    section=concept.section_titles[0] if concept and concept.section_titles else None,
-                    evidence_ids=[ev.evidence_id for ev in context.evidence.values() if ev.block_id == block_id],
-                    quote=excerpt,
-                )
-                texts.append(excerpt)
-            citations.append(citation)
 
         if not texts:
             return "", []

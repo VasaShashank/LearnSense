@@ -17,6 +17,8 @@ from extraction.text import NativeTextExtractor
 from extraction.vlm import VLMEngine
 from adapters.vlm_adapter import get_vlm_adapter, get_vlm_telemetry
 from ingestion.inspector import PageInspectionMetrics
+import logging
+from phase3.errors import VLMExtractionError
 from schemas.document import (
     AssetTypeEnum,
     BlockContent,
@@ -27,6 +29,8 @@ from schemas.document import (
     EngineInfo,
     ExtractionMethodEnum,
 )
+
+logger = logging.getLogger("LearnSense.Router")
 
 
 class EscalationRouter:
@@ -83,7 +87,6 @@ class EscalationRouter:
         elif vlm_mode == "auto":
             should_try_vlm = getattr(metrics, "requires_vlm", False)
 
-        vlm_succeeded = False
         if should_try_vlm and self.vlm_engine:
             try:
                 vlm_blocks = self.vlm_engine.process_visual_page(
@@ -93,16 +96,19 @@ class EscalationRouter:
                     page_index=page_idx,
                     context_hint=getattr(metrics, "vlm_reason", ""),
                 )
-                if vlm_blocks:
-                    extracted_blocks = vlm_blocks
-                    vlm_succeeded = True
-                    self.telemetry.vlm_pages += 1
-            except Exception:
-                # Graceful fallback: record failure & fallback, continue with traditional pipeline
+                extracted_blocks = vlm_blocks or []
+                self.telemetry.vlm_pages += 1
+            except Exception as exc:
                 self.telemetry.vlm_failures += 1
-                self.telemetry.vlm_fallbacks += 1
-
-        if not vlm_succeeded:
+                logger.error(
+                    "VLM extraction failed on page %d of %s: %s",
+                    page_idx + 1, document_id, exc
+                )
+                raise VLMExtractionError(
+                    f"VLM extraction failed on page {page_idx + 1} of document {document_id}: {exc}",
+                    details={"page_index": page_idx, "document_id": document_id, "cause": str(exc)},
+                ) from exc
+        else:
             # Traditional Extraction / OCR Ladder
             if metrics.page_type in ("native", "hybrid"):
                 extracted_blocks = self.text_extractor.extract_page_blocks(

@@ -352,10 +352,15 @@ async def api_health():
 
     adapter = get_llm_adapter()
     health = adapter.health()
+    # §2 #14: Mock can never count as ready. Only real provider + credentials = ready.
     return {
         "status": "healthy",
         "llm": health,
-        "llm_ready": bool(adapter.is_mock or (health["has_credentials"] and health["provider"])),
+        "llm_ready": bool(
+            not getattr(adapter, "is_mock", False)
+            and health.get("has_credentials")
+            and health.get("provider")
+        ),
     }
 
 

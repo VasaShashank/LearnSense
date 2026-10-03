@@ -3,6 +3,7 @@ Learner Service Facade for Taproot Application Layer.
 Manages persistent learner state, Bayesian Knowledge Tracing (BKT) updates, gap analysis, and personalized learning paths.
 """
 
+import logging
 from typing import Dict, List, Optional, Any
 from phase3.storage.learner_repository import LearnerStateRepository
 from phase3.learner.models import LearnerState
@@ -149,11 +150,16 @@ class LearnerService:
             active_subject = subjects[0]["id"] if subjects else None
 
         progress = None
+        progress_error = None
         if active_subject:
             try:
                 progress = self.get_learner_progress(learner_id, active_subject)
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).error(
+                    "Failed to load progress for learner=%s subject=%s: %s",
+                    learner_id, active_subject, exc,
+                )
+                progress_error = str(exc)
 
         session_repo = SessionRepository()
         active_assessment_id = None
@@ -168,7 +174,11 @@ class LearnerService:
                 active_init = session_repo.find_active_init_session(learner_id, active_subject)
                 if active_init:
                     active_init_session = active_init.model_dump(mode="json")
-            except Exception:
+            except Exception as exc:
+                logging.getLogger(__name__).error(
+                    "Failed to load init session for learner=%s subject=%s: %s",
+                    learner_id, active_subject, exc,
+                )
                 active_init_session = None
 
         is_onboarded = bool(state and state.concept_states)
@@ -179,6 +189,7 @@ class LearnerService:
             "is_onboarded": is_onboarded,
             "subject_id": active_subject,
             "progress": progress,
+            "progress_error": progress_error,
             "active_assessment_id": active_assessment_id,
             "active_init_session": active_init_session,
         }

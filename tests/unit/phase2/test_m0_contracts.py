@@ -14,7 +14,8 @@ from phase2.utils.id_generator import (
     generate_unit_id,
     generate_evidence_id,
 )
-from phase2.adapters.nlp_adapters import Tier01DeterministicAdapter, MockLLMAdapter
+from phase2.adapters.nlp_adapters import Tier01DeterministicAdapter
+from tests.support.mock_phase2_llm import MockLLMAdapter
 
 
 def test_schema_models():

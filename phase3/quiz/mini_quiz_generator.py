@@ -4,7 +4,7 @@ Generates 5-8 questions targeted specifically at the learner's current Knowledge
 """
 
 from typing import List, Optional
-from phase3.adapters.llm_adapter import Phase3LLMAdapter
+from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
 from phase3.errors import LLMOutputError
 from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.learner.models import LearnerState
@@ -16,7 +16,7 @@ class DynamicMiniQuizGenerator:
     """Generates 5-8 question KT-aware dynamic mini quizzes for a topic."""
 
     def __init__(self, llm_adapter: Optional[Phase3LLMAdapter] = None):
-        self.llm_adapter = llm_adapter or Phase3LLMAdapter()
+        self.llm_adapter = llm_adapter or get_llm_adapter()
 
     def generate_quiz(
         self,

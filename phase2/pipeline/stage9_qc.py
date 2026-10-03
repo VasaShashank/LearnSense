@@ -68,6 +68,6 @@ def run_stage9_qc(
                 message=f"Document failed hard invariant checks with {len(violations)} violations."
             )
         )
-        ekr.status = "completed_with_warnings"
+        ekr.status = "failed"
 
     return ekr

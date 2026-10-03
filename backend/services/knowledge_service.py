@@ -112,15 +112,16 @@ class KnowledgeService:
             for concept_id in topic.get("concept_ids") or []:
                 concept_to_topic.setdefault(concept_id, topic_id)
 
-        # Concepts that no unit referenced still need a place in the graph; they are
-        # grouped under a single topic named after the document, never a canned one.
+        # §2 #25: Concepts that no topic references are grouped under an explicit
+        # "Unassigned Concepts" label — never presented as a curriculum topic.
         unassigned = [cid for cid in ctx.concepts if cid not in concept_to_topic]
         if unassigned:
-            fallback_id = f"topic_{ctx.document_id}"
+            fallback_id = f"unassigned_{ctx.document_id}"
             topic_by_id[fallback_id] = {
                 "id": fallback_id,
-                "name": ctx.document_title or ctx.document_id.replace("_", " ").title(),
+                "name": "Unassigned Concepts",
                 "order": len(topic_by_id) + 1,
+                "is_unassigned": True,
             }
             for concept_id in unassigned:
                 concept_to_topic[concept_id] = fallback_id

@@ -236,8 +236,8 @@ class KnowledgeBuildService:
         """
         Normalise any supported format and run Phase 1 over it.
 
-        PDF-like inputs go through the real extraction pipeline. OOXML files fall back to
-        the native reader when LibreOffice is unavailable, which still yields real blocks.
+        PDF-like inputs go through the real extraction pipeline. OOXML files are parsed
+        natively when LibreOffice is not available, which yields real blocks.
         """
         from ingestion.document_formats import to_structured_document
 

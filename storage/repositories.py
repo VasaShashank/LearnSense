@@ -82,7 +82,10 @@ class SessionRepository:
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
                         if not data.get("completed", False):
                             return FinalAssessmentSession.model_validate(data)
-            except Exception:
+            except Exception as exc:
+                logging.getLogger(__name__).warning(
+                    "Skipping unreadable session file %s: %s", file, exc,
+                )
                 continue
         return None
 
@@ -98,7 +101,10 @@ class SessionRepository:
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
                         if not data.get("diagnostic_completed", False):
                             candidates.append(data)
-            except Exception:
+            except Exception as exc:
+                logging.getLogger(__name__).warning(
+                    "Skipping unreadable init session file %s: %s", file, exc,
+                )
                 continue
         if not candidates:
             return None

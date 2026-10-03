@@ -370,20 +370,11 @@ def docx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
                 value=title or Path(filename).stem.replace("_", " ").title(),
                 source=TitleSourceEnum.INFERRED,
             ),
-            processing_status=ProcessingStatusEnum.COMPLETED_WITH_WARNINGS,
+            processing_status=ProcessingStatusEnum.COMPLETED,
         ),
         outline=outline,
         pages=pages,
-        warnings=[
-            DocumentWarning(
-                code="ENGINE_FALLBACK_USED",
-                severity="low",
-                message=(
-                    "DOCX parsed with the native reader (LibreOffice not available). "
-                    "Text and heading structure are preserved; page-exact coordinates are not."
-                ),
-            )
-        ],
+        warnings=[],
     )
 
 
@@ -460,18 +451,9 @@ def pptx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
                 value=title or Path(filename).stem.replace("_", " ").title(),
                 source=TitleSourceEnum.INFERRED,
             ),
-            processing_status=ProcessingStatusEnum.COMPLETED_WITH_WARNINGS,
+            processing_status=ProcessingStatusEnum.COMPLETED,
         ),
         outline=outline,
         pages=pages,
-        warnings=[
-            DocumentWarning(
-                code="ENGINE_FALLBACK_USED",
-                severity="low",
-                message=(
-                    "PPTX parsed with the native reader (LibreOffice not available). "
-                    "Slide text and titles are preserved; page-exact coordinates are not."
-                ),
-            )
-        ],
+        warnings=[],
     )

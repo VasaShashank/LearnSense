@@ -229,18 +229,15 @@ class DiagnosticOrchestrator:
                     per_concept_scores.setdefault(cid, []).append(float(correctness))
 
         avg_score = round(total_score / len(question_responses), 4)
-        # Fallback applies ONLY to KNOW concepts lacking direct question coverage:
-        # a claimed-strong concept inherits the session average as weak
-        # verification. UNANSWERED concepts without coverage get NO update --
-        # manufacturing evidence for untested concepts would violate Batch 5.
+        # §2 #23: KNOW concepts without direct question coverage are recorded as
+        # self_claim_unverified. We do NOT manufacture BKT evidence from the session
+        # average — that would fabricate mastery evidence for untested concepts.
         for cid in init_session.know_concept_ids:
             if cid not in updated_masteries:
-                concept_updates = self.tracer.update(
-                    learner_state=learner_state,
-                    concept_ids=[cid],
-                    correctness=avg_score,
-                )
-                updated_masteries.update(concept_updates)
+                # Record the claim without altering BKT mastery probability.
+                # The concept state keeps its prior (default 0.15).
+                updated_masteries[cid] = learner_state.get_concept_state(cid).mastery_probability
+                per_concept_scores.setdefault(cid, [])  # empty = no evidence
 
         init_session.diagnostic_completed = True
         init_session.diagnostic_score = avg_score

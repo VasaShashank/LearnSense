@@ -21,7 +21,7 @@ def test_m1_walking_skeleton_simple_fixture():
     assert ekr.source_document_id == "doc_simple"
     assert ekr.knowledge_document_id == "kr_doc_simple"
     assert len(ekr.educational_units) > 0
-    assert ekr.status in ("completed", "completed_with_warnings")
+    assert ekr.status == "completed"
     assert ekr.qc_report.get("passed_qc") is True
 
 

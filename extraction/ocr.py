@@ -50,22 +50,9 @@ class OCREngine:
         ocr_results = self.ocr_adapter.ocr_image(img_bytes, languages=languages)
 
         if not ocr_results:
-            # Fallback block if OCR returns empty or fails
-            return [
-                DocumentBlock(
-                    block_id=f"blk_p{page_index:04d}_ocr_0001",
-                    type=BlockTypeEnum.PARAGRAPH,
-                    role="body",
-                    bbox=[0.0, 0.0, page_width, page_height],
-                    content=BlockContent(text="", text_raw=""),
-                    reading_order=1,
-                    extraction_method=ExtractionMethodEnum.OCR,
-                    engine=EngineInfo(name="TesseractOCR", version="5.0"),
-                    confidence=0.0,
-                    status=BlockStatusEnum.FAILED,
-                    warnings=["LOW_OCR_CONFIDENCE"],
-                )
-            ]
+            # Genuine outcome: OCR ran successfully and found no extractable text on page.
+            # Never fabricate a synthetic whole-page blank block (§2 #4).
+            return []
 
         # Group OCR word bounding boxes into block paragraphs
         blocks = self._group_ocr_results_into_blocks(

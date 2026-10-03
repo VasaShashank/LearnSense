@@ -39,7 +39,7 @@ def test_adversarial_prompt_injection():
     runner = Phase2PipelineRunner()
     ekr = runner.process(doc)
 
-    assert ekr.status in ("completed", "completed_with_warnings")
+    assert ekr.status == "completed"
     # Verify no ungrounded secrets leaked or executed
     assert len(ekr.concepts) == 0 or all(c.canonical_name != "SECRET" for c in ekr.concepts)
 

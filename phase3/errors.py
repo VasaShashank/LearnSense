@@ -191,6 +191,98 @@ class QuestionBankError(LearnSenseError):
     recoverable = True
 
 
+# ---------------------------------------------------------------------------
+# OCR errors (no-fallback policy: Tesseract failures must be loud)
+# ---------------------------------------------------------------------------
+
+class OCRUnavailableError(LearnSenseError):
+    """Tesseract binary could not be found or executed."""
+
+    code = "OCR_UNAVAILABLE"
+    http_status = 503
+    recoverable = False
+
+
+class OCRLanguageMissingError(LearnSenseError):
+    """A required Tesseract language data pack is not installed."""
+
+    code = "OCR_LANGUAGE_MISSING"
+    http_status = 503
+    recoverable = False
+
+
+class OCRImageError(LearnSenseError):
+    """The image could not be decoded or processed by OCR."""
+
+    code = "OCR_IMAGE_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+# ---------------------------------------------------------------------------
+# VLM errors (no-fallback policy: VLM failures must be loud)
+# ---------------------------------------------------------------------------
+
+class VLMConfigurationError(LearnSenseError):
+    """VLM provider, model, or API key is not configured when VLM_MODE requires it."""
+
+    code = "VLM_NOT_CONFIGURED"
+    http_status = 503
+    recoverable = False
+
+
+class VLMExtractionError(LearnSenseError):
+    """VLM extraction failed for a page that was routed to VLM."""
+
+    code = "VLM_EXTRACTION_FAILED"
+    http_status = 502
+    recoverable = True
+
+
+# ---------------------------------------------------------------------------
+# Table / Math extraction errors
+# ---------------------------------------------------------------------------
+
+class TableExtractionError(LearnSenseError):
+    """Table extraction failed for a page."""
+
+    code = "TABLE_EXTRACTION_FAILED"
+    http_status = 422
+    recoverable = False
+
+
+class MathExtractionError(LearnSenseError):
+    """Math/equation extraction failed for a page."""
+
+    code = "MATH_EXTRACTION_FAILED"
+    http_status = 422
+    recoverable = False
+
+
+# ---------------------------------------------------------------------------
+# Tutor errors
+# ---------------------------------------------------------------------------
+
+class TutorGenerationError(LearnSenseError):
+    """The LLM-backed tutor could not produce a response."""
+
+    code = "TUTOR_GENERATION_FAILED"
+    http_status = 502
+    recoverable = True
+
+
+# ---------------------------------------------------------------------------
+# Startup / preflight errors
+# ---------------------------------------------------------------------------
+
+class StartupPreflightError(LearnSenseError):
+    """A required dependency failed startup validation."""
+
+    code = "STARTUP_PREFLIGHT_FAILED"
+    http_status = 503
+    recoverable = False
+
+
 __all__ = [
     "LearnSenseError",
     "LLMConfigurationError",
@@ -208,4 +300,13 @@ __all__ = [
     "KnowledgeBuildError",
     "KnowledgeNotFoundError",
     "QuestionBankError",
+    "OCRUnavailableError",
+    "OCRLanguageMissingError",
+    "OCRImageError",
+    "VLMConfigurationError",
+    "VLMExtractionError",
+    "TableExtractionError",
+    "MathExtractionError",
+    "TutorGenerationError",
+    "StartupPreflightError",
 ]
