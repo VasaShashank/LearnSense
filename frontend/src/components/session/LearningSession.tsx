@@ -64,28 +64,52 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
     setLoadingQuestion(true);
     setLoadingContent(true);
 
+    // Timeout for question fetch (15 seconds)
+    const questionTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Question fetch timed out after 15 seconds');
+        setLoadingQuestion(false);
+        setQuestion({ no_questions: true, question_id: '', concept_id: concept.concept_id, question_text: '', options: [] });
+      }
+    }, 15000);
+
     // 1. Fetch Question
     ApiClient.getConceptQuestion(subject.id, concept.concept_id)
       .then((data) => {
+        clearTimeout(questionTimeout);
         if (isMounted && data) {
           setQuestion(data);
         }
       })
       .catch((err) => {
+        clearTimeout(questionTimeout);
         console.warn('Could not load authentic concept question:', err);
+        if (isMounted) {
+          setQuestion({ no_questions: true, question_id: '', concept_id: concept.concept_id, question_text: '', options: [] });
+        }
       })
       .finally(() => {
         if (isMounted) setLoadingQuestion(false);
       });
 
+    // Timeout for content fetch (10 seconds)
+    const contentTimeout = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Content fetch timed out after 10 seconds');
+        setLoadingContent(false);
+      }
+    }, 10000);
+
     // 2. Fetch Learning Lesson Content
     ApiClient.getConceptContent(subject.id, concept.concept_id)
       .then((data) => {
+        clearTimeout(contentTimeout);
         if (isMounted && data) {
           setLearningContent(data);
         }
       })
       .catch((err) => {
+        clearTimeout(contentTimeout);
         console.warn('Could not load concept learning content:', err);
       })
       .finally(() => {
@@ -94,6 +118,8 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
 
     return () => {
       isMounted = false;
+      clearTimeout(questionTimeout);
+      clearTimeout(contentTimeout);
     };
   }, [subject.id, concept.concept_id]);
 

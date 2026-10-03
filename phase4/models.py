@@ -66,6 +66,17 @@ class KnowledgeInitializationSession(BaseModel):
     diagnostic_completed: bool = False
     diagnostic_score: Optional[float] = None
     sufficiency_status: KnowledgeSufficiencyStatus = KnowledgeSufficiencyStatus.UNINITIALIZED
+    # Durable per-answer audit trail. ``diagnostic_responses`` holds the
+    # authoritative correctness the server computed for each question; this map
+    # holds what the learner actually picked plus the concepts each answer fed.
+    # Together they make a refresh-resumable assessment and make duplicate
+    # submissions detectable (a question_id present here is never re-applied).
+    diagnostic_answer_records: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    # Server-side cursor so the client never has to remember where it was.
+    diagnostic_answered_count: int = 0
+    # Set when question generation fails. A failure must surface as an error the
+    # learner can retry, never as "verification completed".
+    diagnostic_generation_error: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

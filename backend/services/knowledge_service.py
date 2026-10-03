@@ -52,7 +52,12 @@ class KnowledgeService:
 
             struct_doc = self.doc_storage.load_structured_document(doc_id) or {}
             pages = struct_doc.get("pages") or []
-            title = _document_title(doc_id, struct_doc) or ctx.document_title
+            # Title = real uploaded filename (extension stripped). Never generate.
+            fn = ""
+            if struct_doc:
+                from backend.services.source_service import _source_filename
+                fn = _source_filename(struct_doc) or ""
+            title = fn.rsplit(".", 1)[0] if fn else (_document_title(doc_id, struct_doc) or ctx.document_title)
 
             subjects.append(
                 {

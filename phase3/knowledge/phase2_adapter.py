@@ -312,10 +312,21 @@ class Phase2Adapter:
         for top_id, c_ids in topic_concepts.items():
             # Real section title when the document had one; otherwise derive a readable
             # label from the concepts it actually contains (never a generic constant).
-            title = section_titles.get(top_id) or (
-                " & ".join(concepts_map[c].canonical_name for c in c_ids[:3] if c in concepts_map)
-                or top_id.replace("_", " ").title()
-            )
+            # Rank by evidence count so the label reflects the topic's core concept,
+            # and cap the join so 20-concept buckets don't become paragraph labels.
+            title = section_titles.get(top_id)
+            if not title:
+                ranked = sorted(
+                    [c for c in c_ids if c in concepts_map],
+                    key=lambda c: -len(concepts_map[c].evidence_ids or []),
+                )
+                if not ranked:
+                    title = top_id.replace("_", " ").title()
+                elif len(ranked) <= 3:
+                    title = " & ".join(concepts_map[c].canonical_name for c in ranked)
+                else:
+                    first = concepts_map[ranked[0]].canonical_name
+                    title = f"{first} +{len(ranked) - 1} more"
             topics.append({"topic_id": top_id, "title": title, "concept_ids": c_ids})
 
         definitions: List[ConceptDefinitionView] = []

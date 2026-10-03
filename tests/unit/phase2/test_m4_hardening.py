@@ -32,6 +32,11 @@ def test_hard_invariants_and_determinism_across_fixtures():
 
 
 def test_adversarial_prompt_injection():
+    """
+    The fixture is a real teaching passage that also carries an injected
+    instruction. The pipeline must still produce a usable knowledge map from the
+    genuine content while treating the injection as inert data.
+    """
     with open("tests/fixtures/phase2/injection_attempts.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -39,9 +44,14 @@ def test_adversarial_prompt_injection():
     runner = Phase2PipelineRunner()
     ekr = runner.process(doc)
 
-    assert ekr.status == "completed"
-    # Verify no ungrounded secrets leaked or executed
-    assert len(ekr.concepts) == 0 or all(c.canonical_name != "SECRET" for c in ekr.concepts)
+    assert ekr.status in ("completed", "completed_with_warnings")
+    # Genuine subject matter is still extracted.
+    names = [c.canonical_name for c in ekr.concepts]
+    assert "Primary Key" in names
+    assert "Foreign Key" in names
+    # The injected instruction produced no concept and leaked nothing.
+    assert all(n != "SECRET" for n in names)
+    assert all("ignore previous instructions" not in n.lower() for n in names)
 
 
 def test_metamorphic_block_renaming():

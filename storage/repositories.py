@@ -89,8 +89,8 @@ class SessionRepository:
                 continue
         return None
 
-    def find_active_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
-        """Find the most recent uncompleted diagnostic init session for resume."""
+    def find_any_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
+        """Most recent init session for (learner, subject), completed or not."""
         if not self.base_dir.exists():
             return None
         candidates = []
@@ -99,8 +99,7 @@ class SessionRepository:
                 with open(file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
-                        if not data.get("diagnostic_completed", False):
-                            candidates.append(data)
+                        candidates.append(data)
             except Exception as exc:
                 logging.getLogger(__name__).warning(
                     "Skipping unreadable init session file %s: %s", file, exc,
@@ -110,6 +109,13 @@ class SessionRepository:
             return None
         candidates.sort(key=lambda d: d.get("created_at", ""), reverse=True)
         return KnowledgeInitializationSession.model_validate(candidates[0])
+
+    def find_active_init_session(self, learner_id: str, subject_id: str) -> Optional[KnowledgeInitializationSession]:
+        """Find the most recent uncompleted diagnostic init session for resume."""
+        session = self.find_any_init_session(learner_id, subject_id)
+        if session is not None and not session.diagnostic_completed:
+            return session
+        return None
 
 
 class QuestionBankRepository:
@@ -195,3 +201,42 @@ class LearningContextRepository:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             return LearningContext.model_validate(data)
+
+
+class ActiveSubjectRepository:
+    """
+    Server-side record of which knowledge source a learner is currently working on.
+
+    ``resume_learner_state`` used to fall back to ``subjects[0]`` when the caller
+    did not pass a subject, which is arbitrary: reopening the app could land the
+    learner on a completely unrelated document, and the calibration state checked
+    afterwards then belonged to that other document. Persisting the active subject
+    per learner removes that ambiguity.
+    """
+
+    def __init__(self, base_dir: str = "storage/learner_states"):
+        self.base_dir = Path(base_dir)
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+
+    def _get_path(self, learner_id: str) -> Path:
+        safe = "".join(ch for ch in str(learner_id) if ch.isalnum() or ch in ("-", "_"))
+        return self.base_dir / f"active_subject_{safe or 'anonymous'}.json"
+
+    def set_active_subject(self, learner_id: str, subject_id: str) -> Path:
+        return _atomic_write_json(
+            self._get_path(learner_id),
+            {"learner_id": learner_id, "subject_id": subject_id},
+            self.base_dir,
+        )
+
+    def get_active_subject(self, learner_id: str) -> Optional[str]:
+        path = self._get_path(learner_id)
+        if not path.exists():
+            return None
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None
+        subject_id = data.get("subject_id")
+        return subject_id if isinstance(subject_id, str) and subject_id else None

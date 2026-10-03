@@ -90,6 +90,40 @@ export interface QuestionOption {
   text: string;
 }
 
+/**
+ * The routing state machine, decided by the backend.
+ *
+ *   NO_USER / SOURCE_SELECTION  -> pick or upload a knowledge source
+ *   NEEDS_CALIBRATION           -> self-assessment for that source
+ *   VERIFICATION_IN_PROGRESS    -> resume the adaptive verification quiz
+ *   VERIFICATION_ERROR          -> question generation failed, retry
+ *   VERIFICATION_COMPLETE       -> dashboard / atlas / path
+ */
+export type EntryStateName =
+  | 'NO_USER'
+  | 'SOURCE_SELECTION'
+  | 'NEEDS_CALIBRATION'
+  | 'VERIFICATION_IN_PROGRESS'
+  | 'VERIFICATION_ERROR'
+  | 'VERIFICATION_COMPLETE';
+
+export interface EntryState {
+  learner_id: string;
+  subject_id: string | null;
+  subject_title?: string | null;
+  has_source: boolean;
+  entry_state: EntryStateName;
+  needs_calibration: boolean;
+  session_id: string | null;
+  diagnostic_completed: boolean;
+  diagnostic_score?: number | null;
+  answered_count: number;
+  answered_question_ids: string[];
+  total_planned: number;
+  diagnostic_generation_error?: string | null;
+  active_assessment_id: string | null;
+}
+
 export interface Question {
   item_id?: string;
   question_id?: string;
@@ -321,17 +355,104 @@ export const ApiClient = {
     }),
 
   /**
+   * Per-subject onboarding gate: true when the learner has never submitted
+   * self-assessment for this subject. Also reports how far the verification
+   * quiz got so a refresh can resume it from server state.
+   */
+  getCalibrationStatus: (learnerId: string, subjectId: string): Promise<{
+    learner_id: string;
+    subject_id: string;
+    needs_calibration: boolean;
+    session_id: string | null;
+    diagnostic_completed: boolean;
+    diagnostic_score?: number | null;
+    answered_count?: number;
+    answered_question_ids?: string[];
+    total_planned?: number;
+    diagnostic_generation_error?: string | null;
+  }> =>
+    fetchJson(`/initialization/status?learner_id=${learnerId}&subject_id=${subjectId}`),
+
+  /**
+   * Server-authoritative routing state. The app renders THIS instead of
+   * inferring "am I onboarded?" from local booleans, so a stale tab cannot drop
+   * a learner onto the ingestion screen or past an unfinished verification.
+   */
+  getEntryState: (learnerId: string, subjectId?: string): Promise<EntryState> =>
+    fetchJson(`/learners/${learnerId}/entry-state${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /** Records the learner's current knowledge source so a reopen resumes it. */
+  setActiveSubject: (learnerId: string, subjectId: string): Promise<{ learner_id: string; subject_id: string }> =>
+    fetchJson(`/learners/${learnerId}/active-subject?subject_id=${encodeURIComponent(subjectId)}`, {
+      method: 'POST',
+    }),
+
+  /**
    * Security: the server REQUIRES learner_id for all diagnostic operations so the
    * ownership check can never be skipped by omitting it.
+   *
+   * Returns the whole plan for backwards compatibility plus `next_question`,
+   * `answered_count` and `answered_question_ids` so the client can render the
+   * server-chosen next item and restore position after a refresh.
    */
   startDiagnostic: (sessionId: string, learnerId: string) =>
-    fetchJson<{ session_id: string; question_count: number; questions: Question[]; know_concepts?: string[]; verify_concepts?: string[]; diagnostic_priorities?: Record<string, number> }>(
-      '/initialization/diagnostic/start',
-      {
-        method: 'POST',
-        body: JSON.stringify({ session_id: sessionId, learner_id: learnerId }),
-      }
-    ),
+    fetchJson<{
+      session_id: string;
+      status: 'in_progress' | 'completed' | 'error';
+      error?: string | null;
+      question_count: number;
+      questions: Question[];
+      next_question?: Question | null;
+      answered_count: number;
+      answered_question_ids: string[];
+      total_planned: number;
+      diagnostic_completed: boolean;
+      know_concepts?: string[];
+      verify_concepts?: string[];
+      diagnostic_priorities?: Record<string, number>;
+    }>('/initialization/diagnostic/start', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, learner_id: learnerId }),
+    }),
+
+  /**
+   * Record ONE verification answer. The server grades it against the question
+   * bank and returns the next ADAPTIVELY selected item, so the quiz reacts to the
+   * previous answer and a refresh resumes rather than restarts.
+   *
+   * There is intentionally no `correctness` parameter: a client cannot assert its
+   * own mastery here.
+   */
+  submitDiagnosticAnswer: (
+    sessionId: string,
+    learnerId: string,
+    questionId: string,
+    selectedOption: string | null,
+    isDontKnow: boolean,
+  ) =>
+    fetchJson<{
+      session_id: string;
+      question_id: string;
+      concept_ids: string[];
+      is_correct: boolean;
+      duplicate_submission: boolean;
+      answered_count: number;
+      total_planned: number;
+      complete: boolean;
+      next_question?: Question | null;
+      diagnostic_completed?: boolean;
+      diagnostic_score?: number | null;
+      updated_masteries?: Record<string, number>;
+    }>('/initialization/diagnostic/answer', {
+      method: 'POST',
+      body: JSON.stringify({
+        session_id: sessionId,
+        learner_id: learnerId,
+        question_id: questionId,
+        selected_option: selectedOption,
+        is_dont_know: isDontKnow,
+      }),
+    }),
 
   submitDiagnostic: (sessionId: string, learnerId: string, responses: Record<string, number>) =>
     fetchJson<{ session_id: string; diagnostic_completed: boolean; diagnostic_score: number; updated_masteries: Record<string, number> }>(
@@ -464,8 +585,10 @@ export const ApiClient = {
           const poll = await pollRes.json();
           if (poll.status === 'done' && poll.result) return poll.result;
           if (poll.status === 'error') throw new ApiError(poll.error || 'Ingestion failed.');
-          const elapsed = Math.round(poll.elapsed_seconds ?? 0);
-          onProgress?.(`processing (${elapsed}s elapsed…)`);
+          // Display the stage message from backend if available
+          const stage = poll.stage || 'processing...';
+          const progress = poll.progress_pct ?? 0;
+          onProgress?.(`${stage} (${progress}%)`);
         }
         throw new ApiError('Ingestion timed out after 10 minutes.');
       }
@@ -500,7 +623,17 @@ export const ApiClient = {
   resumeLearner: (learnerId: string, subjectId?: string): Promise<{
     learner_id: string;
     has_state: boolean;
+    /**
+     * True only when the learner has actually COMPLETED verification.
+     * A concept state alone is not onboarding -- reading a graph creates one.
+     */
     is_onboarded: boolean;
+    /**
+     * SERVER-AUTHORITATIVE ROUTING STATE. The UI renders this.
+     * SOURCE_SELECTION | NEEDS_CALIBRATION | VERIFICATION_IN_PROGRESS
+     * | VERIFICATION_ERROR | VERIFICATION_COMPLETE
+     */
+    entry_state: EntryStateName;
     subject_id: string | null;
     progress: LearnerProgress | null;
     active_assessment_id: string | null;

@@ -15,6 +15,33 @@ def _unique_id(prefix: str) -> str:
     return f"{prefix}_{int(time.time() * 1000)}"
 
 
+@pytest.fixture
+def seeded_algebra_subject():
+    """Self-contained minimal context (was ambient leftover state before)."""
+    from phase3.knowledge.phase2_adapter import ConceptView, LearningContext
+    from storage.repositories import LearningContextRepository
+
+    ctx = LearningContext(
+        document_id="subj_algebra",
+        knowledge_document_id="subj_algebra",
+        concepts={
+            "c_var": ConceptView(
+                concept_id="c_var", canonical_name="Variables", type="concept"
+            ),
+            "c_eq": ConceptView(
+                concept_id="c_eq", canonical_name="Equations", type="concept"
+            ),
+        },
+    )
+    repo = LearningContextRepository()
+    repo.save_context(ctx)
+    yield ctx
+    try:
+        repo.get_path("subj_algebra").unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
 def test_idempotency_tracker_basic():
     tracker = IdempotencyTracker()
     request_id = _unique_id("req_basic")
@@ -24,7 +51,7 @@ def test_idempotency_tracker_basic():
     assert tracker.is_duplicate(request_id) is True
 
 
-def test_duplicate_activity_response_prevention():
+def test_duplicate_activity_response_prevention(seeded_algebra_subject):
     service = LearningService()
     learner_id = _unique_id("learner_idem")
     subject_id = "subj_algebra"

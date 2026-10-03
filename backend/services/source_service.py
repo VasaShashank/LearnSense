@@ -74,24 +74,19 @@ class SourceService:
                         status = "PARTIAL"
                         recovery_state = "PARTIAL_RECOVERY"
 
-                    title = doc_id.replace("_", " ").title()
                     fn = ""
                     if struct_doc:
-                        # ``DocumentMetadata.title`` is a TitleMetadata object
-                        # (``{"value": ..., "source": ...}``), NOT a string. Handing
-                        # that object to the client made the React UI render an object
-                        # as a child, which throws and unmounts the entire app - the
-                        # "blank pale screen" the upload button appeared to cause.
-                        title = _title_text(struct_doc.get("metadata") or {}) or title
                         # ``filename`` lives on ``StructuredDocument.source``
                         # (SourceMetadata), a sibling of ``metadata`` - reading it from
                         # ``metadata`` always returned "", so every upload was
                         # mislabelled as a PDF.
                         fn = _source_filename(struct_doc) or fn
 
-                    file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
+                    # Title = real uploaded filename (extension stripped). Never
+                    # generate a name from doc_id or PDF metadata.
+                    title = fn.rsplit(".", 1)[0] if fn else doc_id.replace("_", " ").title()
 
-                    is_demo = doc_id in ("calculus_101", "machine_learning", "subj_algebra", "subj_calculus_e2e")
+                    file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
 
                     sources.append({
                         "document_id": doc_id,
@@ -102,31 +97,15 @@ class SourceService:
                         "recovery_state": recovery_state,
                         "page_count": page_count,
                         "file_size_bytes": pdf_path.stat().st_size if pdf_path.exists() else 0,
-                        "is_demo": is_demo,
+                        # Everything listed here was really uploaded; there are no
+                        # demo/seed entries. Hard-coding a set of "demo" IDs used to
+                        # mislabel a test fixture as sample data.
+                        "is_demo": False,
                     })
 
-        # Provide standard demonstration sources only if storage directory is completely empty
-        if not sources:
-            sources = [
-                {
-                    "document_id": "calculus_101",
-                    "title": "Calculus: Early Transcendentals (Textbook)",
-                    "status": "READY",
-                    "recovery_state": "COMPLETED",
-                    "page_count": 42,
-                    "file_size_bytes": 10485760,
-                    "is_demo": True,
-                },
-                {
-                    "document_id": "machine_learning",
-                    "title": "Introduction to Statistical Machine Learning",
-                    "status": "READY",
-                    "recovery_state": "COMPLETED",
-                    "page_count": 58,
-                    "file_size_bytes": 15728640,
-                    "is_demo": True,
-                }
-            ]
+        # No demo fallback: when nothing has been uploaded, the library is
+        # empty. Fabricated entries ("42 pages, 10 MB") would teach material
+        # the learner never uploaded.
         return sources
 
     def save_uploaded_source(self, document_id: str, file_bytes: bytes, filename: str) -> Dict[str, Any]:

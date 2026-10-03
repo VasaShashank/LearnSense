@@ -6,7 +6,7 @@ import { FileText, Upload, CheckCircle2, AlertTriangle, RefreshCw, ArrowRight, B
 export interface SourceLibraryProps {
   sources: SourceDocument[];
   onReloadSources: () => void;
-  onSelectSubject?: (subjectId: string) => void;
+  onSelectSubject?: (subjectId: string, isNewUpload?: boolean) => void;
 }
 
 export const SourceLibrary: React.FC<SourceLibraryProps> = ({
@@ -39,6 +39,11 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
         concept_count: res.concept_count || 0,
       });
       onReloadSources();
+      // Every upload routes straight into strength rating + verification test.
+      // Pass isNewUpload=true to trigger onboarding flow (verification → diagnostic → Atlas)
+      if (onSelectSubject && res.document_id) {
+        onSelectSubject(res.document_id, true);
+      }
     } catch (err: any) {
       console.error('File upload failed', err);
       setUploadError(err.message || 'Failed to parse and extract knowledge graph from source document.');
@@ -80,7 +85,7 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
         {/* Upload Trigger */}
         <label className="px-5 py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-bold text-xs flex items-center gap-2.5 cursor-pointer shadow-[0_0_24px_rgba(0,240,255,0.25)] transition-all hover:scale-[1.02]">
           <Upload className="w-4 h-4" />
-          <span>{uploading ? 'Extracting & Indexing Material...' : 'Ingest New Document (PDF, PPTX, DOCX)'}</span>
+          <span>{uploading ? 'Processing...' : 'Ingest New Document (PDF, PPTX, DOCX)'}</span>
           <input
             type="file"
             accept=".pdf,.pptx,.docx,.png,.jpg,.jpeg"
@@ -108,7 +113,7 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
           <div className="flex items-center gap-3">
             {onSelectSubject && uploadResult.document_id && (
               <button
-                onClick={() => onSelectSubject(uploadResult.document_id)}
+                onClick={() => onSelectSubject(uploadResult.document_id, false)}
                 className="py-2 px-4 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-space-950 text-xs font-display font-bold flex items-center gap-1.5 transition-all shadow-sm"
               >
                 <BookOpen className="w-3.5 h-3.5" />

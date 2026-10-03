@@ -71,7 +71,7 @@ class DynamicMiniQuizGenerator:
                     "correct_answer": "string (exact match of correct option)",
                     "explanation": "string (detailed explanation)",
                     "question_type": "mcq",
-                    "difficulty": 0.5,
+                    "difficulty": "float (0.0-1.0)",
                 }
             ]
         }

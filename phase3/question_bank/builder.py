@@ -366,7 +366,7 @@ class QuestionBankBuilder:
                     "explanation": "string",
                     "evidence_refs": ["string (e.g. 'E1')"],
                     "concept_id": "string",
-                    "difficulty": 0.5,
+                    "difficulty": "float (0.0-1.0)",
                 }
             ]
         }

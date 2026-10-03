@@ -4,6 +4,7 @@ Builds and evaluates initial diagnostic assessments restricted strictly to conce
 marked "KNOW" by the learner.
 """
 
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
 import uuid
 from phase3.assessment.adaptive_policy import ChapterAssessmentEngine
@@ -195,6 +196,157 @@ class DiagnosticOrchestrator:
         init_session.diagnostic_question_ids = [q.question_id for q in selected_questions]
         return selected_questions
 
+    # ------------------------------------------------------------------
+    # Adaptive (one-question-at-a-time) selection
+    # ------------------------------------------------------------------
+    #
+    # The existing design already ranked the diagnostic with two terms, in this
+    # order:
+    #   1. deterministic verification priority (self-assessment x confidence)
+    #   2. information gain
+    # .. but it computed both ONCE, up front, over an unprobed learner, so the
+    # order never reacted to the learner's answers. ``select_next_diagnostic_question``
+    # keeps the exact same two terms and the same priority-first ordering, but
+    # recomputes the information-gain term from the learner's LIVE BKT state
+    # after every recorded answer. That is what makes the verification quiz
+    # adaptive rather than a fixed list, without inventing a second algorithm.
+
+    def diagnostic_candidate_pool(
+        self,
+        init_session: KnowledgeInitializationSession,
+        question_bank: QuestionBank,
+    ) -> List[QuestionBankItem]:
+        """Every question that touches the verification set (KNOW + UNANSWERED)."""
+        verify_set = set(self.verification_concepts(init_session))
+        if not verify_set:
+            return []
+        return self.filter_question_bank_for_know_concepts(question_bank, list(verify_set))
+
+    def _diagnostic_usage(
+        self,
+        init_session: KnowledgeInitializationSession,
+        question_bank: QuestionBank,
+    ) -> Dict[str, int]:
+        """Per-concept count of questions actually answered so far."""
+        usage: Dict[str, int] = {}
+        for q_id in init_session.diagnostic_responses.keys():
+            item = question_bank.questions.get(q_id)
+            if not item:
+                continue
+            for cid in item.concept_ids or []:
+                usage[cid] = usage.get(cid, 0) + 1
+        return usage
+
+    def _live_information_gain(
+        self,
+        item: QuestionBankItem,
+        learner_state: LearnerState,
+        item_concepts: List[str],
+    ) -> float:
+        """
+        Information gain from asking ``item`` to ``learner_state`` right now.
+
+        Uncertain and never-probed concepts carry the most information; a concept
+        that has already reached MIN_EVIDENCE_COUNT attempts carries much less, so
+        the quiz stops burning items on concepts it has already resolved.
+        """
+        score = 0.0
+        for cid in item_concepts:
+            cs = learner_state.concept_states.get(cid)
+            uncertainty = cs.uncertainty if cs is not None else 0.5
+            attempts = cs.attempt_count if cs is not None else 0
+            weight = 0.25 if attempts >= self.config.MIN_EVIDENCE_COUNT else 1.0
+            score += uncertainty * weight
+            if attempts == 0:
+                # Completely unprobed: maximum uncertainty reduction available.
+                score += 0.5
+        diff = getattr(item, "difficulty", 0.5)
+        # Maximum discriminability around difficulty 0.5, same shape as the
+        # static heuristic in create_diagnostic_quiz().
+        score += 1.0 - abs(diff - 0.5) * 1.5
+        return score
+
+    def select_next_diagnostic_question(
+        self,
+        init_session: KnowledgeInitializationSession,
+        question_bank: QuestionBank,
+        learner_state: LearnerState,
+    ) -> Optional[QuestionBankItem]:
+        """
+        Pick the next verification question given everything already answered.
+
+        Returns ``None`` when the assessment must stop: the stopping condition is
+        unchanged from the batch path (max questions reached, or no candidate
+        left that respects the per-concept probe caps).
+        """
+        verify_ids = self.verification_concepts(init_session)
+        if not verify_ids:
+            return None
+        verify_set = set(verify_ids)
+        priorities = {cid: self.concept_priority(init_session, cid) for cid in verify_ids}
+        caps = {cid: self.concept_question_cap(init_session, cid) for cid in verify_ids}
+        asked = set(init_session.diagnostic_responses.keys())
+        usage = self._diagnostic_usage(init_session, question_bank)
+
+        if len(asked) >= self.config.DIAGNOSTIC_MAX_QUESTIONS:
+            return None
+
+        best_item: Optional[QuestionBankItem] = None
+        best_key: Optional[tuple] = None
+        for item in self.diagnostic_candidate_pool(init_session, question_bank):
+            if item.question_id in asked:
+                continue
+            item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
+            if not item_concepts:
+                continue
+            if all(usage.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
+                continue
+            key = (
+                max((priorities.get(cid, 0.0) for cid in item_concepts), default=0.0),
+                self._live_information_gain(item, learner_state, item_concepts),
+            )
+            # Highest (priority, live information gain) wins. Ties break on the
+            # smallest question_id so selection stays reproducible.
+            if best_key is None or key > best_key or (key == best_key and item.question_id < best_item.question_id):
+                best_key = key
+                best_item = item
+        return best_item
+
+    def apply_diagnostic_response(
+        self,
+        init_session: KnowledgeInitializationSession,
+        learner_state: LearnerState,
+        question_bank: QuestionBank,
+        question_id: str,
+        correctness: float,
+    ) -> Optional[Dict[str, float]]:
+        """
+        Apply ONE authoritative response to the KnowledgeTracer and record it.
+
+        Idempotent: a ``question_id`` already present in
+        ``init_session.diagnostic_responses`` returns ``None`` and never touches
+        the learner model, so a duplicated or retried submission cannot double
+        count.
+        """
+        if question_id in init_session.diagnostic_responses:
+            return None
+        item = question_bank.questions.get(question_id)
+        if not item or not item.concept_ids:
+            return None
+        updates = self.tracer.update(
+            learner_state=learner_state,
+            concept_ids=item.concept_ids,
+            correctness=correctness,
+        )
+        init_session.diagnostic_responses[question_id] = float(correctness)
+        init_session.diagnostic_answer_records[question_id] = {
+            "correctness": float(correctness),
+            "concept_ids": list(item.concept_ids),
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+        }
+        init_session.diagnostic_answered_count = len(init_session.diagnostic_responses)
+        return updates
+
     def submit_diagnostic_responses(
         self,
         init_session: KnowledgeInitializationSession,
@@ -205,26 +357,39 @@ class DiagnosticOrchestrator:
         """
         Applies objective performance responses to Phase 3 KnowledgeTracer to establish initial KT state.
         Returns map of updated concept mastery probabilities.
+
+        Only responses not already recorded on the session are applied to the
+        learner model, so calling this twice (batch submit after per-answer
+        submits, or a retried submit) never applies the same evidence twice.
         """
-        if not question_responses:
+        if not question_responses and not init_session.diagnostic_responses:
             init_session.diagnostic_completed = True
             return {}
 
         total_score = 0.0
         updated_masteries = {}
-        per_concept_scores: Dict[str, List[float]] = {}
 
         for q_id, correctness in question_responses.items():
             total_score += correctness
+            concept_updates = self.apply_diagnostic_response(
+                init_session, learner_state, question_bank, q_id, correctness
+            )
+            if concept_updates:
+                updated_masteries.update(concept_updates)
+
+        if not init_session.diagnostic_responses:
+            # No bank-backed evidence at all -> nothing was scored.
+            init_session.diagnostic_completed = True
+            return updated_masteries
+
+        # Per-concept evidence is rebuilt from EVERYTHING recorded on the session,
+        # so a per-answer run and a batch run reach identical calibration verdicts.
+        per_concept_scores: Dict[str, List[float]] = {}
+        covered: Set[str] = set()
+        for q_id, correctness in init_session.diagnostic_responses.items():
             item = question_bank.questions.get(q_id)
             if item and item.concept_ids:
-                # Restrict updates strictly to concepts present in item
-                concept_updates = self.tracer.update(
-                    learner_state=learner_state,
-                    concept_ids=item.concept_ids,
-                    correctness=correctness,
-                )
-                updated_masteries.update(concept_updates)
+                covered.update(item.concept_ids)
                 for cid in item.concept_ids:
                     per_concept_scores.setdefault(cid, []).append(float(correctness))
 
@@ -242,7 +407,7 @@ class DiagnosticOrchestrator:
         init_session.diagnostic_completed = True
         init_session.diagnostic_score = avg_score
         init_session.sufficiency_status = KnowledgeSufficiencyStatus.INITIALIZED
-        init_session.diagnostic_responses = {qid: float(score) for qid, score in question_responses.items()}
+        init_session.diagnostic_answered_count = len(init_session.diagnostic_responses)
 
         # Confidence x competence calibration (CC / CI / UC / UI) over the full
         # verification set (KNOW + UNANSWERED).
