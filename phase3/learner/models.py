@@ -34,6 +34,10 @@ class MisconceptionRecord(BaseModel):
     confidence: float = Field(default=0.4, ge=0.0, le=1.0)
     frequency: int = Field(default=1, ge=1)
     status: MisconceptionStatusEnum = MisconceptionStatusEnum.SUSPECTED
+    question_id: Optional[str] = None
+    expected_answer: Optional[str] = None
+    learner_response: Optional[str] = None
+    error_signal: Optional[str] = None
 
 
 class ConceptState(BaseModel):
@@ -105,6 +109,7 @@ class LearnerState(BaseModel):
         question_id: Optional[str] = None,
         expected_answer: Optional[str] = None,
         learner_response: Optional[str] = None,
+        error_signal: Optional[str] = None,
     ) -> MisconceptionRecord:
         """
         Records or updates a misconception with grounded evidence.
@@ -116,6 +121,7 @@ class LearnerState(BaseModel):
           - question_id: authoritative question identifier
           - expected_answer: the correct answer
           - learner_response: what the learner actually selected
+          - error_signal: classification of error (e.g. misconception_candidate)
 
         Rule: A single wrong answer produces a SUSPECTED misconception signal.
         Repeated evidence (frequency >= 2 or confidence >= 0.65) elevates status to SUPPORTED.
@@ -134,6 +140,14 @@ class LearnerState(BaseModel):
             rec.last_detected = now
             if evidence_ref and evidence_ref not in rec.evidence_refs:
                 rec.evidence_refs.append(evidence_ref)
+            if question_id:
+                rec.question_id = question_id
+            if expected_answer:
+                rec.expected_answer = expected_answer
+            if learner_response:
+                rec.learner_response = learner_response
+            if error_signal:
+                rec.error_signal = error_signal
             # Increase confidence with repeated evidence
             rec.confidence = min(0.98, rec.confidence + 0.25)
             # Section 22 rule: repeated evidence transitions status to SUPPORTED
@@ -151,6 +165,10 @@ class LearnerState(BaseModel):
                 confidence=max(0.1, min(0.5, initial_confidence)),
                 frequency=1,
                 status=MisconceptionStatusEnum.SUSPECTED,  # Never supported on single event
+                question_id=question_id,
+                expected_answer=expected_answer,
+                learner_response=learner_response,
+                error_signal=error_signal,
             )
             self.misconceptions[misc_key] = rec
 

@@ -177,12 +177,14 @@ class TutorService:
 
         system_prompt = (
             "You are LearnSense AI Tutor, an authoritative, pedagogical educational tutor. "
-            "You MUST ground your response strictly in the retrieved source passages below. "
+            "Your role is to ACTUALLY TEACH the target concept itself—providing intuitive explanations, "
+            "concrete analogies, worked demonstrations, and formative checks. Never merely list gaps. "
+            "You MUST ground all factual teaching strictly in the retrieved source passages below. "
             "Never invent facts, equations, or theorems not supported by the document. "
-            "Whenever you assert a factual claim, cite the exact source page like [Page X].\n\n"
+            "Whenever you assert a substantive factual claim, cite the exact source page like [Page X].\n\n"
             f"Subject: {subject_id}\n"
-            f"Concept: {c_name}\n"
-            f"Definition: {c_def}\n"
+            f"Target Concept: {c_name}\n"
+            f"Concept Definition: {c_def}\n"
             f"Pedagogical Scaffolding: {scaffolding_guide}\n\n"
             "Retrieved Passages:\n"
             f"{evidence_block}"
@@ -190,10 +192,10 @@ class TutorService:
 
         user_prompt = (
             f"Intent: {intent}\n"
-            f"Student Question: {sanitized_msg if sanitized_msg else f'Explain {c_name}'}\n\n"
+            f"Student Question: {sanitized_msg if sanitized_msg else f'Teach and explain {c_name}'}\n\n"
             "Generate your tutoring response formatted as JSON with keys:\n"
             "{\n"
-            '  "response_text": "Pedagogical explanation with [Page X] citations",\n'
+            '  "response_text": "Pedagogical explanation teaching the concept with intuition, worked example, and [Page X] citations",\n'
             '  "suggested_actions": ["Action 1", "Action 2", "Action 3"],\n'
             '  "cited_pages": [1]\n'
             "}"

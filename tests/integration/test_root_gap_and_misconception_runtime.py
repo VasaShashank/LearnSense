@@ -256,6 +256,86 @@ class TestMisconceptionRuntimeLifecycle:
         assert len(active) == 1, "Unrelated correct answer must NOT resolve misconception on question A"
         assert q_item.question_id in active[0].evidence_refs
 
+    def test_dont_know_does_not_create_misconception(self, ingested_calculus):
+        """Selecting 'don't know' represents incomplete knowledge/uncertainty, NOT a misconception."""
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+
+        learning = LearningService()
+        bank = learning.get_or_create_question_bank(sid, [cid])
+        q_item = bank.get_grounded_questions()[0]
+
+        import uuid
+        learner_id = f"test_dont_know_{uuid.uuid4().hex[:8]}"
+        ls = LearnerService()
+        ls.get_or_create_learner_state(learner_id, [cid])
+
+        learning.process_activity_response(
+            learner_id=learner_id,
+            subject_id=sid,
+            concept_ids=[cid],
+            question_id=q_item.question_id,
+            selected_option="I don't know",
+            is_dont_know=True,
+            request_id=f"req_{uuid.uuid4().hex[:6]}",
+        )
+
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        active = l_state.get_active_misconceptions(cid)
+        assert len(active) == 0, "Incomplete knowledge ('I don't know') must NOT create a misconception record"
+
+    def test_two_independent_misconceptions_can_coexist(self, ingested_calculus):
+        """Two distinct misconceptions on different questions can coexist on the same concept."""
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+
+        import uuid
+        learner_id = f"test_coexist_{uuid.uuid4().hex[:8]}"
+        ls = LearnerService()
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+
+        # Record misconception 1 on Q1
+        l_state.record_misconception(
+            concept_id=cid,
+            description="Confused limit from left with limit from right",
+            evidence_ref="q_limit_left_1",
+            initial_confidence=0.4,
+            question_id="q_limit_left_1",
+            expected_answer="Left-hand limit",
+            learner_response="Right-hand limit",
+            error_signal="actual_misconception",
+        )
+        # Record misconception 2 on Q2
+        l_state.record_misconception(
+            concept_id=cid,
+            description="Assumed limit equals function value at discontinuity",
+            evidence_ref="q_limit_eval_2",
+            initial_confidence=0.4,
+            question_id="q_limit_eval_2",
+            expected_answer="Undefined",
+            learner_response="f(c)",
+            error_signal="actual_misconception",
+        )
+        ls.save_learner_state(l_state)
+
+        # Both must coexist actively
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        active = l_state.get_active_misconceptions(cid)
+        assert len(active) == 2, "Two distinct misconceptions must coexist independently"
+
+        # Providing counter-evidence to Q1 resolves only Q1's misconception
+        l_state.apply_correct_answer_evidence(
+            question_id="q_limit_left_1",
+            concept_id=cid,
+            confidence_reduction=0.35,  # 0.40 - 0.35 = 0.05 < 0.15 -> resolves
+        )
+        ls.save_learner_state(l_state)
+
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        active_after = l_state.get_active_misconceptions(cid)
+        assert len(active_after) == 1, "Only the targeted misconception should be resolved"
+        assert active_after[0].question_id == "q_limit_eval_2"
+
 
 class TestQuestionBankAuthoritativeReuse:
     """Verifies authoritative persisted artifact reuse per Issue 6."""

@@ -865,8 +865,8 @@ class LearningService:
                 correctness=eval_correctness,
             )
 
-            # 5b. Misconception Lifecycle Tracking (Section 8)
-            # Evidence-based: only record when we have grounded evidence structure
+            # 5b. Error Classification & Misconception Lifecycle Tracking (Section 8 & Issue 3)
+            # Evaluates: wrong answer -> error classification -> candidate -> sufficient evidence check
             if q_item:
                 if not is_correct:
                     opt_text = selected_option or (
@@ -874,21 +874,52 @@ class LearningService:
                         if selected_index is not None and 0 <= selected_index < len(q_item.options or [])
                         else "incorrect option"
                     )
-                    for cid in concept_ids:
-                        disc = (
-                            f"Incorrect response for Q({q_item.question_id}) "
-                            f"on concept '{cid}': selected '{opt_text}', "
-                            f"expected '{correct_answer}'"
+
+                    # 1. Error Classification (careless error, incomplete knowledge, guessing, procedural difficulty, misconception)
+                    is_omission_or_unsure = bool(
+                        is_dont_know
+                        or (selected_option and "don't know" in selected_option.lower())
+                        or not str(opt_text).strip()
+                    )
+
+                    if is_omission_or_unsure:
+                        error_signal = "incomplete_knowledge"
+                    else:
+                        # Inspect concept state history
+                        primary_cid = concept_ids[0] if concept_ids else None
+                        cs = learner_state.get_concept_state(primary_cid) if primary_cid else None
+                        recent_fails = sum(1 for p in (cs.recent_performance[-3:] if cs else []) if not p)
+
+                        has_explicit_distractor_misconception = bool(
+                            q_item.explanation
+                            and any(kw in q_item.explanation.lower() for kw in ("misconception", "common mistake", "confuse", "error"))
                         )
-                        learner_state.record_misconception(
-                            concept_id=cid,
-                            description=disc,
-                            evidence_ref=q_item.question_id,
-                            initial_confidence=0.4,
-                            question_id=q_item.question_id,
-                            expected_answer=correct_answer,
-                            learner_response=opt_text,
-                        )
+
+                        if has_explicit_distractor_misconception or recent_fails >= 2:
+                            error_signal = "actual_misconception"
+                        else:
+                            error_signal = "misconception_candidate"
+
+                    # 2. Sufficient Evidence Check:
+                    # Incomplete knowledge / don't-know / careless guessing records uncertainty in BKT,
+                    # but does NOT create a misconception record.
+                    if error_signal != "incomplete_knowledge":
+                        for cid in concept_ids:
+                            disc = (
+                                f"Incorrect response for Q({q_item.question_id}) "
+                                f"on concept '{cid}': selected '{opt_text}', "
+                                f"expected '{correct_answer}'"
+                            )
+                            learner_state.record_misconception(
+                                concept_id=cid,
+                                description=disc,
+                                evidence_ref=q_item.question_id,
+                                initial_confidence=0.4 if error_signal == "misconception_candidate" else 0.6,
+                                question_id=q_item.question_id,
+                                expected_answer=correct_answer,
+                                learner_response=opt_text,
+                                error_signal=error_signal,
+                            )
                 else:
                     # Evidence-based resolution: a correct answer provides counter-evidence
                     # ONLY for misconceptions whose evidence_refs include this question.

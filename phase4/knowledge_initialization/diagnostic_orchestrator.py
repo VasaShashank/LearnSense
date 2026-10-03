@@ -334,9 +334,9 @@ class DiagnosticOrchestrator:
                 continue
             key = (
                 max((priorities.get(cid, 0.0) for cid in item_concepts), default=0.0),
-                self._live_information_gain(item, learner_state, item_concepts),
+                self._verification_probe_policy_score(item, learner_state, item_concepts),
             )
-            # Highest (priority, live information gain) wins. Ties break on the
+            # Highest (priority, verification probe policy score) wins. Ties break on the
             # smallest question_id so selection stays reproducible.
             if best_key is None or key > best_key or (key == best_key and item.question_id < best_item.question_id):
                 best_key = key
