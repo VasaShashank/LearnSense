@@ -51,11 +51,15 @@ export const ContextualTutor: React.FC<ContextualTutorProps> = ({
         user_message: customText,
       });
 
+      const tutorText = res.status === 'NO_GROUNDED_TUTOR_EVIDENCE'
+        ? (res.reason || `No direct evidence was found in the study material for "${concept.name}". LearnSense refuses to fabricate answers without source grounding.`)
+        : res.response_text;
+
       setMessages((prev) => [
         ...prev,
         {
           role: 'tutor',
-          text: res.response_text,
+          text: tutorText,
           citations: res.source_citations,
         },
       ]);

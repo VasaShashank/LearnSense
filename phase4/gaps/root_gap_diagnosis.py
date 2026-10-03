@@ -6,6 +6,23 @@ Implements Sections 23, 24, 25, and 26 of TAPROOT master specification:
 - Bayesian posterior belief updates upon observation
 - DecisionTrace generation for full observability
 - Deterministic adaptive policy with deterministic tie-breaking
+
+DISTINCTION FROM DiagnosticOrchestrator (phase4/knowledge_initialization/):
+  This module performs ROOT-GAP DIAGNOSIS: given a specific target concept
+  the learner is failing on, it constructs *competing causal hypotheses*
+  about which prerequisite ancestor gap is the root cause, then selects
+  questions to discriminate between those hypotheses using multi-hypothesis
+  Shannon Information Gain.  It is a Bayesian belief-update engine over
+  a hypothesis space.
+
+  DiagnosticOrchestrator performs INITIAL KNOWLEDGE ASSESSMENT: it selects
+  questions to estimate per-concept mastery across all verification concepts
+  during onboarding.  It uses single-concept Shannon Information Gain
+  (binary entropy reduction on mastery) to pick the next most informative
+  question.  There is no hypothesis-competition step.
+
+  These are two genuinely different operations serving different lifecycle
+  stages.  Neither is a replacement for the other.
 """
 
 from __future__ import annotations
@@ -36,11 +53,34 @@ def compute_entropy(distribution: Sequence[float]) -> float:
     return round(max(0.0, ent), 6)
 
 
+# --------------------------------------------------------------------------
+# Assessment parameter defaults.
+# These are UNCALIBRATED CONFIGURATION DEFAULTS.  They are NOT empirically
+# calibrated from learner data.  They represent reasonable priors for a
+# four-option MCQ assessment (guess_prob = 1/4) and a conservative slip
+# rate (slip_prob = 0.10).  Override at the call site when domain-specific
+# calibration data is available.
+# --------------------------------------------------------------------------
+DEFAULT_GUESS_PROB: float = 0.25
+DEFAULT_SLIP_PROB: float = 0.10
+
+
+def _validate_assessment_params(guess_prob: float, slip_prob: float) -> None:
+    """Validate assessment model parameters are in legal range."""
+    if not (0.0 < guess_prob < 1.0):
+        raise ValueError(f"guess_prob must be in (0, 1), got {guess_prob}")
+    if not (0.0 < slip_prob < 1.0):
+        raise ValueError(f"slip_prob must be in (0, 1), got {slip_prob}")
+
+
 class MathematicalInformationGain:
     """
     Exact Shannon Information Gain implementation per Section 25.
     H(H) = - sum_i p(h_i) * log2(p(h_i))
     IG(Q) = H(H) - sum_r P(r|Q) * H(H | r, Q)
+
+    Assessment parameters (guess_prob, slip_prob) are configuration defaults,
+    NOT empirically calibrated.  See module-level documentation.
     """
 
     @staticmethod
@@ -49,8 +89,8 @@ class MathematicalInformationGain:
         question: QuestionBankItem,
         prereq_graph: Dict[str, Set[str]],  # concept -> set of its prerequisite concept_ids
         learner_state: Optional[LearnerState] = None,
-        guess_prob: float = 0.25,
-        slip_prob: float = 0.10,
+        guess_prob: float = DEFAULT_GUESS_PROB,
+        slip_prob: float = DEFAULT_SLIP_PROB,
         question_time_seconds: Optional[float] = None,
     ) -> Tuple[float, float, Dict[str, float]]:
         """
@@ -61,6 +101,7 @@ class MathematicalInformationGain:
         """
         if not hypotheses:
             raise ValueError("Cannot calculate information gain with empty hypothesis set.")
+        _validate_assessment_params(guess_prob, slip_prob)
 
         priors = [h.prior_probability for h in hypotheses]
         total_p = sum(priors)
@@ -136,6 +177,12 @@ class MathematicalInformationGain:
             "expected_posterior_entropy": round(expected_posterior_entropy, 6),
             "marginal_p_correct": round(p_correct, 4),
             "information_gain": information_gain,
+            "assessment_params": {
+                "guess_prob": guess_prob,
+                "slip_prob": slip_prob,
+                "calibrated": False,
+                "note": "Uncalibrated configuration defaults; not empirically derived.",
+            },
         }
 
         return information_gain, ig_rate, details
@@ -326,8 +373,8 @@ class RootGapDiagnoser:
         question: QuestionBankItem,
         is_correct: bool,
         learning_context: LearningContext,
-        guess_prob: float = 0.25,
-        slip_prob: float = 0.10,
+        guess_prob: float = DEFAULT_GUESS_PROB,
+        slip_prob: float = DEFAULT_SLIP_PROB,
     ) -> List[DiagnosticHypothesis]:
         """
         Updates posterior probabilities of competing hypotheses via Bayes' theorem.

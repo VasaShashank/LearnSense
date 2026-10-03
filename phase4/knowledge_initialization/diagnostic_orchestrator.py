@@ -1,7 +1,23 @@
 """
-Diagnostic Assessment Orchestrator.
+Diagnostic Assessment Orchestrator (Initial Knowledge Assessment).
 Builds and evaluates initial diagnostic assessments restricted strictly to concepts
-marked "KNOW" by the learner.
+marked "KNOW" by the learner during onboarding.
+
+DISTINCTION FROM RootGapDiagnoser (phase4/gaps/root_gap_diagnosis.py):
+  This module orchestrates INITIAL KNOWLEDGE ASSESSMENT during learner onboarding.
+  It selects questions to estimate per-concept mastery across verification concepts,
+  using single-concept Shannon Information Gain (binary entropy reduction on mastery)
+  via InformationGainPolicy / ChapterAssessmentEngine. There is NO competing
+  hypothesis space or prerequisite ancestor-gap attribution here.
+
+  RootGapDiagnoser (phase4/gaps/root_gap_diagnosis.py) performs ROOT-GAP DIAGNOSIS
+  during active learning when a learner fails on a target concept. It constructs
+  a Bayesian hypothesis space of competing prerequisite ancestor gaps, updates
+  posterior probabilities over those hypotheses using multi-hypothesis Shannon
+  Information Gain, and identifies the root causal gap.
+
+  These are two genuinely distinct operations serving different learner lifecycle stages.
+  Neither is a replacement for the other.
 """
 
 from datetime import datetime, timezone

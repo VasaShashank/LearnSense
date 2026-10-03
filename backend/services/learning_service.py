@@ -866,6 +866,7 @@ class LearningService:
             )
 
             # 5b. Misconception Lifecycle Tracking (Section 8)
+            # Evidence-based: only record when we have grounded evidence structure
             if q_item:
                 if not is_correct:
                     opt_text = selected_option or (
@@ -874,18 +875,29 @@ class LearningService:
                         else "incorrect option"
                     )
                     for cid in concept_ids:
-                        disc = f"Selected incorrect response '{opt_text}' for question {q_item.question_id}"
+                        disc = (
+                            f"Incorrect response for Q({q_item.question_id}) "
+                            f"on concept '{cid}': selected '{opt_text}', "
+                            f"expected '{correct_answer}'"
+                        )
                         learner_state.record_misconception(
                             concept_id=cid,
                             description=disc,
                             evidence_ref=q_item.question_id,
                             initial_confidence=0.4,
+                            question_id=q_item.question_id,
+                            expected_answer=correct_answer,
+                            learner_response=opt_text,
                         )
                 else:
-                    # Verified correct response resolves active suspected/supported misconceptions
+                    # Evidence-based resolution: a correct answer provides counter-evidence
+                    # ONLY for misconceptions whose evidence_refs include this question.
+                    # Unrelated misconceptions on the same concept are NOT affected.
                     for cid in concept_ids:
-                        for rec in learner_state.get_active_misconceptions(cid):
-                            learner_state.resolve_misconception(rec.misconception_id)
+                        learner_state.apply_correct_answer_evidence(
+                            question_id=q_item.question_id,
+                            concept_id=cid,
+                        )
 
             self.learner_service.save_learner_state(learner_state)
 
@@ -922,10 +934,11 @@ class LearningService:
             bank = self.get_or_create_question_bank(subject_id, [concept_id])
         except Exception as e:
             logger.error("Failed to get or create question bank for %s: %s", concept_id, e)
-            # Try to load existing bank as fallback
+            # Authoritative persisted artifact reuse: attempt to load existing grounded bank for the subject
             try:
                 existing = self.bank_repo.load_grounded_bank(subject_id)
                 if existing:
+                    logger.info("Reusing authoritative persisted grounded bank for '%s'", subject_id)
                     bank = existing
                 else:
                     return {
@@ -936,8 +949,8 @@ class LearningService:
                         "source_citations": [],
                         "no_questions": True,
                     }
-            except Exception as fallback_err:
-                logger.error("Fallback bank load also failed: %s", fallback_err)
+            except Exception as persisted_err:
+                logger.error("Authoritative bank load failed: %s", persisted_err)
                 return {
                     "question_id": "",
                     "concept_id": concept_id,

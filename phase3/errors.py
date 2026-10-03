@@ -271,6 +271,41 @@ class TutorGenerationError(LearnSenseError):
     recoverable = True
 
 
+class NoGroundedTutorEvidenceError(LearnSenseError):
+    """
+    The document contains no extractable evidence for this concept to ground tutoring.
+    Enforces §2 / Issue 4: Never fabricate teaching prose when source grounding is missing.
+    """
+
+    code = "NO_GROUNDED_TUTOR_EVIDENCE"
+    http_status = 422
+    recoverable = False
+
+    def __init__(
+        self,
+        message: str = "No extractable source evidence found for this concept.",
+        *,
+        subject_id: str,
+        concept_id: str,
+        reason: Optional[str] = None,
+        evidence_status: str = "UNAVAILABLE",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        merged_details = {
+            "subject_id": subject_id,
+            "concept_id": concept_id,
+            "reason": reason or message,
+            "evidence_status": evidence_status,
+        }
+        if details:
+            merged_details.update(details)
+        super().__init__(message, details=merged_details, recoverable=False, http_status=422)
+        self.subject_id = subject_id
+        self.concept_id = concept_id
+        self.reason = reason or message
+        self.evidence_status = evidence_status
+
+
 # ---------------------------------------------------------------------------
 # Startup / preflight errors
 # ---------------------------------------------------------------------------
@@ -417,6 +452,7 @@ __all__ = [
     "TableExtractionError",
     "MathExtractionError",
     "TutorGenerationError",
+    "NoGroundedTutorEvidenceError",
     "StartupPreflightError",
     "ConfigurationError",
     "ValidationError",

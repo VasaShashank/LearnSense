@@ -102,10 +102,22 @@ class LearnerState(BaseModel):
         description: str,
         evidence_ref: str,
         initial_confidence: float = 0.4,
+        question_id: Optional[str] = None,
+        expected_answer: Optional[str] = None,
+        learner_response: Optional[str] = None,
     ) -> MisconceptionRecord:
         """
-        Records or updates a misconception.
-        Rule: A single wrong answer produces a SUSPECTED misconception.
+        Records or updates a misconception with grounded evidence.
+
+        Evidence structure (required for genuine misconception tracking):
+          - concept_id: which concept is affected
+          - description: evaluator-generated error classification
+          - evidence_ref: the question that triggered the signal
+          - question_id: authoritative question identifier
+          - expected_answer: the correct answer
+          - learner_response: what the learner actually selected
+
+        Rule: A single wrong answer produces a SUSPECTED misconception signal.
         Repeated evidence (frequency >= 2 or confidence >= 0.65) elevates status to SUPPORTED.
         Uses deterministic SHA-based key for stability across sessions.
         """
@@ -146,13 +158,53 @@ class LearnerState(BaseModel):
         return rec
 
     def resolve_misconception(self, misconception_id: str) -> Optional[MisconceptionRecord]:
-        """Marks a misconception as resolved after successful remediation."""
+        """Marks a misconception as resolved after sufficient counter-evidence."""
         rec = self.misconceptions.get(misconception_id)
         if rec:
             rec.status = MisconceptionStatusEnum.RESOLVED
             rec.last_detected = datetime.now(timezone.utc)
             self.updated_at = datetime.now(timezone.utc)
         return rec
+
+    def apply_correct_answer_evidence(
+        self,
+        question_id: str,
+        concept_id: str,
+        confidence_reduction: float = 0.30,
+    ) -> List[MisconceptionRecord]:
+        """
+        Applies counter-evidence from a correct answer to misconceptions
+        related to the SPECIFIC question answered correctly.
+
+        Rules:
+        - Only misconceptions whose evidence_refs include this question_id
+          are affected (question-specific resolution).
+        - Confidence is reduced by confidence_reduction per correct counter-evidence.
+        - If confidence drops below 0.15, the misconception is resolved.
+        - Unrelated misconceptions are NOT affected.
+
+        Returns the list of misconception records that were modified.
+        """
+        modified = []
+        now = datetime.now(timezone.utc)
+        for rec in self.misconceptions.values():
+            if rec.status == MisconceptionStatusEnum.RESOLVED:
+                continue
+            if rec.concept_id != concept_id:
+                continue
+            # Only affect misconceptions evidenced by this specific question
+            if question_id not in rec.evidence_refs:
+                continue
+
+            rec.confidence = max(0.0, rec.confidence - confidence_reduction)
+            rec.last_detected = now
+            if rec.confidence < 0.15:
+                rec.status = MisconceptionStatusEnum.RESOLVED
+            modified.append(rec)
+
+        if modified:
+            self.updated_at = now
+        return modified
 
     def get_active_misconceptions(
         self,

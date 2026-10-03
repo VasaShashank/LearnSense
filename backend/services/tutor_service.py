@@ -13,7 +13,14 @@ from typing import Any, Dict, List, Optional
 from backend.services.knowledge_service import KnowledgeService
 from backend.services.learner_service import LearnerService
 from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
-from phase3.errors import LearnSenseError, RetrievalError, TutorGenerationError, KnowledgeNotFoundError
+from phase3.errors import (
+    LearnSenseError,
+    RetrievalError,
+    TutorGenerationError,
+    KnowledgeNotFoundError,
+    NoGroundedTutorEvidenceError,
+    GroundingValidationError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +49,8 @@ class TutorService:
         concept_id: str,
         intent: str,  # "EXPLAIN", "HINT", "EXAMPLE", "ANALOGY", "WHY_WRONG", "CUSTOM"
         user_message: Optional[str] = None,
+        raise_on_missing_evidence: bool = False,
+        strict_grounding: bool = False,
     ) -> Dict[str, Any]:
         """
         Generates genuine, source-grounded tutoring guidance based on the learner's
@@ -105,22 +114,39 @@ class TutorService:
 
         if not retrieved_chunks:
             # Document genuinely contains no extractable evidence for this concept
-            resp_text = (
-                f"The uploaded study material contains no direct passages or evidence covering '{c_name}'. "
-                "LearnSense refuses to fabricate answers without source grounding."
-            )
+            # Enforce Section 2 / Issue 4: Never fabricate teaching or return fake successful prose
+            if raise_on_missing_evidence:
+                raise NoGroundedTutorEvidenceError(
+                    f"No extractable source evidence found for concept '{c_name}' in subject '{subject_id}'.",
+                    subject_id=subject_id,
+                    concept_id=concept_id,
+                    reason=f"The uploaded study material contains no direct passages or evidence covering '{c_name}'.",
+                    evidence_status="UNAVAILABLE",
+                )
+
+            sec_resp_text = ""
             for marker in filtered_markers:
-                if marker not in resp_text:
-                    resp_text += f" {marker}"
+                if marker not in sec_resp_text:
+                    sec_resp_text = f"{sec_resp_text} {marker}".strip()
+
             return {
+                "status": "NO_GROUNDED_TUTOR_EVIDENCE",
+                "code": "NO_GROUNDED_TUTOR_EVIDENCE",
+                "error": "NO_GROUNDED_TUTOR_EVIDENCE",
+                "subject_id": subject_id,
                 "concept_id": concept_id,
                 "concept_name": c_name,
                 "intent": intent,
                 "mastery": mastery,
-                "response_text": resp_text,
-                "suggested_actions": ["Review concepts with source coverage", "Upload supplementary document"],
-                "source_citations": [],
+                "reason": f"No extractable source evidence found for concept '{c_name}' in subject '{subject_id}'.",
+                "evidence_status": "UNAVAILABLE",
                 "grounded": False,
+                "response_text": sec_resp_text,
+                "suggested_actions": [
+                    "Upload supplementary document with coverage of this concept",
+                    "Review concepts with source coverage",
+                ],
+                "source_citations": [],
             }
 
         # 3. Construct pedagogical framing tailored to learner mastery
@@ -210,8 +236,8 @@ class TutorService:
             if marker not in response_text:
                 response_text += f" {marker}"
 
-        # 5. Citation validation: extract pages from structured cited_pages and [Page X] markers
-        # Fail-closed citation validation (§20): never auto-accept uncited chunks
+        # 5. Citation validation: extract pages and verify claim-level grounding (Section 20 & Issues 4, 5)
+        # Fail-closed citation validation (§20): never auto-accept uncited chunks or ungrounded claims
         extracted_pages = set(cited_pages)
         for match in re.finditer(r"\[Page\s*(\d+)\]", response_text, re.IGNORECASE):
             try:
@@ -219,19 +245,66 @@ class TutorService:
             except ValueError:
                 pass
 
+        _STOPWORDS = {
+            "about", "above", "after", "again", "against", "all", "also", "among", "an", "and",
+            "any", "are", "aren't", "because", "been", "before", "being", "below", "between",
+            "both", "cannot", "could", "couldn't", "did", "didn't", "does", "doesn't", "doing",
+            "down", "during", "each", "explain", "few", "for", "from", "further", "had", "hadn't",
+            "has", "hasn't", "have", "haven't", "having", "here", "how", "into", "more", "most",
+            "must", "myself", "off", "once", "only", "other", "ought", "our", "ours", "ourselves",
+            "out", "over", "own", "same", "she", "should", "shouldn't", "some", "such", "than",
+            "that", "the", "their", "theirs", "them", "themselves", "then", "there", "these",
+            "they", "this", "those", "through", "too", "under", "until", "very", "was", "wasn't",
+            "we", "were", "weren't", "what", "when", "where", "which", "while", "who", "whom",
+            "why", "with", "would", "wouldn't", "your", "yours", "yourself", "yourselves",
+            "page", "section", "concept", "source", "material", "learner", "mastery", "supplied",
+        }
+
+        # Tokenize response text for claim grounding
+        resp_stems = {
+            w.lower()[:5]
+            for w in re.findall(r"[a-zA-Z]{3,}", response_text)
+            if w.lower() not in _STOPWORDS
+        }
+        concept_stem = c_name.lower()[:5]
+
         validated_citations: List[Dict[str, Any]] = []
         for ch in retrieved_chunks:
             # Check if LLM cited this chunk's 1-indexed page or 0-indexed page
             if (ch.page_index + 1) in extracted_pages or ch.page_index in extracted_pages:
-                validated_citations.append(
-                    {
-                        "document_id": ch.document_id,
-                        "page": ch.page_index + 1,
-                        "section": ch.section_title or "Content",
-                        "block_id": ch.block_id,
-                        "quote": ch.text[:200].strip(),
-                    }
+                chunk_stems = {
+                    w.lower()[:5]
+                    for w in re.findall(r"[a-zA-Z]{3,}", ch.text)
+                    if w.lower() not in _STOPWORDS
+                }
+                # Claim grounding: chunk must have substantive lexical overlap with response claims,
+                # or cover the concept directly
+                has_claim_support = bool(
+                    resp_stems.intersection(chunk_stems)
+                    or (concept_stem and concept_stem in chunk_stems)
                 )
+                if has_claim_support:
+                    validated_citations.append(
+                        {
+                            "document_id": ch.document_id,
+                            "page": ch.page_index + 1,
+                            "section": ch.section_title or "Content",
+                            "block_id": ch.block_id,
+                            "quote": ch.text[:200].strip(),
+                        }
+                    )
+
+        is_grounded = bool(validated_citations)
+        if strict_grounding and not is_grounded:
+            raise GroundingValidationError(
+                f"Tutor guidance for '{c_name}' failed claim-level grounding verification.",
+                details={
+                    "subject_id": subject_id,
+                    "concept_id": concept_id,
+                    "extracted_pages": list(extracted_pages),
+                    "valid_retrieved_pages": [ch.page_index + 1 for ch in retrieved_chunks],
+                },
+            )
 
         return {
             "concept_id": concept_id,
@@ -241,5 +314,5 @@ class TutorService:
             "response_text": response_text,
             "suggested_actions": suggested_actions,
             "source_citations": validated_citations[:4],
-            "grounded": bool(validated_citations),
+            "grounded": is_grounded,
         }

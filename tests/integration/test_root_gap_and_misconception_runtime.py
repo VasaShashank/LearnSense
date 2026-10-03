@@ -104,9 +104,13 @@ class TestRootGapRuntimeIntegration:
 
 
 class TestMisconceptionRuntimeLifecycle:
-    """Verifies that activity responses transition misconceptions through suspected -> supported -> resolved."""
+    """
+    Verifies that activity responses transition misconceptions through:
+    suspected -> supported -> evidence-based resolution.
+    Covers Issue 2 & Issue 3 requirements.
+    """
 
-    def test_lifecycle_transitions(self, ingested_calculus):
+    def test_lifecycle_transitions_with_evidence_based_resolution(self, ingested_calculus):
         sid = ingested_calculus.document_id
         cid = ingested_calculus.concept_ids[0]
 
@@ -134,14 +138,14 @@ class TestMisconceptionRuntimeLifecycle:
         )
         assert not res1["is_correct"]
 
-        # Misconception must be SUSPECTED on first wrong answer
+        # Misconception must be SUSPECTED on first wrong answer (confidence = 0.4)
         l_state = ls.get_or_create_learner_state(learner_id, [cid])
         active = l_state.get_active_misconceptions(cid)
         assert len(active) == 1
         assert active[0].status == MisconceptionStatusEnum.SUSPECTED
         assert active[0].frequency == 1
 
-        # Step 2: Submit a second incorrect option on the same concept
+        # Step 2: Submit a second incorrect option on the same concept -> becomes SUPPORTED (confidence = 0.65)
         res2 = learning.process_activity_response(
             learner_id=learner_id,
             subject_id=sid,
@@ -158,7 +162,8 @@ class TestMisconceptionRuntimeLifecycle:
         assert supported[0].status == MisconceptionStatusEnum.SUPPORTED
         assert supported[0].frequency >= 2
 
-        # Step 3: Submit correct answer
+        # Step 3: Insufficient evidence does NOT immediately resolve an entrenched misconception
+        # One correct answer reduces confidence (0.65 -> 0.35), but 0.35 >= 0.15, so it remains active
         res3 = learning.process_activity_response(
             learner_id=learner_id,
             subject_id=sid,
@@ -169,17 +174,127 @@ class TestMisconceptionRuntimeLifecycle:
         )
         assert res3["is_correct"]
 
-        # Misconception must now be RESOLVED
         l_state = ls.get_or_create_learner_state(learner_id, [cid])
-        active_after = l_state.get_active_misconceptions(cid)
-        assert len(active_after) == 0
+        active_after_1 = l_state.get_active_misconceptions(cid)
+        assert len(active_after_1) == 1, "Entrenched misconception should not be erased by a single correct answer"
+        assert active_after_1[0].confidence < 0.50
+
+        # Step 4: Repeated counter-evidence resolves the misconception (0.35 -> 0.05 < 0.15)
+        res4 = learning.process_activity_response(
+            learner_id=learner_id,
+            subject_id=sid,
+            concept_ids=[cid],
+            question_id=q_item.question_id,
+            selected_option=str(q_item.correct_answer).strip(),
+            request_id=f"{req_pfx}_4",
+        )
+        assert res4["is_correct"]
+
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        active_after_2 = l_state.get_active_misconceptions(cid)
+        assert len(active_after_2) == 0, "Repeated counter-evidence must resolve the misconception"
         resolved_rec = l_state.misconceptions.get(supported[0].misconception_id)
         assert resolved_rec is not None
         assert resolved_rec.status == MisconceptionStatusEnum.RESOLVED
 
+    def test_unrelated_correct_answer_does_not_resolve(self, ingested_calculus):
+        """A correct answer on question B does NOT resolve a misconception evidenced by question A."""
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+
+        learning = LearningService()
+        bank = learning.get_or_create_question_bank(sid, [cid])
+        grounded_qs = bank.get_grounded_questions()
+        assert len(grounded_qs) >= 1
+        q_item = grounded_qs[0]
+
+        # Ensure a distinct second question exists in the bank
+        if len(grounded_qs) >= 2:
+            q_other = grounded_qs[1]
+        else:
+            from phase3.question_bank.models import QuestionBankItem
+            q_other = QuestionBankItem(
+                question_id="q_second_test_item",
+                concept_ids=[cid],
+                prompt="Second question prompt",
+                options=["A", "B", "C", "D"],
+                correct_answer="A",
+                explanation="Explanation",
+                evidence_refs=["E1"],
+                difficulty=0.5,
+            )
+            bank.add_question(q_other)
+            learning.bank_repo.save_bank(bank)
+
+        import uuid
+        learner_id = f"test_unrelated_{uuid.uuid4().hex[:8]}"
+        ls = LearnerService()
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+
+        # Record misconception evidenced specifically by q_item.question_id
+        l_state.record_misconception(
+            concept_id=cid,
+            description="Confusion about definition",
+            evidence_ref=q_item.question_id,
+            initial_confidence=0.4,
+            question_id=q_item.question_id,
+        )
+        ls.save_learner_state(l_state)
+
+        # Submit correct answer to q_other (NOT q_item)
+        learning.process_activity_response(
+            learner_id=learner_id,
+            subject_id=sid,
+            concept_ids=[cid],
+            question_id=q_other.question_id,
+            selected_option=str(q_other.correct_answer).strip(),
+            request_id=f"req_{uuid.uuid4().hex[:6]}",
+        )
+
+        l_state = ls.get_or_create_learner_state(learner_id, [cid])
+        active = l_state.get_active_misconceptions(cid)
+        assert len(active) == 1, "Unrelated correct answer must NOT resolve misconception on question A"
+        assert q_item.question_id in active[0].evidence_refs
+
+
+class TestQuestionBankAuthoritativeReuse:
+    """Verifies authoritative persisted artifact reuse per Issue 6."""
+
+    def test_persisted_bank_reuse(self, ingested_calculus):
+        sid = ingested_calculus.document_id
+        learning = LearningService()
+
+        # First call builds/persists the bank
+        bank1 = learning.get_or_create_question_bank(sid)
+        assert len(bank1.get_grounded_questions()) >= 1
+
+        # Second call reuses the authoritative persisted bank
+        bank2 = learning.get_or_create_question_bank(sid)
+        assert bank2.document_id == bank1.document_id
+        assert len(bank2.get_grounded_questions()) == len(bank1.get_grounded_questions())
+
+    def test_generation_failure_no_bank_raises_structured_error(self, monkeypatch, ingested_calculus):
+        from phase3.errors import QuestionBankError
+        from phase3.question_bank.builder import QuestionBankBuilder
+
+        sid = ingested_calculus.document_id
+        learning = LearningService()
+
+        # Ensure no persisted bank is found
+        monkeypatch.setattr(learning.bank_repo, "load_grounded_bank", lambda subject_id: None)
+
+        def mock_build_fail(*args, **kwargs):
+            raise QuestionBankError("Simulated LLM generation failure")
+
+        monkeypatch.setattr(QuestionBankBuilder, "build_bank_for_chapter", mock_build_fail)
+
+        with pytest.raises(QuestionBankError) as exc_info:
+            learning.get_or_create_question_bank(sid)
+        assert exc_info.value.code == "QUESTION_BANK_UNAVAILABLE"
+
 
 class TestTutorFailClosedGrounding:
-    """Verifies that Tutor rejects unknown concepts and fail-closes on uncited claims."""
+    """Verifies Tutor failure modes: unknown concepts, no evidence, citation validation."""
 
     def test_unknown_concept_raises_404(self, client, ingested_calculus):
         sid = ingested_calculus.document_id
@@ -194,3 +309,63 @@ class TestTutorFailClosedGrounding:
         )
         assert res.status_code in (400, 404)
         assert "not found" in res.text.lower()
+
+    def test_no_grounded_evidence_returns_structured_state(self, monkeypatch, ingested_calculus):
+        """When evidence retriever finds no chunks, tutor returns NO_GROUNDED_TUTOR_EVIDENCE state."""
+        from backend.services.tutor_service import TutorService
+
+        tutor = TutorService()
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+
+        # Force retriever to return empty chunks
+        class MockEmptyRetriever:
+            def retrieve_for_concept(self, *args, **kwargs):
+                return []
+
+        from backend.services.knowledge_build_service import KnowledgeBuildService
+        monkeypatch.setattr(KnowledgeBuildService, "get_retriever", lambda self, sid: MockEmptyRetriever())
+
+        res = tutor.generate_contextual_response(
+            learner_id="test_no_ev_user",
+            subject_id=sid,
+            concept_id=cid,
+            intent="EXPLAIN",
+        )
+
+        assert res["status"] == "NO_GROUNDED_TUTOR_EVIDENCE"
+        assert res["subject_id"] == sid
+        assert res["concept_id"] == cid
+        assert res["evidence_status"] == "UNAVAILABLE"
+        assert res["grounded"] is False
+        assert res["response_text"] == ""
+        assert "reason" in res
+
+    def test_no_grounded_evidence_raises_when_requested(self, monkeypatch, ingested_calculus):
+        """When raise_on_missing_evidence=True, raises NoGroundedTutorEvidenceError."""
+        from backend.services.tutor_service import TutorService
+        from phase3.errors import NoGroundedTutorEvidenceError
+
+        tutor = TutorService()
+        sid = ingested_calculus.document_id
+        cid = ingested_calculus.concept_ids[0]
+
+        class MockEmptyRetriever:
+            def retrieve_for_concept(self, *args, **kwargs):
+                return []
+
+        from backend.services.knowledge_build_service import KnowledgeBuildService
+        monkeypatch.setattr(KnowledgeBuildService, "get_retriever", lambda self, sid: MockEmptyRetriever())
+
+        with pytest.raises(NoGroundedTutorEvidenceError) as exc_info:
+            tutor.generate_contextual_response(
+                learner_id="test_no_ev_user",
+                subject_id=sid,
+                concept_id=cid,
+                intent="EXPLAIN",
+                raise_on_missing_evidence=True,
+            )
+
+        assert exc_info.value.code == "NO_GROUNDED_TUTOR_EVIDENCE"
+        assert exc_info.value.subject_id == sid
+        assert exc_info.value.concept_id == cid

@@ -145,6 +145,11 @@ export interface TutorResponse {
   suggested_actions: string[];
   source_citations: { page: number; section: string; quote: string }[];
   grounded?: boolean;
+  status?: string;
+  code?: string;
+  error?: string;
+  reason?: string;
+  evidence_status?: string;
 }
 
 export interface SourceDocument {
