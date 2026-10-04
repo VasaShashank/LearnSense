@@ -518,7 +518,7 @@ export const ApiClient = {
       body: JSON.stringify(data),
     }),
 
-  getConceptQuestion: (subjectId: string, conceptId: string): Promise<{
+  getConceptQuestion: (subjectId: string, conceptId: string, learnerId?: string): Promise<{
     question_id: string;
     concept_id: string;
     question_text: string;
@@ -531,7 +531,8 @@ export const ApiClient = {
       quote: string;
     }>;
     no_questions?: boolean;
-  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question`),
+    source?: string;
+  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question${learnerId ? `?learner_id=${encodeURIComponent(learnerId)}` : ''}`),
 
   getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>
     fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/content`),

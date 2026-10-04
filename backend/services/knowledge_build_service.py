@@ -110,9 +110,25 @@ class KnowledgeBuildService:
         logger.info("Step 4: Running Phase 2 EKR extraction...")
         ekr = self._run_phase2(structured_doc)
 
+        # -- Step 4.5: Semantic Topic & Knowledge Graph Extraction ---
+        semantic_topics = None
+        try:
+            from phase2.pipeline.semantic_topic_extractor import SemanticTopicExtractor
+            sem_extractor = SemanticTopicExtractor()
+            sem_concepts, sem_relationships, sem_topics, sem_evidence = sem_extractor.extract(
+                structured_doc, base_concepts=ekr.concepts, base_evidence=ekr.evidence
+            )
+            if sem_concepts:
+                ekr.concepts = sem_concepts
+                ekr.relationships = sem_relationships
+                ekr.evidence = sem_evidence
+                semantic_topics = sem_topics
+        except Exception as exc:
+            logger.warning("Semantic knowledge graph enhancement bypassed: %s", exc)
+
         # -- Step 5: Phase 3 context ---------------------------------
         logger.info("Step 5: Adapting to Phase 3 LearningContext...")
-        context = Phase2Adapter.adapt(ekr, structured_document=structured_doc)
+        context = Phase2Adapter.adapt(ekr, structured_document=structured_doc, semantic_topics=semantic_topics)
         logger.info("Step 5: Validating groundedness...")
         self._assert_grounded(context, structured_doc)
 

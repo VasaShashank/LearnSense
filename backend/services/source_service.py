@@ -48,44 +48,71 @@ class SourceService:
         # Injected so tests can drive ingestion against a temporary storage root.
         self._knowledge_builder = knowledge_builder
 
+    # In-memory caches to avoid re-reading dozens of giant JSON files on every call
+    _cached_sources: Optional[List[Dict[str, Any]]] = None
+    _cached_sources_time: float = 0.0
+    _CACHE_TTL: float = 15.0
+    _doc_meta_cache: Dict[str, Any] = {}
+
     def list_sources(self) -> List[Dict[str, Any]]:
         """
         Lists stored documents with metadata, page counts, and Phase 5 ingestion status.
+        Uses cached document metadata to avoid parsing dozens of large JSON files.
         """
+        import time
+
+        now = time.time()
+        if SourceService._cached_sources is not None and (now - SourceService._cached_sources_time) < SourceService._CACHE_TTL:
+            return SourceService._cached_sources
+
         sources = []
         root_dir = self.doc_storage.root_dir
         if root_dir.exists():
             for doc_dir in root_dir.iterdir():
                 if doc_dir.is_dir():
                     doc_id = doc_dir.name
-                    struct_doc = self.doc_storage.load_structured_document(doc_id)
                     pdf_path = self.doc_storage.get_original_pdf_path(doc_id)
+                    json_file = self.doc_storage.get_document_dir(doc_id) / "structured" / "document.json"
 
-                    status = "READY"
-                    recovery_state = "COMPLETED"
-                    page_count = 0
+                    json_mtime = json_file.stat().st_mtime if json_file.exists() else 0.0
 
-                    if struct_doc and "pages" in struct_doc:
-                        page_count = len(struct_doc["pages"])
-                    elif pdf_path.exists():
-                        status = "PROCESSING"
-                        recovery_state = "RECOVERING"
+                    cached = SourceService._doc_meta_cache.get(doc_id)
+                    if cached and cached.get("mtime") == json_mtime:
+                        page_count = cached["page_count"]
+                        fn = cached["filename"]
+                        status = cached["status"]
+                        recovery_state = cached["recovery_state"]
                     else:
-                        status = "PARTIAL"
-                        recovery_state = "PARTIAL_RECOVERY"
+                        struct_doc = self.doc_storage.load_structured_document(doc_id)
 
-                    fn = ""
-                    if struct_doc:
-                        # ``filename`` lives on ``StructuredDocument.source``
-                        # (SourceMetadata), a sibling of ``metadata`` - reading it from
-                        # ``metadata`` always returned "", so every upload was
-                        # mislabelled as a PDF.
-                        fn = _source_filename(struct_doc) or fn
+                        status = "READY"
+                        recovery_state = "COMPLETED"
+                        page_count = 0
+
+                        if struct_doc and "pages" in struct_doc:
+                            page_count = len(struct_doc["pages"])
+                        elif pdf_path.exists():
+                            status = "PROCESSING"
+                            recovery_state = "RECOVERING"
+                        else:
+                            status = "PARTIAL"
+                            recovery_state = "PARTIAL_RECOVERY"
+
+                        fn = ""
+                        if struct_doc:
+                            fn = _source_filename(struct_doc) or fn
+
+                        SourceService._doc_meta_cache[doc_id] = {
+                            "mtime": json_mtime,
+                            "page_count": page_count,
+                            "filename": fn,
+                            "status": status,
+                            "recovery_state": recovery_state,
+                        }
 
                     # Title = real uploaded filename (extension stripped). Never
                     # generate a name from doc_id or PDF metadata.
                     title = fn.rsplit(".", 1)[0] if fn else doc_id.replace("_", " ").title()
-
                     file_type = Path(fn).suffix.replace(".", "").upper() if fn else "PDF"
 
                     sources.append({
@@ -97,15 +124,11 @@ class SourceService:
                         "recovery_state": recovery_state,
                         "page_count": page_count,
                         "file_size_bytes": pdf_path.stat().st_size if pdf_path.exists() else 0,
-                        # Everything listed here was really uploaded; there are no
-                        # demo/seed entries. Hard-coding a set of "demo" IDs used to
-                        # mislabel a test fixture as sample data.
                         "is_demo": False,
                     })
 
-        # No demo fallback: when nothing has been uploaded, the library is
-        # empty. Fabricated entries ("42 pages, 10 MB") would teach material
-        # the learner never uploaded.
+        SourceService._cached_sources = sources
+        SourceService._cached_sources_time = now
         return sources
 
     def save_uploaded_source(self, document_id: str, file_bytes: bytes, filename: str) -> Dict[str, Any]:
@@ -126,4 +149,6 @@ class SourceService:
         from backend.services.knowledge_build_service import KnowledgeBuildService
 
         builder = self._knowledge_builder or KnowledgeBuildService(storage=self.doc_storage)
-        return builder.build(document_id, file_bytes, filename)
+        result = builder.build(document_id, file_bytes, filename)
+        SourceService._cached_sources = None
+        return result

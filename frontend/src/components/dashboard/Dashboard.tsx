@@ -73,7 +73,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <button
               onClick={onNavigateToSources}
-              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-cyan-400/30 text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-cyan-400/30 text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
               <span>Ingested Sources ({currentSubject.page_count || 1} pgs)</span>

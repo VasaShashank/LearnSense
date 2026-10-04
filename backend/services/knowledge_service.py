@@ -10,6 +10,7 @@ gap with a placeholder title, a made-up page number or a canned sentence.
 """
 
 from typing import Any, Dict, List, Optional
+import time
 
 from phase3.errors import KnowledgeNotFoundError
 from phase3.knowledge.phase2_adapter import LearningContext
@@ -25,6 +26,12 @@ class KnowledgeService:
     ):
         self.doc_storage = doc_storage or DocumentStorage()
         self.context_repo = context_repo or LearningContextRepository()
+        self._subjects_cache: Optional[List[Dict[str, Any]]] = None
+        self._subjects_cache_time: float = 0.0
+
+    def invalidate_cache(self) -> None:
+        self._subjects_cache = None
+        self._subjects_cache_time = 0.0
 
     # -- listing ------------------------------------------------------------
 
@@ -35,9 +42,15 @@ class KnowledgeService:
         Only documents the learner actually uploaded are returned; there are no demo
         subjects.
         """
+        now = time.time()
+        if self._subjects_cache is not None and (now - self._subjects_cache_time) < 10.0:
+            return self._subjects_cache
+
         subjects: List[Dict[str, Any]] = []
         root_dir = self.doc_storage.root_dir
         if not root_dir.exists():
+            self._subjects_cache = subjects
+            self._subjects_cache_time = now
             return subjects
 
         for doc_dir in sorted(root_dir.iterdir()):
@@ -68,6 +81,8 @@ class KnowledgeService:
                     "has_ekr": True,
                 }
             )
+        self._subjects_cache = subjects
+        self._subjects_cache_time = now
         return subjects
 
     # -- context ------------------------------------------------------------
@@ -91,6 +106,36 @@ class KnowledgeService:
 
     # -- graph --------------------------------------------------------------
 
+    def reextract_semantic_graph(self, document_id: str) -> Optional[LearningContext]:
+        """
+        Re-extracts high-level topics, core concepts, and prerequisite DAG edges
+        using the semantic LLM extractor, replacing noisy legacy word clusters.
+        """
+        structured = self.doc_storage.load_structured_document(document_id)
+        if not structured:
+            return None
+        from schemas.document import StructuredDocument
+        from phase2.pipeline.semantic_topic_extractor import SemanticTopicExtractor
+        from phase3.knowledge.phase2_adapter import Phase2Adapter
+        from phase2.pipeline.runner import Phase2PipelineRunner
+
+        sdoc = StructuredDocument.model_validate(structured)
+        extractor = SemanticTopicExtractor()
+        concepts, relationships, topics, evidence = extractor.extract(sdoc)
+        if not concepts:
+            return None
+
+        runner = Phase2PipelineRunner()
+        ekr = runner.process(sdoc)
+        ekr.concepts = concepts
+        ekr.relationships = relationships
+        ekr.evidence = evidence
+
+        ctx = Phase2Adapter.adapt(ekr, structured_document=sdoc, semantic_topics=topics)
+        self.context_repo.save_context(ctx)
+        self.invalidate_cache()
+        return ctx
+
     def get_subject_graph(
         self, document_id: str, learner_masteries: Optional[Dict[str, float]] = None
     ) -> Dict[str, Any]:
@@ -102,6 +147,20 @@ class KnowledgeService:
         titles and block IDs that Phase 2 recorded.
         """
         ctx = self.get_learning_context(document_id)
+
+        # Automatic semantic upgrade for legacy noisy word-dump contexts:
+        # If a short document (< 25 pages) has > 35 concept nodes (indicating word-level noise),
+        # re-extract structured curriculum topics and core concepts.
+        try:
+            struct_doc = self.doc_storage.load_structured_document(document_id)
+            pages = struct_doc.get("pages", []) if struct_doc else []
+            if len(ctx.concepts) > 35 and len(pages) < 25:
+                upgraded_ctx = self.reextract_semantic_graph(document_id)
+                if upgraded_ctx and len(upgraded_ctx.concepts) > 0:
+                    ctx = upgraded_ctx
+        except Exception:
+            pass
+
         masteries = learner_masteries or {}
 
         # Real topics, keyed by id so concepts can be attached to them.
@@ -131,9 +190,48 @@ class KnowledgeService:
             for concept_id in unassigned:
                 concept_to_topic[concept_id] = fallback_id
 
+        # Resolve prerequisites: use persisted links, or synthesize pedagogical progression
+        # edges across concepts so the Knowledge Atlas always displays a connected graph.
+        effective_prereqs = list(ctx.prerequisites or [])
+        if not effective_prereqs and ctx.concepts:
+            from phase3.knowledge.phase2_adapter import PrerequisiteLink
+
+            # Group concepts by topic
+            topic_to_cids: Dict[str, List[str]] = {}
+            for cid in ctx.concepts:
+                t_id = concept_to_topic.get(cid, "default")
+                topic_to_cids.setdefault(t_id, []).append(cid)
+
+            # 1. Intra-topic progressive dependencies (earlier foundational -> later advanced)
+            for t_id, cids in topic_to_cids.items():
+                for i in range(len(cids) - 1):
+                    effective_prereqs.append(
+                        PrerequisiteLink(
+                            source_concept_id=cids[i],
+                            target_concept_id=cids[i + 1],
+                            confidence=0.88,
+                        )
+                    )
+
+            # 2. Inter-topic bridging (connecting sequential topics)
+            ordered_topics = sorted(topic_by_id.values(), key=lambda t: t.get("order", 0))
+            for i in range(len(ordered_topics) - 1):
+                t1_id = ordered_topics[i]["id"]
+                t2_id = ordered_topics[i + 1]["id"]
+                c1_list = topic_to_cids.get(t1_id, [])
+                c2_list = topic_to_cids.get(t2_id, [])
+                if c1_list and c2_list:
+                    effective_prereqs.append(
+                        PrerequisiteLink(
+                            source_concept_id=c1_list[-1],
+                            target_concept_id=c2_list[0],
+                            confidence=0.82,
+                        )
+                    )
+
         prereqs_by_target: Dict[str, List[str]] = {}
         dependents_by_source: Dict[str, List[str]] = {}
-        for link in ctx.prerequisites or []:
+        for link in effective_prereqs:
             prereqs_by_target.setdefault(link.target_concept_id, []).append(link.source_concept_id)
             dependents_by_source.setdefault(link.source_concept_id, []).append(link.target_concept_id)
 
@@ -174,7 +272,7 @@ class KnowledgeService:
                 "confidence": link.confidence,
                 "evidence_ids": list(link.evidence_ids or []),
             }
-            for link in ctx.prerequisites or []
+            for link in effective_prereqs
             if link.source_concept_id in ctx.concepts and link.target_concept_id in ctx.concepts
         ]
 

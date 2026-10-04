@@ -48,6 +48,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
       quote: string;
     }>;
     no_questions?: boolean;
+    source?: string;
   } | null>(null);
   const [feedback, setFeedback] = useState<{
     submitted: boolean;
@@ -58,39 +59,31 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
     newMastery: number;
   } | null>(null);
 
-  // Fetch domain question and comprehensive learning lesson
-  React.useEffect(() => {
-    let isMounted = true;
+  const loadQuestion = React.useCallback(() => {
     setLoadingQuestion(true);
-    setLoadingContent(true);
+    setFeedback(null);
+    setSelectedOptionIdx(null);
 
-    // Timeout for question fetch (15 seconds)
-    const questionTimeout = setTimeout(() => {
-      if (isMounted) {
-        console.warn('Question fetch timed out after 15 seconds');
-        setLoadingQuestion(false);
-        setQuestion({ no_questions: true, question_id: '', concept_id: concept.concept_id, question_text: '', options: [] });
-      }
-    }, 15000);
-
-    // 1. Fetch Question
-    ApiClient.getConceptQuestion(subject.id, concept.concept_id)
+    ApiClient.getConceptQuestion(subject.id, concept.concept_id, learnerId)
       .then((data) => {
-        clearTimeout(questionTimeout);
-        if (isMounted && data) {
+        if (data) {
           setQuestion(data);
         }
       })
       .catch((err) => {
-        clearTimeout(questionTimeout);
         console.warn('Could not load authentic concept question:', err);
-        if (isMounted) {
-          setQuestion({ no_questions: true, question_id: '', concept_id: concept.concept_id, question_text: '', options: [] });
-        }
+        setQuestion({ no_questions: true, question_id: '', concept_id: concept.concept_id, question_text: '', options: [] });
       })
       .finally(() => {
-        if (isMounted) setLoadingQuestion(false);
+        setLoadingQuestion(false);
       });
+  }, [subject.id, concept.concept_id, learnerId]);
+
+  // Fetch domain question and comprehensive learning lesson
+  React.useEffect(() => {
+    let isMounted = true;
+    setLoadingContent(true);
+    loadQuestion();
 
     // Timeout for content fetch (10 seconds)
     const contentTimeout = setTimeout(() => {
@@ -118,10 +111,9 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
 
     return () => {
       isMounted = false;
-      clearTimeout(questionTimeout);
       clearTimeout(contentTimeout);
     };
-  }, [subject.id, concept.concept_id]);
+  }, [subject.id, concept.concept_id, loadQuestion]);
 
   const activeOptions = question?.options || [];
 
@@ -330,12 +322,20 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
         {activeTab === 'PRACTICE' && (
           <div className="universe-panel rounded-3xl p-6 sm:p-10 space-y-6">
             <div className="pb-4 border-b border-white/[0.07]">
-              <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                {loadingQuestion ? 'ANALYZING KNOWLEDGE TOPOLOGY...' : 'ADAPTIVE MASTERY ASSESSMENT'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
+                  {loadingQuestion ? 'GENERATING GROUNDED ASSESSMENT...' : 'ADAPTIVE MASTERY ASSESSMENT'}
+                </span>
+                {question?.source === 'llm' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    LLM GENERATED
+                  </span>
+                )}
+              </div>
               <h3 className="text-base sm:text-lg font-display font-bold text-white mt-1 leading-snug">
                 {loadingQuestion
-                  ? `Loading grounded questions for ${concept.name}...`
+                  ? `Synthesizing grounded question for ${concept.name} via LLM...`
                   : (question?.question_text || `Assessment question for ${concept.name}`)}
               </h3>
               {question?.source_citations && question.source_citations.length > 0 && (
@@ -350,7 +350,8 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
             {loadingQuestion ? (
               <div className="py-12 text-center space-y-3">
                 <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mx-auto" />
-                <p className="text-xs text-universe-slate font-mono">Retrieving grounded questions from question bank...</p>
+                <p className="text-xs text-universe-slate font-mono">Generating fresh grounded mini-quiz question via LLM...</p>
+                <p className="text-[10px] text-universe-slate/50 font-mono">Retrieving textbook passages and calibrating to your mastery level</p>
               </div>
             ) : activeOptions.length === 0 ? (
               <div className="py-10 text-center space-y-3">
@@ -360,7 +361,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                     : `No questions available for ${concept.name}.`}
                 </p>
                 <p className="text-[10px] text-universe-slate/60 font-mono">
-                  The question bank is built from your uploaded material. Concepts with sufficient evidence will have practice questions.
+                  Mini-quizzes are generated dynamically from your uploaded material. Concepts with sufficient evidence will have practice questions.
                 </p>
               </div>
             ) : (
@@ -437,10 +438,17 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
 
                 <p className="text-xs text-universe-text leading-relaxed font-sans">{feedback.explanation}</p>
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    onClick={loadQuestion}
+                    className="py-3 px-5 rounded-xl border border-white/[0.1] bg-white/[0.05] hover:bg-white/[0.1] text-universe-slate hover:text-white font-mono text-xs flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Next Practice Question (LLM)</span>
+                  </button>
                   <button
                     onClick={onCloseSession}
-                    className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-extrabold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all"
+                    className="py-3 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-space-950 font-display font-extrabold text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all cursor-pointer"
                   >
                     <Zap className="w-4 h-4 fill-current" />
                     <span>Return to Knowledge Atlas</span>

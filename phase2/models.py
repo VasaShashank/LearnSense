@@ -159,6 +159,7 @@ class Concept(BaseModel):
     unit_links: List[UnitLink] = Field(default_factory=list)
     confidence: ConfidenceBreakdown
     evidence_ids: List[str] = Field(default_factory=list)
+    description: str = ""
     extraction: ConceptExtractionInfo = Field(default_factory=ConceptExtractionInfo)
 
 

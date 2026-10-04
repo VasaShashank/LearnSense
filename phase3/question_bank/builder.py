@@ -336,15 +336,17 @@ class QuestionBankBuilder:
         concept_id: str,
         chunks: Sequence[SourceChunk],
         chapter_id: str,
+        count: int = 4,
     ) -> List[QuestionBankItem]:
         concept = context.concepts[concept_id]
         evidence_block = EvidenceRetriever.format_evidence_for_prompt(chunks)
         ref_labels = {f"E{i}": chunk for i, chunk in enumerate(chunks, start=1)}
 
+        q_word = "1 multiple-choice question" if count == 1 else f"{count} multiple-choice questions"
         prompt = (
             f"Below are passages taken from the learner's own material.\n"
             f"{evidence_block}\n\n"
-            f"Write 4 multiple-choice questions about the concept "
+            f"Write {q_word} about the concept "
             f"\"{concept.canonical_name}\" that are answerable using ONLY the passages above.\n"
             f"RULES:\n"
             f"1. Every question must be answerable from the passages. Do not use outside "

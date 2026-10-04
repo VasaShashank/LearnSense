@@ -26,6 +26,8 @@ export interface OnboardingWorkflowProps {
    * can no longer fall into it by accident.
    */
   mode?: 'SOURCE_SELECTION' | 'CALIBRATION';
+  /** When true, forces the self-assessment survey quiz to open even if the subject was previously calibrated. */
+  forceSurvey?: boolean;
   /** Notifies the parent that the subject list changed (e.g. after an upload). */
   onSubjectsChanged?: () => void;
 }
@@ -44,11 +46,12 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   resumeInitSession,
   initialSubject,
   mode = 'SOURCE_SELECTION',
+  forceSurvey = false,
   onSubjectsChanged,
 }) => {
-  // Default step is decided by mode, never "SELECT_SUBJECT" unconditionally.
+  // Default step is decided by mode or forceSurvey
   const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>(
-    mode === 'CALIBRATION' ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
+    mode === 'CALIBRATION' || forceSurvey ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
   );
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [learnerId] = useState<string>('student_alex');
@@ -138,7 +141,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   };
 
   // 1. Select Subject - loads data and checks calibration status
-  const handleSelectSubject = async (sub: Subject) => {
+  const handleSelectSubject = async (sub: Subject, bypassGate: boolean = false) => {
     setSelectedSubject(sub);
     setLoading(true);
     try {
@@ -146,17 +149,17 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setConcepts(graph.concepts);
       setTopics(graph.topics || []);
 
-      // Check if this subject needs calibration
-      const calibrationStatus = await ApiClient.getCalibrationStatus(learnerId, sub.id);
-
-      if (!calibrationStatus.needs_calibration && calibrationStatus.diagnostic_completed) {
-        // Subject already calibrated - allow direct continuation to learning
-        clearDraft(sub.id);
-        onCompleteOnboarding(sub.id, learnerId);
-        return;
+      // If not forcing the survey quiz, check if subject is already fully calibrated
+      if (!bypassGate && !forceSurvey) {
+        const calibrationStatus = await ApiClient.getCalibrationStatus(learnerId, sub.id);
+        if (!calibrationStatus.needs_calibration && calibrationStatus.diagnostic_completed) {
+          clearDraft(sub.id);
+          onCompleteOnboarding(sub.id, learnerId);
+          return;
+        }
       }
 
-      // Subject needs calibration - load self-assessment data and auto-proceed
+      // Subject needs calibration (or survey is requested) - load self-assessment data and auto-proceed
       const draft = loadDraft(sub.id);
       const initMap: Record<string, string> = {};
       const initConf: Record<string, Confidence> = {};
@@ -168,7 +171,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setSelfAssessmentSelections(initMap);
       selfAssessmentSelectionsRef.current = initMap;
       setConfidenceSelections(initConf);
-      // Auto-proceed to self-assessment for existing subjects that need calibration
+      // Auto-proceed to self-assessment survey
       setStep('SELF_ASSESSMENT');
     } catch (err) {
       console.error('Failed to load subject graph', err);
@@ -346,19 +349,15 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeInitSession?.session_id]);
 
-  // REMOVED: Automatic transition to self-assessment for initialSubject
-  // The calibration gate from App.tsx now only loads the subject data.
-  // The user must explicitly click to start self-assessment.
-  // This prevents automatic quiz/diagnostic start after ingestion.
+  // Transition to self-assessment survey when initialSubject is provided
   const initialSubjectHandled = React.useRef<string | null>(null);
   useEffect(() => {
     if (!initialSubject || resumeInitSession) return;
     if (initialSubjectHandled.current === initialSubject.id) return;
     initialSubjectHandled.current = initialSubject.id;
-    // Only load the subject data, do NOT auto-transition to self-assessment
-    handleSelectSubject(initialSubject);
+    handleSelectSubject(initialSubject, Boolean(forceSurvey || mode === 'CALIBRATION'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSubject?.id]);
+  }, [initialSubject?.id, mode, forceSurvey]);
 
   // 2. Submit Self Assessment — self-assessment + confidence is the initial
   // hypothesis only. The server stores it separately from BKT evidence and the

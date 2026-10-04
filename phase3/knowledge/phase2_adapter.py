@@ -154,6 +154,7 @@ class Phase2Adapter:
     def adapt(
         ekr: EducationalKnowledgeRepresentation,
         structured_document: Any = None,
+        semantic_topics: Optional[List[Dict[str, Any]]] = None,
     ) -> LearningContext:
         # block_id -> (page_index, section_title, block_text)
         block_index: Dict[str, tuple] = {}
@@ -244,7 +245,7 @@ class Phase2Adapter:
                 canonical_name=c.canonical_name,
                 aliases=[a.text for a in c.aliases],
                 type=c.type.value if hasattr(c.type, "value") else str(c.type),
-                description=_describe(excerpts, block_text),
+                description=getattr(c, "description", "") or _describe(excerpts, block_text),
                 skill_ids=c.skill_ids,
                 evidence_ids=c.evidence_ids,
                 page_indices=pages,
@@ -297,37 +298,48 @@ class Phase2Adapter:
                 "warnings": [w.model_dump() for w in (sec.warnings or [])],
             })
 
-        topic_concepts: Dict[str, List[str]] = {}
-        for unit in ekr.educational_units:
-            # A unit with no section is keyed by its own unit_id, not by a shared
-            # "default_topic" bucket: collapsing every section-less unit into one
-            # invented topic would show the learner a label that is in no document.
-            sec_id = unit.section_id or f"unit_{unit.unit_id}"
-            topic_concepts.setdefault(sec_id, [])
-            for link in unit.concept_links:
-                if link.concept_id not in topic_concepts[sec_id]:
-                    topic_concepts[sec_id].append(link.concept_id)
+        if semantic_topics:
+            topics: List[Dict[str, Any]] = [
+                {
+                    "topic_id": str(t.get("topic_id") or f"topic_{idx}"),
+                    "title": str(t.get("title") or f"Topic {idx}"),
+                    "concept_ids": [cid for cid in t.get("concept_ids", []) if cid in concepts_map],
+                }
+                for idx, t in enumerate(semantic_topics, start=1)
+                if any(cid in concepts_map for cid in t.get("concept_ids", []))
+            ]
+        else:
+            topic_concepts: Dict[str, List[str]] = {}
+            for unit in ekr.educational_units:
+                # A unit with no section is keyed by its own unit_id, not by a shared
+                # "default_topic" bucket: collapsing every section-less unit into one
+                # invented topic would show the learner a label that is in no document.
+                sec_id = unit.section_id or f"unit_{unit.unit_id}"
+                topic_concepts.setdefault(sec_id, [])
+                for link in unit.concept_links:
+                    if link.concept_id not in topic_concepts[sec_id]:
+                        topic_concepts[sec_id].append(link.concept_id)
 
-        topics: List[Dict[str, Any]] = []
-        for top_id, c_ids in topic_concepts.items():
-            # Real section title when the document had one; otherwise derive a readable
-            # label from the concepts it actually contains (never a generic constant).
-            # Rank by evidence count so the label reflects the topic's core concept,
-            # and cap the join so 20-concept buckets don't become paragraph labels.
-            title = section_titles.get(top_id)
-            if not title:
-                ranked = sorted(
-                    [c for c in c_ids if c in concepts_map],
-                    key=lambda c: -len(concepts_map[c].evidence_ids or []),
-                )
-                if not ranked:
-                    title = top_id.replace("_", " ").title()
-                elif len(ranked) <= 3:
-                    title = " & ".join(concepts_map[c].canonical_name for c in ranked)
-                else:
-                    first = concepts_map[ranked[0]].canonical_name
-                    title = f"{first} +{len(ranked) - 1} more"
-            topics.append({"topic_id": top_id, "title": title, "concept_ids": c_ids})
+            topics = []
+            for top_id, c_ids in topic_concepts.items():
+                # Real section title when the document had one; otherwise derive a readable
+                # label from the concepts it actually contains (never a generic constant).
+                # Rank by evidence count so the label reflects the topic's core concept,
+                # and cap the join so 20-concept buckets don't become paragraph labels.
+                title = section_titles.get(top_id)
+                if not title:
+                    ranked = sorted(
+                        [c for c in c_ids if c in concepts_map],
+                        key=lambda c: -len(concepts_map[c].evidence_ids or []),
+                    )
+                    if not ranked:
+                        title = top_id.replace("_", " ").title()
+                    elif len(ranked) <= 3:
+                        title = " & ".join(concepts_map[c].canonical_name for c in ranked)
+                    else:
+                        first = concepts_map[ranked[0]].canonical_name
+                        title = f"{first} +{len(ranked) - 1} more"
+                topics.append({"topic_id": top_id, "title": title, "concept_ids": c_ids})
 
         definitions: List[ConceptDefinitionView] = []
         for item in ekr.assessable_items:

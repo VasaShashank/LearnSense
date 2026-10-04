@@ -94,32 +94,49 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
 
   const initialEdges: Edge[] = useMemo(() => {
     const edgesRes: Edge[] = [];
-    graphData.concepts.forEach((concept) => {
-      concept.prerequisites.forEach((prereqId) => {
-        const isPrereqImpacted = impactedConceptIds.includes(prereqId);
-        const isTargetEdge = concept.concept_id === activeTargetId;
+    const seenEdges = new Set<string>();
+    const visibleConceptIds = new Set(initialNodes.map((n) => n.id));
 
-        edgesRes.push({
-          id: `e-${prereqId}-${concept.concept_id}`,
-          source: prereqId,
-          target: concept.concept_id,
-          animated: isTargetEdge || isPrereqImpacted || isXRayMode,
-          style: {
-            stroke: isPrereqImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : isXRayMode ? '#8B5CF6' : '#2A364F',
-            strokeWidth: isPrereqImpacted ? 2.5 : isTargetEdge ? 2 : 1.2,
-            strokeDasharray: isXRayMode ? '4 4' : undefined,
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: isPrereqImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : '#5A667A',
-            width: 14,
-            height: 14,
-          },
-        });
+    const addEdge = (src: string, tgt: string) => {
+      const edgeKey = `${src}->${tgt}`;
+      if (seenEdges.has(edgeKey) || src === tgt) return;
+      if (!visibleConceptIds.has(src) || !visibleConceptIds.has(tgt)) return;
+      seenEdges.add(edgeKey);
+
+      const isSrcImpacted = impactedConceptIds.includes(src);
+      const isTargetEdge = tgt === activeTargetId;
+
+      edgesRes.push({
+        id: `e-${src}-${tgt}`,
+        source: src,
+        target: tgt,
+        animated: isTargetEdge || isSrcImpacted || isXRayMode,
+        style: {
+          stroke: isSrcImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : isXRayMode ? '#8B5CF6' : 'rgba(0, 240, 255, 0.45)',
+          strokeWidth: isSrcImpacted ? 2.5 : isTargetEdge ? 2.2 : 1.5,
+          strokeDasharray: isXRayMode ? '4 4' : undefined,
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: isSrcImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : 'rgba(0, 240, 255, 0.75)',
+          width: 14,
+          height: 14,
+        },
+      });
+    };
+
+    graphData.concepts.forEach((concept) => {
+      (concept.prerequisites || []).forEach((prereqId) => {
+        addEdge(prereqId, concept.concept_id);
       });
     });
+
+    (graphData.relationships || []).forEach((rel) => {
+      addEdge(rel.source, rel.target);
+    });
+
     return edgesRes;
-  }, [graphData.concepts, activeTargetId, impactedConceptIds, isXRayMode]);
+  }, [graphData.concepts, graphData.relationships, initialNodes, activeTargetId, impactedConceptIds, isXRayMode]);
 
   const [, , onNodesChange] = useNodesState(initialNodes);
   const [, , onEdgesChange] = useEdgesState(initialEdges);

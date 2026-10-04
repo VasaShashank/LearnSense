@@ -794,6 +794,10 @@ class LearningService:
                 bank = self.get_or_create_question_bank(subject_id, concept_ids)
                 q_item = bank.get_question(question_id)
                 if not q_item:
+                    full_bank = self.bank_repo.load_grounded_bank(subject_id)
+                    if full_bank:
+                        q_item = full_bank.get_question(question_id)
+                if not q_item:
                     raise ValueError(f"Question '{question_id}' not found in question bank for subject '{subject_id}'.")
 
                 correct_answer = str(q_item.correct_answer).strip()
@@ -965,65 +969,101 @@ class LearningService:
 
         return result_payload
 
-    def get_concept_question(self, subject_id: str, concept_id: str) -> Dict[str, Any]:
+    def get_concept_question(
+        self, subject_id: str, concept_id: str, learner_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
-        Return a grounded multiple-choice question for a concept.
+        Return a grounded multiple-choice question for a concept mini-quiz generated via LLM.
         P0 Assessment Security: correct_answer and explanation are NEVER returned here!
 
-        If the concept has no grounded questions, returns a valid response with
-        empty options and a 'no_questions' flag so the frontend can handle it
-        gracefully instead of showing an error.
+        Architecture Contract:
+        - Main Assessment / Diagnostic Calibration: Uses the Question Bank (QB) with
+          Shannon Information Gain maximization.
+        - Mini-Quizzes (Concept Practice): Uses the LLM on-demand to dynamically generate
+          authentic, source-grounded multiple-choice questions matching the learner's
+          knowledge state. Newly generated questions are registered into the subject's
+          question bank so server-side authoritative evaluation can grade them upon submission.
         """
-        try:
-            bank = self.get_or_create_question_bank(subject_id, [concept_id])
-        except Exception as e:
-            logger.error("Failed to get or create question bank for %s: %s", concept_id, e)
-            # Authoritative persisted artifact reuse: attempt to load existing grounded bank for the subject
+        ctx = self.knowledge_service.get_learning_context(subject_id)
+        concept = ctx.concepts.get(concept_id) if ctx and ctx.concepts else None
+
+        generated_item: Optional[QuestionBankItem] = None
+        retriever = self._retriever_for(subject_id)
+
+        # 1. Primary path: Generate live mini-quiz question using LLM grounded in document passages
+        if ctx and concept and retriever is not None:
             try:
-                existing = self.bank_repo.load_grounded_bank(subject_id)
-                if existing:
-                    logger.info("Reusing authoritative persisted grounded bank for '%s'", subject_id)
-                    bank = existing
-                else:
-                    return {
-                        "question_id": "",
-                        "concept_id": concept_id,
-                        "question_text": "",
-                        "options": [],
-                        "source_citations": [],
-                        "no_questions": True,
-                    }
-            except Exception as persisted_err:
-                logger.error("Authoritative bank load failed: %s", persisted_err)
-                return {
-                    "question_id": "",
-                    "concept_id": concept_id,
-                    "question_text": "",
-                    "options": [],
-                    "source_citations": [],
-                    "no_questions": True,
-                }
-        
-        candidates = bank.get_by_concept(concept_id)
-        if not candidates:
+                chunks = retriever.retrieve_for_concept(
+                    concept_id, concept_name=concept.canonical_name, top_k=4
+                )
+                if chunks:
+                    builder = QuestionBankBuilder()
+                    generated_items = builder._generate_for_concept(
+                        ctx, concept_id, chunks, chapter_id="ch_all", count=1
+                    )
+                    # Filter for valid multiple-choice questions with at least 2 distinct options
+                    valid_mcqs = [
+                        it for it in generated_items
+                        if it.options and len(it.options) >= 2 and it.question_text and it.correct_answer
+                    ]
+                    if valid_mcqs:
+                        generated_item = valid_mcqs[0]
+                        # Persist to question bank so server-side submission can authoritatively evaluate correctness
+                        try:
+                            bank = self.bank_repo.load_grounded_bank(subject_id) or QuestionBank(
+                                document_id=subject_id, chapter_id="ch_all"
+                            )
+                            for it in valid_mcqs:
+                                bank.add_question(it)
+                            self.bank_repo.save_bank(bank)
+                        except Exception as save_err:
+                            logger.warning("Could not persist LLM mini-quiz item to bank: %s", save_err)
+            except Exception as llm_err:
+                logger.warning(
+                    "Live LLM mini-quiz generation failed for concept %s: %s. Falling back to existing bank items.",
+                    concept_id,
+                    llm_err,
+                )
+
+        if generated_item is not None:
             return {
-                "question_id": "",
+                "question_id": generated_item.question_id,
                 "concept_id": concept_id,
-                "question_text": "",
-                "options": [],
-                "source_citations": [],
-                "no_questions": True,
+                "question_text": generated_item.question_text,
+                "options": generated_item.options,
+                "source_citations": [c.model_dump(mode="json") for c in generated_item.source_citations],
+                "no_questions": False,
+                "source": "llm",
             }
 
-        q = candidates[0]
+        # 2. Resilient fallback: If LLM is unavailable or offline, pull a valid MCQ with options from the bank
+        try:
+            bank = self.get_or_create_question_bank(subject_id, [concept_id])
+            candidates = [
+                c for c in bank.get_by_concept(concept_id)
+                if c.options and len(c.options) >= 2 and c.question_text
+            ]
+            if candidates:
+                q = candidates[-1]  # Most recent candidate
+                return {
+                    "question_id": q.question_id,
+                    "concept_id": concept_id,
+                    "question_text": q.question_text,
+                    "options": q.options,
+                    "source_citations": [c.model_dump(mode="json") for c in q.source_citations],
+                    "no_questions": False,
+                    "source": "bank_fallback",
+                }
+        except Exception as bank_err:
+            logger.error("Fallback bank query failed for %s: %s", concept_id, bank_err)
+
         return {
-            "question_id": q.question_id,
+            "question_id": "",
             "concept_id": concept_id,
-            "question_text": q.question_text,
-            "options": q.options,
-            # P0: correct_answer is strictly omitted before submission
-            "source_citations": [c.model_dump(mode="json") for c in q.source_citations],
-            "no_questions": False,
+            "question_text": "",
+            "options": [],
+            "source_citations": [],
+            "no_questions": True,
         }
 
     def get_concept_learning_content(self, subject_id: str, concept_id: str) -> Dict[str, Any]:

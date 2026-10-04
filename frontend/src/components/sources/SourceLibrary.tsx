@@ -204,7 +204,7 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
                   {onSelectSubject && (
                     <button
                       onClick={() => onSelectSubject(src.document_id)}
-                      className="py-2 px-3.5 rounded-xl bg-space-900 hover:bg-cyan-400 hover:text-space-950 text-universe-text border border-white/[0.08] hover:border-transparent text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                      className="py-2 px-3.5 rounded-xl bg-space-900 hover:bg-cyan-400 hover:text-space-950 text-universe-text border border-white/[0.08] hover:border-transparent text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>Study in Atlas</span>

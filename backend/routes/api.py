@@ -127,7 +127,7 @@ class FinalAssessmentSubmitApiRequest(BaseModel):
 # --- SUBJECTS & KNOWLEDGE GRAPH ROUTES ---
 
 @router.get("/subjects")
-async def list_subjects():
+def list_subjects():
     """
     Returns list of available subjects with concept counts and metadata.
     """
@@ -135,14 +135,14 @@ async def list_subjects():
 
 
 @router.get("/subjects/{subject_id}/graph")
-async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
+def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
     """
     Returns frontend Knowledge Graph structure with topic territories, concepts, and relationships.
     """
     masteries = {}
     if learner_id:
-        graph_temp = knowledge_service.get_subject_graph(subject_id)
-        c_ids = [c["concept_id"] for c in graph_temp["concepts"]]
+        ctx = knowledge_service.get_learning_context(subject_id)
+        c_ids = list(ctx.concepts.keys())
         st = learner_service.get_or_create_learner_state(learner_id, c_ids)
         masteries = {cid: cs.mastery_probability for cid, cs in st.concept_states.items()}
 
@@ -150,13 +150,13 @@ async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
 
 
 @router.get("/subjects/{subject_id}/concepts/{concept_id}/question")
-async def get_concept_question(subject_id: str, concept_id: str):
+async def get_concept_question(subject_id: str, concept_id: str, learner_id: Optional[str] = None):
     """
-    Returns authentic domain question and options for a specific concept.
+    Returns authentic domain question and options for a specific concept mini-quiz generated via LLM.
     P0 Security: correct_answer and explanation are strictly stripped before submission!
     """
     try:
-        return learning_service.get_concept_question(subject_id, concept_id)
+        return learning_service.get_concept_question(subject_id, concept_id, learner_id=learner_id)
     except LearnSenseError:
         raise
     except Exception as exc:
@@ -179,7 +179,7 @@ async def get_concept_learning_content(subject_id: str, concept_id: str):
 # --- LEARNER STATE, PROGRESS & PATH ROUTES ---
 
 @router.get("/learners/{learner_id}/progress")
-async def get_learner_progress(learner_id: str, subject_id: str):
+def get_learner_progress(learner_id: str, subject_id: str):
     """
     Returns learner mastery breakdown, exploration rates, and confidence level.
     """
@@ -187,7 +187,7 @@ async def get_learner_progress(learner_id: str, subject_id: str):
 
 
 @router.get("/learners/{learner_id}/path-and-gaps")
-async def get_path_and_gaps(learner_id: str, subject_id: str):
+def get_path_and_gaps(learner_id: str, subject_id: str):
     """
     Returns Phase 4 prioritized knowledge gaps, cycle-safe learning path, and active next target.
     """
@@ -245,7 +245,7 @@ async def calibration_status(learner_id: str = Query(...), subject_id: str = Que
 
 
 @router.get("/learners/{learner_id}/entry-state")
-async def get_entry_state(learner_id: str, subject_id: Optional[str] = Query(None)):
+def get_entry_state(learner_id: str, subject_id: Optional[str] = Query(None)):
     """
     Server-authoritative routing state: where this learner belongs right now.
 
@@ -365,7 +365,7 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
 
 
 @router.get("/learners/{learner_id}/resume")
-async def resume_learner(learner_id: str, subject_id: Optional[str] = Query(None)):
+def resume_learner(learner_id: str, subject_id: Optional[str] = Query(None)):
     """
     Returns persisted learner state, progress, and active assessment to resume UI after refresh.
     """
@@ -442,7 +442,7 @@ async def interact_with_tutor(req: TutorInteractApiRequest):
 # --- SOURCE LIBRARY ROUTES ---
 
 @router.get("/sources")
-async def list_sources():
+def list_sources():
     """
     Lists uploaded sources and processing/recovery statuses.
     """

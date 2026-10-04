@@ -1,3 +1,4 @@
+
 """
 Tutor Service Facade for Taproot Application Layer.
 Provides context-aware AI explanations, hints, analogies, and step-by-step guidance

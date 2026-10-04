@@ -185,6 +185,7 @@ class LearningContextRepository:
     def __init__(self, base_dir: str = "storage/learning_contexts"):
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
+        self._cache: Dict[str, tuple[float, LearningContext]] = {}
 
     def get_path(self, subject_id: str) -> Path:
         return self.base_dir / f"{subject_id}.json"
@@ -192,15 +193,36 @@ class LearningContextRepository:
     def save_context(self, context: LearningContext) -> Path:
         path = self.get_path(context.document_id)
         data = context.model_dump(mode="json")
-        return _atomic_write_json(path, data, self.base_dir)
+        res = _atomic_write_json(path, data, self.base_dir)
+        try:
+            mtime = path.stat().st_mtime
+            self._cache[context.document_id] = (mtime, context)
+        except OSError:
+            self._cache.pop(context.document_id, None)
+        return res
 
     def load_context(self, subject_id: str) -> Optional[LearningContext]:
         path = self.get_path(subject_id)
         if not path.exists():
+            self._cache.pop(subject_id, None)
             return None
+        try:
+            mtime = path.stat().st_mtime
+            cached = self._cache.get(subject_id)
+            if cached is not None and cached[0] == mtime:
+                return cached[1]
+        except OSError:
+            pass
+
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return LearningContext.model_validate(data)
+            ctx = LearningContext.model_validate(data)
+            try:
+                mtime = path.stat().st_mtime
+                self._cache[subject_id] = (mtime, ctx)
+            except OSError:
+                pass
+            return ctx
 
 
 class ActiveSubjectRepository:

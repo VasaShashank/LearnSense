@@ -168,6 +168,137 @@ def _is_single_common_word(term: str) -> bool:
     return term.lower() in LEADING_FUNCTION_WORDS
 
 
+# Verbs, adverbs, non-topic adjectives, and conversational fragments that must never
+# be accepted as isolated single-word concepts.
+NON_CONCEPT_SINGLE_WORDS = {
+    # Common action verbs
+    "distributes", "distribute", "distributing", "distributed",
+    "adjusts", "adjust", "adjusting", "adjusted",
+    "ensures", "ensure", "ensuring", "ensured",
+    "provides", "provide", "providing", "provided",
+    "allows", "allow", "allowing", "allowed",
+    "enables", "enable", "enabling", "enabled",
+    "requires", "require", "requiring", "required",
+    "depends", "depend", "depending", "depended",
+    "supports", "support", "supporting", "supported",
+    "performs", "perform", "performing", "performed",
+    "operates", "operate", "operating", "operated",
+    "executes", "execute", "executing", "executed",
+    "manages", "manage", "managing", "managed",
+    "creates", "create", "creating", "created",
+    "builds", "build", "building", "built",
+    "runs", "run", "running",
+    "scales", "scale", "scaling", "scaled",
+    "deploys", "deploy", "deploying", "deployed",
+    "configures", "configure", "configuring", "configured",
+    "handles", "handle", "handling", "handled",
+    "processes", "process", "processing", "processed",
+    "stores", "store", "storing", "stored",
+    "sends", "send", "sending", "sent",
+    "receives", "receive", "receiving", "received",
+    "connects", "connect", "connecting", "connected",
+    "delivers", "deliver", "delivering", "delivered",
+    "serves", "serve", "serving", "served",
+    "optimizes", "optimize", "optimizing", "optimized",
+    "secures", "secure", "securing", "secured",
+    "monitors", "monitor", "monitoring", "monitored",
+    "accesses", "access", "accessing", "accessed",
+    "defines", "define", "defining", "defined",
+    "maintains", "maintain", "maintaining", "maintained",
+    "generates", "generate", "generating", "generated",
+    "analyzes", "analyze", "analyzing", "analyzed",
+    "calculates", "calculate", "calculating", "calculated",
+    "evaluates", "evaluate", "evaluating", "evaluated",
+    "identifies", "identify", "identifying", "identified",
+    "illustrates", "illustrate", "illustrating", "illustrated",
+    "selects", "select", "selecting", "selected",
+    "specifies", "specify", "specifying", "specified",
+    "summarizes", "summarize", "summarizing", "summarized",
+    "validates", "validate", "validating", "validated",
+    "verifies", "verify", "verifying", "verified",
+    "contains", "contain", "containing", "contained",
+    "includes", "include", "including", "included",
+    "consists", "consist", "consisting", "consisted",
+    "produces", "produce", "producing", "produced",
+    "reduces", "reduce", "reducing", "reduced",
+    "increases", "increase", "increasing", "increased",
+    "improves", "improve", "improving", "improved",
+    "enhances", "enhance", "enhancing", "enhanced",
+    "protects", "protect", "protecting", "protected",
+    "works", "work", "working", "worked",
+    "helps", "help", "helping", "helped",
+    "makes", "make", "making", "made",
+    "takes", "take", "taking", "taken",
+    "gives", "give", "giving", "given",
+    "finds", "find", "finding", "found",
+    "keeps", "keep", "keeping", "kept",
+    "shows", "show", "showing", "shown", "showed",
+    "starts", "start", "starting", "started",
+    "ends", "end", "ending", "ended",
+    "stops", "stop", "stopping", "stopped",
+    "begins", "begin", "beginning", "began", "begun",
+    "moves", "move", "moving", "moved",
+    "brings", "bring", "bringing", "brought",
+    "holds", "hold", "holding", "held",
+    "puts", "put", "putting",
+    "sets", "set", "setting",
+    "gets", "get", "getting", "got",
+    "leaves", "leave", "leaving", "left",
+    "leads", "lead", "leading", "led",
+    "means", "mean", "meaning", "meant",
+    "looks", "look", "looking", "looked",
+    "feels", "feel", "feeling", "felt",
+    "seems", "seem", "seeming", "seemed",
+    "becomes", "become", "becoming", "became",
+    "grows", "grow", "growing", "grew", "grown",
+    "turns", "turn", "turning", "turned",
+    "stands", "stand", "standing", "stood",
+    "falls", "fall", "falling", "fell", "fallen",
+    "passes", "pass", "passing", "passed",
+    "fails", "fail", "failing", "failed",
+    "commits", "commit", "committing", "committed",
+    "pays", "pay", "paying", "paid",
+    "tests", "test", "testing", "tested",
+    "learns", "learn", "learning", "learned",
+    "teaches", "teach", "teaching", "taught",
+    "reads", "read", "reading",
+    "writes", "write", "writing", "written",
+    # Common conversational adjectives / non-concept words
+    "static", "dynamic", "multi", "single", "various", "different",
+    "similar", "particular", "certain", "several", "few", "many", "much",
+    "more", "most", "less", "least", "other", "another", "such", "own",
+    "same", "able", "available", "possible", "impossible", "capable",
+    "suitable", "ready", "due", "likely", "unlikely", "true", "false",
+    "new", "old", "good", "bad", "high", "low", "great", "small", "large",
+    "huge", "major", "minor", "core", "basic", "main", "primary",
+    "secondary", "final", "initial", "total", "overall", "whole", "full",
+    "empty", "free", "open", "close", "fast", "slow", "easy", "hard",
+    "simple", "complex", "variety", "common", "general", "specific",
+    "multiple",
+    # User / audience terms
+    "developers", "developer", "users", "user", "administrators",
+    "administrator", "engineers", "engineer", "architects", "architect",
+    "customers", "customer", "clients", "client", "teams", "team",
+    "people", "members", "member", "audiences", "audience",
+}
+
+
+def _is_isolated_verb_or_non_noun(term: str) -> bool:
+    """
+    True when a single-word candidate is an action verb, adverb, participle,
+    or generic non-topic modifier rather than an educational concept.
+    """
+    if " " in term:
+        return False
+    low = term.lower()
+    if low in NON_CONCEPT_SINGLE_WORDS:
+        return True
+    # Adverbs ending in -ly (e.g. Automatically, Quickly, Easily, Directly)
+    if low.endswith("ly") and len(low) > 4:
+        return True
+    return False
+
+
 def _is_pure_discourse(term: str) -> bool:
     """
     True when every content word of the term is a discourse connective.
@@ -533,6 +664,8 @@ def extract_candidates(
             if term.lower() in STOPWORDS or len(term) < 3:
                 continue
             if _is_single_common_word(term):
+                continue
+            if _is_isolated_verb_or_non_noun(term):
                 continue
             if _is_pure_discourse(term):
                 continue

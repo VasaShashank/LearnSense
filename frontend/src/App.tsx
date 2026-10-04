@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, SourceDocument, EntryState, EntryStateName } from './api/client';
+import { useState, useEffect, useCallback } from 'react';
+import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, SourceDocument } from './api/client';
 import { ApiClient } from './api/client';
 import { TopNavbar } from './components/navigation/TopNavbar';
 import { Dashboard } from './components/dashboard/Dashboard';
@@ -14,48 +14,15 @@ import { ContextualTutor } from './components/tutor/ContextualTutor';
 import { SourceLibrary } from './components/sources/SourceLibrary';
 import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
-import { Zap, Sparkles, Orbit, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
 
-/**
- * The application state machine, rendered exactly as the backend reports it.
- *
- * There is deliberately no "unknown" bucket: if the backend cannot tell us where
- * the learner belongs we show an error with retry. The previous implementation
- * collapsed every un-resolved case into "not onboarded", which rendered the
- * ingestion/upload screen -- so an upload page became the generic fallback route.
- */
-type AppStage =
-  | 'BOOT'                 // resolving server-authoritative state
-  | 'SOURCE_SELECTION'     // no usable knowledge source yet
-  | 'CALIBRATION'          // source ready, self-assessment / verification
-  | 'DASHBOARD'            // verification complete
-  | 'ERROR';               // state could not be resolved -- retry, never ingest
-
-function stageForEntryState(entry: EntryStateName): AppStage {
-  switch (entry) {
-    case 'NEEDS_CALIBRATION':
-    case 'VERIFICATION_IN_PROGRESS':
-    case 'VERIFICATION_ERROR':
-      return 'CALIBRATION';
-    case 'VERIFICATION_COMPLETE':
-      return 'DASHBOARD';
-    case 'NO_USER':
-    case 'SOURCE_SELECTION':
-    default:
-      return 'SOURCE_SELECTION';
-  }
-}
 
 export default function App() {
   const [learnerId] = useState<string>('student_alex');
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [stage, setStage] = useState<AppStage>('BOOT');
-  const [, setEntryState] = useState<EntryState | null>(null);
-  const [bootError, setBootError] = useState<string | null>(null);
-  const [bootAttempt, setBootAttempt] = useState<number>(0);
-
   const [activeView, setActiveView] = useState<'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES'>('DASHBOARD');
+
   // Resume / Rehydration State
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
   const [progress, setProgress] = useState<LearnerProgress | null>(null);
@@ -82,109 +49,56 @@ export default function App() {
   const [isFinalAssessmentOpen, setIsFinalAssessmentOpen] = useState<boolean>(false);
   const [activeAssessmentId, setActiveAssessmentId] = useState<string | null>(null);
 
-  // Interrupted diagnostic session awaiting resume after refresh. Set only from
-  // server state, never from a local guess.
-  const [resumeInitSession, setResumeInitSession] = useState<{ session_id: string; subject_id: string } | null>(null);
-
-  // Newly ingested subject that still needs self-assessment -> diagnostic
-  // before learning starts. While set, the calibration flow takes over the UI.
+  // Calibration / Onboarding Flow State (optional, user-initiated or explicit)
+  const [isCalibrationOpen, setIsCalibrationOpen] = useState<boolean>(false);
   const [pendingCalibration, setPendingCalibration] = useState<Subject | null>(null);
+  const [resumeInitSession, setResumeInitSession] = useState<{ session_id: string; subject_id: string } | null>(null);
 
   // Signature "Knowledge Changed" Notification State
   const [knowledgeChangedNotification, setKnowledgeChangedNotification] = useState<string | null>(null);
 
-  // 1. Initial Load Subjects & Sources
+  // 1. Initial Load: Start with Home Page immediately, fetch subjects, sources, and resumed learner state in background
   const reloadSubjectsAndSources = useCallback(async () => {
     try {
-      const subs = await ApiClient.getSubjects();
+      const [subs, srcs, resumeData] = await Promise.all([
+        ApiClient.getSubjects(),
+        ApiClient.getSources(),
+        ApiClient.resumeLearner(learnerId).catch(() => null),
+      ]);
       setSubjects(subs);
-      const srcs = await ApiClient.getSources();
       setSources(srcs);
+
+      let targetSub: Subject | null = null;
+      if (resumeData && resumeData.subject_id) {
+        targetSub = subs.find((s) => s.id === resumeData.subject_id) || null;
+      }
+      if (!targetSub && subs.length > 0) {
+        targetSub = subs[0];
+      }
+
+      if (targetSub) {
+        setSelectedSubject((prev) => prev ?? targetSub);
+      }
     } catch (err) {
       console.error('Failed to load initial data', err);
     }
-  }, []);
+  }, [learnerId]);
 
   useEffect(() => {
     reloadSubjectsAndSources();
   }, [reloadSubjectsAndSources]);
 
-  /**
-   * Resolve where the learner belongs, from the server, then render that.
-   *
-   * This replaces the old `isOnboarded` boolean, which conflated three very
-   * different situations (no learner state, a resume timeout, and a resume
-   * error) into one screen -- the ingestion page. A timeout or failure now
-   * produces an explicit ERROR stage with retry instead of masquerading as a
-   * valid "you have no source yet" state.
-   */
-  useEffect(() => {
-    let cancelled = false;
-
-    const boot = async () => {
-      setStage('BOOT');
-      setBootError(null);
-      try {
-        const [resumeData, subs] = await Promise.all([
-          ApiClient.resumeLearner(learnerId),
-          ApiClient.getSubjects(),
-        ]);
-        if (cancelled) return;
-        setSubjects(subs);
-
-        const subjectId = resumeData.subject_id ?? null;
-        if (subjectId) {
-          const sub = subs.find((s) => s.id === subjectId);
-          if (sub) setSelectedSubject(sub);
-          // Remember this source server-side so reopening the app resumes it
-          // instead of landing on an arbitrary document.
-          void ApiClient.setActiveSubject(learnerId, subjectId).catch(() => undefined);
-        }
-
-        // SERVER AUTHORITY: the routing decision comes from the backend.
-        const entry = await ApiClient.getEntryState(learnerId, subjectId ?? undefined);
-        if (cancelled) return;
-        setEntryState(entry);
-
-        if (entry.entry_state === 'VERIFICATION_IN_PROGRESS' && entry.session_id && subjectId) {
-          setResumeInitSession({ session_id: entry.session_id, subject_id: subjectId });
-        } else {
-          setResumeInitSession(null);
-        }
-
-        setStage(stageForEntryState(entry.entry_state));
-      } catch (err) {
-        if (cancelled) return;
-        console.error('[RESTORE] Could not resolve learner state:', err);
-        setBootError(
-          err instanceof Error
-            ? err.message
-            : 'The learning backend did not respond. Your progress is safe on the server.',
-        );
-        // Deliberately NOT SOURCE_SELECTION: an unreachable backend is an error,
-        // not evidence that the learner has no source.
-        setStage('ERROR');
-      }
-    };
-
-    boot();
-    return () => {
-      cancelled = true;
-    };
-  }, [learnerId, bootAttempt]);
-
-
   // 2. Load Subject Data when subject changes or knowledge updates
   const refreshSubjectData = useCallback(async () => {
     if (!selectedSubject) return;
     try {
-      const graph = await ApiClient.getSubjectGraph(selectedSubject.id, learnerId);
+      const [graph, prog, pathGapRes] = await Promise.all([
+        ApiClient.getSubjectGraph(selectedSubject.id, learnerId),
+        ApiClient.getLearnerProgress(learnerId, selectedSubject.id),
+        ApiClient.getPathAndGaps(learnerId, selectedSubject.id),
+      ]);
       setGraphData(graph);
-
-      const prog = await ApiClient.getLearnerProgress(learnerId, selectedSubject.id);
       setProgress(prog);
-
-      const pathGapRes = await ApiClient.getPathAndGaps(learnerId, selectedSubject.id);
       setGaps(pathGapRes.gaps);
       setPathNodes(pathGapRes.learning_path.nodes);
       setNextTarget(pathGapRes.next_target);
@@ -194,101 +108,24 @@ export default function App() {
   }, [selectedSubject, learnerId]);
 
   useEffect(() => {
-    if (stage === 'DASHBOARD' && selectedSubject) {
+    if (selectedSubject) {
       refreshSubjectData();
     }
-  }, [stage, selectedSubject, refreshSubjectData]);
+  }, [selectedSubject, refreshSubjectData]);
 
-  /**
-   * Re-resolve the routing state from the backend.
-   *
-   * Every transition that could change where the learner belongs (finishing
-   * onboarding, ingesting a new source) funnels through here, so the UI can
-   * never drift into showing the dashboard because of a local flag.
-   */
-  const resolveStage = useCallback(
-    async (subjectId?: string) => {
-      try {
-        const entry = await ApiClient.getEntryState(learnerId, subjectId);
-        setEntryState(entry);
-        setBootError(null);
-        if (entry.entry_state === 'VERIFICATION_IN_PROGRESS' && entry.session_id && entry.subject_id) {
-          setResumeInitSession({ session_id: entry.session_id, subject_id: entry.subject_id });
-        } else {
-          setResumeInitSession(null);
-        }
-        const next = stageForEntryState(entry.entry_state);
-        setStage(next);
-        if (next === 'SOURCE_SELECTION') {
-          setPendingCalibration(null);
-        }
-        return next;
-      } catch (err) {
-        console.error('[STATE] Could not resolve learner routing state:', err);
-        setBootError(
-          err instanceof Error
-            ? err.message
-            : 'The learning backend did not respond. Your progress is safe on the server.',
-        );
-        setStage('ERROR');
-        return 'ERROR' as AppStage;
-      }
-    },
-    [learnerId],
-  );
-
-  // Calibration gate on subject selection: any subject without a submitted
-  // self-assessment (e.g. freshly uploaded material, or material ingested
-  // before this gate existed) routes to strength rating + verification test
-  // instead of showing default 30% mastery.
-  //
-  // There is no longer a "skip the gate for subjects loaded during resume"
-  // escape hatch. That bypass is exactly what let an unverified learner reach
-  // the dashboard with untouched default mastery (30%, 0 explored concepts),
-  // because their subject had been restored and therefore treated as trusted.
-  // The gate is now driven purely by server-reported entry state.
-  const gateCheckedFor = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (stage !== 'DASHBOARD' || !selectedSubject || pendingCalibration || resumeInitSession) return;
-    const key = `${learnerId}:${selectedSubject.id}`;
-    if (gateCheckedFor.current === key) return;
-    gateCheckedFor.current = key;
-    resolveStage(selectedSubject.id);
-  }, [stage, selectedSubject, pendingCalibration, resumeInitSession, learnerId, resolveStage]);
-
-  // Handle Onboarding Completion. Only reached once the server reports the
-  // verification as complete -- the completion callback is no longer a
-  // self-declared "I am done" signal from the client.
+  // Handle Onboarding Completion
   const handleCompleteOnboarding = (subjectId: string) => {
     const sub = subjects.find((s) => s.id === subjectId) ?? subjects[0];
     setSelectedSubject(sub);
     setResumeInitSession(null);
     setPendingCalibration(null);
-    gateCheckedFor.current = null;
+    setIsCalibrationOpen(false);
     setActiveView('DASHBOARD');
-    void resolveStage(subjectId);
   };
 
-  // Calibration gate: no subject may enter learning without self-assessment +
-  // diagnostic verification. Uncalibrated subjects route to the onboarding flow;
-  // interrupted diagnostics resume where they left off.
-  // For new uploads (forceOnboarding=true), always trigger onboarding regardless of calibration status.
-  const openSubject = async (sub: Subject, targetView: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES' = 'ATLAS', forceOnboarding = false) => {
+  const openSubject = (sub: Subject, targetView: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES' = 'DASHBOARD') => {
     setSelectedSubject(sub);
-    gateCheckedFor.current = null;
     void ApiClient.setActiveSubject(learnerId, sub.id).catch(() => undefined);
-
-    // For new uploads, force onboarding regardless of calibration status
-    if (forceOnboarding) {
-      setPendingCalibration(sub);
-      setStage('CALIBRATION');
-      return;
-    }
-
-    const next = await resolveStage(sub.id);
-    if (next === 'ERROR') return; // explicit error + retry, never silently continue
-    if (next === 'CALIBRATION') return;
     setActiveView(targetView);
   };
 
@@ -325,66 +162,35 @@ export default function App() {
     }, 5000);
   };
 
-  // Show a brief loading state while resolving server-authoritative state
-  if (stage === 'BOOT') {
+  // Optional Full-screen Onboarding / Calibration if explicitly requested
+  if (isCalibrationOpen) {
     return (
-      <div className="min-h-screen universe-canvas flex items-center justify-center">
-        <div className="text-center space-y-4 animate-pulse">
-          <Orbit className="w-10 h-10 text-cyan-400 mx-auto animate-spin" />
-          <p className="text-sm font-mono text-universe-slate">Restoring learning state...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ERROR is a first-class state with a retry. It is deliberately NOT rendered
-  // as the ingestion screen: "the backend did not answer" and "you have no
-  // material yet" are different facts, and conflating them is what turned the
-  // upload page into the generic fallback.
-  if (stage === 'ERROR') {
-    return (
-      <div className="min-h-screen universe-canvas flex items-center justify-center px-6">
-        <div className="max-w-lg text-center space-y-5">
-          <div className="flex items-center justify-center gap-3">
-            <AlertTriangle className="w-7 h-7 text-amber-400" />
-            <h2 className="text-lg font-display font-bold text-universe-text">
-              Could not load your learning state
-            </h2>
+      <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300">
+        <header className="sticky top-0 z-40 w-full border-b border-white/[0.07] bg-space-950/80 backdrop-blur-2xl px-5 lg:px-8 py-3">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+            <button
+              onClick={() => setIsCalibrationOpen(false)}
+              className="px-4 py-2 rounded-xl bg-space-800 hover:bg-space-750 text-xs font-mono text-cyan-400 border border-cyan-500/20 flex items-center gap-2 transition-all cursor-pointer"
+            >
+              ← Back to Home / Dashboard
+            </button>
+            <span className="text-xs font-mono text-universe-slate uppercase tracking-wider">
+              Diagnostic &amp; Calibration Mode
+            </span>
           </div>
-          <p className="text-sm text-universe-slate leading-relaxed">
-            {bootError ?? 'The learning backend did not respond.'}
-          </p>
-          <p className="text-xs text-universe-slate/80 leading-relaxed">
-            Nothing has been lost &mdash; your progress, sources and any in-progress verification are
-            stored on the server. Retry to reconnect.
-          </p>
-          <button
-            onClick={() => setBootAttempt((n) => n + 1)}
-            className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs hover:bg-cyan-300 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Retry
-          </button>
-        </div>
+        </header>
+        <main className="flex-1">
+          <OnboardingWorkflow
+            subjects={subjects}
+            onCompleteOnboarding={handleCompleteOnboarding}
+            resumeInitSession={resumeInitSession}
+            initialSubject={pendingCalibration ?? (selectedSubject ?? undefined)}
+            mode="CALIBRATION"
+            forceSurvey={true}
+            onSubjectsChanged={reloadSubjectsAndSources}
+          />
+        </main>
       </div>
-    );
-  }
-
-  if (stage === 'SOURCE_SELECTION' || stage === 'CALIBRATION') {
-    return (
-      <OnboardingWorkflow
-        subjects={subjects}
-        onCompleteOnboarding={handleCompleteOnboarding}
-        resumeInitSession={resumeInitSession}
-        initialSubject={resumeInitSession ? undefined : (pendingCalibration ?? (selectedSubject ?? undefined))}
-        // SOURCE_SELECTION must never show the ingestion screen by accident:
-        // the mode makes the distinction explicit so the calibration stages
-        // (strength rating / verification) cannot render the upload panel.
-        mode={stage === 'SOURCE_SELECTION' ? 'SOURCE_SELECTION' : 'CALIBRATION'}
-        onSubjectsChanged={() => {
-          setBootAttempt((n) => n + 1);
-        }}
-      />
     );
   }
 
@@ -425,21 +231,44 @@ export default function App() {
         )}
 
         {/* View 1: DASHBOARD (Knowledge Command Center) */}
-        {activeView === 'DASHBOARD' && selectedSubject && (
-          <Dashboard
-            currentSubject={selectedSubject}
-            progress={progress}
-            gaps={gaps}
-            nextTarget={nextTarget}
-            onNavigateToAtlas={() => setActiveView('ATLAS')}
-            onNavigateToPath={() => setActiveView('PATH')}
-            onNavigateToSession={(cId) => {
-              const c = graphData?.concepts.find((item) => item.concept_id === cId);
-              if (c) setActiveStudyConcept(c);
-            }}
-            onNavigateToSources={() => setActiveView('SOURCES')}
-            onStartFinalAssessment={() => setIsFinalAssessmentOpen(true)}
-          />
+        {activeView === 'DASHBOARD' && (
+          selectedSubject ? (
+            <Dashboard
+              currentSubject={selectedSubject}
+              progress={progress}
+              gaps={gaps}
+              nextTarget={nextTarget}
+              onNavigateToAtlas={() => setActiveView('ATLAS')}
+              onNavigateToPath={() => setActiveView('PATH')}
+              onNavigateToSession={(cId) => {
+                const c = graphData?.concepts.find((item) => item.concept_id === cId);
+                if (c) setActiveStudyConcept(c);
+              }}
+              onNavigateToSources={() => setActiveView('SOURCES')}
+              onStartFinalAssessment={() => setIsFinalAssessmentOpen(true)}
+            />
+          ) : (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-xl mx-auto my-12 animate-fade-in border border-white/[0.08]">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center mx-auto text-cyan-400">
+                <Sparkles className="w-6 h-6 animate-pulse" />
+              </div>
+              <h2 className="text-xl font-display font-bold text-white">Welcome to LearnSense Taproot</h2>
+              <p className="text-sm text-universe-slate leading-relaxed font-sans">
+                {subjects.length === 0
+                  ? 'Your knowledge engine is ready. Upload textbook chapters or course materials in Sources to generate your interactive Knowledge Atlas.'
+                  : 'Preparing your active subject dashboard...'}
+              </p>
+              <div className="pt-2 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setActiveView('SOURCES')}
+                  className="px-6 py-2.5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs hover:bg-cyan-300 transition-all inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>Open Sources &amp; Upload</span>
+                </button>
+              </div>
+            </div>
+          )
         )}
 
         {/* View 2: LEARNING ATLAS (Constellation Map) */}
@@ -543,11 +372,21 @@ export default function App() {
               try {
                 const subs = await ApiClient.getSubjects();
                 setSubjects(subs);
-                const sub = subs.find((s) => s.id === subjectId);
-                if (sub) {
-                  // For new uploads, force onboarding regardless of calibration status
-                  // For existing materials, open directly in Atlas
-                  await openSubject(sub, isNewUpload ? 'DASHBOARD' : 'ATLAS', isNewUpload);
+                const sub = subs.find((s) => s.id === subjectId) || {
+                  id: subjectId,
+                  title: subjectId.replace(/_/g, ' ').toUpperCase(),
+                  concept_count: 0,
+                  page_count: 1,
+                  has_ekr: true,
+                };
+                setSelectedSubject(sub);
+                void ApiClient.setActiveSubject(learnerId, sub.id).catch(() => undefined);
+                if (isNewUpload) {
+                  // After uploading, immediately launch the initial survey quiz & diagnostic assessment
+                  setPendingCalibration(sub);
+                  setIsCalibrationOpen(true);
+                } else {
+                  setActiveView('ATLAS');
                 }
               } catch (err) {
                 console.error('Failed to switch subject', err);
