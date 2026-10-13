@@ -56,6 +56,7 @@ class SemanticTopicExtractor:
         doc: StructuredDocument,
         base_concepts: Optional[List[Concept]] = None,
         base_evidence: Optional[List[Evidence]] = None,
+        base_relationships: Optional[List[Relationship]] = None,
     ) -> Tuple[List[Concept], List[Relationship], List[Dict[str, Any]], List[Evidence]]:
         """
         Extract topics, clean concepts, and prerequisite relationships.
@@ -82,7 +83,12 @@ class SemanticTopicExtractor:
             except Exception as exc:
                 logger.warning("Semantic LLM extraction failed, falling back to deterministic extraction: %s", exc)
 
-        return self._extract_deterministic(doc, base_concepts or [], base_evidence or [])
+        return self._extract_deterministic(
+            doc,
+            base_concepts or [],
+            base_evidence or [],
+            base_relationships or [],
+        )
 
     def _extract_with_llm(
         self, doc: StructuredDocument, adapter: Any
@@ -279,21 +285,24 @@ Document Text:
         doc: StructuredDocument,
         base_concepts: List[Concept],
         base_evidence: List[Evidence],
+        base_relationships: Optional[List[Relationship]] = None,
     ) -> Tuple[List[Concept], List[Relationship], List[Dict[str, Any]], List[Evidence]]:
         """
         Intelligent deterministic extraction when LLM is unavailable:
         Groups concepts by document outline/sections, filters out low-signal tokens,
-        and constructs curricular prerequisite progression edges.
+        preserves explicit relationships and mined definitions, and constructs
+        curricular prerequisite progression edges.
         """
         # 1. Filter base concepts: keep high-value concepts
         filtered_concepts: List[Concept] = []
         for c in base_concepts:
             name = c.canonical_name.strip()
-            # Multi-word terms, uppercase acronyms, or concepts with definition evidence
+            # Multi-word terms, uppercase acronyms, concepts with definition, or concepts with evidence
             is_multi = " " in name
             is_acronym = name.isupper() and len(name) >= 2
             has_definition = bool(getattr(c, "description", None))
-            if is_multi or is_acronym or has_definition:
+            has_evidence = len(c.evidence_ids) >= 1
+            if is_multi or is_acronym or has_definition or has_evidence:
                 filtered_concepts.append(c)
 
         # If too few survived, take top concepts
@@ -377,6 +386,14 @@ Document Text:
         # 3. Build Curriculum Progression Directed Edges
         relationships: List[Relationship] = []
         adj: Dict[str, Set[str]] = {}
+
+        # Preserve and merge valid base relationships from Stage 7
+        concept_ids = {c.concept_id for c in filtered_concepts}
+        for rel in (base_relationships or []):
+            if rel.source in concept_ids and rel.target in concept_ids and rel.source != rel.target:
+                if not has_directed_path(adj, rel.target, rel.source):
+                    relationships.append(rel)
+                    adj.setdefault(rel.source, set()).add(rel.target)
 
         self._ensure_graph_connectivity(filtered_concepts, relationships, topics, adj, doc.document_id)
 

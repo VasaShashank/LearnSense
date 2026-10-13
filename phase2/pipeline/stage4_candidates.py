@@ -5,6 +5,7 @@ Plan §7.
 """
 
 import re
+from collections import Counter
 from typing import Any, Dict, List, Set, Tuple
 from phase2.models import (
     ConceptMention,
@@ -31,6 +32,21 @@ from phase2.utils.id_generator import (
 # document to count as a teachable concept. Real subject terms recur; slide
 # titles, table headers and incidental proper nouns appear once.
 MIN_TERM_OCCURRENCES = 2
+
+# Functional stopwords that should not bound candidate noun phrases
+_EDGE_STOPWORDS = {
+    "a", "an", "the", "in", "on", "at", "by", "for", "with", "about", "against",
+    "between", "into", "through", "during", "before", "after", "above", "below",
+    "to", "from", "up", "down", "out", "off", "over", "under", "again",
+    "further", "then", "once", "here", "there", "when", "where", "why", "how",
+    "all", "any", "both", "each", "few", "more", "most", "other", "some", "such",
+    "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very",
+    "s", "t", "can", "will", "just", "don", "should", "now", "and", "or", "but",
+    "if", "because", "as", "until", "while", "of", "is", "are", "was", "were",
+    "be", "been", "being", "have", "has", "had", "having", "do", "does", "did",
+    "doing", "would", "could", "it", "its", "this", "that", "these", "those",
+    "they", "them", "their", "we", "our", "you", "your", "he", "she", "his", "her"
+}
 
 STOPWORDS = {
     "system", "method", "process", "thing", "item", "example", "chapter",
@@ -468,7 +484,11 @@ def extract_candidates(
             unit_by_block[s.block_id] = u
 
     # Regex patterns for definitions, acronyms, formulas
-    def_pattern = re.compile(r"([A-Z][A-Za-z0-9\s'-]{2,30})\s+(is defined as|refers to|is called)\s+(.+)", re.IGNORECASE)
+    def_pattern = re.compile(
+        r"([A-Za-z0-9\s'-]{2,40})\s+(is defined as|refers to|is called|is known as|can be defined as|is described as|means|is an? [A-Za-z\s-]{2,35} (?:that|which|by which|used to|designed to|for))\s+([^.\n]+)",
+        re.IGNORECASE,
+    )
+    colon_def_pattern = re.compile(r"(?:^|\n)\s*([A-Za-z0-9\s'-]{2,35}):\s+([A-Z][^\n]{10,})")
     acronym_pattern = re.compile(r"([A-Z][A-Za-z0-9\s'-]{2,40})\s*\(([A-Z]{2,6})\)")
     formula_pattern = re.compile(r"([A-Za-z_]+)\s*=\s*([A-Za-z0-9\s\+\-\*\/\^\(\)]+)")
 
@@ -571,6 +591,17 @@ def extract_candidates(
         if b["block_id"] not in skipped_block_ids
     ).lower()
 
+    # Precompute unigram and n-gram frequencies in one O(N) linear pass:
+    prose_tokens = [tok for tok in re.findall(r"\b[a-z0-9'-]+\b", lowercase_corpus)]
+    ngram_counts: Counter = Counter(prose_tokens)
+    for n in (2, 3):
+        for i in range(len(prose_tokens) - n + 1):
+            w0 = prose_tokens[i]
+            w_last = prose_tokens[i + n - 1]
+            if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
+                phrase = " ".join(prose_tokens[i : i + n])
+                ngram_counts[phrase] += 1
+
     for block in norm_doc.semantic_blocks:
         if not block["included_in_semantic_flow"]:
             continue
@@ -588,16 +619,32 @@ def extract_candidates(
             res.acronyms[acr] = full_term
 
         # 2. Harvest Definitions
-        def_match = def_pattern.search(text)
-        if def_match:
-            term = def_match.group(1).strip()
-            definition_text = def_match.group(3).strip()
-            res.harvested_definitions.append({
-                "term": term,
-                "definition": definition_text,
-                "block_id": blk_id,
-                "unit_id": unit_id
-            })
+        for def_match in def_pattern.finditer(text):
+            term = _trim_candidate(def_match.group(1).strip())
+            copula = def_match.group(2).strip()
+            rest = def_match.group(3).strip()
+            if copula.lower().startswith("is ") and not copula.lower().startswith(("is defined", "is called", "is known", "is described")):
+                definition_text = f"{copula[3:].strip()} {rest}"
+            else:
+                definition_text = rest
+            if term and len(term) >= 3 and term.lower() not in STOPWORDS:
+                res.harvested_definitions.append({
+                    "term": term,
+                    "definition": definition_text,
+                    "block_id": blk_id,
+                    "unit_id": unit_id
+                })
+
+        for c_match in colon_def_pattern.finditer(text):
+            term = _trim_candidate(c_match.group(1).strip())
+            definition_text = c_match.group(2).strip()
+            if term and len(term) >= 3 and term.lower() not in STOPWORDS and not _is_single_common_word(term):
+                res.harvested_definitions.append({
+                    "term": term,
+                    "definition": definition_text,
+                    "block_id": blk_id,
+                    "unit_id": unit_id
+                })
 
         # 3. Explicit Learning Objectives -> Skills
         if unit and unit.unit_type == "learning_objective" or "able to" in text.lower():
@@ -656,8 +703,29 @@ def extract_candidates(
             if s.endswith((".", ",", ";", ":", "!", "?")) or '"' in s or "(" in s:
                 continue
             line_standalone.add(s.lower())
-        words = re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text)
-        for w in words:
+        harvested_def_terms = {d["term"].lower() for d in res.harvested_definitions}
+        words: List[str] = list(re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text))
+        # Acronyms & uppercase tokens
+        words.extend(re.findall(r"\b[A-Z]{2,6}\b", text))
+        # Markdown bold concepts
+        words.extend(re.findall(r"\*\*([A-Za-z0-9\s'-]{3,40})\*\*", text))
+        # Terms defined in this block
+        for d in res.harvested_definitions:
+            if d.get("block_id") == blk_id:
+                words.append(d["term"])
+        # Multi-word domain concepts in prose (e.g. "binary search", "neural network", "dynamic programming")
+        tokens = [tok for tok in re.findall(r"\b[A-Za-z][A-Za-z0-9'-]+\b", text)]
+        for n in (2, 3):
+            for i in range(len(tokens) - n + 1):
+                w0 = tokens[i].lower()
+                w_last = tokens[i + n - 1].lower()
+                if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
+                    phrase = " ".join(tokens[i : i + n])
+                    comp_lower = phrase.lower()
+                    if comp_lower in harvested_def_terms or ngram_counts.get(comp_lower, 0) >= MIN_TERM_OCCURRENCES:
+                        words.append(phrase)
+
+        for w in dict.fromkeys(words):
             term = _trim_candidate(w.strip())
             if not term:
                 continue
@@ -673,23 +741,42 @@ def extract_candidates(
                 continue
             if _is_person_name(term, person_name_keys):
                 continue
-            # Accept when the document declares the term (heading block, or a
-            # standalone line). Otherwise require recurrence in PROSE: an inline
-            # capitalized phrase seen once is incidental, not a topic.
-            declared = is_heading or term.lower() in line_standalone
+            # Single lowercase words require explicit declaration or definition
+            if " " not in term and term.islower() and term.lower() not in harvested_def_terms:
+                continue
+
+            # Accept when the document declares the term (heading block, a
+            # standalone line, or an explicit definition sentence). Otherwise require recurrence
+            # in PROSE: an inline capitalized phrase seen once is incidental, not a topic.
+            declared = (
+                is_heading
+                or term.lower() in line_standalone
+                or term.lower() in harvested_def_terms
+                or any(term.lower() in dt or dt in term.lower() for dt in harvested_def_terms)
+            )
             if not declared:
                 # A word appearing only in the document title / short furniture
                 # lines is not subject matter ("Akasic" in "Akasic-Hybrid ...").
                 if term.lower() in furniture_keys or term.lower() in opening_title_tokens:
                     continue
-                if lowercase_corpus.count(term.lower()) < MIN_TERM_OCCURRENCES:
+                freq = ngram_counts.get(term.lower())
+                if freq is None:
+                    freq = lowercase_corpus.count(term.lower())
+                if freq < MIN_TERM_OCCURRENCES:
                     continue
             # A trimmed candidate must still occur verbatim so the Evidence span
             # remains a real substring of the block (Phase 2 QC enforces this).
             start = text.find(term)
             if start == -1:
-                continue
-            end = start + len(term)
+                m_sub = re.search(r"\b" + re.escape(term) + r"\b", text, re.IGNORECASE)
+                if m_sub:
+                    start = m_sub.start()
+                    end = m_sub.end()
+                    term = text[start:end]
+                else:
+                    continue
+            else:
+                end = start + len(term)
             m_id = generate_mention_id(norm_doc.doc_id, blk_id, start, end)
             mention = ConceptMention(
                 mention_id=m_id,

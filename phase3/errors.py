@@ -406,6 +406,13 @@ class PersistenceError(LearnSenseError):
     recoverable = True
 
 
+class AuthenticationError(LearnSenseError):
+    """Unauthenticated access attempt or invalid caller identity."""
+    code = "AUTHENTICATION_ERROR"
+    http_status = 401
+    recoverable = False
+
+
 class AuthorizationError(LearnSenseError):
     """Unauthorized learner or resource access attempt."""
     code = "AUTHORIZATION_ERROR"
@@ -466,6 +473,7 @@ __all__ = [
     "GroundingValidationError",
     "LearnerStateError",
     "PersistenceError",
+    "AuthenticationError",
     "AuthorizationError",
     "ConcurrencyError",
     "CancellationError",

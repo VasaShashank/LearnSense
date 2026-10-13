@@ -247,13 +247,15 @@ def _block(
     role: str,
     y0: float,
     height: float = 14.0,
+    bbox: Optional[List[float]] = None,
 ) -> DocumentBlock:
     width = 612.0
+    effective_bbox = bbox or [54.0, y0, width - 54.0, min(y0 + height, 780.0)]
     return DocumentBlock(
         block_id=block_id,
         type=block_type,
         role=role,
-        bbox=[54.0, y0, width - 54.0, min(y0 + height, 780.0)],
+        bbox=effective_bbox,
         content=BlockContent(text=text, text_raw=text),
         reading_order=reading_order,
         extraction_method=ExtractionMethodEnum.NATIVE,
@@ -357,6 +359,39 @@ def docx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
         if y > 760:
             y = 70.0
 
+    # Extract tables from DOCX
+    for table in getattr(document, "tables", []):
+        rows_data = []
+        for row in table.rows:
+            row_cells = [cell.text.strip().replace("\n", " ") for cell in row.cells]
+            rows_data.append(row_cells)
+        if rows_data:
+            num_cols = max(len(r) for r in rows_data)
+            md_lines = []
+            header = rows_data[0] + [""] * (num_cols - len(rows_data[0]))
+            md_lines.append("| " + " | ".join(header) + " |")
+            md_lines.append("| " + " | ".join(["---"] * num_cols) + " |")
+            for row in rows_data[1:]:
+                padded = row + [""] * (num_cols - len(row))
+                md_lines.append("| " + " | ".join(padded) + " |")
+            table_text = "\n".join(md_lines)
+            blocks.append(
+                _block(
+                    f"blk_docx_{order:04d}",
+                    table_text,
+                    0,
+                    order,
+                    BlockTypeEnum.TABLE,
+                    "table",
+                    y,
+                    height=20.0 * len(rows_data),
+                )
+            )
+            order += 1
+            y += 24.0 * len(rows_data)
+            if y > 760:
+                y = 70.0
+
     pages = _paginate(blocks)
     outline = _build_outline(pages)
 
@@ -383,8 +418,17 @@ def pptx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
 
     presentation = pptx.Presentation(io.BytesIO(file_bytes))
 
+    slide_width = 960.0
+    slide_height = 540.0
+    try:
+        if hasattr(presentation, "slide_width") and presentation.slide_width:
+            slide_width = round(float(presentation.slide_width.pt), 1)
+        if hasattr(presentation, "slide_height") and presentation.slide_height:
+            slide_height = round(float(presentation.slide_height.pt), 1)
+    except (AttributeError, ValueError, TypeError) as dim_err:
+        logger.debug("Could not read presentation dimensions: %s", dim_err)
+
     pages: List[DocumentPage] = []
-    used_fallback = False
     for slide_index, slide in enumerate(presentation.slides):
         blocks: List[DocumentBlock] = []
         order = 1
@@ -393,21 +437,127 @@ def pptx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
             title_shape = slide.shapes.title
             title_text = title_shape.text.strip() if title_shape is not None else ""
         except Exception:  # pragma: no cover - layout without a title placeholder
+            title_shape = None
             title_text = ""
 
+        # Fallback: if slide layout has no formal title placeholder, check for a top-most header text box
+        if not title_text:
+            for s in slide.shapes:
+                if getattr(s, "has_text_frame", False) and s.text_frame.text.strip():
+                    try:
+                        top_pt = float(s.top.pt) if hasattr(s, "top") and s.top is not None else 100.0
+                        if top_pt <= 60.0:
+                            title_shape = s
+                            title_text = s.text_frame.text.strip()
+                            break
+                    except (AttributeError, ValueError, TypeError) as pt_err:
+                        logger.debug("Could not read shape top position: %s", pt_err)
+
         if title_text:
+            title_bbox = [54.0, 36.0, slide_width - 54.0, 80.0]
+            if title_shape is not None:
+                try:
+                    title_bbox = [
+                        float(title_shape.left.pt),
+                        float(title_shape.top.pt),
+                        float(title_shape.left.pt + title_shape.width.pt),
+                        float(title_shape.top.pt + title_shape.height.pt),
+                    ]
+                except (AttributeError, ValueError, TypeError) as bbox_err:
+                    logger.debug("Could not read title shape bbox: %s", bbox_err)
             blocks.append(
-                _block(f"blk_p{slide_index:04d}_ppt_{order:04d}", title_text, slide_index, order,
-                       BlockTypeEnum.HEADING, "heading_l1", y, height=20.0)
+                _block(
+                    f"blk_p{slide_index:04d}_ppt_{order:04d}",
+                    title_text,
+                    slide_index,
+                    order,
+                    BlockTypeEnum.HEADING,
+                    "heading_l1",
+                    title_bbox[1],
+                    height=max(20.0, title_bbox[3] - title_bbox[1]),
+                    bbox=title_bbox,
+                )
             )
             order += 1
-            y += 34.0
+            y = max(y, title_bbox[3] + 10.0)
 
-        for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
+        # Sort non-title shapes in natural reading order (top-to-bottom, left-to-right)
+        def _shape_pos(s):
+            try:
+                top = float(s.top.pt) if hasattr(s, "top") and s.top is not None else 0.0
+                left = float(s.left.pt) if hasattr(s, "left") and s.left is not None else 0.0
+                return (top, left)
+            except Exception:
+                return (0.0, 0.0)
+
+        sorted_shapes = sorted(slide.shapes, key=_shape_pos)
+
+        for shape in sorted_shapes:
             if title_shape is not None and shape is title_shape:
                 continue
+
+            # 1. Native table extraction
+            if shape.has_table:
+                table = shape.table
+                rows_data: List[List[str]] = []
+                for row in table.rows:
+                    row_cells = [cell.text.strip().replace("\n", " ") for cell in row.cells]
+                    rows_data.append(row_cells)
+
+                if rows_data:
+                    num_cols = max(len(r) for r in rows_data)
+                    md_lines = []
+                    header = rows_data[0] + [""] * (num_cols - len(rows_data[0]))
+                    md_lines.append("| " + " | ".join(header) + " |")
+                    md_lines.append("| " + " | ".join(["---"] * num_cols) + " |")
+                    for row in rows_data[1:]:
+                        padded = row + [""] * (num_cols - len(row))
+                        md_lines.append("| " + " | ".join(padded) + " |")
+                    table_text = "\n".join(md_lines)
+
+                    t_bbox = [54.0, y, slide_width - 54.0, y + 100.0]
+                    try:
+                        t_bbox = [
+                            float(shape.left.pt),
+                            float(shape.top.pt),
+                            float(shape.left.pt + shape.width.pt),
+                            float(shape.top.pt + shape.height.pt),
+                        ]
+                    except (AttributeError, ValueError, TypeError) as tbox_err:
+                        logger.debug("Could not read table bbox: %s", tbox_err)
+
+                    blocks.append(
+                        _block(
+                            f"blk_p{slide_index:04d}_ppt_{order:04d}",
+                            table_text,
+                            slide_index,
+                            order,
+                            BlockTypeEnum.TABLE,
+                            "table",
+                            t_bbox[1],
+                            height=max(20.0, t_bbox[3] - t_bbox[1]),
+                            bbox=t_bbox,
+                        )
+                    )
+                    order += 1
+                    y = max(y, t_bbox[3] + 10.0)
+                continue
+
+            # 2. Text frame extraction
+            if not shape.has_text_frame:
+                continue
+
+            shape_bbox = [54.0, y, slide_width - 54.0, y + 40.0]
+            try:
+                shape_bbox = [
+                    float(shape.left.pt),
+                    float(shape.top.pt),
+                    float(shape.left.pt + shape.width.pt),
+                    float(shape.top.pt + shape.height.pt),
+                ]
+            except (AttributeError, ValueError, TypeError) as sbox_err:
+                logger.debug("Could not read shape bbox: %s", sbox_err)
+
             for para in shape.text_frame.paragraphs:
                 text = para.text.strip()
                 if not text:
@@ -415,20 +565,53 @@ def pptx_to_structured_document(file_bytes: bytes, filename: str, document_id: s
                 role = "list" if para.level and para.level > 0 else "body"
                 btype = BlockTypeEnum.LIST_ITEM if role == "list" else BlockTypeEnum.PARAGRAPH
                 blocks.append(
-                    _block(f"blk_p{slide_index:04d}_ppt_{order:04d}", text, slide_index, order, btype, role, y)
+                    _block(
+                        f"blk_p{slide_index:04d}_ppt_{order:04d}",
+                        text,
+                        slide_index,
+                        order,
+                        btype,
+                        role,
+                        y,
+                        bbox=shape_bbox,
+                    )
                 )
                 order += 1
                 y += 15.0
-                if y > 760:
+                if y > slide_height - 40.0:
                     y = 70.0
+
+        # 3. Speaker notes extraction
+        try:
+            if slide.has_notes_slide and slide.notes_slide:
+                notes_frame = slide.notes_slide.notes_text_frame
+                if notes_frame and notes_frame.text.strip():
+                    notes_text = notes_frame.text.strip()
+                    notes_bbox = [36.0, slide_height - 30.0, slide_width - 36.0, slide_height - 5.0]
+                    blocks.append(
+                        _block(
+                            f"blk_p{slide_index:04d}_ppt_{order:04d}",
+                            notes_text,
+                            slide_index,
+                            order,
+                            BlockTypeEnum.PARAGRAPH,
+                            "speaker_notes",
+                            notes_bbox[1],
+                            height=25.0,
+                            bbox=notes_bbox,
+                        )
+                    )
+                    order += 1
+        except (AttributeError, ValueError, TypeError) as notes_err:
+            logger.debug("Could not read speaker notes: %s", notes_err)
 
         pages.append(
             DocumentPage(
                 page_index=slide_index,
                 page_label=str(slide_index + 1),
-                width=960.0,
-                height=540.0,
-                orientation=PageOrientationEnum.LANDSCAPE,
+                width=slide_width,
+                height=slide_height,
+                orientation=PageOrientationEnum.LANDSCAPE if slide_width >= slide_height else PageOrientationEnum.PORTRAIT,
                 page_type=PageTypeEnum.NATIVE,
                 status=PageStatusEnum.OK if blocks else PageStatusEnum.EMPTY,
                 blocks=blocks,

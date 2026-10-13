@@ -10,12 +10,21 @@ import {
   Upload,
   Sparkles,
   Orbit,
-  GraduationCap,
   Building2,
   ChevronDown,
+  Users,
+  BarChart3,
 } from 'lucide-react';
 
-export type AppView = 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES' | 'TEACHER' | 'INSTITUTION';
+export type AppView =
+  | 'DASHBOARD'    // Student home
+  | 'ATLAS'        // Shared concept graph
+  | 'PATH'         // Student learning path
+  | 'SOURCES'      // Shared source library
+  | 'MARKETPLACE'  // Student peer discovery
+  | 'TEACHER'      // Teacher home (optimizer + insights)
+  | 'INSTITUTION'  // B2B admin home
+  | 'CLASS_KT';    // B2B: class-level KT drill-down
 
 export interface TopNavbarProps {
   subjects: Subject[];
@@ -38,34 +47,35 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   currentPersona,
   onOpenLoginModal,
 }) => {
-  // Build navigation items dynamically according to persona role
+  // ──────────────────────────────────────────────────────────────
+  // Role-specific navigation: each user type sees ONLY their views
+  // ──────────────────────────────────────────────────────────────
   const getNavItems = () => {
+    if (currentPersona.role === 'LEARNER') {
+      return [
+        { id: 'DASHBOARD' as const, label: 'Dashboard', icon: Compass },
+        { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
+        { id: 'PATH' as const, label: 'Learning Path', icon: Map },
+        { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
+        { id: 'MARKETPLACE' as const, label: 'Peer Marketplace', icon: Users },
+      ];
+    }
+
     if (currentPersona.role === 'TEACHER') {
       return [
-        { id: 'TEACHER' as const, label: 'Teacher Hub §10', icon: GraduationCap },
-        { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
-        { id: 'DASHBOARD' as const, label: 'Student View', icon: Compass },
-        { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
-        { id: 'INSTITUTION' as const, label: 'B2B Portal', icon: Building2 },
-      ];
-    }
-    if (currentPersona.role === 'ADMIN') {
-      return [
-        { id: 'INSTITUTION' as const, label: 'B2B Enterprise §11', icon: Building2 },
-        { id: 'TEACHER' as const, label: 'Teacher Hub', icon: GraduationCap },
+        { id: 'TEACHER' as const, label: 'Teaching Optimizer', icon: Sparkles },
         { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
         { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
-        { id: 'DASHBOARD' as const, label: 'Student View', icon: Compass },
       ];
     }
-    // Default LEARNER
+
+    // ADMIN (B2B Institutional)
     return [
-      { id: 'DASHBOARD' as const, label: 'Overview', icon: Compass },
+      { id: 'INSTITUTION' as const, label: 'Institution', icon: Building2 },
+      { id: 'CLASS_KT' as const, label: 'Class Knowledge', icon: BarChart3 },
+      { id: 'TEACHER' as const, label: 'Teaching Optimizer', icon: Sparkles },
       { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
-      { id: 'PATH' as const, label: 'Learning Path', icon: Map },
       { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
-      { id: 'TEACHER' as const, label: 'Teacher Hub', icon: GraduationCap },
-      { id: 'INSTITUTION' as const, label: 'B2B Portal', icon: Building2 },
     ];
   };
 
@@ -78,6 +88,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       ? 'bg-purple-500/10 text-purple-300 border-purple-400/30'
       : 'bg-blue-500/10 text-blue-300 border-blue-400/30';
 
+  const homeView: AppView =
+    currentPersona.role === 'TEACHER' ? 'TEACHER'
+    : currentPersona.role === 'ADMIN' ? 'INSTITUTION'
+    : 'DASHBOARD';
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/[0.07] bg-space-950/85 backdrop-blur-2xl px-4 lg:px-8 py-2.5 transition-all">
       <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
@@ -87,7 +102,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           {/* Logo */}
           <div 
             className="flex items-center gap-2.5 cursor-pointer group"
-            onClick={() => onNavigate(currentPersona.role === 'TEACHER' ? 'TEACHER' : currentPersona.role === 'ADMIN' ? 'INSTITUTION' : 'DASHBOARD')}
+            onClick={() => onNavigate(homeView)}
           >
             <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400/20 via-space-800 to-space-900 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_16px_rgba(0,240,255,0.15)] group-hover:border-cyan-400 transition-colors">
               <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -103,14 +118,16 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 </span>
               </div>
               <span className="text-[10px] font-mono text-universe-slate/70 tracking-widest uppercase">
-                Knowledge Universe
+                {currentPersona.role === 'LEARNER' ? 'Knowledge Universe' :
+                 currentPersona.role === 'TEACHER' ? 'Instructor Intelligence' :
+                 'Enterprise Platform'}
               </span>
             </div>
           </div>
 
           <div className="h-5 w-px bg-white/[0.08] hidden sm:block" />
 
-          {/* Integrated Subject Selector */}
+          {/* Integrated Subject Selector — visible for all roles */}
           <div className="hidden sm:flex items-center gap-2">
             {selectedSubject && (
               <div className="relative group/sel">
@@ -152,7 +169,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           </div>
         </div>
 
-        {/* Center: Dynamic Spatial Navigation */}
+        {/* Center: Role-Specific Navigation */}
         <nav className="hidden xl:flex items-center gap-1 p-1 rounded-xl bg-space-900/60 border border-white/[0.06] backdrop-blur-md">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -177,7 +194,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           })}
         </nav>
 
-        {/* Right: Technical Command Bar + Persona & Role Login Pill */}
+        {/* Right: Command Palette + Persona Pill */}
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenCommandPalette}
@@ -193,7 +210,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           {/* Persona & Login Switcher Pill */}
           <button
             onClick={onOpenLoginModal}
-            title="Switch User Identity or Role (Student / Teacher / B2B Admin)"
+            title="Switch between Student, Teacher, or B2B Admin"
             className="px-3 py-1 rounded-xl bg-space-850 hover:bg-space-800 border border-white/[0.1] hover:border-cyan-400/40 text-xs flex items-center gap-2.5 transition-all shadow-sm group cursor-pointer"
           >
             <span className="text-base select-none">{currentPersona.avatar}</span>

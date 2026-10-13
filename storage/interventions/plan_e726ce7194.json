@@ -1,0 +1,83 @@
+{
+  "intervention_id": "plan_e726ce7194",
+  "class_id": "cls_daa_lab_alpha",
+  "subject_id": "doc_stud-share-sample_c_programs_daa-_lab_programs",
+  "created_at_iso": "2026-10-13T18:19:50.793566+00:00",
+  "status": "EVALUATED",
+  "target_learning_objective": "Mastery Consolidation for Selection Sort",
+  "target_concept_id": "c_6356c00bf0be",
+  "target_concept_name": "Selection Sort",
+  "total_class_duration_minutes": 50,
+  "actions": [
+    {
+      "priority": 1,
+      "action_type": "REVISE_PREREQUISITE",
+      "target_concept_id": "c_0693846ace40",
+      "target_concept_name": "Average Case",
+      "rationale": "5 students (62% of cohort) have root gaps in prerequisite 'Average Case' which blocks mastery of 'Selection Sort'.",
+      "allocated_time_minutes": 15,
+      "student_groups": [
+        {
+          "group_name": "Prerequisite Remediation Cohort",
+          "instructional_focus": "Targeted review of Average Case fundamentals",
+          "learner_ids": [
+            "student_alex",
+            "student_sam",
+            "student_marcus",
+            "student_aisha",
+            "student_david"
+          ],
+          "suggested_resource": "Foundational review worked examples for Average Case"
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_0693846ace40"
+      ]
+    },
+    {
+      "priority": 2,
+      "action_type": "DIRECT_INSTRUCTION_AND_WORKED_EXAMPLES",
+      "target_concept_id": "c_6356c00bf0be",
+      "target_concept_name": "Selection Sort",
+      "rationale": "Core instruction on 'Selection Sort'. Class mastery mean is 0.503 with 5 students below 0.40 mastery threshold.",
+      "allocated_time_minutes": 22,
+      "student_groups": [
+        {
+          "group_name": "Guided Practice Cohort",
+          "instructional_focus": "Step-by-step worked examples with intuitive analogies",
+          "learner_ids": [
+            "student_alex",
+            "student_sam",
+            "student_marcus",
+            "student_aisha",
+            "student_david"
+          ],
+          "suggested_resource": null
+        },
+        {
+          "group_name": "Independent Application Cohort",
+          "instructional_focus": "Challenging transfer problems and multi-step applications",
+          "learner_ids": [],
+          "suggested_resource": null
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_6356c00bf0be"
+      ]
+    },
+    {
+      "priority": 3,
+      "action_type": "FORMATIVE_REASSESSMENT",
+      "target_concept_id": "c_6356c00bf0be",
+      "target_concept_name": "Selection Sort",
+      "rationale": "Conduct 3-item adaptive verification probe to measure post-intervention learning gain.",
+      "allocated_time_minutes": 13,
+      "student_groups": [],
+      "recommended_probe_concept_ids": [
+        "c_6356c00bf0be"
+      ]
+    }
+  ],
+  "teacher_notes": "Approved for immediate morning lecture",
+  "approved_at_iso": "2026-10-13T18:19:50.815342+00:00"
+}

@@ -130,8 +130,22 @@ class LearnerService:
             dumped_target["concept_name"] = t_name
             dumped_target["estimated_minutes"] = 15
 
+        dumped_gaps = []
+        for g in prioritized_gaps:
+            g_dict = g.model_dump(mode="json")
+            cid = g_dict.get("concept_id")
+            c_info = next((c for c in graph["concepts"] if c["concept_id"] == cid), None)
+            c_name = g_dict.get("concept_name") or (
+                c_info["name"] if c_info else (
+                    learning_context.concepts[cid].canonical_name if learning_context and cid in learning_context.concepts else cid
+                )
+            )
+            g_dict["name"] = c_name
+            g_dict["concept_name"] = c_name
+            dumped_gaps.append(g_dict)
+
         return {
-            "gaps": [g.model_dump(mode="json") for g in prioritized_gaps],
+            "gaps": dumped_gaps,
             "learning_path": dumped_path,
             "next_target": dumped_target,
         }

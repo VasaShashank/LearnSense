@@ -1,9 +1,11 @@
 import React from 'react';
 import type { ConceptNode } from '../../api/client';
+import { getConceptDisplayName } from '../../utils/conceptName';
 import { X, BookOpen, GraduationCap, MessageSquare, CheckCircle2, AlertTriangle, FileText, Share2 } from 'lucide-react';
 
 export interface ConceptInspectorProps {
   concept: ConceptNode | null;
+  conceptMap?: Record<string, string>;
   onClose: () => void;
   onStartLearning: (conceptId: string) => void;
   onStartPractice: (conceptId: string) => void;
@@ -13,6 +15,7 @@ export interface ConceptInspectorProps {
 
 export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
   concept,
+  conceptMap,
   onClose,
   onStartLearning,
   onStartPractice,
@@ -102,7 +105,7 @@ export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
             </div>
             <p className="text-xs text-universe-text font-sans">
               {prerequisites.length > 0
-                ? prerequisites.map((p) => p.replace(/_/g, ' ')).join(', ')
+                ? prerequisites.map((p) => getConceptDisplayName(p, conceptMap)).join(', ')
                 : 'None — Root foundational concept'}
             </p>
           </div>
@@ -116,7 +119,7 @@ export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
             </div>
             <p className="text-xs text-universe-text font-sans">
               {dependents.length > 0
-                ? dependents.map((d) => d.replace(/_/g, ' ')).join(', ')
+                ? dependents.map((d) => getConceptDisplayName(d, conceptMap)).join(', ')
                 : 'Terminal concept — No dependent nodes'}
             </p>
           </div>

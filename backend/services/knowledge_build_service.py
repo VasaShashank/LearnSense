@@ -116,7 +116,10 @@ class KnowledgeBuildService:
             from phase2.pipeline.semantic_topic_extractor import SemanticTopicExtractor
             sem_extractor = SemanticTopicExtractor()
             sem_concepts, sem_relationships, sem_topics, sem_evidence = sem_extractor.extract(
-                structured_doc, base_concepts=ekr.concepts, base_evidence=ekr.evidence
+                structured_doc,
+                base_concepts=ekr.concepts,
+                base_evidence=ekr.evidence,
+                base_relationships=ekr.relationships,
             )
             if sem_concepts:
                 ekr.concepts = sem_concepts

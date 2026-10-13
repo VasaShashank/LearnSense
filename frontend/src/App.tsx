@@ -5,6 +5,7 @@ import { TopNavbar, type AppView } from './components/navigation/TopNavbar';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { TeacherDashboard } from './components/teacher/TeacherDashboard';
 import { InstitutionalPortal } from './components/institution/InstitutionalPortal';
+import { PeerMarketplace } from './components/marketplace/PeerMarketplace';
 import { LoginPersonaModal, PRESET_PERSONAS, type Persona } from './components/common/LoginPersonaModal';
 import { LearningAtlas } from './components/atlas/LearningAtlas';
 import { AccessibleAtlasView } from './components/atlas/AccessibleAtlasView';
@@ -18,6 +19,7 @@ import { SourceLibrary } from './components/sources/SourceLibrary';
 import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
+import { getConceptDisplayName } from './utils/conceptName';
 
 
 export default function App() {
@@ -26,7 +28,15 @@ export default function App() {
   const learnerId = currentPersona.id;
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [activeView, setActiveView] = useState<AppView>('DASHBOARD');
+
+  // Default home view per role
+  const getHomeView = (role: string): AppView => {
+    if (role === 'TEACHER') return 'TEACHER';
+    if (role === 'ADMIN') return 'INSTITUTION';
+    return 'DASHBOARD';
+  };
+
+  const [activeView, setActiveView] = useState<AppView>(getHomeView(currentPersona.role));
 
   // Resume / Rehydration State
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
@@ -54,15 +64,15 @@ export default function App() {
   const [isFinalAssessmentOpen, setIsFinalAssessmentOpen] = useState<boolean>(false);
   const [activeAssessmentId, setActiveAssessmentId] = useState<string | null>(null);
 
-  // Calibration / Onboarding Flow State (optional, user-initiated or explicit)
+  // Calibration / Onboarding Flow State
   const [isCalibrationOpen, setIsCalibrationOpen] = useState<boolean>(false);
   const [pendingCalibration, setPendingCalibration] = useState<Subject | null>(null);
   const [resumeInitSession, setResumeInitSession] = useState<{ session_id: string; subject_id: string } | null>(null);
 
-  // Signature "Knowledge Changed" Notification State
+  // "Knowledge Changed" Notification
   const [knowledgeChangedNotification, setKnowledgeChangedNotification] = useState<string | null>(null);
 
-  // 1. Initial Load: Start with Home Page immediately, fetch subjects, sources, and resumed learner state in background
+  // 1. Initial Load
   const reloadSubjectsAndSources = useCallback(async () => {
     try {
       const [subs, srcs, resumeData] = await Promise.all([
@@ -93,7 +103,7 @@ export default function App() {
     reloadSubjectsAndSources();
   }, [reloadSubjectsAndSources]);
 
-  // 2. Load Subject Data when subject changes or knowledge updates
+  // 2. Load Subject Data
   const refreshSubjectData = useCallback(async () => {
     if (!selectedSubject) return;
     try {
@@ -128,7 +138,7 @@ export default function App() {
     setActiveView('DASHBOARD');
   };
 
-  const openSubject = (sub: Subject, targetView: 'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES' = 'DASHBOARD') => {
+  const openSubject = (sub: Subject, targetView: AppView = 'DASHBOARD') => {
     setSelectedSubject(sub);
     void ApiClient.setActiveSubject(learnerId, sub.id).catch(() => undefined);
     setActiveView(targetView);
@@ -142,7 +152,7 @@ export default function App() {
     setTimeout(() => setKnowledgeChangedNotification(null), 6000);
   };
 
-  // Trace Downstream Impact Algorithm
+  // Trace Downstream Impact
   const handleTraceImpact = (conceptId: string) => {
     if (!graphData) return;
     setIsTracingImpact(true);
@@ -167,7 +177,28 @@ export default function App() {
     }, 5000);
   };
 
-  // Optional Full-screen Onboarding / Calibration if explicitly requested
+  // ──────────────────────────────────────────────
+  // Role guard: validate active view on role change
+  // ──────────────────────────────────────────────
+  const allowedViews: Record<string, AppView[]> = {
+    LEARNER: ['DASHBOARD', 'ATLAS', 'PATH', 'SOURCES', 'MARKETPLACE'],
+    TEACHER: ['TEACHER', 'ATLAS', 'SOURCES'],
+    ADMIN: ['INSTITUTION', 'CLASS_KT', 'TEACHER', 'ATLAS', 'SOURCES'],
+  };
+
+  const isViewAllowed = (view: AppView, role: string): boolean => {
+    return (allowedViews[role] || []).includes(view);
+  };
+
+  const handleNavigate = (view: AppView) => {
+    if (isViewAllowed(view, currentPersona.role)) {
+      setActiveView(view);
+    } else {
+      setActiveView(getHomeView(currentPersona.role));
+    }
+  };
+
+  // Optional Full-screen Onboarding / Calibration
   if (isCalibrationOpen) {
     return (
       <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300">
@@ -202,22 +233,22 @@ export default function App() {
   return (
     <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300 relative selection:bg-cyan-500/30 selection:text-cyan-200">
       
-      {/* Top Futuristic Navigation Command Bar */}
+      {/* Top Navigation — role-specific */}
       <TopNavbar
         subjects={subjects}
         selectedSubject={selectedSubject}
         onSelectSubject={(s) => openSubject(s, activeView)}
         activeView={activeView}
-        onNavigate={setActiveView}
+        onNavigate={handleNavigate}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         currentPersona={currentPersona}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
       />
 
-      {/* Main Workspace Universe Viewport */}
+      {/* Main Workspace */}
       <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         
-        {/* Signature "Knowledge Changed" Cosmic Signal */}
+        {/* "Knowledge Changed" Notification */}
         {knowledgeChangedNotification && (
           <div className="p-4 rounded-2xl flex items-center justify-between gap-3 animate-fade-in"
                style={{
@@ -237,8 +268,12 @@ export default function App() {
           </div>
         )}
 
-        {/* View 1: DASHBOARD (Knowledge Command Center) */}
-        {activeView === 'DASHBOARD' && (
+        {/* ════════════════════════════════════════════════
+            STUDENT VIEWS (LEARNER role only)
+            ════════════════════════════════════════════════ */}
+
+        {/* Student Dashboard */}
+        {activeView === 'DASHBOARD' && currentPersona.role === 'LEARNER' && (
           selectedSubject ? (
             <Dashboard
               currentSubject={selectedSubject}
@@ -278,7 +313,49 @@ export default function App() {
           )
         )}
 
-        {/* View 2: LEARNING ATLAS (Constellation Map) */}
+        {/* Student Learning Path */}
+        {activeView === 'PATH' && currentPersona.role === 'LEARNER' && (
+          <LearningPathTimeline
+            nodes={pathNodes}
+            activeTarget={nextTarget}
+            onSelectConcept={(cId) => {
+              let c = graphData?.concepts.find((item) => item.concept_id === cId);
+              if (!c) {
+                const node = pathNodes.find((n) => n.concept_id === cId);
+                if (node) {
+                  c = {
+                    concept_id: node.concept_id,
+                    name: node.concept_name || node.name || node.concept_id.replace(/_/g, ' '),
+                    description: `Personalized learning milestone for ${node.concept_name || node.name}`,
+                    definition: `Target concept: ${node.concept_name || node.name}`,
+                    subject_id: selectedSubject?.id || '',
+                    prerequisites: node.prerequisites || [],
+                    mastery: node.mastery ?? node.estimated_mastery ?? 0.15,
+                    status: (node.status as any) || 'AVAILABLE',
+                    x: 0,
+                    y: 0,
+                  };
+                }
+              }
+              if (c) setActiveStudyConcept(c);
+            }}
+          />
+        )}
+
+        {/* Student Peer Marketplace */}
+        {activeView === 'MARKETPLACE' && currentPersona.role === 'LEARNER' && (
+          <PeerMarketplace
+            learnerId={learnerId}
+            subjects={subjects}
+            selectedSubject={selectedSubject}
+          />
+        )}
+
+        {/* ════════════════════════════════════════════════
+            SHARED VIEWS (all roles can access)
+            ════════════════════════════════════════════════ */}
+
+        {/* Knowledge Atlas — shared across all roles */}
         {activeView === 'ATLAS' && graphData && (
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
@@ -287,6 +364,11 @@ export default function App() {
                 <h2 className="text-lg font-display font-bold text-white tracking-tight">
                   Knowledge Atlas Topology
                 </h2>
+                {currentPersona.role !== 'LEARNER' && (
+                  <span className="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/30 text-purple-300 text-[10px] font-mono">
+                    {currentPersona.role === 'TEACHER' ? 'Instructor View' : 'Admin View'}
+                  </span>
+                )}
               </div>
 
               <button
@@ -341,36 +423,7 @@ export default function App() {
           </div>
         )}
 
-        {/* View 3: LEARNING PATH TIMELINE (Expedition Vector) */}
-        {activeView === 'PATH' && (
-          <LearningPathTimeline
-            nodes={pathNodes}
-            activeTarget={nextTarget}
-            onSelectConcept={(cId) => {
-              let c = graphData?.concepts.find((item) => item.concept_id === cId);
-              if (!c) {
-                const node = pathNodes.find((n) => n.concept_id === cId);
-                if (node) {
-                  c = {
-                    concept_id: node.concept_id,
-                    name: node.concept_name || node.name || node.concept_id.replace(/_/g, ' '),
-                    description: `Personalized learning milestone for ${node.concept_name || node.name}`,
-                    definition: `Target concept: ${node.concept_name || node.name}`,
-                    subject_id: selectedSubject?.id || '',
-                    prerequisites: node.prerequisites || [],
-                    mastery: node.mastery ?? node.estimated_mastery ?? 0.15,
-                    status: (node.status as any) || 'AVAILABLE',
-                    x: 0,
-                    y: 0,
-                  };
-                }
-              }
-              if (c) setActiveStudyConcept(c);
-            }}
-          />
-        )}
-
-        {/* View 4: SOURCE LIBRARY (Grounded Ingestion Deck) */}
+        {/* Source Library — shared across all roles */}
         {activeView === 'SOURCES' && (
           <SourceLibrary
             sources={sources}
@@ -388,8 +441,8 @@ export default function App() {
                 };
                 setSelectedSubject(sub);
                 void ApiClient.setActiveSubject(learnerId, sub.id).catch(() => undefined);
-                if (isNewUpload) {
-                  // After uploading, immediately launch the initial survey quiz & diagnostic assessment
+                if (isNewUpload && currentPersona.role === 'LEARNER') {
+                  // Only learners go through calibration after upload
                   setPendingCalibration(sub);
                   setIsCalibrationOpen(true);
                 } else {
@@ -402,32 +455,45 @@ export default function App() {
           />
         )}
 
-        {/* View 5: TEACHER DASHBOARD & TEACHING OPTIMIZER (§10) */}
-        {activeView === 'TEACHER' && (
+        {/* ════════════════════════════════════════════════
+            TEACHER VIEWS (TEACHER + ADMIN roles)
+            ════════════════════════════════════════════════ */}
+
+        {/* Teaching Optimizer & Student Insights */}
+        {activeView === 'TEACHER' && (currentPersona.role === 'TEACHER' || currentPersona.role === 'ADMIN') && (
           <TeacherDashboard
             currentUserId={currentPersona.id}
+            currentPersona={currentPersona}
             onNavigateToAtlas={() => setActiveView('ATLAS')}
-            onSwitchToStudent={() => {
-              setCurrentPersona(PRESET_PERSONAS[0]);
-              setActiveView('DASHBOARD');
-            }}
           />
         )}
 
-        {/* View 6: INSTITUTIONAL & B2B PORTAL (§11) */}
-        {activeView === 'INSTITUTION' && (
+        {/* ════════════════════════════════════════════════
+            B2B ADMIN VIEWS (ADMIN role only)
+            ════════════════════════════════════════════════ */}
+
+        {/* Institution Management Portal */}
+        {activeView === 'INSTITUTION' && currentPersona.role === 'ADMIN' && (
           <InstitutionalPortal
             currentUserId={currentPersona.id}
           />
         )}
+
+        {/* Class Knowledge State — B2B Admin drill-down into student KT per class */}
+        {activeView === 'CLASS_KT' && currentPersona.role === 'ADMIN' && (
+          <ClassKnowledgeView currentUserId={currentPersona.id} />
+        )}
       </main>
 
-      {/* Slide-Over Intelligence Drawer: Concept Inspector */}
+      {/* ═══════════ Overlays & Modals (student-only where appropriate) ═══════════ */}
+
+      {/* Concept Inspector Drawer */}
       {selectedConcept && (
         <ConceptInspector
           concept={selectedConcept}
           onClose={() => setSelectedConcept(null)}
           onStartLearning={(cId) => {
+            if (currentPersona.role !== 'LEARNER') return; // Only students can start learning
             const c = graphData?.concepts.find((item) => item.concept_id === cId);
             if (c) {
               setSessionInitialTab('EXPLANATION');
@@ -436,6 +502,7 @@ export default function App() {
             setSelectedConcept(null);
           }}
           onStartPractice={(cId) => {
+            if (currentPersona.role !== 'LEARNER') return;
             const c = graphData?.concepts.find((item) => item.concept_id === cId);
             if (c) {
               setSessionInitialTab('PRACTICE');
@@ -454,7 +521,7 @@ export default function App() {
         />
       )}
 
-      {/* Grounded AI Pedagogical Tutor Sidebar */}
+      {/* AI Tutor — available to all roles for concept exploration */}
       {isTutorOpen && selectedSubject && (
         <ContextualTutor
           concept={tutorConcept}
@@ -464,8 +531,8 @@ export default function App() {
         />
       )}
 
-      {/* Focused Learning Studio Modal */}
-      {activeStudyConcept && selectedSubject && (
+      {/* Learning Session — Student only */}
+      {activeStudyConcept && selectedSubject && currentPersona.role === 'LEARNER' && (
         <LearningSession
           concept={activeStudyConcept}
           subject={selectedSubject}
@@ -484,8 +551,8 @@ export default function App() {
         />
       )}
 
-      {/* Final Assessment Modal */}
-      {isFinalAssessmentOpen && selectedSubject && (
+      {/* Final Assessment — Student only */}
+      {isFinalAssessmentOpen && selectedSubject && currentPersona.role === 'LEARNER' && (
         <FinalAssessment
           subject={selectedSubject}
           learnerId={learnerId}
@@ -498,7 +565,7 @@ export default function App() {
         />
       )}
 
-      {/* Global Cmd+K Command Palette Spotlight */}
+      {/* Command Palette */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
@@ -516,22 +583,196 @@ export default function App() {
         }}
       />
 
-      {/* Role / Persona Login Modal */}
+      {/* Login / Persona Switcher */}
       <LoginPersonaModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         currentPersona={currentPersona}
         onSelectPersona={(persona) => {
           setCurrentPersona(persona);
-          if (persona.role === 'TEACHER') {
-            setActiveView('TEACHER');
-          } else if (persona.role === 'ADMIN') {
-            setActiveView('INSTITUTION');
-          } else {
-            setActiveView('DASHBOARD');
-          }
+          setActiveView(getHomeView(persona.role));
         }}
       />
+    </div>
+  );
+}
+
+
+/**
+ * ClassKnowledgeView — B2B Admin feature.
+ * Shows aggregate student KT per institutional class.
+ * Extracted from the old TeacherDashboard's "OVERVIEW" tab.
+ */
+function ClassKnowledgeView({ currentUserId: _currentUserId }: { currentUserId: string }) {
+  const [classes, setClasses] = useState<any[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [knowledgeState, setKnowledgeState] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const clsList = await ApiClient.listClasses();
+        setClasses(clsList);
+        if (clsList.length > 0) setSelectedClassId(clsList[0].class_id);
+      } catch (err: any) {
+        setErrorMsg(err.message || 'Failed to load classes');
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const fetchClassState = useCallback(async (classId: string) => {
+    if (!classId) return;
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      const data = await ApiClient.getClassKnowledgeState(classId);
+      setKnowledgeState(data);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to load class knowledge state');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedClassId) fetchClassState(selectedClassId);
+  }, [selectedClassId, fetchClassState]);
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-space-900/90 via-blue-950/30 to-space-900/90 border border-blue-500/20 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+        <div className="space-y-1">
+          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-400/30 text-blue-300 text-[11px] font-mono font-semibold uppercase tracking-wider">
+            Class-Level Knowledge Tracing
+          </span>
+          <h1 className="text-2xl font-display font-bold text-white">
+            Student Knowledge State by Class
+          </h1>
+          <p className="text-sm text-universe-slate max-w-2xl">
+            Aggregate Bayesian mastery distributions, prerequisite bottlenecks, and misconception patterns across enrolled students in each class.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <select
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            className="px-3.5 py-2 rounded-xl bg-space-800 border border-white/[0.12] text-white text-xs font-medium focus:outline-none focus:border-blue-400 cursor-pointer min-w-[220px]"
+          >
+            {classes.map((cls) => (
+              <option key={cls.class_id} value={cls.class_id} className="bg-space-900">
+                {cls.class_name} ({cls.enrolled_learner_ids?.length || 0} students)
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => fetchClassState(selectedClassId)}
+            className="p-2.5 rounded-xl bg-space-800 hover:bg-space-750 border border-white/[0.08] text-universe-slate hover:text-blue-400 transition-colors"
+          >
+            <svg className={`w-4 h-4 ${loading ? 'animate-spin text-blue-400' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {errorMsg && (
+        <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-between">
+          <span>{errorMsg}</span>
+          <button onClick={() => setErrorMsg(null)} className="hover:underline text-xs">Dismiss</button>
+        </div>
+      )}
+
+      {knowledgeState && (
+        <>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+              <div className="text-[10px] font-mono text-universe-slate uppercase mb-2">Class Readiness</div>
+              <div className="text-3xl font-display font-bold text-white">
+                {(knowledgeState.overall_class_readiness * 100).toFixed(0)}%
+              </div>
+              <div className="mt-3 w-full bg-space-800 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 h-1.5 rounded-full"
+                  style={{ width: `${Math.min(100, knowledgeState.overall_class_readiness * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+              <div className="text-[10px] font-mono text-universe-slate uppercase mb-2">Enrolled</div>
+              <div className="text-3xl font-display font-bold text-white">{knowledgeState.total_enrolled}</div>
+              <p className="text-[11px] text-universe-slate mt-1">Active: <span className="text-purple-300 font-mono">{knowledgeState.active_learners}</span></p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+              <div className="text-[10px] font-mono text-universe-slate uppercase mb-2">Prerequisite Bottlenecks</div>
+              <div className="text-3xl font-display font-bold text-amber-400">{knowledgeState.prerequisite_gap_clusters?.length || 0}</div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+              <div className="text-[10px] font-mono text-universe-slate uppercase mb-2">Misconceptions</div>
+              <div className="text-3xl font-display font-bold text-rose-400">{knowledgeState.misconception_clusters?.length || 0}</div>
+            </div>
+          </div>
+
+          {/* Concept Mastery Distributions */}
+          <div className="p-6 rounded-2xl bg-space-900/70 border border-white/[0.08] space-y-5">
+            <h3 className="text-base font-display font-semibold text-white">Concept Mastery Distributions</h3>
+            <div className="flex items-center gap-4 text-[11px] font-mono text-universe-slate">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-500/80" /> Low (&lt;40%)</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500/80" /> Mid (40-70%)</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/80" /> High (&gt;70%)</span>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(knowledgeState.concept_distributions || {}).map(([cid, dist]: [string, any]) => {
+                const lowPct = (dist.low_mastery_pct || 0) * 100;
+                const midPct = (dist.mid_mastery_pct || 0) * 100;
+                const highPct = (dist.high_mastery_pct || 0) * 100;
+                const meanM = (dist.mean_mastery || 0) * 100;
+                const isFriction = lowPct >= 40;
+
+                return (
+                  <div key={cid} className={`p-4 rounded-xl border transition-all ${
+                    isFriction ? 'bg-rose-950/20 border-rose-500/30' : 'bg-space-850/60 border-white/[0.06]'
+                  }`}>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-display font-semibold text-white">
+                          {getConceptDisplayName(dist?.canonical_name || dist?.concept_name || cid)}
+                        </span>
+                        {isFriction && (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold">
+                            ⚠️ Friction
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-universe-slate">
+                        Mean: <strong className="text-white font-mono">{meanM.toFixed(1)}%</strong>
+                      </span>
+                    </div>
+                    <div className="w-full h-3 bg-space-800 rounded-full flex overflow-hidden">
+                      {lowPct > 0 && <div style={{ width: `${lowPct}%` }} className="bg-rose-500/80 h-full" />}
+                      {midPct > 0 && <div style={{ width: `${midPct}%` }} className="bg-amber-500/80 h-full" />}
+                      {highPct > 0 && <div style={{ width: `${highPct}%` }} className="bg-emerald-500/80 h-full" />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

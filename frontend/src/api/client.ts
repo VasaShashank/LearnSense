@@ -809,6 +809,39 @@ export const ApiClient = {
     }),
 
   /**
+   * Dynamically aggregated student learning insights for a specific class cohort.
+   * Returns difficulty tiers, misconception patterns, attempt volumes, and
+   * evidence-based teaching recommendations computed from real class knowledge states.
+   */
+  getStudentLearningInsights: (classId: string, subjectId?: string): Promise<Array<{
+    concept_name: string;
+    concept_id: string;
+    total_attempts: number;
+    common_mistakes: { mistake: string; frequency_pct: number }[];
+    avg_first_try_accuracy: number;
+    avg_time_to_master_minutes: number;
+    difficulty_tier: 'EASY' | 'MODERATE' | 'HARD' | 'VERY_HARD';
+    teaching_recommendations: string[];
+  }>> =>
+    fetchJson(`/classes/${classId}/student-learning-insights${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * Platform-wide aggregated student learning insights (no class required).
+   * Used by independent visiting educators without institutional class access.
+   */
+  getGlobalStudentLearningInsights: (subjectId?: string): Promise<Array<{
+    concept_name: string;
+    concept_id: string;
+    total_attempts: number;
+    common_mistakes: { mistake: string; frequency_pct: number }[];
+    avg_first_try_accuracy: number;
+    avg_time_to_master_minutes: number;
+    difficulty_tier: 'EASY' | 'MODERATE' | 'HARD' | 'VERY_HARD';
+    teaching_recommendations: string[];
+  }>> =>
+    fetchJson(`/student-learning-insights${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
    * List all registered classes for teacher oversight.
    */
   listClasses: (): Promise<Array<{
@@ -856,6 +889,22 @@ export const ApiClient = {
     created_at_iso: string;
   }>> =>
     fetchJson(`/institutions/classes${orgId ? `?org_id=${orgId}` : ''}`),
+
+  /**
+   * Create an institutional course class / cohort.
+   */
+  createInstitutionClass: (data: {
+    org_id: string;
+    subject_id: string;
+    title: string;
+    teacher_ids: string[];
+    creator_user_id: string;
+    enrolled_learner_ids?: string[];
+  }): Promise<any> =>
+    fetchJson('/institutions/classes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 
   /**
    * Get class roster with RBAC verification.

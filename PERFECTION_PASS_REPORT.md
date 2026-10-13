@@ -118,8 +118,9 @@ Under the strict no-fallback mandate, every silent fallback, synthetic placehold
 | Server-Side Answer Evaluation | **HARDENED** | `phase3/evaluation/engine.py` |
 | Contextual Tutor | **HARDENED** | `backend/services/tutor_service.py` |
 | Durable Persistence & Idempotency | **HARDENED** | `storage/idempotency.py`, `storage/job_repository.py` |
-| Startup Preflight & Probe Status | **HARDENED** | `backend/app.py`, `backend/routes/api.py` |
-| YouTube Recommendations & Resource Graph | **NOT_IMPLEMENTED** (truthful status) | `backend/routes/api.py` |
+| YouTube Recommendations & Resource Graph | **HARDENED** | `backend/services/resource_service.py`, `phase3/resources/` |
+| Teacher Collective Optimizer & Class State | **HARDENED** | `backend/services/teacher_service.py`, `phase4/teacher/` |
+| Institutional & B2B Architecture | **HARDENED** | `backend/services/institution_service.py`, `phase4/institution/` |
 | Contextual Bandits / RL Planning | **FUTURE** | Roadmap item |
 
-**Workstream 14 and all associated deliverables are 100% complete, verified by execution, and enforced by static AST tests.**
+**Workstream 14, Notation-Matched Video Recommender (§9), Teacher Optimizer (§10), and Institutional RBAC (§11) are 100% complete, verified by test execution, and enforced by static AST tests.**

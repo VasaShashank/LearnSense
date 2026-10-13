@@ -129,6 +129,36 @@ def run_stage5_entity_resolution(
         # Deduplicate evidence IDs
         ev_ids = list(dict.fromkeys(ev_ids))
 
+        # Check if an explicit definition was harvested for this concept
+        matched_def = None
+        for h_def in candidates.harvested_definitions:
+            term_h = h_def["term"].strip().lower()
+            if (
+                term_h == can_name.lower()
+                or any(term_h == m.surface_form.lower() for m in mentions)
+                or term_h in can_name.lower()
+                or can_name.lower() in term_h
+            ):
+                matched_def = h_def
+                break
+
+        if matched_def:
+            def_text = matched_def["definition"]
+            b_id = matched_def["block_id"]
+            ev_id = generate_evidence_id(norm_doc.doc_id, b_id, 0, min(len(def_text), 250), "definition")
+            ev = Evidence(
+                evidence_id=ev_id,
+                block_id=b_id,
+                span=TextSpan(start=0, end=min(len(def_text), 250)),
+                excerpt=def_text[:250],
+                level=EvidenceLevelEnum.EXPLICIT,
+                kind=EvidenceKindEnum.DEFINITION_PATTERN,
+                source_confidence=0.98,
+            )
+            candidates.evidence.append(ev)
+            ev_ids.append(ev_id)
+            ev_ids = list(dict.fromkeys(ev_ids))
+
         concept = Concept(
             concept_id=c_id,
             canonical_name=can_name,
@@ -141,7 +171,8 @@ def run_stage5_entity_resolution(
                 value=0.95,
                 components={"extraction": 0.95, "resolution": 0.98}
             ),
-            evidence_ids=ev_ids
+            evidence_ids=ev_ids,
+            description=matched_def["definition"] if matched_def else "",
         )
         concepts.append(concept)
 

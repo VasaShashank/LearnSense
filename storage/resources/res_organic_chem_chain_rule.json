@@ -1,0 +1,53 @@
+{
+  "resource_id": "res_organic_chem_chain_rule",
+  "url": "https://www.youtube.com/watch?v=6k7re_j4m8c",
+  "provider": "youtube",
+  "title": "The Chain Rule For Derivatives Made Easy",
+  "channel": "The Organic Chemistry Tutor",
+  "duration_seconds": 780,
+  "language": "en",
+  "transcript_available": true,
+  "transcript": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 95.0,
+      "text": "In this video we will master the chain rule for differentiating composite functions step by step.",
+      "concept_ids": [
+        "c_chain_rule",
+        "chain_rule"
+      ],
+      "formulas_mentioned": []
+    },
+    {
+      "start_seconds": 96.0,
+      "end_seconds": 340.0,
+      "text": "The derivative of an outside function evaluated at the inside function, times the derivative of the inside: f prime of g of x times g prime of x.",
+      "concept_ids": [
+        "c_chain_rule"
+      ],
+      "formulas_mentioned": [
+        "d/dx [f(g(x))] = f'(g(x)) * g'(x)"
+      ]
+    }
+  ],
+  "concepts_covered": [
+    "chain_rule",
+    "c_chain_rule",
+    "c_derivatives"
+  ],
+  "prerequisite_concepts": [
+    "c_derivatives"
+  ],
+  "notation_variants": [],
+  "formulas": [
+    {
+      "raw_formula": "d/dx [f(g(x))] = f'(g(x)) * g'(x)",
+      "normalized_formula": "f'(g(x))*g'(x)",
+      "canonical_formula_id": "chain_rule",
+      "variable_mappings": {}
+    }
+  ],
+  "difficulty": 0.5,
+  "confidence": 1.0,
+  "tags": []
+}

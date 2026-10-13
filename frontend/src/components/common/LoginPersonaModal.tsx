@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import {
-  GraduationCap,
-  Building2,
-  User,
-  Shield,
   Check,
-  Sparkles,
   ArrowRight,
-  LogOut,
   X,
 } from 'lucide-react';
 
@@ -55,6 +49,15 @@ export const PRESET_PERSONAS: Persona[] = [
     avatar: '🏛️',
     org_name: 'Apex Institute of Science & Technology',
     email: 'm.sterling@apex.edu',
+  },
+  {
+    id: 'teacher_independent',
+    name: 'Dr. Sarah Lin',
+    role: 'TEACHER',
+    title: 'Independent Visiting Educator',
+    avatar: '🧑‍🏫',
+    org_name: 'Open Academic Community (Non-B2B)',
+    email: 'sarah.lin@open-ed.org',
   },
 ];
 

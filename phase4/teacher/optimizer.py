@@ -3,6 +3,9 @@ Teaching Optimizer and Class Knowledge Aggregator Implementation (§10).
 """
 
 from datetime import datetime, timezone
+import json
+from pathlib import Path
+import re
 import statistics
 import uuid
 from typing import Dict, List, Optional
@@ -26,6 +29,57 @@ class TeachingOptimizer:
     """
     Synthesizes aggregated learning intelligence for teachers and plans interventions.
     """
+
+    @classmethod
+    def resolve_concept_name(
+        cls,
+        concept_id: str,
+        context: Optional[LearningContext] = None,
+        class_state: Optional[ClassKnowledgeState] = None,
+    ) -> str:
+        if not concept_id:
+            return "Core Concept"
+        # 1. From context
+        if context and context.concepts.get(concept_id):
+            c = context.concepts[concept_id]
+            if c.canonical_name and not re.match(r"^c_[a-f0-9]{6,}$", c.canonical_name.strip(), re.I):
+                return c.canonical_name
+        # 2. From class_state concept_distributions
+        if class_state and class_state.concept_distributions.get(concept_id):
+            dist = class_state.concept_distributions[concept_id]
+            if getattr(dist, "concept_name", None) and not re.match(r"^c_[a-f0-9]{6,}$", dist.concept_name.strip(), re.I):
+                return dist.concept_name
+        # 3. From prerequisite gaps
+        if class_state and class_state.prerequisite_gap_clusters:
+            for g in class_state.prerequisite_gap_clusters:
+                if g.target_concept_id == concept_id and g.target_concept_name and not re.match(r"^c_[a-f0-9]{6,}$", g.target_concept_name.strip(), re.I):
+                    return g.target_concept_name
+                if g.prerequisite_concept_id == concept_id and g.prerequisite_concept_name and not re.match(r"^c_[a-f0-9]{6,}$", g.prerequisite_concept_name.strip(), re.I):
+                    return g.prerequisite_concept_name
+        # 4. From any stored learning context in storage/learning_contexts
+        try:
+            lc_dir = Path("storage/learning_contexts")
+            if lc_dir.exists():
+                for f in lc_dir.glob("*.json"):
+                    try:
+                        with open(f, "r", encoding="utf-8") as fp:
+                            data = json.load(fp)
+                            cdict = data.get("concepts", {})
+                            if concept_id in cdict:
+                                cname = cdict[concept_id].get("canonical_name") or cdict[concept_id].get("name")
+                                if cname and not re.match(r"^c_[a-f0-9]{6,}$", cname.strip(), re.I):
+                                    return cname
+                    except (IOError, ValueError) as err:
+                        logger.debug("Skipping unreadable learning context %s: %s", f, err)
+                        continue
+        except Exception as err:
+            logger.debug("Could not scan learning contexts directory: %s", err)
+
+        # 5. Clean fallback formatting
+        clean = concept_id.replace("c_", "").replace("_", " ").title()
+        if re.match(r"^[a-f0-9]{6,}$", clean.replace(" ", ""), re.I):
+            return "Core Concept"
+        return clean
 
     @staticmethod
     def aggregate_class_knowledge_state(
@@ -154,6 +208,7 @@ class TeachingOptimizer:
             subject_title=context.document_title or subject_id,
             total_enrolled=total_enrolled,
             active_learners=active_learners,
+            enrolled_learner_ids=[ls.learner_id for ls in learner_states],
             concept_distributions=distributions,
             prerequisite_gap_clusters=gap_clusters,
             misconception_clusters=misconception_clusters,
@@ -179,8 +234,7 @@ class TeachingOptimizer:
             else:
                 target_concept_id = list(context.concepts.keys())[0] if context.concepts else "concept_1"
 
-        target_concept = context.concepts.get(target_concept_id)
-        target_name = target_concept.canonical_name if target_concept else target_concept_id
+        target_name = cls.resolve_concept_name(target_concept_id, context, class_state)
         target_dist = class_state.concept_distributions.get(target_concept_id)
 
         actions: List[TeachingActionRecommendation] = []
@@ -195,25 +249,26 @@ class TeachingOptimizer:
             top_gap = relevant_prereq_gaps[0]
             prereq_time = min(15, int(total_minutes * 0.30))
             time_remaining -= prereq_time
+            prereq_name = cls.resolve_concept_name(top_gap.prerequisite_concept_id, context, class_state)
 
             actions.append(
                 TeachingActionRecommendation(
                     priority=1,
                     action_type="REVISE_PREREQUISITE",
                     target_concept_id=top_gap.prerequisite_concept_id,
-                    target_concept_name=top_gap.prerequisite_concept_name,
+                    target_concept_name=prereq_name,
                     rationale=(
                         f"{top_gap.affected_learner_count} students ({int(top_gap.severity * 100)}% of cohort) "
-                        f"have root gaps in prerequisite '{top_gap.prerequisite_concept_name}' "
+                        f"have root gaps in prerequisite '{prereq_name}' "
                         f"which blocks mastery of '{target_name}'."
                     ),
                     allocated_time_minutes=prereq_time,
                     student_groups=[
                         StudentInterventionGroup(
                             group_name="Prerequisite Remediation Cohort",
-                            instructional_focus=f"Targeted review of {top_gap.prerequisite_concept_name} fundamentals",
+                            instructional_focus=f"Targeted review of {prereq_name} fundamentals",
                             learner_ids=target_dist.struggling_learner_ids if target_dist else [],
-                            suggested_resource=f"Foundational review worked examples for {top_gap.prerequisite_concept_name}",
+                            suggested_resource=f"Foundational review worked examples for {prereq_name}",
                         )
                     ],
                     recommended_probe_concept_ids=[top_gap.prerequisite_concept_id],
@@ -227,8 +282,10 @@ class TeachingOptimizer:
 
         # Form differentiated groups
         struggling_learners = target_dist.struggling_learner_ids if target_dist else []
-        all_learner_ids = [lid for d in class_state.concept_distributions.values() for lid in d.struggling_learner_ids]
-        mastered_learners = [lid for lid in set(all_learner_ids) if lid not in struggling_learners]
+        all_learner_ids = class_state.enrolled_learner_ids or list(set(
+            [lid for d in class_state.concept_distributions.values() for lid in d.struggling_learner_ids]
+        ))
+        mastered_learners = [lid for lid in all_learner_ids if lid not in struggling_learners]
 
         actions.append(
             TeachingActionRecommendation(
@@ -238,7 +295,7 @@ class TeachingOptimizer:
                 target_concept_name=target_name,
                 rationale=(
                     f"Core instruction on '{target_name}'. Class mastery mean is "
-                    f"{target_dist.mean_mastery if target_dist else 0.30} with "
+                    f"{(target_dist.mean_mastery if target_dist else 0.30):.2f} with "
                     f"{len(struggling_learners)} students below 0.40 mastery threshold."
                 ),
                 allocated_time_minutes=instruction_time,
@@ -280,6 +337,8 @@ class TeachingOptimizer:
             subject_id=class_state.subject_id,
             created_at_iso=datetime.now(timezone.utc).isoformat(),
             status=InterventionStatus.PROPOSED,
+            target_concept_id=target_concept_id,
+            target_concept_name=target_name,
             target_learning_objective=f"Mastery Consolidation for {target_name}",
             total_class_duration_minutes=total_minutes,
             actions=actions,

@@ -15,10 +15,12 @@ import {
   Zap,
   HelpCircle,
 } from 'lucide-react';
+import { getConceptDisplayName } from '../../utils/conceptName';
 
 export interface FinalAssessmentProps {
   subject: Subject;
   learnerId: string;
+  conceptMap?: Record<string, string>;
   /** If provided, resume an existing active assessment instead of starting a new one */
   activeAssessmentId?: string | null;
   onComplete: (updatedMasteries: Record<string, number>) => void;
@@ -59,6 +61,7 @@ interface AssessmentResult {
 export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
   subject,
   learnerId,
+  conceptMap,
   activeAssessmentId,
   onComplete,
   onClose,
@@ -423,7 +426,7 @@ export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h5 className="text-xs font-display font-bold text-white uppercase">
-                          {conceptId.replace(/_/g, ' ')}
+                          {getConceptDisplayName((cr as any).concept_name || (cr as any).name || conceptId, conceptMap)}
                         </h5>
                         {!cr.correct && cr.correct_answer && (
                           <p className="text-xs text-emerald-300 mt-1 font-mono">
@@ -451,7 +454,7 @@ export const FinalAssessment: React.FC<FinalAssessmentProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {Object.entries(result.updated_masteries).map(([cid, val]) => (
                       <div key={cid} className="p-3 rounded-xl bg-space-950/60 border border-white/[0.06]">
-                        <p className="text-[10px] font-mono text-universe-slate truncate">{cid.replace(/_/g, ' ')}</p>
+                        <p className="text-[10px] font-mono text-universe-slate truncate">{getConceptDisplayName(cid, conceptMap)}</p>
                         <p className="text-lg font-display font-bold text-cyan-400 mt-0.5">{Math.round(val * 100)}%</p>
                       </div>
                     ))}

@@ -1316,8 +1316,16 @@ class LearningService:
 
                 if q_item and q_item.concept_ids:
                     for cid in q_item.concept_ids:
+                        c_name = (
+                            learning_context.concepts[cid].canonical_name
+                            if learning_context and cid in learning_context.concepts
+                            else cid
+                        )
                         concept_results[cid] = {
                             "question_id": qid,
+                            "concept_id": cid,
+                            "concept_name": c_name,
+                            "name": c_name,
                             "correct": is_correct,
                             "score": score_val,
                             "correct_answer": q_item.correct_answer,

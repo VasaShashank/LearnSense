@@ -155,6 +155,7 @@ class InstitutionService:
         title: str,
         teacher_ids: List[str],
         creator_user_id: str,
+        enrolled_learner_ids: Optional[List[str]] = None,
     ) -> CourseClass:
         # Require ADMIN or TEACHER in the organization
         self.require_role(org_id, creator_user_id, [UserRole.ADMIN, UserRole.TEACHER])
@@ -169,6 +170,33 @@ class InstitutionService:
             created_at_iso=datetime.now(timezone.utc).isoformat(),
         )
         _atomic_write_json(self.classes_dir / f"{class_id}.json", c.model_dump(mode="json"), self.classes_dir)
+
+        # Enroll learners if provided
+        roster = list(enrolled_learner_ids or [])
+        for lid in roster:
+            enr_id = f"enr_{class_id}_{lid}"
+            enr = ClassEnrollment(
+                enrollment_id=enr_id,
+                class_id=class_id,
+                learner_id=lid,
+                enrolled_at_iso=datetime.now(timezone.utc).isoformat(),
+            )
+            _atomic_write_json(self.enrollments_dir / f"{enr_id}.json", enr.model_dump(mode="json"), self.enrollments_dir)
+
+        # Cross-sync to native storage/classes so teacher_service immediately sees it
+        native_dir = Path("storage/classes")
+        native_dir.mkdir(parents=True, exist_ok=True)
+        _atomic_write_json(
+            native_dir / f"{class_id}.json",
+            {
+                "class_id": class_id,
+                "subject_id": subject_id,
+                "class_name": title,
+                "enrolled_learner_ids": roster,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            native_dir,
+        )
         return c
 
     def get_class(self, class_id: str) -> Optional[CourseClass]:

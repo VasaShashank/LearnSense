@@ -41,16 +41,26 @@ def run_stage6_object_assembly(
                     UnitLink(unit_id=hdef["unit_id"], link="defines")
                 )
 
-    # 2. Attach concept links to educational units
+    # 2. Attach concept links to educational units (O(N) precomputed lookups)
+    from collections import defaultdict
+    ev_block_map = {ev.evidence_id: ev.block_id for ev in candidates.evidence}
+    block_concepts: defaultdict[str, set] = defaultdict(set)
+    for concept in concepts:
+        for ev_id in concept.evidence_ids:
+            blk = ev_block_map.get(ev_id)
+            if blk:
+                block_concepts[blk].add(concept.concept_id)
+
     for unit in units:
-        for concept in concepts:
-            for ev_id in concept.evidence_ids:
-                # Check matching block
-                for ev in candidates.evidence:
-                    if ev.evidence_id == ev_id and any(s.block_id == ev.block_id for s in unit.source):
-                        unit.concept_links.append(
-                            ConceptLink(concept_id=concept.concept_id, link="mentions")
-                        )
+        unit_block_ids = {s.block_id for s in unit.source}
+        seen_cids = set()
+        for blk in unit_block_ids:
+            for cid in block_concepts.get(blk, set()):
+                if cid not in seen_cids:
+                    seen_cids.add(cid)
+                    unit.concept_links.append(
+                        ConceptLink(concept_id=cid, link="mentions")
+                    )
 
     # 3. Assemble Minimal Assessable Items
     assessable_items: List[AssessableItem] = []

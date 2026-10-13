@@ -1,7 +1,7 @@
 {
-  "membership_id": "mem_31366415",
+  "membership_id": "mem_org_373fa56e_student_sam",
   "org_id": "org_373fa56e",
   "user_id": "student_sam",
-  "role": "LEARNER",
-  "is_active": true
+  "role": "learner",
+  "created_at_iso": "2026-10-13T18:18:33.641351+00:00"
 }

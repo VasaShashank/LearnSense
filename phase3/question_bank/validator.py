@@ -111,10 +111,13 @@ class QuestionBankValidator:
             if question_words and evidence_words:
                 overlap = len(question_words & evidence_words) / len(question_words)
                 if overlap < 0.20:
-                    reasons.append(
-                        "Question shares almost no vocabulary with its cited passage "
-                        f"({overlap:.0%} overlap), so it is likely not answerable from it."
-                    )
+                    combined_q_words = question_words | _content_words(item.explanation or "")
+                    combined_overlap = len(combined_q_words & evidence_words) / len(combined_q_words)
+                    if combined_overlap < 0.20:
+                        reasons.append(
+                            "Question shares almost no vocabulary with its cited passage "
+                            f"({overlap:.0%} overlap), so it is likely not answerable from it."
+                        )
 
         is_valid = len(reasons) == 0
         return is_valid, reasons

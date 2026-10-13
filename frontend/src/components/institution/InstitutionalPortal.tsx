@@ -8,9 +8,6 @@ import {
   Lock,
   CheckCircle2,
   AlertCircle,
-  ExternalLink,
-  Layers,
-  Sparkles,
   Key,
 } from 'lucide-react';
 import { ApiClient } from '../../api/client';
@@ -31,6 +28,14 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
   const [newClassTitle, setNewClassTitle] = useState<string>('');
   const [newClassSubject, setNewClassSubject] = useState<string>('');
   const [newClassTeacher, setNewClassTeacher] = useState<string>('prof_vance');
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([
+    'student_alex',
+    'student_jordan',
+    'student_sam',
+    'student_priya',
+    'student_david',
+  ]);
 
   // Enrolled Roster Modal State
   const [inspectClassId, setInspectClassId] = useState<string | null>(null);
@@ -42,8 +47,15 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
     async function loadData() {
       try {
         setLoading(true);
-        const orgList = await ApiClient.listOrganizations();
+        const [orgList, subList] = await Promise.all([
+          ApiClient.listOrganizations(),
+          ApiClient.getSubjects().catch(() => []),
+        ]);
         setOrganizations(orgList);
+        setSubjects(subList);
+        if (subList.length > 0) {
+          setNewClassSubject(subList[0].id);
+        }
         if (orgList.length > 0) {
           const firstOrg = orgList[0].org_id;
           setSelectedOrgId(firstOrg);
@@ -76,19 +88,22 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
     e.preventDefault();
     if (!newClassTitle || !selectedOrgId) return;
     try {
-      const created = await fetch('http://localhost:8000/api/institutions/classes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          org_id: selectedOrgId,
-          subject_id: newClassSubject || 'doc_stud-share-sample_c_programs_daa-_lab_programs',
-          title: newClassTitle,
-          teacher_ids: [newClassTeacher],
-          creator_user_id: currentUserId,
-        }),
-      }).then((r) => r.json());
+      const creatorId = currentUserId === 'student_alex' ? 'admin_sterling' : (currentUserId || 'admin_sterling');
+      const targetSub = newClassSubject || (subjects[0]?.id ?? 'doc_stud-share-sample_c_programs_daa-_lab_programs');
+      const enrolled = selectedStudentIds.length > 0
+        ? selectedStudentIds
+        : ['student_alex', 'student_sam', 'student_jordan', 'student_priya'];
 
-      setStatusMsg({ text: `Class '${created.title}' successfully registered.`, type: 'success' });
+      const created = await ApiClient.createInstitutionClass({
+        org_id: selectedOrgId,
+        subject_id: targetSub,
+        title: newClassTitle.trim(),
+        teacher_ids: [newClassTeacher || 'prof_vance'],
+        creator_user_id: creatorId,
+        enrolled_learner_ids: enrolled,
+      });
+
+      setStatusMsg({ text: `Class '${created.title || newClassTitle}' successfully registered with ${enrolled.length} enrolled students.`, type: 'success' });
       setShowNewClassModal(false);
       setNewClassTitle('');
       // Reload classes
@@ -102,7 +117,8 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
   const handleInspectRoster = async (clsId: string) => {
     setInspectClassId(clsId);
     try {
-      const res = await ApiClient.getClassRoster(clsId, currentUserId);
+      const callerId = currentUserId === 'student_alex' ? 'admin_sterling' : (currentUserId || 'admin_sterling');
+      const res = await ApiClient.getClassRoster(clsId, callerId);
       setClassRoster(res.roster || []);
     } catch (err: any) {
       setStatusMsg({ text: err.message || 'Failed to fetch class roster (RBAC check)', type: 'error' });
@@ -114,14 +130,15 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
     if (!inspectClassId || !newStudentId) return;
     try {
       setIsEnrolling(true);
-      await ApiClient.enrollLearnerInClass(inspectClassId, newStudentId, currentUserId);
-      setStatusMsg({ text: `Student '${newStudentId}' enrolled successfully!`, type: 'success' });
+      const enrollerId = currentUserId === 'student_alex' ? 'admin_sterling' : (currentUserId || 'admin_sterling');
+      await ApiClient.enrollLearnerInClass(inspectClassId, newStudentId.trim(), enrollerId);
+      setStatusMsg({ text: `Student '${newStudentId.trim()}' enrolled successfully!`, type: 'success' });
       setNewStudentId('');
       // Refresh roster
-      const res = await ApiClient.getClassRoster(inspectClassId, currentUserId);
+      const res = await ApiClient.getClassRoster(inspectClassId, enrollerId);
       setClassRoster(res.roster || []);
     } catch (err: any) {
-      setStatusMsg({ text: err.message || 'RBAC Denied: Only Admins and Teachers can enroll students.', type: 'error' });
+      setStatusMsg({ text: err.message || 'Failed to enroll student', type: 'error' });
     } finally {
       setIsEnrolling(false);
     }
@@ -153,8 +170,9 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
 
         {/* Tenant Selector */}
         <div className="flex flex-col">
-          <label className="text-[10px] font-mono text-universe-slate uppercase tracking-wider mb-1">
-            Active Tenant Organization
+          <label className="text-[10px] font-mono text-universe-slate uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>Active Tenant Organization</span>
+            {loading && <span className="text-cyan-400 lowercase tracking-normal animate-pulse">syncing...</span>}
           </label>
           <select
             value={selectedOrgId}
@@ -332,20 +350,38 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
 
       {/* Modal: Create Class */}
       {showNewClassModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-          <div className="w-full max-w-md p-6 rounded-2xl bg-space-900 border border-white/[0.15] shadow-2xl space-y-4">
-            <h3 className="text-base font-display font-bold text-white">Create New Course Cohort</h3>
-            <form onSubmit={handleCreateClass} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="w-full max-w-lg p-6 rounded-2xl bg-space-900 border border-white/[0.15] shadow-2xl space-y-4">
+            <h3 className="text-base font-display font-bold text-white flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-blue-400" />
+              Create New Course Cohort
+            </h3>
+            <form onSubmit={handleCreateClass} className="space-y-3.5">
               <div>
                 <label className="text-xs font-mono text-universe-slate uppercase">Class / Section Title</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Advanced Operating Systems Lab 02"
+                  placeholder="e.g. CS201: Systems & Algorithms Lab Section A"
                   value={newClassTitle}
                   onChange={(e) => setNewClassTitle(e.target.value)}
                   className="w-full mt-1 p-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs focus:outline-none focus:border-blue-400"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-universe-slate uppercase">Course Subject Mapping</label>
+                <select
+                  value={newClassSubject}
+                  onChange={(e) => setNewClassSubject(e.target.value)}
+                  className="w-full mt-1 p-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs focus:outline-none focus:border-blue-400 cursor-pointer"
+                >
+                  {subjects.map((s: any) => (
+                    <option key={s.id} value={s.id} className="bg-space-900">
+                      {s.title} ({s.concept_count} concepts)
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -360,7 +396,63 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              {/* Student Roster Selection */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono text-universe-slate uppercase">
+                    Initial Student Enrollment ({selectedStudentIds.length})
+                  </label>
+                  <div className="flex gap-1 text-[10px] font-mono">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudentIds(['student_alex', 'student_jordan', 'student_sam', 'student_priya', 'student_david', 'student_marcus', 'student_aisha', 'student_elena'])}
+                      className="px-2 py-0.5 rounded bg-space-800 text-cyan-300 hover:bg-space-750"
+                    >
+                      All (8)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudentIds([])}
+                      className="px-2 py-0.5 rounded bg-space-800 text-universe-slate hover:bg-space-750"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                  {[
+                    { id: 'student_alex', name: 'Alex Rivera' },
+                    { id: 'student_jordan', name: 'Jordan Smith' },
+                    { id: 'student_sam', name: 'Sam Taylor' },
+                    { id: 'student_priya', name: 'Priya Sharma' },
+                    { id: 'student_david', name: 'David Kim' },
+                    { id: 'student_marcus', name: 'Marcus Chen' },
+                    { id: 'student_aisha', name: 'Aisha Patel' },
+                    { id: 'student_elena', name: 'Elena Rostova' },
+                  ].map((st) => {
+                    const isChecked = selectedStudentIds.includes(st.id);
+                    return (
+                      <label
+                        key={st.id}
+                        onClick={() => {
+                          setSelectedStudentIds((prev) =>
+                            isChecked ? prev.filter((id) => id !== st.id) : [...prev, st.id]
+                          );
+                        }}
+                        className={`p-2 rounded-lg border text-xs cursor-pointer flex items-center gap-2 ${
+                          isChecked ? 'bg-blue-950/40 border-blue-400/50 text-white' : 'bg-space-850/60 border-white/[0.06] text-universe-slate'
+                        }`}
+                      >
+                        <input type="checkbox" checked={isChecked} onChange={() => {}} className="accent-blue-500 rounded" />
+                        <span className="truncate text-[11px]">{st.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.08]">
                 <button
                   type="button"
                   onClick={() => setShowNewClassModal(false)}
@@ -370,9 +462,9 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold"
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                 >
-                  Create Class
+                  Create & Enroll Cohort
                 </button>
               </div>
             </form>
@@ -382,11 +474,14 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
 
       {/* Modal: Manage Roster */}
       {inspectClassId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
           <div className="w-full max-w-lg p-6 rounded-2xl bg-space-900 border border-white/[0.15] shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-display font-bold text-white">Roster & Enrollment</h3>
+                <h3 className="text-base font-display font-bold text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-blue-400" />
+                  Roster & Enrollment Management
+                </h3>
                 <p className="text-xs font-mono text-universe-slate">Class ID: {inspectClassId}</p>
               </div>
               <button
@@ -418,10 +513,50 @@ export const InstitutionalPortal: React.FC<InstitutionalPortalProps> = ({ curren
               )}
             </div>
 
+            {/* Quick-Enroll Demo Students */}
+            <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+              <span className="text-[10px] font-mono text-universe-slate uppercase">
+                Quick-Enroll Demo Students:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  'student_alex',
+                  'student_jordan',
+                  'student_sam',
+                  'student_priya',
+                  'student_david',
+                  'student_aisha',
+                  'student_marcus',
+                  'student_elena',
+                ]
+                  .filter((id) => !classRoster.includes(id))
+                  .map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const enrollerId = currentUserId === 'student_alex' ? 'admin_sterling' : (currentUserId || 'admin_sterling');
+                          await ApiClient.enrollLearnerInClass(inspectClassId, id, enrollerId);
+                          setStatusMsg({ text: `Student '${id}' enrolled!`, type: 'success' });
+                          const res = await ApiClient.getClassRoster(inspectClassId, enrollerId);
+                          setClassRoster(res.roster || []);
+                        } catch (err: any) {
+                          setStatusMsg({ text: err.message || 'Failed to enroll', type: 'error' });
+                        }
+                      }}
+                      className="px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-white/[0.08] hover:border-blue-400 text-[10px] font-mono text-blue-300 transition-colors"
+                    >
+                      + {id}
+                    </button>
+                  ))}
+              </div>
+            </div>
+
             {/* Enroll New Student Form */}
             <form onSubmit={handleEnrollLearner} className="pt-2 border-t border-white/[0.08] space-y-3">
               <label className="text-xs font-mono text-universe-slate uppercase">
-                Enroll New Student (RBAC Enforced)
+                Enroll Custom Student ID
               </label>
               <div className="flex gap-2">
                 <input

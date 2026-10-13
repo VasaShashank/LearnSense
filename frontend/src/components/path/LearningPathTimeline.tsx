@@ -1,16 +1,19 @@
 import React from 'react';
 import type { LearningPathNode, LearningTarget } from '../../api/client';
+import { getConceptDisplayName } from '../../utils/conceptName';
 import { CheckCircle2, Target, Lock, Play, HelpCircle, Sparkles, ArrowRight } from 'lucide-react';
 
 export interface LearningPathTimelineProps {
   nodes: LearningPathNode[];
   activeTarget: LearningTarget | null;
+  conceptMap?: Record<string, string>;
   onSelectConcept: (conceptId: string) => void;
 }
 
 export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
   nodes,
   activeTarget,
+  conceptMap,
   onSelectConcept,
 }) => {
   return (
@@ -36,7 +39,7 @@ export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
         {activeTarget && (
           <div className="px-4 py-2.5 rounded-2xl bg-space-850/80 border border-cyan-500/30 text-xs font-mono text-cyan-300 flex items-center gap-2.5 shadow-[0_0_16px_rgba(0,240,255,0.1)]">
             <Target className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />
-            <span>ACTIVE TARGET: {activeTarget.concept_name || activeTarget.name || activeTarget.concept_id}</span>
+            <span>ACTIVE TARGET: {getConceptDisplayName(activeTarget, conceptMap)}</span>
           </div>
         )}
       </div>
@@ -49,7 +52,7 @@ export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
               NEXT STEP IN JOURNEY
             </span>
             <h3 className="text-xl font-display font-bold text-white">
-              {activeTarget.concept_name || activeTarget.name || activeTarget.concept_id}
+              {getConceptDisplayName(activeTarget, conceptMap)}
             </h3>
             <p className="text-xs text-universe-slate leading-relaxed font-sans">
               <strong className="text-cyan-300 font-mono font-medium">Why now?</strong> {activeTarget.reason}
@@ -70,7 +73,7 @@ export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
       <div className="universe-panel rounded-3xl p-6 lg:p-8">
         <div className="relative pl-8 border-l border-white/[0.1] space-y-8 my-2">
           {nodes.map((node, index) => {
-            const nodeName = node.concept_name || node.name || node.concept_id.replace(/_/g, ' ').toUpperCase();
+            const nodeName = getConceptDisplayName(node, conceptMap);
             const nodeMastery = node.mastery ?? node.estimated_mastery ?? 0;
             const masteryPercent = Math.round(nodeMastery * 100);
             const prereqs = Array.isArray(node.prerequisites) ? node.prerequisites : [];
@@ -131,8 +134,8 @@ export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
                     </h4>
 
                     {prereqs.length > 0 && (
-                      <p className="text-[11px] text-universe-slate font-mono">
-                        Requires: {prereqs.join(', ')}
+                      <p className="text-[11px] text-universe-slate font-sans">
+                        Requires: {prereqs.map((p) => getConceptDisplayName(p, conceptMap)).join(', ')}
                       </p>
                     )}
                   </div>

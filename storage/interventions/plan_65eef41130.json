@@ -1,0 +1,63 @@
+{
+  "intervention_id": "plan_65eef41130",
+  "class_id": "cls_67d705a9",
+  "subject_id": "doc_aws_notes_by_rajesh_aiml",
+  "created_at_iso": "2026-10-13T18:47:50.788142+00:00",
+  "status": "EVALUATED",
+  "target_learning_objective": "Mastery Consolidation for c_841f20d27f3d",
+  "target_concept_id": "c_841f20d27f3d",
+  "target_concept_name": "c_841f20d27f3d",
+  "total_class_duration_minutes": 45,
+  "actions": [
+    {
+      "priority": 1,
+      "action_type": "DIRECT_INSTRUCTION_AND_WORKED_EXAMPLES",
+      "target_concept_id": "c_841f20d27f3d",
+      "target_concept_name": "c_841f20d27f3d",
+      "rationale": "Core instruction on 'c_841f20d27f3d'. Class mastery mean is 0.3 with 0 students below 0.40 mastery threshold.",
+      "allocated_time_minutes": 25,
+      "student_groups": [
+        {
+          "group_name": "Guided Practice Cohort",
+          "instructional_focus": "Step-by-step worked examples with intuitive analogies",
+          "learner_ids": [],
+          "suggested_resource": null
+        },
+        {
+          "group_name": "Independent Application Cohort",
+          "instructional_focus": "Challenging transfer problems and multi-step applications",
+          "learner_ids": [
+            "student_alex",
+            "student_jordan",
+            "student_sam",
+            "student_priya",
+            "student_marcus",
+            "student_aisha",
+            "student_david",
+            "student_elena",
+            "student_carlos",
+            "student_maya"
+          ],
+          "suggested_resource": null
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_841f20d27f3d"
+      ]
+    },
+    {
+      "priority": 2,
+      "action_type": "FORMATIVE_REASSESSMENT",
+      "target_concept_id": "c_841f20d27f3d",
+      "target_concept_name": "c_841f20d27f3d",
+      "rationale": "Conduct 3-item adaptive verification probe to measure post-intervention learning gain.",
+      "allocated_time_minutes": 20,
+      "student_groups": [],
+      "recommended_probe_concept_ids": [
+        "c_841f20d27f3d"
+      ]
+    }
+  ],
+  "teacher_notes": "Approved by Lead Instructor for immediate classroom delivery.",
+  "approved_at_iso": "2026-10-13T18:48:21.971701+00:00"
+}

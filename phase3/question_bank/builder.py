@@ -307,7 +307,16 @@ class QuestionBankBuilder:
                 )
                 continue
 
-            generated = self._generate_for_concept(context, concept_id, chunks, chapter_id)
+            try:
+                generated = self._generate_for_concept(context, concept_id, chunks, chapter_id)
+            except Exception as gen_err:
+                logger.warning(
+                    "LLM generation failed for concept %s: %s; continuing with remaining concepts.",
+                    concept_id,
+                    gen_err,
+                )
+                continue
+
             for item in generated:
                 fingerprint = QuestionBankDeduplicator.compute_fingerprint(item.question_text)
                 if fingerprint in seen:
@@ -425,9 +434,21 @@ class QuestionBankBuilder:
             key = str(ref).strip().upper().lstrip("[]")
             chunk = ref_labels.get(key)
             if chunk is None:
+                if f"E{key}" in ref_labels:
+                    chunk = ref_labels[f"E{key}"]
+                elif key.startswith("E") and key[1:] in ref_labels:
+                    chunk = ref_labels[key[1:]]
+            if chunk is None:
                 continue
             refs.append(key)
-            citation = SourceCitation(**chunk.citation())
+            cit_dict = chunk.citation()
+            best_quote = self._find_best_passage_excerpt(
+                chunk.text,
+                query_text=f"{question_text} {correct_answer} {explanation}",
+                fallback=cit_dict.get("quote", ""),
+            )
+            cit_dict["quote"] = best_quote
+            citation = SourceCitation(**cit_dict)
             if citation.block_id not in {c.block_id for c in citations}:
                 citations.append(citation)
 
@@ -526,3 +547,36 @@ class QuestionBankBuilder:
             if link.concept_id in context.concepts and link.concept_id not in concept_ids:
                 concept_ids.append(link.concept_id)
         return concept_ids
+
+    @staticmethod
+    def _find_best_passage_excerpt(
+        chunk_text: str, query_text: str, max_len: int = 400, fallback: str = ""
+    ) -> str:
+        clean_text = " ".join((chunk_text or "").split())
+        if not clean_text:
+            return fallback
+        if len(clean_text) <= max_len:
+            return clean_text
+
+        from phase3.question_bank.validator import _content_words
+
+        q_words = _content_words(query_text)
+        if not q_words:
+            return clean_text[:max_len]
+
+        words = clean_text.split()
+        window_words_count = max(1, int(max_len / 6))
+        best_score = -1
+        best_window = clean_text[:max_len]
+
+        step = max(1, int(window_words_count / 4))
+        for i in range(0, max(1, len(words) - window_words_count + 1), step):
+            window = words[i : i + window_words_count]
+            window_str = " ".join(window)
+            score = len(q_words & _content_words(window_str))
+            if score > best_score:
+                best_score = score
+                best_window = window_str[:max_len]
+
+        return best_window
+

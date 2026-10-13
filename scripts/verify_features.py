@@ -313,6 +313,54 @@ def run_feature_probes() -> List[Dict[str, Any]]:
         persist_entry["excerpt"] = str(e)
     results.append(persist_entry)
 
+    # 11. Notation-Matched Video Recommender (§9)
+    video_entry = {
+        "feature": "Notation-Matched Video Recommender",
+        "provider_model": "ResourceRecommender + NotationMatcher",
+        "command": "ResourceService().list_all_resources() & recommend_resources()",
+        "status": "PASS",
+        "excerpt": "",
+    }
+    try:
+        from backend.services.resource_service import ResourceService
+        from phase3.resources.notation_matcher import NotationMatcher
+        res_svc = ResourceService()
+        all_r = res_svc.list_all_resources()
+        matcher = NotationMatcher()
+        is_eq, sc, expl = matcher.are_formulas_equivalent("v = u + at", "v = v_0 + a*\\Delta t", domain="kinematics")
+        video_entry["status"] = "PASS"
+        video_entry["excerpt"] = f"Indexed {len(all_r)} verified resources; kinematics equivalence score={sc} ({expl[:45]})"
+    except Exception as e:
+        video_entry["status"] = "FAIL"
+        video_entry["excerpt"] = str(e)
+    results.append(video_entry)
+
+    # 12. Teacher Optimizer & Class Knowledge State (§10)
+    teacher_entry = {
+        "feature": "Teacher Collective Optimizer & Class State",
+        "provider_model": "TeachingOptimizer + TeacherService",
+        "command": "TeachingOptimizer.aggregate_class_knowledge_state()",
+        "status": "PASS",
+        "excerpt": "",
+    }
+    try:
+        from phase4.teacher.optimizer import TeachingOptimizer
+        from phase3.knowledge.phase2_adapter import LearningContext, ConceptView
+        from phase3.learner.models import LearnerState, ConceptState
+        ctx = LearningContext(
+            document_id="doc_probe",
+            knowledge_document_id="kd_probe",
+            concepts={"c1": ConceptView(concept_id="c1", canonical_name="Probe Concept", type="concept")},
+        )
+        st = LearnerState(learner_id="l1", concept_states={"c1": ConceptState(concept_id="c1", mastery_probability=0.85)})
+        cls_st = TeachingOptimizer.aggregate_class_knowledge_state("cls_p", "doc_probe", [st], ctx)
+        teacher_entry["status"] = "PASS"
+        teacher_entry["excerpt"] = f"Aggregated N={cls_st.total_enrolled} students; concept c1 mean={cls_st.concept_distributions['c1'].mean_mastery}"
+    except Exception as e:
+        teacher_entry["status"] = "FAIL"
+        teacher_entry["excerpt"] = str(e)
+    results.append(teacher_entry)
+
     return results
 
 

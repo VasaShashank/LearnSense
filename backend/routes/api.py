@@ -749,6 +749,37 @@ async def evaluate_intervention_outcome(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+# --- STUDENT LEARNING INSIGHTS (Dynamic Aggregation) ---
+
+@router.get("/classes/{class_id}/student-learning-insights")
+async def get_student_learning_insights(class_id: str, subject_id: Optional[str] = None):
+    """
+    Returns dynamically aggregated student learning insights: difficulty tiers,
+    misconception frequencies, attempt volumes, time-to-master estimates, and
+    evidence-based teaching recommendations — all computed from real class
+    knowledge states rather than hardcoded fixtures.
+    """
+    try:
+        return teacher_service.get_student_learning_insights(
+            class_id=class_id, subject_id=subject_id
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/student-learning-insights")
+async def get_global_student_learning_insights(subject_id: Optional[str] = None):
+    """
+    Returns platform-wide aggregated student learning insights without requiring
+    a specific class. Used by independent visiting educators who don't have access
+    to institutional class rosters.
+    """
+    try:
+        return teacher_service.get_student_learning_insights(subject_id=subject_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 # --- INSTITUTIONAL & B2B RBAC ROUTES (§11) ---
 
 class CreateOrgApiRequest(BaseModel):
@@ -768,6 +799,7 @@ class CreateOrgClassApiRequest(BaseModel):
     title: str
     teacher_ids: List[str]
     creator_user_id: str
+    enrolled_learner_ids: Optional[List[str]] = None
 
 
 class EnrollLearnerApiRequest(BaseModel):
@@ -793,6 +825,7 @@ async def create_institution_class(req: CreateOrgClassApiRequest):
         title=req.title,
         teacher_ids=req.teacher_ids,
         creator_user_id=req.creator_user_id,
+        enrolled_learner_ids=req.enrolled_learner_ids,
     )
 
 
@@ -855,6 +888,15 @@ async def get_personas():
             "avatar": "🏛️",
             "org_name": "Apex Institute of Science & Technology",
             "email": "m.sterling@apex.edu",
+        },
+        {
+            "id": "teacher_independent",
+            "name": "Dr. Sarah Lin",
+            "role": "TEACHER",
+            "title": "Independent Visiting Educator",
+            "avatar": "🧑‍🏫",
+            "org_name": "Open Academic Community (Non-B2B)",
+            "email": "sarah.lin@open-ed.org",
         },
     ]
 

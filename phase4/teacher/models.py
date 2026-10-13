@@ -58,6 +58,7 @@ class ClassKnowledgeState(BaseModel):
     subject_title: str = ""
     total_enrolled: int
     active_learners: int
+    enrolled_learner_ids: List[str] = Field(default_factory=list)
     concept_distributions: Dict[str, ConceptMasteryDistribution] = Field(default_factory=dict)
     prerequisite_gap_clusters: List[PrerequisiteGapCluster] = Field(default_factory=list)
     misconception_clusters: List[MisconceptionCluster] = Field(default_factory=list)
@@ -92,6 +93,8 @@ class TeachingInterventionPlan(BaseModel):
     created_at_iso: str
     status: InterventionStatus = InterventionStatus.PROPOSED
     target_learning_objective: str
+    target_concept_id: Optional[str] = None
+    target_concept_name: Optional[str] = None
     total_class_duration_minutes: int = 50
     actions: List[TeachingActionRecommendation] = Field(default_factory=list)
     teacher_notes: Optional[str] = None
