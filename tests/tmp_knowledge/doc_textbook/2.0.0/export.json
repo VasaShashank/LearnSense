@@ -289,6 +289,7 @@
       "evidence_ids": [
         "ev_ee38af1e42ad"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -316,6 +317,7 @@
       "evidence_ids": [
         "ev_38019ef26b2c"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -347,6 +349,7 @@
         "ev_cfbddd65e46e",
         "ev_c9829a2f9920"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -378,6 +381,7 @@
         "ev_a49beb609ed2",
         "ev_3f24621bb4c0"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"

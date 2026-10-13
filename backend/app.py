@@ -82,12 +82,29 @@ def _run_startup_preflight() -> dict:
 
     # --- Storage ---
     try:
-        storage_dirs = ["storage/subjects", "storage/learners", "storage/sessions"]
+        storage_dirs = ["storage/subjects", "storage/learners", "storage/sessions", "storage/resources", "storage/classes"]
         for d in storage_dirs:
             Path(d).mkdir(parents=True, exist_ok=True)
         results["storage"] = {"status": "OK"}
     except Exception as exc:
         results["storage"] = {"status": "FAILED", "reason": str(exc)}
+
+    # --- Video & Resource Recommender (§9) ---
+    try:
+        from backend.services.resource_service import ResourceService
+        res_svc = ResourceService()
+        all_res = res_svc.list_all_resources()
+        results["resources"] = {"status": "OK", "count": len(all_res)}
+    except Exception as exc:
+        results["resources"] = {"status": "FAILED", "reason": str(exc)}
+
+    # --- Teacher Optimizer (§10) ---
+    try:
+        from backend.services.teacher_service import TeacherService
+        t_svc = TeacherService()
+        results["teacher_optimizer"] = {"status": "OK"}
+    except Exception as exc:
+        results["teacher_optimizer"] = {"status": "FAILED", "reason": str(exc)}
 
     return results
 

@@ -79,7 +79,8 @@ class LearningService:
         builder = QuestionBankBuilder()
         retriever = self._retriever_for(subject_id)
 
-        existing = self.bank_repo.load_grounded_bank(subject_id)
+        full_bank = self.bank_repo.load_grounded_bank(subject_id)
+        existing = full_bank
         if existing is not None:
             scoped = QuestionBank(document_id=subject_id, chapter_id="ch_all")
             for item in existing.get_grounded_questions():
@@ -100,20 +101,28 @@ class LearningService:
                 # unrelated concepts and still return "no questions" for the real one.
                 concept_ids=target_ids,
             )
-        except QuestionBankError:
+        except (QuestionBankError, LearnSenseError, Exception) as build_err:
             # Section 16 & Section 2: Reusing authoritative persisted grounded questions
             # when fresh generation cannot proceed is legitimate artifact reuse, not a semantic fallback.
             if existing is not None and existing.get_grounded_questions():
                 logger.info(
-                    "Reusing %d authoritative persisted grounded questions for '%s'.",
+                    "Reusing %d authoritative persisted grounded questions for '%s' after build error: %s",
                     len(existing.get_grounded_questions()),
                     subject_id,
+                    build_err,
                 )
                 return existing
+            if full_bank is not None and full_bank.get_grounded_questions():
+                return full_bank
             raise
 
         if bank.get_grounded_questions():
-            self.bank_repo.save_bank(bank)
+            if full_bank is not None:
+                for q in bank.get_grounded_questions():
+                    full_bank.add_question(q)
+                self.bank_repo.save_bank(full_bank)
+            else:
+                self.bank_repo.save_bank(bank)
         return bank
 
     def _retriever_for(self, document_id: str):
@@ -1156,7 +1165,12 @@ class LearningService:
 
         # Resumability check: if active uncompleted session exists, resume it
         active_sess = self.session_repo.find_active_final_assessment(learner_id, subject_id)
-        bank = self.get_or_create_question_bank(subject_id, all_concept_ids)
+        target_concept_ids = all_concept_ids[:10]
+        existing_bank = self.bank_repo.load_grounded_bank(subject_id)
+        if existing_bank and [q for q in existing_bank.get_grounded_questions() if q.options and len(q.options) >= 2]:
+            bank = existing_bank
+        else:
+            bank = self.get_or_create_question_bank(subject_id, target_concept_ids)
 
         if active_sess and not active_sess.completed:
             questions = []
@@ -1192,12 +1206,11 @@ class LearningService:
             }
 
         # Select grounded questions covering concepts
-        target_concept_ids = all_concept_ids[:10]
         selected_questions: List[Dict[str, Any]] = []
         question_ids: List[str] = []
 
         for cid in target_concept_ids:
-            candidates = bank.get_by_concept(cid)
+            candidates = [c for c in bank.get_by_concept(cid) if c.options and len(c.options) >= 2 and c.question_text]
             if candidates:
                 q = candidates[0]
                 if q.question_id not in question_ids:
@@ -1210,7 +1223,7 @@ class LearningService:
                     selected_questions.append(q_dict)
 
         if not selected_questions:
-            for q in bank.get_grounded_questions()[:10]:
+            for q in [c for c in bank.get_grounded_questions() if c.options and len(c.options) >= 2 and c.question_text][:10]:
                 if q.question_id not in question_ids:
                     question_ids.append(q.question_id)
                     q_dict = q.model_dump(mode="json")

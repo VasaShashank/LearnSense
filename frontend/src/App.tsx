@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, SourceDocument } from './api/client';
 import { ApiClient } from './api/client';
-import { TopNavbar } from './components/navigation/TopNavbar';
+import { TopNavbar, type AppView } from './components/navigation/TopNavbar';
 import { Dashboard } from './components/dashboard/Dashboard';
+import { TeacherDashboard } from './components/teacher/TeacherDashboard';
+import { InstitutionalPortal } from './components/institution/InstitutionalPortal';
+import { LoginPersonaModal, PRESET_PERSONAS, type Persona } from './components/common/LoginPersonaModal';
 import { LearningAtlas } from './components/atlas/LearningAtlas';
 import { AccessibleAtlasView } from './components/atlas/AccessibleAtlasView';
 import { XRayInspector } from './components/atlas/XRayInspector';
@@ -18,10 +21,12 @@ import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
 
 
 export default function App() {
-  const [learnerId] = useState<string>('student_alex');
+  const [currentPersona, setCurrentPersona] = useState<Persona>(PRESET_PERSONAS[0]);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const learnerId = currentPersona.id;
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [activeView, setActiveView] = useState<'DASHBOARD' | 'ATLAS' | 'PATH' | 'SOURCES'>('DASHBOARD');
+  const [activeView, setActiveView] = useState<AppView>('DASHBOARD');
 
   // Resume / Rehydration State
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
@@ -205,6 +210,8 @@ export default function App() {
         activeView={activeView}
         onNavigate={setActiveView}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        currentPersona={currentPersona}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
       />
 
       {/* Main Workspace Universe Viewport */}
@@ -394,6 +401,25 @@ export default function App() {
             }}
           />
         )}
+
+        {/* View 5: TEACHER DASHBOARD & TEACHING OPTIMIZER (§10) */}
+        {activeView === 'TEACHER' && (
+          <TeacherDashboard
+            currentUserId={currentPersona.id}
+            onNavigateToAtlas={() => setActiveView('ATLAS')}
+            onSwitchToStudent={() => {
+              setCurrentPersona(PRESET_PERSONAS[0]);
+              setActiveView('DASHBOARD');
+            }}
+          />
+        )}
+
+        {/* View 6: INSTITUTIONAL & B2B PORTAL (§11) */}
+        {activeView === 'INSTITUTION' && (
+          <InstitutionalPortal
+            currentUserId={currentPersona.id}
+          />
+        )}
       </main>
 
       {/* Slide-Over Intelligence Drawer: Concept Inspector */}
@@ -486,6 +512,23 @@ export default function App() {
           if (c) {
             setTutorConcept(c);
             setIsTutorOpen(true);
+          }
+        }}
+      />
+
+      {/* Role / Persona Login Modal */}
+      <LoginPersonaModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        currentPersona={currentPersona}
+        onSelectPersona={(persona) => {
+          setCurrentPersona(persona);
+          if (persona.role === 'TEACHER') {
+            setActiveView('TEACHER');
+          } else if (persona.role === 'ADMIN') {
+            setActiveView('INSTITUTION');
+          } else {
+            setActiveView('DASHBOARD');
           }
         }}
       />

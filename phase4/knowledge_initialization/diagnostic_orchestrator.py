@@ -197,6 +197,8 @@ class DiagnosticOrchestrator:
             item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
             if not item_concepts:
                 continue
+            if not item.options or len(item.options) < 2:
+                continue
             if all(used.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
                 continue
             item_copy = item.model_copy()
@@ -329,6 +331,8 @@ class DiagnosticOrchestrator:
                 continue
             item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
             if not item_concepts:
+                continue
+            if not item.options or len(item.options) < 2:
                 continue
             if all(usage.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
                 continue

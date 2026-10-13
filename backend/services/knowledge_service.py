@@ -158,8 +158,8 @@ class KnowledgeService:
                 upgraded_ctx = self.reextract_semantic_graph(document_id)
                 if upgraded_ctx and len(upgraded_ctx.concepts) > 0:
                     ctx = upgraded_ctx
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Automatic semantic upgrade skipped for %s: %s", document_id, exc)
 
         masteries = learner_masteries or {}
 
