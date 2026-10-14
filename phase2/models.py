@@ -89,11 +89,16 @@ class RelationshipTypeEnum(str, Enum):
     PART_OF = "part_of"
     IS_A = "is_a"
     INSTANCE_OF = "instance_of"
+    EXAMPLE_OF = "example_of"
     DERIVED_FROM = "derived_from"
     PREREQUISITE_OF = "prerequisite_of"
     CONTRASTS_WITH = "contrasts_with"
     SIMILAR_TO = "similar_to"
     RELATED_TO = "related_to"
+    MENTIONS = "mentions"
+    EXPLAINS = "explains"
+    CAUSES = "causes"
+    APPLIES_TO = "applies_to"
 
 
 # Data Models
@@ -238,6 +243,9 @@ class Relationship(BaseModel):
     confidence: ConfidenceBreakdown
     evidence_ids: List[str] = Field(default_factory=list)
     flags: List[str] = Field(default_factory=list)
+    rationale: Optional[str] = None
+    extraction_method: Optional[str] = "pattern"
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Views(BaseModel):

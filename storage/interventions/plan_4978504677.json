@@ -1,0 +1,59 @@
+{
+  "intervention_id": "plan_4978504677",
+  "class_id": "cls_cc_unit1_batch",
+  "subject_id": "doc_cc_unit1_24_class1",
+  "created_at_iso": "2026-10-14T12:11:28.556500+00:00",
+  "status": "PROPOSED",
+  "target_learning_objective": "Mastery Consolidation for Cloud Computing",
+  "target_concept_id": "c_841f20d27f3d",
+  "target_concept_name": "Cloud Computing",
+  "total_class_duration_minutes": 45,
+  "actions": [
+    {
+      "priority": 1,
+      "action_type": "DIRECT_INSTRUCTION_AND_WORKED_EXAMPLES",
+      "target_concept_id": "c_841f20d27f3d",
+      "target_concept_name": "Cloud Computing",
+      "rationale": "Core instruction on 'Cloud Computing'. Class mastery mean is 0.76 with 1 students below 0.40 mastery threshold.",
+      "allocated_time_minutes": 25,
+      "student_groups": [
+        {
+          "group_name": "Guided Practice Cohort",
+          "instructional_focus": "Step-by-step worked examples with intuitive analogies",
+          "learner_ids": [
+            "student_sam"
+          ],
+          "suggested_resource": null
+        },
+        {
+          "group_name": "Independent Application Cohort",
+          "instructional_focus": "Challenging transfer problems and multi-step applications",
+          "learner_ids": [
+            "student_alex",
+            "student_jordan",
+            "student_priya",
+            "student_david"
+          ],
+          "suggested_resource": null
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_841f20d27f3d"
+      ]
+    },
+    {
+      "priority": 2,
+      "action_type": "FORMATIVE_REASSESSMENT",
+      "target_concept_id": "c_841f20d27f3d",
+      "target_concept_name": "Cloud Computing",
+      "rationale": "Conduct 3-item adaptive verification probe to measure post-intervention learning gain.",
+      "allocated_time_minutes": 20,
+      "student_groups": [],
+      "recommended_probe_concept_ids": [
+        "c_841f20d27f3d"
+      ]
+    }
+  ],
+  "teacher_notes": null,
+  "approved_at_iso": null
+}

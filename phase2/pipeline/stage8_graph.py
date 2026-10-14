@@ -82,7 +82,8 @@ def run_stage8_graph_construction(
     # 1. Deduplicate Relationships by (source, type, target)
     rel_map: Dict[Tuple[str, str, str], Relationship] = {}
     for rel in relationships:
-        key = (rel.source, rel.type.value, rel.target)
+        r_type = rel.type.value if hasattr(rel.type, "value") else str(rel.type)
+        key = (rel.source, r_type, rel.target)
         if key not in rel_map:
             rel_map[key] = rel
         else:
@@ -92,10 +93,11 @@ def run_stage8_graph_construction(
 
     deduped_rels = list(rel_map.values())
 
-    # 2. Cycle Detection in Prerequisite Subgraph
+    # 2. Cycle Detection in Prerequisite Subgraph (STRICTLY for PREREQUISITE_OF)
     prereq_edges = [
         (r.source, r.target) for r in deduped_rels
-        if r.type == RelationshipTypeEnum.PREREQUISITE_OF and r.status == RelationshipStatusEnum.ACCEPTED
+        if (r.type.value if hasattr(r.type, "value") else str(r.type)) == RelationshipTypeEnum.PREREQUISITE_OF.value
+        and r.status == RelationshipStatusEnum.ACCEPTED
     ]
     cycles = detect_scc_tarjan(concept_ids, prereq_edges)
 
@@ -105,18 +107,19 @@ def run_stage8_graph_construction(
 
     # Flag relationships involved in cycles
     for rel in deduped_rels:
-        if rel.type == RelationshipTypeEnum.PREREQUISITE_OF:
+        r_type = rel.type.value if hasattr(rel.type, "value") else str(rel.type)
+        if r_type == RelationshipTypeEnum.PREREQUISITE_OF.value:
             if rel.source in cycle_nodes and rel.target in cycle_nodes:
                 rel.status = RelationshipStatusEnum.FLAGGED_CYCLE
                 rel.flags.append("prerequisite_cycle_detected")
 
     # 3. Build Trusted View
-    # Policy (§16.2): accepted status, EXPLICIT or STRONG_INFERRED level, confidence >= 0.70
+    # Policy: accepted status, EXPLICIT or STRONG_INFERRED level, confidence >= 0.70, and MUST have non-empty verified evidence_ids
     trusted_rel_ids = []
     for rel in deduped_rels:
         if rel.status == RelationshipStatusEnum.ACCEPTED:
             if rel.evidence_level in (EvidenceLevelEnum.EXPLICIT, EvidenceLevelEnum.STRONG_INFERRED):
-                if rel.confidence.value >= 0.70:
+                if rel.confidence.value >= 0.70 and bool(rel.evidence_ids):
                     trusted_rel_ids.append(rel.relationship_id)
 
     views = Views(

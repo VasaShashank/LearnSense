@@ -7,11 +7,22 @@
   "qc_report": {
     "hard_invariant_violations_count": 0,
     "hard_invariant_violations": [],
+    "groundedness_warnings_count": 0,
+    "groundedness_warnings": [],
+    "dag_warnings_count": 0,
+    "dag_warnings": [],
     "passed_qc": true
   },
   "coverage_report": {
-    "educational_units_count": 4,
-    "concepts_count": 6,
-    "relationships_count": 6
+    "total_concepts": 6,
+    "active_concepts": 6,
+    "concepts_with_evidence": 6,
+    "concepts_with_description": 0,
+    "evidence_coverage_pct": 100.0,
+    "total_relationships": 3,
+    "accepted_relationships": 3,
+    "relationships_with_evidence": 3,
+    "total_evidence": 18,
+    "educational_units_count": 4
   }
 }

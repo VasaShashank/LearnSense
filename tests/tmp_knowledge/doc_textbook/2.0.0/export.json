@@ -217,79 +217,40 @@
       "source_confidence": 0.95
     },
     {
-      "evidence_id": "ev_095804b59aa3",
+      "evidence_id": "ev_827f322527f1",
       "block_id": "blk_03",
       "span": {
         "field": "normalized_text",
         "start": 0,
-        "end": 68
+        "end": 67
       },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
       "level": "EXPLICIT",
       "kind": "explicit_statement",
       "source_confidence": 0.95
     },
     {
-      "evidence_id": "ev_095804b59aa3",
+      "evidence_id": "ev_827f322527f1",
       "block_id": "blk_03",
       "span": {
         "field": "normalized_text",
         "start": 0,
-        "end": 68
+        "end": 67
       },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
       "level": "EXPLICIT",
       "kind": "explicit_statement",
       "source_confidence": 0.95
     },
     {
-      "evidence_id": "ev_095804b59aa3",
+      "evidence_id": "ev_827f322527f1",
       "block_id": "blk_03",
       "span": {
         "field": "normalized_text",
         "start": 0,
-        "end": 68
+        "end": 67
       },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
-      "level": "EXPLICIT",
-      "kind": "explicit_statement",
-      "source_confidence": 0.95
-    },
-    {
-      "evidence_id": "ev_095804b59aa3",
-      "block_id": "blk_03",
-      "span": {
-        "field": "normalized_text",
-        "start": 0,
-        "end": 68
-      },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
-      "level": "EXPLICIT",
-      "kind": "explicit_statement",
-      "source_confidence": 0.95
-    },
-    {
-      "evidence_id": "ev_095804b59aa3",
-      "block_id": "blk_03",
-      "span": {
-        "field": "normalized_text",
-        "start": 0,
-        "end": 68
-      },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
-      "level": "EXPLICIT",
-      "kind": "explicit_statement",
-      "source_confidence": 0.95
-    },
-    {
-      "evidence_id": "ev_095804b59aa3",
-      "block_id": "blk_03",
-      "span": {
-        "field": "normalized_text",
-        "start": 0,
-        "end": 68
-      },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
       "level": "EXPLICIT",
       "kind": "explicit_statement",
       "source_confidence": 0.95
@@ -713,11 +674,11 @@
       "parent_unit_id": null,
       "concept_links": [
         {
-          "concept_id": "c_778b27def4b6",
+          "concept_id": "c_1ad22c219f65",
           "link": "mentions"
         },
         {
-          "concept_id": "c_1ad22c219f65",
+          "concept_id": "c_778b27def4b6",
           "link": "mentions"
         }
       ]
@@ -743,7 +704,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_f36ae5d6784c",
+          "concept_id": "c_1d5505dbb5c7",
           "link": "mentions"
         },
         {
@@ -751,7 +712,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_1d5505dbb5c7",
+          "concept_id": "c_f36ae5d6784c",
           "link": "mentions"
         }
       ]
@@ -777,7 +738,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_f36ae5d6784c",
+          "concept_id": "c_1d5505dbb5c7",
           "link": "mentions"
         },
         {
@@ -785,7 +746,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_1d5505dbb5c7",
+          "concept_id": "c_f36ae5d6784c",
           "link": "mentions"
         }
       ]
@@ -811,7 +772,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_f36ae5d6784c",
+          "concept_id": "c_1d5505dbb5c7",
           "link": "mentions"
         },
         {
@@ -819,7 +780,7 @@
           "link": "mentions"
         },
         {
-          "concept_id": "c_1d5505dbb5c7",
+          "concept_id": "c_f36ae5d6784c",
           "link": "mentions"
         }
       ]
@@ -836,57 +797,20 @@
       "status": "accepted",
       "evidence_level": "EXPLICIT",
       "confidence": {
-        "value": 0.9,
+        "value": 0.95,
         "components": {
           "source_quality": 0.95,
-          "extraction": 0.9,
+          "extraction": 0.92,
           "verification": 1.0
         }
       },
       "evidence_ids": [
-        "ev_095804b59aa3"
+        "ev_827f322527f1"
       ],
-      "flags": []
-    },
-    {
-      "relationship_id": "rel_9768dfb5291a",
-      "source": "c_c271e2cc7fe0",
-      "type": "prerequisite_of",
-      "target": "c_c68fff578b61",
-      "status": "accepted",
-      "evidence_level": "EXPLICIT",
-      "confidence": {
-        "value": 0.9,
-        "components": {
-          "source_quality": 0.95,
-          "extraction": 0.9,
-          "verification": 1.0
-        }
-      },
-      "evidence_ids": [
-        "ev_095804b59aa3"
-      ],
-      "flags": []
-    },
-    {
-      "relationship_id": "rel_1c7a5d9263a6",
-      "source": "c_c271e2cc7fe0",
-      "type": "prerequisite_of",
-      "target": "c_1d5505dbb5c7",
-      "status": "accepted",
-      "evidence_level": "EXPLICIT",
-      "confidence": {
-        "value": 0.9,
-        "components": {
-          "source_quality": 0.95,
-          "extraction": 0.9,
-          "verification": 1.0
-        }
-      },
-      "evidence_ids": [
-        "ev_095804b59aa3"
-      ],
-      "flags": []
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
     },
     {
       "relationship_id": "rel_a449bd151780",
@@ -896,17 +820,20 @@
       "status": "accepted",
       "evidence_level": "EXPLICIT",
       "confidence": {
-        "value": 0.9,
+        "value": 0.95,
         "components": {
           "source_quality": 0.95,
-          "extraction": 0.9,
+          "extraction": 0.92,
           "verification": 1.0
         }
       },
       "evidence_ids": [
-        "ev_095804b59aa3"
+        "ev_827f322527f1"
       ],
-      "flags": []
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
     },
     {
       "relationship_id": "rel_21049093839c",
@@ -916,37 +843,20 @@
       "status": "accepted",
       "evidence_level": "EXPLICIT",
       "confidence": {
-        "value": 0.9,
+        "value": 0.95,
         "components": {
           "source_quality": 0.95,
-          "extraction": 0.9,
+          "extraction": 0.92,
           "verification": 1.0
         }
       },
       "evidence_ids": [
-        "ev_095804b59aa3"
+        "ev_827f322527f1"
       ],
-      "flags": []
-    },
-    {
-      "relationship_id": "rel_2ba124000f13",
-      "source": "c_c68fff578b61",
-      "type": "prerequisite_of",
-      "target": "c_1d5505dbb5c7",
-      "status": "accepted",
-      "evidence_level": "EXPLICIT",
-      "confidence": {
-        "value": 0.9,
-        "components": {
-          "source_quality": 0.95,
-          "extraction": 0.9,
-          "verification": 1.0
-        }
-      },
-      "evidence_ids": [
-        "ev_095804b59aa3"
-      ],
-      "flags": []
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
     }
   ],
   "views": {
@@ -954,16 +864,13 @@
       "policy_version": "1.0",
       "relationship_ids": [
         "rel_cec9ac6cff98",
-        "rel_9768dfb5291a",
-        "rel_1c7a5d9263a6",
         "rel_a449bd151780",
-        "rel_21049093839c",
-        "rel_2ba124000f13"
+        "rel_21049093839c"
       ]
     },
     "full": {
       "total_nodes": 6,
-      "total_edges": 6
+      "total_edges": 3
     }
   },
   "merge_records": [
@@ -1028,12 +935,23 @@
   "qc_report": {
     "hard_invariant_violations_count": 0,
     "hard_invariant_violations": [],
+    "groundedness_warnings_count": 0,
+    "groundedness_warnings": [],
+    "dag_warnings_count": 0,
+    "dag_warnings": [],
     "passed_qc": true
   },
   "coverage_report": {
-    "educational_units_count": 4,
-    "concepts_count": 6,
-    "relationships_count": 6
+    "total_concepts": 6,
+    "active_concepts": 6,
+    "concepts_with_evidence": 6,
+    "concepts_with_description": 0,
+    "evidence_coverage_pct": 100.0,
+    "total_relationships": 3,
+    "accepted_relationships": 3,
+    "relationships_with_evidence": 3,
+    "total_evidence": 18,
+    "educational_units_count": 4
   },
   "warnings": []
 }

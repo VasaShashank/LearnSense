@@ -93,11 +93,10 @@ class SemanticTopicExtractor:
     def _extract_with_llm(
         self, doc: StructuredDocument, adapter: Any
     ) -> Tuple[List[Concept], List[Relationship], List[Dict[str, Any]], List[Evidence]]:
-        # Collect representative document text
+        # Collect ALL document text — no truncation.  Long documents are batched
+        # into LLM-sized windows so every page is covered.
         blocks_text = []
         block_lookup: List[Tuple[str, int, str]] = []  # (block_id, page_index, text)
-        total_chars = 0
-        max_chars = 14000
 
         for page in getattr(doc, "pages", []) or []:
             for block in getattr(page, "blocks", []) or []:
@@ -105,11 +104,25 @@ class SemanticTopicExtractor:
                 if not txt:
                     continue
                 block_lookup.append((block.block_id, page.page_index, txt))
-                if total_chars < max_chars:
-                    blocks_text.append(f"[{page.page_index + 1}] {txt}")
-                    total_chars += len(txt)
+                blocks_text.append(f"[{page.page_index + 1}] {txt}")
 
-        corpus_sample = "\n\n".join(blocks_text)
+        # Batch into ~14 000-char windows so the LLM prompt stays within
+        # context limits while covering the entire document.
+        MAX_BATCH_CHARS = 14000
+        batches: List[str] = []
+        current_batch: List[str] = []
+        current_len = 0
+        for line in blocks_text:
+            if current_len + len(line) > MAX_BATCH_CHARS and current_batch:
+                batches.append("\n\n".join(current_batch))
+                current_batch = []
+                current_len = 0
+            current_batch.append(line)
+            current_len += len(line)
+        if current_batch:
+            batches.append("\n\n".join(current_batch))
+
+        corpus_sample = batches[0] if batches else ""
 
         prompt = f"""You are a master curriculum architect and knowledge graph engineer.
 Analyze the educational document excerpt below. Extract a clean, highly structured Knowledge Graph.
@@ -184,9 +197,9 @@ Document Text:
                         if len(matched_blocks) >= 3:
                             break
 
-                # Fallback to first block if not found
-                if not matched_blocks and block_lookup:
-                    matched_blocks.append(block_lookup[0])
+                # NO FALLBACK: ungrounded concepts are NOT assigned to
+                # an arbitrary block.  They are kept with empty evidence
+                # and marked NEEDS_REVIEW so downstream QC can flag them.
 
                 c_id = generate_concept_id(doc.document_id, c_name)
                 concept_name_to_id[c_name.lower()] = c_id
@@ -208,16 +221,18 @@ Document Text:
                     c_ev_ids.append(ev_id)
 
                 defn = str(c_data.get("definition") or "").strip()
+                is_grounded = bool(c_ev_ids)
                 concept = Concept(
                     concept_id=c_id,
                     canonical_name=c_name,
                     aliases=[],
                     type=ConceptTypeEnum.CONCEPT,
                     scope=ScopeEnum.EDUCATIONAL,
-                    status=ConceptStatusEnum.ACTIVE,
+                    status=ConceptStatusEnum.ACTIVE if is_grounded else ConceptStatusEnum.NEEDS_REVIEW,
                     mention_ids=[],
                     confidence=ConfidenceBreakdown(
-                        value=0.95, components={"extraction": 0.95, "llm_grounding": 0.95}
+                        value=0.95 if is_grounded else 0.40,
+                        components={"extraction": 0.95, "llm_grounding": 0.95 if is_grounded else 0.0},
                     ),
                     evidence_ids=c_ev_ids,
                     description=defn,
@@ -266,8 +281,10 @@ Document Text:
             relationships.append(rel)
             adj.setdefault(src_id, set()).add(tgt_id)
 
-        # Ensure intra-topic connectivity if prerequisites were sparse
-        self._ensure_graph_connectivity(concepts, relationships, topics_out, adj, doc.document_id)
+        # _ensure_graph_connectivity was removed: fabricating PREREQUISITE_OF
+        # edges between sequential concepts or across topic boundaries is
+        # ungrounded.  A legitimate knowledge graph may have disconnected
+        # components.
 
         return concepts, relationships, topics_out, evidence
 
@@ -395,71 +412,14 @@ Document Text:
                     relationships.append(rel)
                     adj.setdefault(rel.source, set()).add(rel.target)
 
-        self._ensure_graph_connectivity(filtered_concepts, relationships, topics, adj, doc.document_id)
+        # _ensure_graph_connectivity was removed: fabricating PREREQUISITE_OF
+        # edges between consecutive concepts is ungrounded.
 
         return filtered_concepts, relationships, topics, base_evidence
 
-    def _ensure_graph_connectivity(
-        self,
-        concepts: List[Concept],
-        relationships: List[Relationship],
-        topics: List[Dict[str, Any]],
-        adj: Dict[str, Set[str]],
-        document_id: str,
-    ) -> None:
-        """
-        Guarantees that concepts within topics and across curriculum sections
-        are connected into a directed learning progression DAG (zero disconnected nodes).
-        """
-        concept_ids = {c.concept_id for c in concepts}
-
-        # 1. Connect sequential concepts within each topic
-        for topic in topics:
-            c_ids = [cid for cid in topic.get("concept_ids", []) if cid in concept_ids]
-            for i in range(len(c_ids) - 1):
-                src = c_ids[i]
-                tgt = c_ids[i + 1]
-                if src != tgt and not has_directed_path(adj, tgt, src):
-                    rel_id = generate_relationship_id(document_id, src, RelationshipTypeEnum.PREREQUISITE_OF.value, tgt)
-                    if not any(r.relationship_id == rel_id for r in relationships):
-                        relationships.append(
-                            Relationship(
-                                relationship_id=rel_id,
-                                source=src,
-                                type=RelationshipTypeEnum.PREREQUISITE_OF,
-                                target=tgt,
-                                status=RelationshipStatusEnum.ACCEPTED,
-                                evidence_level=EvidenceLevelEnum.STRONG_INFERRED,
-                                confidence=ConfidenceBreakdown(
-                                    value=0.88, components={"topological_curriculum": 0.9}
-                                ),
-                                evidence_ids=[],
-                            )
-                        )
-                        adj.setdefault(src, set()).add(tgt)
-
-        # 2. Connect bridge between adjacent topics (Topic K last concept -> Topic K+1 first concept)
-        for k in range(len(topics) - 1):
-            curr_cids = [cid for cid in topics[k].get("concept_ids", []) if cid in concept_ids]
-            next_cids = [cid for cid in topics[k + 1].get("concept_ids", []) if cid in concept_ids]
-            if curr_cids and next_cids:
-                src = curr_cids[-1]
-                tgt = next_cids[0]
-                if src != tgt and not has_directed_path(adj, tgt, src):
-                    rel_id = generate_relationship_id(document_id, src, RelationshipTypeEnum.PREREQUISITE_OF.value, tgt)
-                    if not any(r.relationship_id == rel_id for r in relationships):
-                        relationships.append(
-                            Relationship(
-                                relationship_id=rel_id,
-                                source=src,
-                                type=RelationshipTypeEnum.PREREQUISITE_OF,
-                                target=tgt,
-                                status=RelationshipStatusEnum.ACCEPTED,
-                                evidence_level=EvidenceLevelEnum.STRONG_INFERRED,
-                                confidence=ConfidenceBreakdown(
-                                    value=0.85, components={"cross_topic_curriculum": 0.85}
-                                ),
-                                evidence_ids=[],
-                            )
-                        )
-                        adj.setdefault(src, set()).add(tgt)
+    # _ensure_graph_connectivity has been removed.
+    # Fabricating PREREQUISITE_OF edges between sequential concepts within
+    # a topic or bridging adjacent topics with ungrounded prerequisite links
+    # violates the no-fallback policy.  Legitimate knowledge graphs may have
+    # disconnected components.  Only explicitly evidenced or LLM-validated
+    # prerequisite relationships should appear in the graph.

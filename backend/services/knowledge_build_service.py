@@ -110,7 +110,11 @@ class KnowledgeBuildService:
         logger.info("Step 4: Running Phase 2 EKR extraction...")
         ekr = self._run_phase2(structured_doc)
 
-        # -- Step 4.5: Semantic Topic & Knowledge Graph Extraction ---
+        # -- Step 4.5: Semantic Topic & Knowledge Graph Enhancement ----
+        # The semantic extractor provides topic groupings and optional LLM-
+        # generated concepts.  It MUST NOT replace the canonical Phase 2 EKR;
+        # instead its output is merged so that canonical concept IDs, aliases,
+        # evidence, and Stage 7 relationships are preserved.
         semantic_topics = None
         try:
             from phase2.pipeline.semantic_topic_extractor import SemanticTopicExtractor
@@ -121,11 +125,43 @@ class KnowledgeBuildService:
                 base_evidence=ekr.evidence,
                 base_relationships=ekr.relationships,
             )
-            if sem_concepts:
-                ekr.concepts = sem_concepts
-                ekr.relationships = sem_relationships
-                ekr.evidence = sem_evidence
+            if sem_topics:
                 semantic_topics = sem_topics
+
+            # Merge semantic concepts INTO existing EKR (not replace).
+            if sem_concepts:
+                existing_ids = {c.concept_id for c in ekr.concepts}
+                for sc in sem_concepts:
+                    if sc.concept_id not in existing_ids:
+                        ekr.concepts.append(sc)
+                        existing_ids.add(sc.concept_id)
+                    else:
+                        # Enrich existing concept with any new evidence or description
+                        for ec in ekr.concepts:
+                            if ec.concept_id == sc.concept_id:
+                                for ev_id in sc.evidence_ids:
+                                    if ev_id not in ec.evidence_ids:
+                                        ec.evidence_ids.append(ev_id)
+                                if not ec.description and sc.description:
+                                    ec.description = sc.description
+                                break
+
+            # Merge semantic relationships INTO existing EKR.
+            if sem_relationships:
+                existing_rel_ids = {r.relationship_id for r in ekr.relationships}
+                for sr in sem_relationships:
+                    if sr.relationship_id not in existing_rel_ids:
+                        ekr.relationships.append(sr)
+                        existing_rel_ids.add(sr.relationship_id)
+
+            # Merge semantic evidence INTO existing EKR.
+            if sem_evidence:
+                existing_ev_ids = {e.evidence_id for e in ekr.evidence}
+                for se in sem_evidence:
+                    if se.evidence_id not in existing_ev_ids:
+                        ekr.evidence.append(se)
+                        existing_ev_ids.add(se.evidence_id)
+
         except Exception as exc:
             logger.warning("Semantic knowledge graph enhancement bypassed: %s", exc)
 
