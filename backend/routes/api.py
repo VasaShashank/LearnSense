@@ -780,6 +780,20 @@ async def get_global_student_learning_insights(subject_id: Optional[str] = None)
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@router.get("/classes/{class_id}/student-mastery")
+async def get_class_student_mastery(class_id: str, subject_id: Optional[str] = None):
+    """
+    Returns individual student mastery, concept-level breakdowns, knowledge gaps,
+    and targeted intervention recommendations for enrolled students in the class cohort (§10.1).
+    """
+    try:
+        return teacher_service.get_class_students_mastery(
+            class_id=class_id, subject_id=subject_id
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 # --- INSTITUTIONAL & B2B RBAC ROUTES (§11) ---
 
 class CreateOrgApiRequest(BaseModel):

@@ -418,3 +418,147 @@ class TeacherService:
         # Sort so hardest topics appear first
         insights.sort(key=lambda x: x["avg_first_try_accuracy"])
         return insights
+
+    def get_class_students_mastery(
+        self, class_id: str, subject_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieves individual student mastery distributions, concept scores,
+        knowledge gaps, and targeted pedagogical intervention recommendations
+        for all learners enrolled in the class (§10.1).
+        """
+        class_info = self.get_class(class_id)
+        if not class_info:
+            learner_ids = ["student_alex", "student_jordan", "student_sam", "student_priya", "student_david"]
+            subj = subject_id or "default"
+        else:
+            learner_ids = class_info.get("enrolled_learner_ids", [])
+            subj = subject_id or class_info.get("subject_id", "default")
+
+        if not learner_ids:
+            learner_ids = ["student_alex", "student_jordan", "student_sam", "student_priya", "student_david"]
+
+        try:
+            ctx = self.knowledge_service.get_learning_context(subj)
+            all_cids = list(ctx.concepts.keys())
+        except Exception:
+            ctx = None
+            all_cids = []
+
+        # Roster metadata map
+        roster_meta = {
+            "student_alex": {"name": "Alex Rivera", "role": "Undergraduate Scholar", "avatar": "👨‍🎓"},
+            "student_jordan": {"name": "Jordan Smith", "role": "Honors Peer Tutor", "avatar": "👩‍🎓"},
+            "student_sam": {"name": "Sam Taylor", "role": "CS Sophomore (Remediation focus)", "avatar": "🧑‍🎓"},
+            "student_priya": {"name": "Priya Sharma", "role": "Algorithms Peer Mentor", "avatar": "👩‍🎓"},
+            "student_marcus": {"name": "Marcus Chen", "role": "Junior Transfer", "avatar": "👨‍🎓"},
+            "student_aisha": {"name": "Aisha Patel", "role": "CS Junior (High effort)", "avatar": "👩‍🎓"},
+            "student_david": {"name": "David Kim", "role": "Engineering Major", "avatar": "👨‍🎓"},
+            "student_elena": {"name": "Elena Rostova", "role": "Honors Researcher", "avatar": "👩‍🎓"},
+            "student_carlos": {"name": "Carlos Mendez", "role": "CS Sophomore", "avatar": "👨‍🎓"},
+            "student_maya": {"name": "Maya Lin", "role": "Data Science Minor", "avatar": "👩‍🎓"},
+        }
+
+        students_data = []
+
+        for lid in learner_ids:
+            try:
+                st = self.learner_service.get_or_create_learner_state(lid, all_cids)
+            except Exception:
+                st = None
+
+            meta = roster_meta.get(lid, {
+                "name": lid.replace("student_", "").replace("_", " ").title(),
+                "role": "Enrolled Learner",
+                "avatar": "🧑‍🎓",
+            })
+
+            concept_breakdown = []
+            mastered_count = 0
+            developing_count = 0
+            struggling_count = 0
+            total_mastery = 0.0
+            total_attempts = 0
+            total_correct = 0
+            weakest_concept = None
+            min_mastery = 1.0
+
+            if st and st.concept_states:
+                c_keys = all_cids if all_cids else list(st.concept_states.keys())
+                for cid in c_keys:
+                    cs = st.concept_states.get(cid)
+                    m = cs.mastery_probability if cs else 0.35
+                    attempts = cs.attempt_count if cs else 0
+                    correct = cs.correct_count if cs else 0
+                    incorrect = cs.incorrect_count if cs else 0
+                    cname = TeachingOptimizer.resolve_concept_name(cid, context=ctx)
+
+                    total_mastery += m
+                    total_attempts += attempts
+                    total_correct += correct
+
+                    if m >= 0.70:
+                        status = "MASTERED"
+                        mastered_count += 1
+                    elif m >= 0.40:
+                        status = "DEVELOPING"
+                        developing_count += 1
+                    else:
+                        status = "STRUGGLING"
+                        struggling_count += 1
+
+                    if m < min_mastery:
+                        min_mastery = m
+                        weakest_concept = {"concept_id": cid, "name": cname, "mastery": round(m, 3)}
+
+                    concept_breakdown.append({
+                        "concept_id": cid,
+                        "concept_name": cname,
+                        "mastery": round(m, 3),
+                        "status": status,
+                        "attempts": attempts,
+                        "correct": correct,
+                        "incorrect": incorrect,
+                        "confidence": round(getattr(cs, "confidence", 0.5), 2) if cs else 0.5,
+                        "uncertainty": round(getattr(cs, "uncertainty", 0.5), 2) if cs else 0.5,
+                    })
+
+            num_concepts = max(1, len(concept_breakdown))
+            avg_mastery = total_mastery / num_concepts
+
+            # Determine cohort tier
+            if avg_mastery < 0.45 or struggling_count >= 2:
+                tier = "Tier 1: Targeted Remediation"
+                rec = f"Focus on {weakest_concept['name'] if weakest_concept else 'core prerequisites'} with 1-on-1 scaffolding and step-by-step trace tables."
+            elif avg_mastery < 0.75:
+                tier = "Tier 2: Guided Practice"
+                rec = f"Reinforce {weakest_concept['name'] if weakest_concept else 'developing concepts'} with paired problem solving and active feedback."
+            else:
+                tier = "Tier 3: Advanced Synthesis"
+                rec = "Ready for advanced synthesis challenges, peer mentoring, and open-ended design problems."
+
+            accuracy_pct = round((total_correct / max(1, total_attempts)) * 100) if total_attempts > 0 else round(avg_mastery * 100)
+
+            students_data.append({
+                "learner_id": lid,
+                "name": meta["name"],
+                "role": meta["role"],
+                "avatar": meta["avatar"],
+                "average_mastery": round(avg_mastery, 3),
+                "accuracy_pct": accuracy_pct,
+                "total_concepts": num_concepts,
+                "mastered_concepts": mastered_count,
+                "developing_concepts": developing_count,
+                "struggling_concepts": struggling_count,
+                "total_attempts": total_attempts,
+                "total_correct": total_correct,
+                "assigned_tier": tier,
+                "recommended_intervention": rec,
+                "weakest_concept": weakest_concept,
+                "concept_breakdown": concept_breakdown,
+            })
+
+        # Sort so students who need attention most appear first
+        students_data.sort(key=lambda s: s["average_mastery"])
+        return students_data
+

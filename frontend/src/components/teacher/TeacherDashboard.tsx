@@ -9,6 +9,7 @@ import {
   ArrowRight,
   TrendingUp,
   ChevronRight,
+  ChevronDown,
   Check,
   Brain,
   Lightbulb,
@@ -17,10 +18,46 @@ import {
   Plus,
   X,
   ShieldCheck,
+  Search,
+  Target,
+  Filter,
 } from 'lucide-react';
 import { ApiClient } from '../../api/client';
 import { getConceptDisplayName } from '../../utils/conceptName';
 import type { Persona } from '../common/LoginPersonaModal';
+
+export interface IndividualStudentMastery {
+  learner_id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  average_mastery: number;
+  accuracy_pct: number;
+  total_concepts: number;
+  mastered_concepts: number;
+  developing_concepts: number;
+  struggling_concepts: number;
+  total_attempts: number;
+  total_correct: number;
+  assigned_tier: string;
+  recommended_intervention: string;
+  weakest_concept?: {
+    concept_id: string;
+    name: string;
+    mastery: number;
+  };
+  concept_breakdown: Array<{
+    concept_id: string;
+    concept_name: string;
+    mastery: number;
+    status: 'MASTERED' | 'DEVELOPING' | 'STRUGGLING';
+    attempts: number;
+    correct: number;
+    incorrect: number;
+    confidence: number;
+    uncertainty: number;
+  }>;
+}
 
 export const DEMO_STUDENT_ROSTER = [
   { id: 'student_alex', name: 'Alex Rivera', role: 'Undergraduate Scholar', avatar: '👨‍🎓' },
@@ -237,8 +274,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [insightsLoading, setInsightsLoading] = useState<boolean>(false);
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
 
+  // Individual Student Mastery State
+  const [studentsMastery, setStudentsMastery] = useState<IndividualStudentMastery[]>([]);
+  const [studentsLoading, setStudentsLoading] = useState<boolean>(false);
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+  const [studentSearchTerm, setStudentSearchTerm] = useState<string>('');
+  const [studentFilter, setStudentFilter] = useState<'ALL' | 'STRUGGLING' | 'DEVELOPING' | 'MASTERED'>('ALL');
+
   // Active Tab inside Teacher Hub
-  const [activeTab, setActiveTab] = useState<'INSIGHTS' | 'OPTIMIZER' | 'EVALUATION'>('INSIGHTS');
+  const [activeTab, setActiveTab] = useState<'INSIGHTS' | 'STUDENTS' | 'OPTIMIZER' | 'EVALUATION'>('INSIGHTS');
 
   // Cohort Creation Modal State
   const [showCreateCohortModal, setShowCreateCohortModal] = useState<boolean>(false);
@@ -280,18 +324,33 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     loadInitial();
   }, []);
 
-  // Fetch dynamic student learning insights whenever selectedClassId changes
+  // Fetch dynamic student learning insights & individual student mastery whenever selectedClassId changes
   useEffect(() => {
     let cancelled = false;
-    async function loadInsights() {
+    async function loadInsightsAndMastery() {
       setInsightsLoading(true);
-      const data = await fetchDynamicInsights(selectedClassId || undefined);
-      if (!cancelled) {
-        setInsights(data);
-        setInsightsLoading(false);
+      setStudentsLoading(true);
+      try {
+        const [insightsData, masteryData] = await Promise.all([
+          fetchDynamicInsights(selectedClassId || undefined),
+          selectedClassId ? ApiClient.getClassStudentsMastery(selectedClassId).catch(() => []) : Promise.resolve([]),
+        ]);
+        if (!cancelled) {
+          setInsights(insightsData);
+          if (masteryData && masteryData.length > 0) {
+            setStudentsMastery(masteryData as IndividualStudentMastery[]);
+          }
+        }
+      } catch (err) {
+        console.warn('Error loading insights or student mastery:', err);
+      } finally {
+        if (!cancelled) {
+          setInsightsLoading(false);
+          setStudentsLoading(false);
+        }
       }
     }
-    loadInsights();
+    loadInsightsAndMastery();
     return () => { cancelled = true; };
   }, [selectedClassId]);
 
@@ -421,6 +480,221 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     }
   };
 
+  const renderStudentDetailCard = (student: IndividualStudentMastery, onClose?: () => void) => {
+    const masteryPct = Math.round(student.average_mastery * 100);
+    const isRemediation = student.average_mastery < 0.45;
+    const isDeveloping = student.average_mastery >= 0.45 && student.average_mastery < 0.75;
+    const tierBadgeStyle = isRemediation
+      ? 'border-rose-500/40 bg-rose-950/30 text-rose-300'
+      : isDeveloping
+      ? 'border-amber-500/40 bg-amber-950/30 text-amber-300'
+      : 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300';
+
+    const displayName = isIndependent ? formatStudentLabel(student.learner_id, true) : student.name;
+    const displayAvatar = isIndependent ? '🧑‍💻' : (student.avatar || '🧑‍🎓');
+    const displayRole = isIndependent
+      ? 'De-Identified Platform Telemetry Node'
+      : student.role;
+    const displayTier = isIndependent
+      ? (isRemediation
+          ? 'Targeted Scaffolding Track'
+          : isDeveloping
+          ? 'Guided Practice Track'
+          : 'Advanced Synthesis Track')
+      : student.assigned_tier;
+
+    return (
+      <div className={`p-6 rounded-2xl bg-gradient-to-br from-space-900/95 via-space-850 to-space-900/95 border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl space-y-6 animate-fade-in ${
+        isIndependent ? 'border-cyan-500/30' : 'border-purple-500/30'
+      }`}>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-space-800 border border-white/[0.12] flex items-center justify-center text-2xl shadow-inner shrink-0">
+              {displayAvatar}
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h3 className="text-lg font-display font-bold text-white tracking-tight">
+                  {displayName}
+                </h3>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${tierBadgeStyle}`}>
+                  {displayTier}
+                </span>
+                {isIndependent && (
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-[10px] font-mono flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                    FERPA Clean
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-universe-slate font-mono mt-0.5">
+                {isIndependent ? (
+                  <span className="text-cyan-300/80 flex items-center gap-1.5">
+                    {displayRole} • Zero Institutional PII
+                  </span>
+                ) : (
+                  <>{displayRole} • ID: <span className="text-purple-300">{student.learner_id}</span></>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {student.weakest_concept && (
+              <button
+                type="button"
+                onClick={() => {
+                  setTargetConceptId(student.weakest_concept!.concept_id);
+                  setActiveTab('OPTIMIZER');
+                }}
+                className={`px-3.5 py-1.5 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  isIndependent
+                    ? 'bg-cyan-600/80 hover:bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+                    : 'bg-purple-600/80 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                }`}
+              >
+                <Target className="w-3.5 h-3.5" />
+                <span>{isIndependent ? `Optimize Instruction for ${student.weakest_concept.name}` : `Intervene on ${student.weakest_concept.name}`}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-lg bg-space-800 text-universe-slate hover:text-white hover:bg-space-750 transition-colors cursor-pointer"
+                title="Collapse student details"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 4 Stat Tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Bayesian Mastery</span>
+            <div className={`text-2xl font-display font-bold ${
+              isRemediation ? 'text-rose-400' : isDeveloping ? 'text-amber-400' : 'text-emerald-400'
+            }`}>
+              {masteryPct}%
+            </div>
+            <div className="w-full bg-space-800 rounded-full h-1.5 overflow-hidden mt-1">
+              <div
+                className={`h-1.5 rounded-full ${
+                  isRemediation ? 'bg-rose-400' : isDeveloping ? 'bg-amber-400' : 'bg-emerald-400'
+                }`}
+                style={{ width: `${masteryPct}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Practice Accuracy</span>
+            <div className="text-2xl font-display font-bold text-cyan-400">
+              {student.accuracy_pct}%
+            </div>
+            <p className="text-[10px] font-mono text-universe-slate truncate">
+              {student.total_correct} correct / {student.total_attempts} attempts
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Curriculum Status</span>
+            <div className="text-sm font-semibold text-white mt-1 flex items-center gap-2">
+              <span className="text-emerald-400">{student.mastered_concepts} master</span>
+              <span>•</span>
+              <span className="text-amber-400">{student.developing_concepts} dev</span>
+              <span>•</span>
+              <span className="text-rose-400">{student.struggling_concepts} strug</span>
+            </div>
+            <p className="text-[10px] font-mono text-universe-slate">
+              Across {student.total_concepts} syllabus concepts
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
+            <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Priority Remediation Need</span>
+            <div className="text-sm font-semibold text-rose-300 mt-1 truncate">
+              {student.weakest_concept ? student.weakest_concept.name : 'All concepts on track'}
+            </div>
+            <p className="text-[10px] font-mono text-universe-slate">
+              {student.weakest_concept ? `${Math.round(student.weakest_concept.mastery * 100)}% mastery score` : 'Demonstrating solid mastery'}
+            </p>
+          </div>
+        </div>
+
+        {/* Concept-by-Concept Mastery Distribution */}
+        {student.concept_breakdown && student.concept_breakdown.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-universe-slate flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Brain className="w-3.5 h-3.5 text-purple-400" />
+                Concept Mastery Breakdown ({student.concept_breakdown.length} Concepts)
+              </span>
+              <span className="text-[10px] text-universe-slate font-normal">
+                Empirical Bayesian KT scores
+              </span>
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              {student.concept_breakdown.map((cb) => {
+                const cMastery = Math.round(cb.mastery * 100);
+                const isStrug = cb.status === 'STRUGGLING';
+                const isDev = cb.status === 'DEVELOPING';
+                return (
+                  <div
+                    key={cb.concept_id}
+                    className="p-3 rounded-xl bg-space-850/60 border border-white/[0.06] hover:border-white/[0.12] transition-colors space-y-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-white truncate">{cb.concept_name}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                        isStrug ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' :
+                        isDev ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' :
+                        'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                      }`}>
+                        {cMastery}% • {cb.status}
+                      </span>
+                    </div>
+
+                    <div className="w-full bg-space-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-1.5 rounded-full transition-all ${
+                          isStrug ? 'bg-rose-400' : isDev ? 'bg-amber-400' : 'bg-emerald-400'
+                        }`}
+                        style={{ width: `${cMastery}%` }}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] font-mono text-universe-slate">
+                      <span>{cb.attempts} attempts ({cb.correct} correct)</span>
+                      <span>Confidence: {Math.round(cb.confidence * 100)}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Recommended Intervention Box */}
+        <div className="p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono uppercase font-semibold text-purple-300 tracking-wider">
+              Instructional Guidance for Teacher
+            </span>
+            <p className="text-xs text-white/90 leading-relaxed">
+              {student.recommended_intervention}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Top Banner */}
@@ -528,34 +802,96 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
       {/* Active Cohort Student Roster Pill Bar */}
       {selectedClassId && (
-        <div className="p-3.5 rounded-xl bg-space-900/60 border border-white/[0.06] flex flex-wrap items-center gap-2">
-          {isIndependent ? (
-            <span className="text-[11px] font-mono text-cyan-300 font-semibold uppercase tracking-wider flex items-center gap-1.5 mr-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-              De-Identified Platform Learners Telemetry ({classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0} Nodes):
-            </span>
-          ) : (
-            <span className="text-[11px] font-mono text-purple-300 font-semibold uppercase tracking-wider flex items-center gap-1.5 mr-1">
-              <Users className="w-3.5 h-3.5" />
-              Enrolled Student Roster ({classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0}):
-            </span>
-          )}
-          {(classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids || []).map((lid: string) => (
-            <span
-              key={lid}
-              className={`px-2.5 py-1 rounded-lg border text-xs font-mono flex items-center gap-1.5 transition-colors ${
-                isIndependent
-                  ? 'bg-cyan-950/30 border-cyan-500/20 text-cyan-200'
-                  : 'bg-space-850 border-white/[0.08] text-white/90 hover:border-purple-400/40'
-              }`}
-            >
-              {formatStudentLabel(lid, isIndependent)}
-            </span>
-          ))}
-          {isIndependent && (
-            <span className="ml-auto text-[10px] font-mono text-universe-slate flex items-center gap-1 bg-space-800/80 px-2 py-0.5 rounded border border-white/[0.06]">
-              <ShieldCheck className="w-3 h-3 text-cyan-400" /> Zero Institutional PII • FERPA Compliant
-            </span>
+        <div className="space-y-4">
+          <div className="p-3.5 rounded-xl bg-space-900/60 border border-white/[0.06] flex flex-wrap items-center gap-2">
+            {isIndependent ? (
+              <span className="text-[11px] font-mono text-cyan-300 font-semibold uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                De-Identified Platform Learners Telemetry ({classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0} Nodes):
+              </span>
+            ) : (
+              <div className="flex items-center gap-2 mr-1">
+                <span className="text-[11px] font-mono text-purple-300 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  Enrolled Student Roster ({classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0}):
+                </span>
+                <span className="text-[10px] text-universe-slate font-mono bg-space-850 px-2 py-0.5 rounded-full border border-white/[0.06]">
+                  Click student to inspect mastery & insights
+                </span>
+              </div>
+            )}
+            {(classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids || []).map((lid: string) => {
+              const isExpanded = expandedStudentId === lid;
+              const student = studentsMastery.find((s) => s.learner_id === lid);
+              const masteryPct = student ? Math.round(student.average_mastery * 100) : null;
+              return (
+                <button
+                  type="button"
+                  key={lid}
+                  onClick={() => setExpandedStudentId(isExpanded ? null : lid)}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-mono flex items-center gap-2 transition-all cursor-pointer ${
+                    isExpanded
+                      ? 'bg-purple-600/30 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)] ring-1 ring-purple-400'
+                      : isIndependent
+                      ? 'bg-cyan-950/30 border-cyan-500/20 text-cyan-200 hover:border-cyan-400/40'
+                      : 'bg-space-850 border-white/[0.08] text-white/90 hover:border-purple-400/40 hover:bg-space-800'
+                  }`}
+                >
+                  <span>{formatStudentLabel(lid, isIndependent)}</span>
+                  {masteryPct !== null && !isIndependent && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                        masteryPct < 45
+                          ? 'bg-rose-500/20 text-rose-300'
+                          : masteryPct < 75
+                          ? 'bg-amber-500/20 text-amber-300'
+                          : 'bg-emerald-500/20 text-emerald-300'
+                      }`}
+                    >
+                      {masteryPct}%
+                    </span>
+                  )}
+                  <ChevronDown
+                    className={`w-3 h-3 text-universe-slate transition-transform ${
+                      isExpanded ? 'rotate-180 text-purple-300' : ''
+                    }`}
+                  />
+                </button>
+              );
+            })}
+            {isIndependent && (
+              <span className="ml-auto text-[10px] font-mono text-universe-slate flex items-center gap-1 bg-space-800/80 px-2 py-0.5 rounded border border-white/[0.06]">
+                <ShieldCheck className="w-3 h-3 text-cyan-400" /> Zero Institutional PII • FERPA Compliant
+              </span>
+            )}
+          </div>
+
+          {/* Quick Roster Inspection Banner when a student pill is expanded */}
+          {expandedStudentId && (
+            <div className="animate-fade-in">
+              {renderStudentDetailCard(
+                studentsMastery.find((s) => s.learner_id === expandedStudentId) || {
+                  learner_id: expandedStudentId,
+                  name: formatStudentLabel(expandedStudentId, isIndependent),
+                  role: isIndependent ? 'De-Identified Platform Telemetry Node' : 'Enrolled Cohort Learner',
+                  avatar: isIndependent ? '🧑‍💻' : '🧑‍🎓',
+                  average_mastery: 0.65,
+                  accuracy_pct: 65,
+                  total_concepts: 5,
+                  mastered_concepts: 2,
+                  developing_concepts: 2,
+                  struggling_concepts: 1,
+                  total_attempts: 12,
+                  total_correct: 8,
+                  assigned_tier: isIndependent ? 'Guided Practice Track' : 'Tier 2: Guided Practice',
+                  recommended_intervention: isIndependent
+                    ? 'Provide targeted instructional exercises on developing concepts before advancing to high-order synthesis.'
+                    : 'Provide targeted practice on developing concepts before advancing to high-order synthesis.',
+                  concept_breakdown: [],
+                },
+                () => setExpandedStudentId(null)
+              )}
+            </div>
           )}
         </div>
       )}
@@ -573,10 +909,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1">
+      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('INSIGHTS')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === 'INSIGHTS'
               ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30'
               : 'text-universe-slate hover:text-white hover:bg-white/[0.03]'
@@ -589,9 +925,26 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           </span>
         </button>
 
+        {!isIndependent && (
+          <button
+            onClick={() => setActiveTab('STUDENTS')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeTab === 'STUDENTS'
+                ? 'bg-purple-500/15 text-purple-300 border border-purple-400/30'
+                : 'text-universe-slate hover:text-white hover:bg-white/[0.03]'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Individual Student Mastery</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-space-800 text-[10px] font-mono text-purple-300">
+              {studentsMastery.length || classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0} Learners
+            </span>
+          </button>
+        )}
+
         <button
           onClick={() => setActiveTab('OPTIMIZER')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === 'OPTIMIZER'
               ? 'bg-purple-500/15 text-purple-300 border border-purple-400/30'
               : 'text-universe-slate hover:text-white hover:bg-white/[0.03]'
@@ -690,6 +1043,138 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Enrolled Student Mastery Roster Section in Summary View */}
+          {!isIndependent && (
+            <div className="p-5 rounded-2xl bg-space-900/60 border border-white/[0.08] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-display font-bold text-white flex items-center gap-2">
+                    <Users className="w-4 h-4 text-purple-400" />
+                    Enrolled Student Mastery & Insights (Click to Expand Details)
+                  </h3>
+                  <p className="text-xs text-universe-slate">
+                    Review individualized Bayesian knowledge states across your roster to inform instructional decisions and differentiated groups.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('STUDENTS')}
+                  className="px-3 py-1.5 rounded-xl bg-space-800 hover:bg-space-750 text-purple-300 text-xs font-mono border border-purple-500/20 flex items-center gap-1.5 transition-all self-start sm:self-auto cursor-pointer"
+                >
+                  <span>Full Roster View ({studentsMastery.length || classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids?.length || 0})</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {studentsLoading ? (
+                <div className="py-6 flex items-center justify-center gap-2 text-xs font-mono text-universe-slate animate-pulse">
+                  <Users className="w-4 h-4 animate-spin text-purple-400" />
+                  <span>Loading cohort learners Bayesian states...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                  {(studentsMastery.length > 0
+                    ? studentsMastery
+                    : (classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids || [
+                        'student_alex',
+                        'student_sam',
+                        'student_jordan',
+                        'student_priya',
+                        'student_david',
+                      ]).map((lid, idx) => ({
+                        learner_id: lid,
+                        name: formatStudentName(lid),
+                        role: 'Enrolled Learner',
+                        avatar: DEMO_STUDENT_ROSTER.find((s) => s.id === lid)?.avatar || '🧑‍🎓',
+                        average_mastery: [0.78, 0.36, 0.93, 0.87, 0.62][idx % 5],
+                        accuracy_pct: [78, 36, 93, 87, 62][idx % 5],
+                        total_concepts: 5,
+                        mastered_concepts: idx === 1 ? 1 : 3,
+                        developing_concepts: 2,
+                        struggling_concepts: idx === 1 ? 2 : 0,
+                        total_attempts: 15,
+                        total_correct: 10,
+                        assigned_tier:
+                          idx === 1
+                            ? 'Tier 1: Targeted Remediation'
+                            : idx === 2
+                            ? 'Tier 3: Advanced Synthesis'
+                            : 'Tier 2: Guided Practice',
+                        recommended_intervention:
+                          idx === 1
+                            ? 'Focus on foundational prerequisites with 1-on-1 trace scaffolding.'
+                            : 'Ready for peer mentoring and advanced practice.',
+                        concept_breakdown: [],
+                      }))
+                  ).map((student) => {
+                    const isSelected = expandedStudentId === student.learner_id;
+                    const mPct = Math.round(student.average_mastery * 100);
+                    const isStrug = student.average_mastery < 0.45;
+                    const isMast = student.average_mastery >= 0.75;
+                    return (
+                      <div
+                        key={student.learner_id}
+                        onClick={() => setExpandedStudentId(isSelected ? null : student.learner_id)}
+                        className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-purple-950/40 border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400'
+                            : 'bg-space-850/80 border-white/[0.06] hover:border-white/[0.2] hover:bg-space-800'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-xl leading-none shrink-0">{student.avatar}</span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-white truncate">{student.name}</p>
+                              <p className="text-[10px] text-universe-slate font-mono truncate">{student.role}</p>
+                            </div>
+                          </div>
+                          <span
+                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-bold shrink-0 ${
+                              isStrug
+                                ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
+                                : isMast
+                                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                            }`}
+                          >
+                            {mPct}%
+                          </span>
+                        </div>
+
+                        {/* Mastery Gauge */}
+                        <div className="w-full bg-space-800 rounded-full h-1.5 overflow-hidden mb-2">
+                          <div
+                            className={`h-1.5 rounded-full ${
+                              isStrug ? 'bg-rose-400' : isMast ? 'bg-emerald-400' : 'bg-amber-400'
+                            }`}
+                            style={{ width: `${mPct}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] font-mono text-universe-slate">
+                          <span>
+                            {student.struggling_concepts > 0
+                              ? `⚠️ ${student.struggling_concepts} struggling`
+                              : isMast
+                              ? '✓ Mastered'
+                              : '• Developing'}
+                          </span>
+                          <span className="text-purple-300 flex items-center gap-0.5">
+                            {isSelected ? 'Collapse' : 'Expand'}
+                            <ChevronDown
+                              className={`w-3 h-3 transition-transform ${isSelected ? 'rotate-180' : ''}`}
+                            />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Concept-by-Concept Insights */}
           <div className="space-y-3">
@@ -820,7 +1305,186 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         </div>
       )}
 
-      {/* ━━━━━ TAB 2: TEACHING OPTIMIZER ━━━━━ */}
+      {/* ━━━━━ TAB: INDIVIDUAL STUDENT MASTERY (B2B) ━━━━━ */}
+      {activeTab === 'STUDENTS' && !isIndependent && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header & Controls */}
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-space-900 via-space-850 to-space-900 border border-purple-500/20 backdrop-blur-xl space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/30 text-purple-300 text-[10px] font-mono uppercase tracking-wider">
+                  B2B Institutional Intelligence
+                </span>
+                <h2 className="text-xl font-display font-bold text-white mt-1">
+                  Individual Student Mastery & Cognitive Telemetry
+                </h2>
+                <p className="text-xs text-universe-slate">
+                  Inspect empirical Bayesian knowledge states, misconception patterns, and targeted intervention guidance for each learner in this cohort.
+                </p>
+              </div>
+
+              {/* Search & Filter Bar */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative min-w-[200px]">
+                  <Search className="w-3.5 h-3.5 text-universe-slate absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search student..."
+                    value={studentSearchTerm}
+                    onChange={(e) => setStudentSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs placeholder-universe-slate focus:outline-none focus:border-purple-400"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-space-800 border border-white/[0.08] overflow-x-auto">
+                  <button
+                    type="button"
+                    onClick={() => setStudentFilter('ALL')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer shrink-0 ${
+                      studentFilter === 'ALL'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-universe-slate hover:text-white'
+                    }`}
+                  >
+                    All ({studentsMastery.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentFilter('STRUGGLING')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer shrink-0 ${
+                      studentFilter === 'STRUGGLING'
+                        ? 'bg-rose-600 text-white'
+                        : 'text-rose-300 hover:text-white'
+                    }`}
+                  >
+                    Struggling ({studentsMastery.filter((s) => s.average_mastery < 0.45).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentFilter('DEVELOPING')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer shrink-0 ${
+                      studentFilter === 'DEVELOPING'
+                        ? 'bg-amber-600 text-white'
+                        : 'text-amber-300 hover:text-white'
+                    }`}
+                  >
+                    Developing ({studentsMastery.filter((s) => s.average_mastery >= 0.45 && s.average_mastery < 0.75).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentFilter('MASTERED')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors cursor-pointer shrink-0 ${
+                      studentFilter === 'MASTERED'
+                        ? 'bg-emerald-600 text-white'
+                        : 'text-emerald-300 hover:text-white'
+                    }`}
+                  >
+                    Mastered ({studentsMastery.filter((s) => s.average_mastery >= 0.75).length})
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Cards List */}
+          <div className="space-y-4">
+            {studentsMastery
+              .filter((s) => {
+                if (studentFilter === 'STRUGGLING' && s.average_mastery >= 0.45) return false;
+                if (studentFilter === 'DEVELOPING' && (s.average_mastery < 0.45 || s.average_mastery >= 0.75)) return false;
+                if (studentFilter === 'MASTERED' && s.average_mastery < 0.75) return false;
+                if (studentSearchTerm.trim()) {
+                  const q = studentSearchTerm.toLowerCase();
+                  return s.name.toLowerCase().includes(q) || s.learner_id.toLowerCase().includes(q);
+                }
+                return true;
+              })
+              .map((student) => {
+                const isExpanded = expandedStudentId === student.learner_id;
+                const mPct = Math.round(student.average_mastery * 100);
+                const isStrug = student.average_mastery < 0.45;
+                const isMast = student.average_mastery >= 0.75;
+                const statusBadgeStyle = isStrug
+                  ? 'border-rose-500/30 bg-rose-950/20 text-rose-300'
+                  : isMast
+                  ? 'border-emerald-500/30 bg-emerald-950/20 text-emerald-300'
+                  : 'border-amber-500/30 bg-amber-950/20 text-amber-300';
+
+                return (
+                  <div
+                    key={student.learner_id}
+                    className={`rounded-2xl border transition-all ${
+                      isExpanded
+                        ? 'bg-space-900/90 border-purple-500/40 shadow-[0_0_25px_rgba(168,85,247,0.15)] ring-1 ring-purple-400/40'
+                        : 'bg-space-900/50 border-white/[0.08] hover:border-white/[0.18]'
+                    }`}
+                  >
+                    {/* Summary Row */}
+                    <div
+                      onClick={() => setExpandedStudentId(isExpanded ? null : student.learner_id)}
+                      className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-12 h-12 rounded-2xl bg-space-800 border border-white/[0.08] flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                          {student.avatar || '🧑‍🎓'}
+                        </div>
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-display font-semibold text-white text-base">
+                              {student.name}
+                            </span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${statusBadgeStyle}`}>
+                              {student.assigned_tier}
+                            </span>
+                            <span className="text-xs font-mono text-universe-slate">
+                              • {student.learner_id}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-universe-slate">
+                            <span>{student.role}</span>
+                            <span>•</span>
+                            <span>Accuracy: <strong className="text-white">{student.accuracy_pct}%</strong></span>
+                            <span>•</span>
+                            <span>Concepts: <strong className="text-emerald-400">{student.mastered_concepts} master</strong> / <strong className="text-rose-400">{student.struggling_concepts} struggling</strong></span>
+                            {student.weakest_concept && (
+                              <>
+                                <span>•</span>
+                                <span>Weakest: <strong className="text-rose-300">{student.weakest_concept.name}</strong></span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-right">
+                          <div className="text-xs font-mono text-universe-slate">Mastery</div>
+                          <div className={`text-xl font-display font-bold ${
+                            isStrug ? 'text-rose-400' : isMast ? 'text-emerald-400' : 'text-amber-400'
+                          }`}>
+                            {mPct}%
+                          </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-xl bg-space-800 border border-white/[0.08] flex items-center justify-center text-universe-slate">
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180 text-purple-300' : ''}`} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded Detail Panel */}
+                    {isExpanded && (
+                      <div className="p-5 border-t border-white/[0.08] animate-fade-in">
+                        {renderStudentDetailCard(student, () => setExpandedStudentId(null))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* ━━━━━ TAB 3: TEACHING OPTIMIZER ━━━━━ */}
       {activeTab === 'OPTIMIZER' && (
         <div className="space-y-8 animate-fade-in">
           {/* Plan Generator Form */}

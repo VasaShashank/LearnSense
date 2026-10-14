@@ -826,6 +826,43 @@ export const ApiClient = {
     fetchJson(`/classes/${classId}/student-learning-insights${subjectId ? `?subject_id=${subjectId}` : ''}`),
 
   /**
+   * Individual student mastery, concept scores, and intervention guidance for a class.
+   */
+  getClassStudentsMastery: (classId: string, subjectId?: string): Promise<Array<{
+    learner_id: string;
+    name: string;
+    role: string;
+    avatar: string;
+    average_mastery: number;
+    accuracy_pct: number;
+    total_concepts: number;
+    mastered_concepts: number;
+    developing_concepts: number;
+    struggling_concepts: number;
+    total_attempts: number;
+    total_correct: number;
+    assigned_tier: string;
+    recommended_intervention: string;
+    weakest_concept?: {
+      concept_id: string;
+      name: string;
+      mastery: number;
+    };
+    concept_breakdown: Array<{
+      concept_id: string;
+      concept_name: string;
+      mastery: number;
+      status: 'MASTERED' | 'DEVELOPING' | 'STRUGGLING';
+      attempts: number;
+      correct: number;
+      incorrect: number;
+      confidence: number;
+      uncertainty: number;
+    }>;
+  }>> =>
+    fetchJson(`/classes/${classId}/student-mastery${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
    * Platform-wide aggregated student learning insights (no class required).
    * Used by independent visiting educators without institutional class access.
    */
