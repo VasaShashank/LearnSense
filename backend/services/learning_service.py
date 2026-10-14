@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 
 # Upper bound on how many concepts get a generated question when the diagnostic
 # starts. The quiz itself is capped far lower (DIAGNOSTIC_MAX_QUESTIONS); this
-# only limits how much question-bank work is done up front.
-MAX_DIAGNOSTIC_BUILD_CONCEPTS = 12
+# limits how much question-bank work is done up front so start returns in seconds.
+MAX_DIAGNOSTIC_BUILD_CONCEPTS = 4
 
 
 class LearningService:
@@ -148,13 +148,16 @@ class LearningService:
         hypothesis signal; it never sets KT mastery.
         """
         ctx = self.knowledge_service.get_learning_context(subject_id)
-        authoritative_concepts = list(ctx.concepts.keys()) if ctx and ctx.concepts else (all_concept_ids or list(selections.keys()))
-
-        # Enforce server authority: reject any concept not belonging to subject
         if ctx and ctx.concepts:
-            foreign = [cid for cid in selections.keys() if cid not in ctx.concepts]
-            if foreign:
-                raise ValueError(f"Foreign concept IDs not present in subject '{subject_id}': {foreign}")
+            authoritative_concepts = list(ctx.concepts.keys())
+            # Enforce server authority: prune any foreign/stale concept IDs from client drafts/caches
+            selections = {cid: val for cid, val in selections.items() if cid in ctx.concepts}
+            # Ensure all authoritative concepts have a self-assessment status
+            for cid in authoritative_concepts:
+                if cid not in selections:
+                    selections[cid] = SelfAssessmentStatus.UNANSWERED
+        else:
+            authoritative_concepts = all_concept_ids or list(selections.keys())
 
         val_res = self.planning_validator.validate_self_assessment(selections, authoritative_concepts)
         if not val_res.is_valid:

@@ -17,7 +17,9 @@ ground a question, :class:`~phase3.errors.QuestionBankError` is raised instead.
 
 from __future__ import annotations
 
+import concurrent.futures
 import logging
+import threading
 from typing import Dict, List, Optional, Sequence
 
 from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
@@ -62,6 +64,7 @@ class QuestionBankBuilder:
     def __init__(self, llm_adapter: Optional[Phase3LLMAdapter] = None) -> None:
         self.llm_adapter = llm_adapter or get_llm_adapter()
         self._llm_calls = 0
+        self._lock = threading.Lock()
 
     @property
     def llm_calls(self) -> int:
@@ -282,41 +285,48 @@ class QuestionBankBuilder:
         # rounds cannot fill the bank with copies of the same question.
         seen = {QuestionBankDeduplicator.compute_fingerprint(q.question_text) for q in bank.questions.values()}
 
-        deferred: List[str] = []
-        for concept_id in shortfalls:
-            if self._llm_calls >= _MAX_LLM_CALLS_PER_BUILD:
-                # Report what was left undone instead of quietly returning a partial
-                # bank. The next build resumes from the persisted bank, so the
-                # remaining concepts are still reached - just not all at once.
-                deferred.append(concept_id)
-                continue
-            concept = context.concepts.get(concept_id)
+        budget_remaining = max(0, _MAX_LLM_CALLS_PER_BUILD - self._llm_calls)
+        to_process = shortfalls[:budget_remaining]
+        deferred = shortfalls[budget_remaining:]
+
+        # For responsive generation, target 2 questions per concept (or 3 for a single concept),
+        # delivering high signal while cutting generation latency in half.
+        q_count = 2 if len(to_process) > 1 else 3
+
+        def _generate_single_concept(cid: str) -> tuple[str, List[QuestionBankItem]]:
+            concept = context.concepts.get(cid)
             if concept is None:
-                continue
+                return cid, []
 
             try:
                 chunks = retriever.retrieve_for_concept(
-                    concept_id,
+                    cid,
                     concept_name=concept.canonical_name,
                     top_k=_PASSAGES_PER_REQUEST,
                 )
             except RetrievalError as exc:
                 # A concept with no retrievable passage is reported, never papered over.
                 logger.warning(
-                    "Skipping question generation for concept %s: %s", concept_id, exc.message
+                    "Skipping question generation for concept %s: %s", cid, exc.message
                 )
-                continue
+                return cid, []
 
             try:
-                generated = self._generate_for_concept(context, concept_id, chunks, chapter_id)
+                generated = self._generate_for_concept(context, cid, chunks, chapter_id, count=q_count)
+                return cid, generated
             except Exception as gen_err:
                 logger.warning(
                     "LLM generation failed for concept %s: %s; continuing with remaining concepts.",
-                    concept_id,
+                    cid,
                     gen_err,
                 )
-                continue
+                return cid, []
 
+        max_workers = min(4, len(to_process)) if to_process else 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            results = list(executor.map(_generate_single_concept, to_process))
+
+        for concept_id, generated in results:
             for item in generated:
                 fingerprint = QuestionBankDeduplicator.compute_fingerprint(item.question_text)
                 if fingerprint in seen:
@@ -383,7 +393,8 @@ class QuestionBankBuilder:
         }
 
         response = self.llm_adapter.generate_json(prompt, template)
-        self._llm_calls += 1
+        with self._lock:
+            self._llm_calls += 1
 
         accepted: List[QuestionBankItem] = []
         for raw in response.get("questions", []) or []:

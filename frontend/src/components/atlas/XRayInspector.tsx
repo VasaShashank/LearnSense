@@ -1,44 +1,63 @@
 import React from 'react';
-import type { ConceptNode } from '../../api/client';
-import { Eye, ShieldAlert, ArrowDownRight, Sparkles } from 'lucide-react';
+import type { ConceptNode, TopicTerritory } from '../../api/client';
+import { Eye, ShieldAlert, ArrowDownRight, Sparkles, Layers } from 'lucide-react';
 
 export interface XRayInspectorProps {
-  concept: ConceptNode | null;
+  concept?: ConceptNode | null;
+  topic?: TopicTerritory | null;
   downstreamCount: number;
-  onTraceImpact: (conceptId: string) => void;
+  onTraceImpact: (id: string) => void;
   isTracing: boolean;
+  onOpenLearningPlan?: () => void;
 }
 
 export const XRayInspector: React.FC<XRayInspectorProps> = ({
   concept,
+  topic,
   downstreamCount,
   onTraceImpact,
   isTracing,
+  onOpenLearningPlan,
 }) => {
-  if (!concept) return null;
+  if (!concept && !topic) return null;
 
-  const masteryPercent = Math.round(concept.mastery * 100);
+  const isTopic = Boolean(topic);
+  const name = isTopic ? topic!.name : concept!.name;
+  const definition = isTopic
+    ? `Curriculum module comprising ${topic!.concepts_count || (topic!.concepts || []).length || 0} technical concepts.`
+    : concept!.definition || 'Core conceptual unit grounded in curriculum source text.';
+
+  const masteryVal = isTopic ? (topic!.mastery ?? 0.5) : concept!.mastery;
+  const masteryPercent = Math.round(masteryVal * 100);
+  const uncertaintyVal = isTopic ? (topic!.uncertainty ?? 0.3) : (concept!.uncertainty ?? 0.3);
+  const targetId = isTopic ? topic!.id : concept!.concept_id;
 
   return (
     <div className="universe-panel rounded-2xl p-5 border-violet-500/30 shadow-[0_8px_32px_rgba(139,92,246,0.12)] space-y-4 animate-fade-in">
-      
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4 text-violet-400 animate-pulse" />
           <h3 className="text-xs font-mono font-bold tracking-widest text-violet-300 uppercase">
-            X-RAY TOPOLOGY SCAN
+            {isTopic ? 'SUBHEADING TOPOLOGY SCAN' : 'CONCEPT X-RAY SCAN'}
           </h3>
         </div>
-        <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-violet-950/80 border border-violet-500/40 text-violet-200">
+        <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-violet-950/80 border border-violet-500/40 text-violet-200 font-bold">
           REALTIME
         </span>
       </div>
 
-      {/* Target Concept Name & Definition */}
+      {/* Target Name & Definition */}
       <div className="space-y-1">
-        <h4 className="text-sm font-display font-bold text-white leading-snug">{concept.name}</h4>
-        <p className="text-xs text-universe-slate line-clamp-2 leading-relaxed font-sans">{concept.definition}</p>
+        <div className="flex items-center gap-1.5">
+          {isTopic && (
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-space-850 text-cyan-300 border border-white/[0.08] font-bold">
+              SUBHEADING {topic!.order < 10 ? `0${topic!.order}` : topic!.order}
+            </span>
+          )}
+        </div>
+        <h4 className="text-sm font-display font-bold text-white leading-snug">{name}</h4>
+        <p className="text-xs text-universe-slate line-clamp-2 leading-relaxed font-sans">{definition}</p>
       </div>
 
       {/* Telemetry Metrics */}
@@ -49,7 +68,7 @@ export const XRayInspector: React.FC<XRayInspectorProps> = ({
         </div>
         <div className="p-2.5 rounded-xl bg-space-950/60 border border-white/[0.05]">
           <span className="text-universe-slate text-[9px] block">UNCERTAINTY σ</span>
-          <span className="text-amber-400 font-bold text-base">{Math.round((concept.uncertainty ?? 0.3) * 100)}%</span>
+          <span className="text-amber-400 font-bold text-base">{Math.round(uncertaintyVal * 100)}%</span>
         </div>
       </div>
 
@@ -59,33 +78,47 @@ export const XRayInspector: React.FC<XRayInspectorProps> = ({
         <div className="space-y-0.5">
           <span className="text-xs font-mono font-bold text-rose-200 block">CASCADE RISK</span>
           <p className="text-[11px] text-rose-300/80 leading-relaxed font-sans">
-            Comprehension weakness directly impacts <strong className="text-white">{downstreamCount} dependent concepts</strong>.
+            Comprehension weakness directly impacts{' '}
+            <strong className="text-white">
+              {downstreamCount} dependent {isTopic ? 'subheadings' : 'concepts'}
+            </strong>.
           </p>
         </div>
       </div>
 
-      {/* Trace Impact Action */}
-      <button
-        onClick={() => onTraceImpact(concept.concept_id)}
-        className={`w-full py-2.5 px-3 rounded-xl text-xs font-mono font-bold tracking-wider flex items-center justify-center gap-2 transition-all duration-200 ${
-          isTracing
-            ? 'bg-rose-600 text-white shadow-[0_0_24px_rgba(244,63,94,0.4)] border border-rose-400'
-            : 'bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-rose-400/40'
-        }`}
-      >
-        {isTracing ? (
-          <>
-            <Sparkles className="w-3.5 h-3.5 text-rose-200 animate-spin" />
-            <span>FIRING CASCADE RAYS...</span>
-          </>
-        ) : (
-          <>
-            <ArrowDownRight className="w-3.5 h-3.5 text-cyan-400" />
-            <span>TRACE DOWNSTREAM IMPACT</span>
-          </>
-        )}
-      </button>
+      {/* Action Buttons */}
+      <div className="space-y-2">
+        <button
+          onClick={() => onTraceImpact(targetId)}
+          className={`w-full py-2.5 px-3 rounded-xl text-xs font-mono font-bold tracking-wider flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
+            isTracing
+              ? 'bg-rose-600 text-white shadow-[0_0_24px_rgba(244,63,94,0.4)] border border-rose-400'
+              : 'bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-rose-400/40'
+          }`}
+        >
+          {isTracing ? (
+            <>
+              <Sparkles className="w-3.5 h-3.5 text-rose-200 animate-spin" />
+              <span>TRACING CASCADE RAYS...</span>
+            </>
+          ) : (
+            <>
+              <ArrowDownRight className="w-3.5 h-3.5 text-cyan-400" />
+              <span>TRACE DOWNSTREAM IMPACT</span>
+            </>
+          )}
+        </button>
 
+        {isTopic && onOpenLearningPlan && (
+          <button
+            onClick={onOpenLearningPlan}
+            className="w-full py-2 px-3 rounded-xl bg-cyan-400/10 hover:bg-cyan-400 hover:text-space-950 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Open Subheading Learning Plan</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

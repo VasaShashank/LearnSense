@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   Search,
   Target,
-  Filter,
 } from 'lucide-react';
 import { ApiClient } from '../../api/client';
 import { getConceptDisplayName } from '../../utils/conceptName';
@@ -1081,8 +1080,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         'student_sam',
                         'student_jordan',
                         'student_priya',
-                        'student_david',
-                      ]).map((lid, idx) => ({
+                      ]).map((lid: string, idx: number) => ({
                         learner_id: lid,
                         name: formatStudentName(lid),
                         role: 'Enrolled Learner',
@@ -1105,9 +1103,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                           idx === 1
                             ? 'Focus on foundational prerequisites with 1-on-1 trace scaffolding.'
                             : 'Ready for peer mentoring and advanced practice.',
-                        concept_breakdown: [],
                       }))
-                  ).map((student) => {
+                  ).map((student: any) => {
                     const isSelected = expandedStudentId === student.learner_id;
                     const mPct = Math.round(student.average_mastery * 100);
                     const isStrug = student.average_mastery < 0.45;

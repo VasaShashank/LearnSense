@@ -164,11 +164,13 @@ Document Text:
         }
 
         data = adapter.generate_json(prompt, schema_template, validate=False)
+        if not isinstance(data, dict):
+            raise ValueError(f"LLM returned non-dict payload: {type(data)}")
         raw_topics = data.get("topics", [])
         raw_prereqs = data.get("prerequisites", [])
 
-        if not raw_topics:
-            raise ValueError("LLM returned no topics.")
+        if not raw_topics or not isinstance(raw_topics, list):
+            raise ValueError("LLM returned no valid topics list.")
 
         concepts: List[Concept] = []
         evidence: List[Evidence] = []
@@ -176,11 +178,25 @@ Document Text:
         topics_out: List[Dict[str, Any]] = []
 
         for t_idx, t in enumerate(raw_topics, start=1):
+            if isinstance(t, str):
+                t = {"topic_id": f"topic_{t_idx}", "title": t, "concepts": []}
+            elif not isinstance(t, dict):
+                continue
+
             t_id = str(t.get("topic_id") or f"topic_{t_idx}")
             t_title = str(t.get("title") or f"Topic {t_idx}").strip()
             topic_c_ids = []
 
-            for c_data in t.get("concepts", []):
+            raw_concepts = t.get("concepts", [])
+            if not isinstance(raw_concepts, list):
+                raw_concepts = []
+
+            for c_data in raw_concepts:
+                if isinstance(c_data, str):
+                    c_data = {"name": c_data, "definition": "", "search_phrase": c_data}
+                elif not isinstance(c_data, dict):
+                    continue
+
                 c_name = str(c_data.get("name") or "").strip()
                 if not c_name or len(c_name) < 2:
                     continue
@@ -246,7 +262,9 @@ Document Text:
         adj: Dict[str, Set[str]] = {}
         relationships: List[Relationship] = []
 
-        for p in raw_prereqs:
+        for p in (raw_prereqs if isinstance(raw_prereqs, list) else []):
+            if not isinstance(p, dict):
+                continue
             src_name = str(p.get("source_concept") or "").strip().lower()
             tgt_name = str(p.get("target_concept") or "").strip().lower()
 

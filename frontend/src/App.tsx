@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, SourceDocument } from './api/client';
+import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, TopicTerritory, SourceDocument } from './api/client';
 import { ApiClient } from './api/client';
 import { TopNavbar, type AppView } from './components/navigation/TopNavbar';
 import { Dashboard } from './components/dashboard/Dashboard';
@@ -48,6 +48,7 @@ export default function App() {
 
   // Interactivity States
   const [selectedConcept, setSelectedConcept] = useState<ConceptNode | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<TopicTerritory | null>(null);
   const [isXRayMode, setIsXRayMode] = useState<boolean>(false);
   const [isTracingImpact, setIsTracingImpact] = useState<boolean>(false);
   const [impactedConceptIds, setImpactedConceptIds] = useState<string[]>([]);
@@ -152,18 +153,63 @@ export default function App() {
     setTimeout(() => setKnowledgeChangedNotification(null), 6000);
   };
 
-  // Trace Downstream Impact
-  const handleTraceImpact = (conceptId: string) => {
+  // Trace Downstream Impact (Transitive DAG traversal for Subheadings and Concepts)
+  const handleTraceImpact = (nodeId: string) => {
     if (!graphData) return;
     setIsTracingImpact(true);
-    const dependents = graphData.concepts
-      .filter((c) => c.prerequisites.includes(conceptId))
-      .map((c) => c.concept_id);
 
-    setImpactedConceptIds([conceptId, ...dependents]);
+    const isTopic = (graphData.topics || []).some((t) => t.id === nodeId);
+    const impacted = new Set<string>([nodeId]);
+    const queue = [nodeId];
+
+    if (isTopic) {
+      // Build adjacency list for topics from topic_relationships and topic.dependents
+      const adj: Record<string, string[]> = {};
+      (graphData.topics || []).forEach((t) => {
+        adj[t.id] = [...(t.dependents || [])];
+      });
+      (graphData.topic_relationships || []).forEach((r) => {
+        if (!adj[r.source]) adj[r.source] = [];
+        if (!adj[r.source].includes(r.target)) adj[r.source].push(r.target);
+      });
+
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        const neighbors = adj[curr] || [];
+        for (const n of neighbors) {
+          if (!impacted.has(n)) {
+            impacted.add(n);
+            queue.push(n);
+          }
+        }
+      }
+    } else {
+      // Build adjacency list for concepts from relationships and concept.dependents
+      const adj: Record<string, string[]> = {};
+      (graphData.concepts || []).forEach((c) => {
+        adj[c.concept_id] = [...(c.dependents || [])];
+      });
+      (graphData.relationships || []).forEach((r) => {
+        if (!adj[r.source]) adj[r.source] = [];
+        if (!adj[r.source].includes(r.target)) adj[r.source].push(r.target);
+      });
+
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        const neighbors = adj[curr] || [];
+        for (const n of neighbors) {
+          if (!impacted.has(n)) {
+            impacted.add(n);
+            queue.push(n);
+          }
+        }
+      }
+    }
+
+    setImpactedConceptIds(Array.from(impacted));
     setTimeout(() => {
       setIsTracingImpact(false);
-    }, 4000);
+    }, 6000);
   };
 
   // Handle "Knowledge Changed" Event
@@ -390,11 +436,19 @@ export default function App() {
                   <LearningAtlas
                     graphData={graphData}
                     activeTargetId={nextTarget?.concept_id}
+                    selectedTopicId={selectedTopic?.id}
                     selectedConceptId={selectedConcept?.concept_id}
-                    onSelectConcept={(c) => setSelectedConcept(c)}
+                    onSelectTopic={(t) => {
+                      setSelectedTopic(t);
+                      setSelectedConcept(null);
+                    }}
+                    onSelectConcept={(c) => {
+                      setSelectedConcept(c);
+                    }}
                     isXRayMode={isXRayMode}
                     onToggleXRay={() => setIsXRayMode(!isXRayMode)}
                     impactedConceptIds={impactedConceptIds}
+                    onTraceImpact={handleTraceImpact}
                   />
                 </div>
 
@@ -403,17 +457,29 @@ export default function App() {
                     <XRayInspector
                       concept={selectedConcept}
                       downstreamCount={
-                        graphData.concepts.filter((c) => c.prerequisites.includes(selectedConcept.concept_id)).length
+                        (selectedConcept.dependents && selectedConcept.dependents.length > 0)
+                          ? selectedConcept.dependents.length
+                          : graphData.concepts.filter((c) => c.prerequisites.includes(selectedConcept.concept_id)).length
                       }
                       onTraceImpact={handleTraceImpact}
                       isTracing={isTracingImpact}
+                    />
+                  ) : selectedTopic ? (
+                    <XRayInspector
+                      topic={selectedTopic}
+                      downstreamCount={selectedTopic.dependents?.length || 0}
+                      onTraceImpact={handleTraceImpact}
+                      isTracing={isTracingImpact}
+                      onOpenLearningPlan={() => {
+                        // Topic is already selected and opened
+                      }}
                     />
                   ) : (
                     <div className="universe-panel rounded-2xl p-6 text-center space-y-2">
                       <Sparkles className="w-6 h-6 text-cyan-400/60 mx-auto" />
                       <h4 className="text-xs font-display font-bold text-white">X-Ray Telemetry Standby</h4>
                       <p className="text-[11px] text-universe-slate font-sans leading-relaxed">
-                        Select any conceptual node in the Knowledge Atlas to open real-time prerequisite tracing and downstream impact telemetry.
+                        Select any subheading or conceptual node in the Knowledge Atlas to open real-time prerequisite tracing and downstream impact telemetry.
                       </p>
                     </div>
                   )}
@@ -487,11 +553,17 @@ export default function App() {
 
       {/* ═══════════ Overlays & Modals (student-only where appropriate) ═══════════ */}
 
-      {/* Concept Inspector Drawer */}
-      {selectedConcept && (
+      {/* Concept & Subheading Learning Plan Inspector Drawer */}
+      {(selectedConcept || selectedTopic) && (
         <ConceptInspector
           concept={selectedConcept}
-          onClose={() => setSelectedConcept(null)}
+          topic={selectedTopic}
+          onClose={() => {
+            setSelectedConcept(null);
+            setSelectedTopic(null);
+          }}
+          onSelectConcept={(c) => setSelectedConcept(c)}
+          onBackToTopic={() => setSelectedConcept(null)}
           onStartLearning={(cId) => {
             if (currentPersona.role !== 'LEARNER') return; // Only students can start learning
             const c = graphData?.concepts.find((item) => item.concept_id === cId);
@@ -500,6 +572,7 @@ export default function App() {
               setActiveStudyConcept(c);
             }
             setSelectedConcept(null);
+            setSelectedTopic(null);
           }}
           onStartPractice={(cId) => {
             if (currentPersona.role !== 'LEARNER') return;
@@ -509,6 +582,7 @@ export default function App() {
               setActiveStudyConcept(c);
             }
             setSelectedConcept(null);
+            setSelectedTopic(null);
           }}
           onAskTutor={(cId) => {
             const c = graphData?.concepts.find((item) => item.concept_id === cId);

@@ -25,3 +25,9 @@ storage/learning_contexts/
 # Local scratch scripts
 e2e_verify.py
 recheck_topics.py
+
+# Test / runtime storage artifacts
+storage/classes/
+storage/interventions/
+storage/institutions/
+tests/tmp_knowledge/

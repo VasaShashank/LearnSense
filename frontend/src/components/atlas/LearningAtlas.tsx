@@ -10,45 +10,103 @@ import {
 } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { KnowledgeGraphData, ConceptNode } from '../../api/client';
+import type { KnowledgeGraphData, ConceptNode, TopicTerritory } from '../../api/client';
 import { CustomConceptNode } from './CustomConceptNode';
 import type { ConceptNodeData } from './CustomConceptNode';
+import { SubheadingNode } from './SubheadingNode';
+import type { SubheadingNodeData } from './SubheadingNode';
 import { TerritoryOverlay } from './TerritoryOverlay';
-import { Layers, Eye, Search, Filter } from 'lucide-react';
+import { Layers, Eye, Search, Filter, Compass, Network } from 'lucide-react';
 
 export interface LearningAtlasProps {
   graphData: KnowledgeGraphData;
   activeTargetId?: string;
+  selectedTopicId?: string;
   selectedConceptId?: string;
+  onSelectTopic?: (topic: TopicTerritory) => void;
   onSelectConcept: (concept: ConceptNode) => void;
   isXRayMode: boolean;
   onToggleXRay: () => void;
   impactedConceptIds?: string[];
+  onTraceImpact?: (id: string) => void;
 }
 
 const nodeTypes = {
   conceptNode: CustomConceptNode,
+  subheadingNode: SubheadingNode,
 };
 
 export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   graphData,
   activeTargetId,
+  selectedTopicId,
   selectedConceptId,
+  onSelectTopic,
   onSelectConcept,
   isXRayMode,
   onToggleXRay,
   impactedConceptIds = [],
+  onTraceImpact,
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(3);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterTopic, setFilterTopic] = useState<string>('ALL');
+  // Default to SUBHEADINGS view so the graph is never clogged with 459 nodes
+  const [viewMode, setViewMode] = useState<'SUBHEADINGS' | 'CONCEPTS'>('SUBHEADINGS');
 
+  // Compute Nodes based on View Mode
   const initialNodes: Node[] = useMemo(() => {
+    const qLower = searchQuery.toLowerCase().trim();
+
+    // 1. SUBHEADINGS VIEW: Represent only the high-level subheadings as primary nodes
+    if (viewMode === 'SUBHEADINGS') {
+      const filteredTopics = (graphData.topics || []).filter((topic) => {
+        if (!qLower) return true;
+        const matchesName = topic.name.toLowerCase().includes(qLower);
+        const matchesConcepts = (topic.concepts || []).some(
+          (c) => c.name.toLowerCase().includes(qLower) || (c.definition || '').toLowerCase().includes(qLower)
+        );
+        return matchesName || matchesConcepts;
+      });
+
+      const total = filteredTopics.length;
+      const cols = total <= 4 ? 2 : total <= 9 ? 3 : 4;
+
+      return filteredTopics.map((topic, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = 120 + col * 360;
+        const y = 140 + row * 230;
+
+        const isTarget = (topic.concept_ids || []).includes(activeTargetId || '') || topic.id === activeTargetId;
+        const isSelected = topic.id === selectedTopicId;
+        const isImpacted = impactedConceptIds.includes(topic.id);
+
+        return {
+          id: topic.id,
+          type: 'subheadingNode',
+          position: { x, y },
+          data: {
+            ...topic,
+            isTarget,
+            isSelected,
+            isImpacted,
+            isXRay: isXRayMode,
+            zoomLevel,
+            onSelect: (t: TopicTerritory) => {
+              if (onSelectTopic) onSelectTopic(t);
+            },
+            onTraceImpact,
+          } as SubheadingNodeData,
+        };
+      });
+    }
+
+    // 2. CONCEPTS VIEW: Granular view of individual concepts grouped by topic
     const topicGrouped: Record<string, ConceptNode[]> = {};
-    graphData.concepts.forEach((c) => {
+    (graphData.concepts || []).forEach((c) => {
       const def = c.definition || c.description || '';
-      const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        def.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = !qLower || c.name.toLowerCase().includes(qLower) || def.toLowerCase().includes(qLower);
       const tId = c.topic_id || 'general';
       const matchesTopic = filterTopic === 'ALL' || tId === filterTopic;
 
@@ -90,53 +148,95 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
     });
 
     return nodesRes;
-  }, [graphData.concepts, searchQuery, filterTopic, activeTargetId, selectedConceptId, impactedConceptIds, isXRayMode, zoomLevel, onSelectConcept]);
+  }, [
+    viewMode,
+    graphData.topics,
+    graphData.concepts,
+    searchQuery,
+    filterTopic,
+    activeTargetId,
+    selectedTopicId,
+    selectedConceptId,
+    impactedConceptIds,
+    isXRayMode,
+    zoomLevel,
+    onSelectTopic,
+    onSelectConcept,
+    onTraceImpact,
+  ]);
 
+  // Compute Edges based on View Mode
   const initialEdges: Edge[] = useMemo(() => {
     const edgesRes: Edge[] = [];
     const seenEdges = new Set<string>();
-    const visibleConceptIds = new Set(initialNodes.map((n) => n.id));
+    const visibleNodeIds = new Set(initialNodes.map((n) => n.id));
 
-    const addEdge = (src: string, tgt: string) => {
+    const addEdge = (src: string, tgt: string, isTopicEdge = false) => {
       const edgeKey = `${src}->${tgt}`;
       if (seenEdges.has(edgeKey) || src === tgt) return;
-      if (!visibleConceptIds.has(src) || !visibleConceptIds.has(tgt)) return;
+      if (!visibleNodeIds.has(src) || !visibleNodeIds.has(tgt)) return;
       seenEdges.add(edgeKey);
 
       const isSrcImpacted = impactedConceptIds.includes(src);
+      const isTgtImpacted = impactedConceptIds.includes(tgt);
+      const isCascadePath = isSrcImpacted && isTgtImpacted;
       const isTargetEdge = tgt === activeTargetId;
+
+      const strokeColor = isCascadePath || isSrcImpacted
+        ? '#F43F5E'
+        : isTargetEdge
+        ? '#00F0FF'
+        : isXRayMode
+        ? '#8B5CF6'
+        : isTopicEdge
+        ? '#00E5FF'
+        : 'rgba(0, 240, 255, 0.45)';
 
       edgesRes.push({
         id: `e-${src}-${tgt}`,
         source: src,
         target: tgt,
-        animated: isTargetEdge || isSrcImpacted || isXRayMode,
+        animated: isCascadePath || isTargetEdge || isSrcImpacted || isXRayMode,
         style: {
-          stroke: isSrcImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : isXRayMode ? '#8B5CF6' : 'rgba(0, 240, 255, 0.45)',
-          strokeWidth: isSrcImpacted ? 2.5 : isTargetEdge ? 2.2 : 1.5,
+          stroke: strokeColor,
+          strokeWidth: isCascadePath ? 3.0 : isSrcImpacted ? 2.5 : isTargetEdge ? 2.2 : isTopicEdge ? 2.0 : 1.5,
           strokeDasharray: isXRayMode ? '4 4' : undefined,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: isSrcImpacted ? '#F43F5E' : isTargetEdge ? '#00F0FF' : 'rgba(0, 240, 255, 0.75)',
-          width: 14,
-          height: 14,
+          color: strokeColor,
+          width: isTopicEdge ? 16 : 14,
+          height: isTopicEdge ? 16 : 14,
         },
       });
     };
 
-    graphData.concepts.forEach((concept) => {
-      (concept.prerequisites || []).forEach((prereqId) => {
-        addEdge(prereqId, concept.concept_id);
+    if (viewMode === 'SUBHEADINGS') {
+      // Connect Subheading prerequisite edges
+      (graphData.topics || []).forEach((topic) => {
+        (topic.prerequisites || []).forEach((prereqId) => {
+          addEdge(prereqId, topic.id, true);
+        });
       });
-    });
 
-    (graphData.relationships || []).forEach((rel) => {
-      addEdge(rel.source, rel.target);
-    });
+      (graphData.topic_relationships || []).forEach((rel) => {
+        addEdge(rel.source, rel.target, true);
+      });
+    } else {
+      // Connect Concept-level prerequisite edges
+      (graphData.concepts || []).forEach((concept) => {
+        (concept.prerequisites || []).forEach((prereqId) => {
+          addEdge(prereqId, concept.concept_id);
+        });
+      });
+
+      (graphData.relationships || []).forEach((rel) => {
+        addEdge(rel.source, rel.target);
+      });
+    }
 
     return edgesRes;
-  }, [graphData.concepts, graphData.relationships, initialNodes, activeTargetId, impactedConceptIds, isXRayMode]);
+  }, [viewMode, graphData.topics, graphData.topic_relationships, graphData.concepts, graphData.relationships, initialNodes, activeTargetId, impactedConceptIds, isXRayMode]);
 
   const [, , onNodesChange] = useNodesState(initialNodes);
   const [, , onEdgesChange] = useEdgesState(initialEdges);
@@ -151,40 +251,68 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   return (
     <div className="relative w-full h-[720px] rounded-3xl border border-white/[0.08] bg-space-950 overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.8)]">
       
-      {/* Dynamic Territory Regional Overlays */}
-      <TerritoryOverlay topics={graphData.topics} zoomLevel={zoomLevel} />
+      {/* Regional Overlays for Concepts View */}
+      {viewMode === 'CONCEPTS' && <TerritoryOverlay topics={graphData.topics} zoomLevel={zoomLevel} />}
 
       {/* Floating Control HUD */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-2xl universe-panel shadow-lg">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* View Mode Switcher Pill */}
+          <div className="flex items-center p-1 rounded-xl bg-space-850/90 border border-white/[0.08]">
+            <button
+              onClick={() => setViewMode('SUBHEADINGS')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all ${
+                viewMode === 'SUBHEADINGS'
+                  ? 'bg-cyan-400 text-space-950 shadow-[0_0_16px_rgba(0,240,255,0.4)]'
+                  : 'text-universe-slate hover:text-white'
+              }`}
+            >
+              <Network className="w-3.5 h-3.5" />
+              <span>Subheadings DAG ({graphData.topics?.length || 0})</span>
+            </button>
+            <button
+              onClick={() => setViewMode('CONCEPTS')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all ${
+                viewMode === 'CONCEPTS'
+                  ? 'bg-cyan-400 text-space-950 shadow-[0_0_16px_rgba(0,240,255,0.4)]'
+                  : 'text-universe-slate hover:text-white'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>All Concepts ({graphData.concepts?.length || 0})</span>
+            </button>
+          </div>
+
           {/* Search Box */}
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-3.5 h-3.5 text-universe-slate" />
             <input
               type="text"
-              placeholder="Search knowledge territory..."
+              placeholder={viewMode === 'SUBHEADINGS' ? 'Search subheadings or concepts...' : 'Search concepts...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-4 py-1.5 text-xs rounded-xl bg-space-850/90 border border-white/[0.07] text-white placeholder-universe-slate focus:outline-none focus:border-cyan-400 w-48 sm:w-60 font-sans transition-all"
+              className="pl-8 pr-4 py-1.5 text-xs rounded-xl bg-space-850/90 border border-white/[0.07] text-white placeholder-universe-slate focus:outline-none focus:border-cyan-400 w-44 sm:w-56 font-sans transition-all"
             />
           </div>
 
-          {/* Topic Filter */}
-          <div className="flex items-center gap-1 bg-space-850/90 px-2 py-1 rounded-xl border border-white/[0.07] text-xs">
-            <Filter className="w-3 h-3 text-universe-slate mr-1" />
-            <select
-              value={filterTopic}
-              onChange={(e) => setFilterTopic(e.target.value)}
-              className="bg-transparent text-universe-text text-xs focus:outline-none cursor-pointer pr-2 font-mono"
-            >
-              <option value="ALL" className="bg-space-900">All Topics ({graphData.topics.length})</option>
-              {graphData.topics.map((t) => (
-                <option key={t.id} value={t.id} className="bg-space-900">
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Topic Filter (for concepts mode) */}
+          {viewMode === 'CONCEPTS' && (
+            <div className="flex items-center gap-1 bg-space-850/90 px-2 py-1 rounded-xl border border-white/[0.07] text-xs">
+              <Filter className="w-3 h-3 text-universe-slate mr-1" />
+              <select
+                value={filterTopic}
+                onChange={(e) => setFilterTopic(e.target.value)}
+                className="bg-transparent text-universe-text text-xs focus:outline-none cursor-pointer pr-2 font-mono"
+              >
+                <option value="ALL" className="bg-space-900">All Topics ({graphData.topics.length})</option>
+                {graphData.topics.map((t) => (
+                  <option key={t.id} value={t.id} className="bg-space-900">
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Right Tools: Zoom Metric & X-Ray Mode */}
@@ -218,7 +346,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
         onMove={(_, viewport) => handleViewportChange(viewport)}
         fitView
         fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.25}
+        minZoom={0.2}
         maxZoom={2.0}
         className="w-full h-full bg-space-950"
       >
@@ -227,7 +355,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
       </ReactFlow>
 
       {/* Floating Legend Dock */}
-      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-4 px-4 py-2 rounded-xl universe-panel text-[10px] font-mono text-universe-slate">
+      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 px-4 py-2 rounded-xl universe-panel text-[10px] font-mono text-universe-slate shadow-lg">
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
           <span>Mastered</span>
@@ -238,7 +366,11 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#F59E0B]" />
-          <span>Gap Attention</span>
+          <span>Attention</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#F43F5E] animate-pulse" />
+          <span>Cascade Impact</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" style={{ animationDuration: '3s' }} />

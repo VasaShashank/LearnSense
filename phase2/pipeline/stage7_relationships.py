@@ -361,8 +361,9 @@ def run_stage7_relationship_extraction(
                     sent_start = text.rfind(".", 0, span_start)
                     sent_start = 0 if sent_start == -1 else sent_start + 1
                     sent_end = text.find(".", span_end)
+                    sent_end = len(text) if sent_end == -1 else sent_end + 1
                     clause_start = max(0, sent_start)
-                    clause_end = min(len(text), sent_end)
+                    clause_end = max(clause_start, min(len(text), sent_end))
                     clause_text = text[clause_start:clause_end]
                     leading_ws = len(clause_text) - len(clause_text.lstrip())
                     trailing_ws = len(clause_text) - len(clause_text.rstrip())

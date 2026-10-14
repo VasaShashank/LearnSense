@@ -184,10 +184,8 @@ def _is_single_common_word(term: str) -> bool:
     return term.lower() in LEADING_FUNCTION_WORDS
 
 
-# Verbs, adverbs, non-topic adjectives, and conversational fragments that must never
-# be accepted as isolated single-word concepts.
-NON_CONCEPT_SINGLE_WORDS = {
-    # Common action verbs
+# Common action verbs that indicate conversational or procedural text rather than technical concepts
+ACTION_VERBS = {
     "distributes", "distribute", "distributing", "distributed",
     "adjusts", "adjust", "adjusting", "adjusted",
     "ensures", "ensure", "ensuring", "ensured",
@@ -279,6 +277,20 @@ NON_CONCEPT_SINGLE_WORDS = {
     "teaches", "teach", "teaching", "taught",
     "reads", "read", "reading",
     "writes", "write", "writing", "written",
+    "acted", "acts", "acting",
+    "binds", "bind", "binding", "bound",
+    "describes", "describe", "describing", "described",
+    "displays", "display", "displaying", "displayed",
+    "combines", "combine", "combining", "combined",
+    "presents", "present", "presenting", "presented",
+    "responds", "respond", "responding", "responded",
+    "exposes", "expose", "exposing", "exposed",
+    "occurs", "occur", "occurring", "occurred",
+}
+
+# Verbs, adverbs, non-topic adjectives, and conversational fragments that must never
+# be accepted as isolated single-word concepts.
+NON_CONCEPT_SINGLE_WORDS = {
     # Common conversational adjectives / non-concept words
     "static", "dynamic", "multi", "single", "various", "different",
     "similar", "particular", "certain", "several", "few", "many", "much",
@@ -299,18 +311,67 @@ NON_CONCEPT_SINGLE_WORDS = {
 }
 
 
+CLAUSE_AND_FRAGMENT_WORDS = {
+    "that", "which", "where", "who", "whom", "whose", "when", "while",
+    "upon", "into", "onto", "toward", "towards",
+    "itself", "themselves", "himself", "herself", "myself", "yourself",
+    "therefore", "however", "although", "though", "meanwhile",
+    "wouldn", "couldn", "shouldn", "didn", "doesn", "don", "isn", "aren", "wasn", "weren",
+    "cannot", "can't", "won't", "don't",
+}
+
+JUNK_FILLER_PHRASES = {
+    "term of art", "art in soa", "commonly used", "set of linked", "different contexts",
+    "set of rules", "console in different", "plays the role", "service where two",
+    "with", "many", "core values include",
+}
+
+INTERNAL_SENTENCE_VERBS = {
+    "presents", "presented", "presenting", "requires", "required", "requiring",
+    "responds", "responded", "responding", "exposes", "exposed", "exposing",
+    "performs", "performed", "performing", "provides", "provided", "providing",
+    "determines", "determined", "determining", "displays", "displayed", "displaying",
+    "plays", "played", "playing", "describes", "described", "describing",
+    "contains", "contained", "containing", "creates", "created", "creating",
+}
+
+
 def _is_isolated_verb_or_non_noun(term: str) -> bool:
     """
-    True when a single-word candidate is an action verb, adverb, participle,
+    True when a candidate is an action verb, clause fragment, sentence residue,
     or generic non-topic modifier rather than an educational concept.
     """
-    if " " in term:
-        return False
-    low = term.lower()
-    if low in NON_CONCEPT_SINGLE_WORDS:
+    clean = term.strip().rstrip(":;,.!?")
+    if not clean or len(clean) < 3:
         return True
-    # Adverbs ending in -ly (e.g. Automatically, Quickly, Easily, Directly)
-    if low.endswith("ly") and len(low) > 4:
+    low = clean.lower()
+    if low in JUNK_FILLER_PHRASES:
+        return True
+    if low in NON_CONCEPT_SINGLE_WORDS or low in ACTION_VERBS:
+        return True
+    if low.endswith("ly") and len(low) > 4 and " " not in low:
+        return True
+
+    words = [w.strip(".,;:!?()[]{}\"'") for w in low.split()]
+    if not words:
+        return True
+    # Single common word or quantifier
+    if len(words) == 1 and (words[0] in NON_CONCEPT_SINGLE_WORDS or words[0] in ACTION_VERBS or words[0] in {"with", "many", "few", "some", "any", "every"}):
+        return True
+    # First word is an action verb or leading stopword
+    if words[0] in ACTION_VERBS or words[0] in LEADING_FUNCTION_WORDS:
+        return True
+    # Last word is an action verb or trailing function word
+    if words[-1] in ACTION_VERBS or words[-1] in TRAILING_FUNCTION_WORDS or words[-1] in {"upon", "to", "for", "in", "with", "using"}:
+        return True
+    # Any token is a relative pronoun, clause marker, or contraction
+    if any(w in CLAUSE_AND_FRAGMENT_WORDS for w in words):
+        return True
+    # Internal verbs indicating sentence fragment ("message presents data")
+    if any(w in INTERNAL_SENTENCE_VERBS for w in words[1:-1]):
+        return True
+    # Broken syntax or terminal colon
+    if term.strip().endswith(":") or any(ch in term for ch in "{}[]"):
         return True
     return False
 

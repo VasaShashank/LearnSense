@@ -180,28 +180,38 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // Check calibration status for all subjects on mount to show badges
+  // Check calibration status for all subjects on mount to show badges (only needed on SELECT_SUBJECT step)
   useEffect(() => {
+    if (step !== 'SELECT_SUBJECT' || subjects.length === 0) return;
+    let cancelled = false;
     const checkAllCalibrationStatus = async () => {
       const statusMap: Record<string, { needs_calibration: boolean; diagnostic_completed: boolean }> = {};
       await Promise.all(
         subjects.map(async (s) => {
           try {
             const status = await ApiClient.getCalibrationStatus(learnerId, s.id);
-            statusMap[s.id] = {
-              needs_calibration: status.needs_calibration,
-              diagnostic_completed: status.diagnostic_completed,
-            };
+            if (!cancelled) {
+              statusMap[s.id] = {
+                needs_calibration: status.needs_calibration,
+                diagnostic_completed: status.diagnostic_completed,
+              };
+            }
           } catch {
-            // Best-effort - if check fails, assume needs calibration
-            statusMap[s.id] = { needs_calibration: true, diagnostic_completed: false };
+            if (!cancelled) {
+              statusMap[s.id] = { needs_calibration: true, diagnostic_completed: false };
+            }
           }
         })
       );
-      setSubjectCalibrationStatus(statusMap);
+      if (!cancelled) {
+        setSubjectCalibrationStatus(statusMap);
+      }
     };
     checkAllCalibrationStatus();
-  }, [subjects, learnerId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [subjects, learnerId, step]);
 
   // 1b. Handle PDF/File Upload — ingestion states: uploading → processing →
   // extracting → ready for self-assessment. Self-assessment is only shown once
@@ -370,14 +380,16 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       console.log('[CALIBRATION] Submitting self-assessment...');
       const allConceptIds = concepts.map((c) => c.concept_id);
       const apiConfidences: Record<string, string> = {};
+      const filteredSelections: Record<string, string> = {};
       allConceptIds.forEach((cid) => {
+        filteredSelections[cid] = selfAssessmentSelections[cid] || 'UNANSWERED';
         const c = confidenceSelections[cid] || 'Medium';
         apiConfidences[cid] = c.toUpperCase();
       });
       const session = await ApiClient.submitSelfAssessment({
         learner_id: learnerId,
         subject_id: selectedSubject.id,
-        selections: selfAssessmentSelections,
+        selections: filteredSelections,
         all_subject_concept_ids: allConceptIds,
         confidences: apiConfidences,
       });
@@ -395,7 +407,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
       // Verification set = Strong claims + Unsure concepts. Confident Weak
       // (DONT_KNOW) needs no probing: its gap already drives the path.
-      const verifyCount = Object.values(selfAssessmentSelections).filter(
+      const verifyCount = Object.values(filteredSelections).filter(
         (v) => v === 'KNOW' || v === 'UNANSWERED',
       ).length;
       console.log('[CALIBRATION] Verification count:', verifyCount);
@@ -410,10 +422,6 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       console.log('[CALIBRATION] Starting diagnostic generation...');
       const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
 
-      // A generation failure is an ERROR state, not a pass. Previously both
-      // `start_diagnostic` (server) and this branch (client) treated "no
-      // questions" as "verification complete", so an LLM/bank failure silently
-      // promoted an unverified learner straight to the dashboard.
       if (diagData.status === 'error') {
         setDiagnosticError(
           diagData.error ?? 'The verification test could not be prepared. Please retry.',
@@ -436,8 +444,19 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       }
       setDiagnosticNext(diagData.next_question);
       setStep('DIAGNOSTIC');
-    } catch (err) {
+    } catch (err: any) {
       console.error('[CALIBRATION] Failed to submit self assessment', err);
+      // If error indicates outdated / foreign concept IDs from a stale draft, refresh graph state
+      if (err?.message?.includes('Foreign concept') && selectedSubject) {
+        clearDraft(selectedSubject.id);
+        try {
+          const freshGraph = await ApiClient.getSubjectGraph(selectedSubject.id, learnerId);
+          setConcepts(freshGraph.concepts);
+          setTopics(freshGraph.topics || []);
+        } catch {
+          // best effort
+        }
+      }
       setSubmitError(
         err instanceof ApiError
           ? `Could not start the verification test: ${err.message}`

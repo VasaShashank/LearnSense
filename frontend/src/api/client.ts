@@ -33,13 +33,22 @@ export interface TopicTerritory {
   id: string;
   name: string;
   order: number;
+  concept_ids?: string[];
+  concepts_count?: number;
+  mastery?: number;
+  uncertainty?: number;
+  prerequisites?: string[];
+  dependents?: string[];
+  description?: string;
+  concepts?: ConceptNode[];
 }
 
 export interface KnowledgeGraphData {
   subject_id: string;
   topics: TopicTerritory[];
   concepts: ConceptNode[];
-  relationships: { source: string; target: string; type: string }[];
+  relationships: { source: string; target: string; type: string; confidence?: number }[];
+  topic_relationships?: { source: string; target: string; type: string; confidence?: number }[];
 }
 
 export interface LearnerProgress {

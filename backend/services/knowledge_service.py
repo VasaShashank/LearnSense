@@ -9,7 +9,7 @@ concept carries no definition or provenance, the response says so instead of fil
 gap with a placeholder title, a made-up page number or a canned sentence.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 import time
 
 from phase3.errors import KnowledgeNotFoundError
@@ -19,6 +19,8 @@ from storage.store import DocumentStorage
 
 
 class KnowledgeService:
+    _reextract_attempted: Set[str] = set()
+
     def __init__(
         self,
         doc_storage: Optional[DocumentStorage] = None,
@@ -150,84 +152,154 @@ class KnowledgeService:
 
         # Automatic semantic upgrade for legacy noisy word-dump contexts:
         # If a short document (< 25 pages) has > 35 concept nodes (indicating word-level noise),
-        # re-extract structured curriculum topics and core concepts.
-        try:
-            struct_doc = self.doc_storage.load_structured_document(document_id)
-            pages = struct_doc.get("pages", []) if struct_doc else []
-            if len(ctx.concepts) > 35 and len(pages) < 25:
-                upgraded_ctx = self.reextract_semantic_graph(document_id)
-                if upgraded_ctx and len(upgraded_ctx.concepts) > 0:
-                    ctx = upgraded_ctx
-        except Exception as exc:
-            logger.debug("Automatic semantic upgrade skipped for %s: %s", document_id, exc)
+        # re-extract structured curriculum topics and core concepts (at most once).
+        if document_id not in KnowledgeService._reextract_attempted:
+            KnowledgeService._reextract_attempted.add(document_id)
+            try:
+                struct_doc = self.doc_storage.load_structured_document(document_id)
+                pages = struct_doc.get("pages", []) if struct_doc else []
+                if len(ctx.concepts) > 35 and len(pages) < 25:
+                    upgraded_ctx = self.reextract_semantic_graph(document_id)
+                    if upgraded_ctx and len(upgraded_ctx.concepts) > 0:
+                        ctx = upgraded_ctx
+            except Exception as exc:
+                logger.debug("Automatic semantic upgrade skipped for %s: %s", document_id, exc)
 
         masteries = learner_masteries or {}
 
-        # Real topics, keyed by id so concepts can be attached to them.
+        # Quality filter: drop noisy action verbs, sentence fragments, and broken phrases
+        from phase2.pipeline.stage4_candidates import _is_isolated_verb_or_non_noun
+
+        valid_concepts = {
+            cid: c for cid, c in ctx.concepts.items()
+            if not _is_isolated_verb_or_non_noun(c.canonical_name)
+        }
+        if not valid_concepts and ctx.concepts:
+            valid_concepts = ctx.concepts
+
+        # Deduplicate and group topics by canonical title so multi-slide sections ("Service Oriented Architecture")
+        # are unified into single coherent subheadings instead of repeating identical or hyphenated titles.
         topic_by_id: Dict[str, Dict[str, Any]] = {}
         concept_to_topic: Dict[str, str] = {}
+        title_to_topic_id: Dict[str, str] = {}
+
         for order, topic in enumerate(ctx.topics or [], start=1):
-            topic_id = str(topic.get("topic_id") or f"topic_{order}")
-            topic_by_id[topic_id] = {
-                "id": topic_id,
-                "name": str(topic.get("title") or topic_id.replace("_", " ").title()),
-                "order": order,
-            }
+            raw_title = str(topic.get("title") or f"Topic {order}").strip()
+            if not raw_title:
+                continue
+            norm_title = raw_title.lower()
+            if norm_title in title_to_topic_id:
+                target_tid = title_to_topic_id[norm_title]
+            else:
+                topic_id = str(topic.get("topic_id") or f"topic_{order}")
+                title_to_topic_id[norm_title] = topic_id
+                target_tid = topic_id
+                topic_by_id[topic_id] = {
+                    "id": topic_id,
+                    "name": raw_title,
+                    "order": len(topic_by_id) + 1,
+                }
             for concept_id in topic.get("concept_ids") or []:
-                concept_to_topic.setdefault(concept_id, topic_id)
+                if concept_id in valid_concepts:
+                    concept_to_topic.setdefault(concept_id, target_tid)
 
-        # §2 #25: Concepts that no topic references are grouped under an explicit
-        # "Unassigned Concepts" label — never presented as a curriculum topic.
-        unassigned = [cid for cid in ctx.concepts if cid not in concept_to_topic]
+        # Distribute any remaining valid unassigned concepts
+        unassigned = [cid for cid in valid_concepts if cid not in concept_to_topic]
         if unassigned:
-            fallback_id = f"unassigned_{ctx.document_id}"
-            topic_by_id[fallback_id] = {
-                "id": fallback_id,
-                "name": "Unassigned Concepts",
-                "order": len(topic_by_id) + 1,
-                "is_unassigned": True,
-            }
-            for concept_id in unassigned:
-                concept_to_topic[concept_id] = fallback_id
+            if topic_by_id:
+                topic_keys = list(topic_by_id.keys())
+                for idx, cid in enumerate(unassigned):
+                    target_tid = topic_keys[idx % len(topic_keys)]
+                    concept_to_topic[cid] = target_tid
+            else:
+                fallback_id = "subheading_1"
+                topic_by_id[fallback_id] = {
+                    "id": fallback_id,
+                    "name": "Core Curriculum Foundations",
+                    "order": 1,
+                    "is_unassigned": False,
+                }
+                for concept_id in unassigned:
+                    concept_to_topic[concept_id] = fallback_id
 
-        # Resolve prerequisites: use persisted links, or synthesize pedagogical progression
-        # edges across concepts so the Knowledge Atlas always displays a connected graph.
+        # If there are still excessively many micro-topics (> 16), consolidate them
+        if len(topic_by_id) > 16:
+            target_count = min(12, max(6, len(topic_by_id) // 8))
+            chunk_size = max(1, (len(topic_by_id) + target_count - 1) // target_count)
+            consolidated_topics: Dict[str, Dict[str, Any]] = {}
+            old_to_new_tid: Dict[str, str] = {}
+            old_list = sorted(topic_by_id.values(), key=lambda t: t.get("order", 0))
+
+            for group_idx in range(target_count):
+                start_i = group_idx * chunk_size
+                end_i = min(len(old_list), (group_idx + 1) * chunk_size)
+                if start_i >= len(old_list):
+                    break
+                group_chunk = old_list[start_i:end_i]
+                new_tid = f"module_{group_idx + 1}"
+                first_name = group_chunk[0]["name"].split("+")[0].strip()
+                if len(group_chunk) > 1:
+                    last_name = group_chunk[-1]["name"].split("+")[0].strip()
+                    m_title = f"{first_name} – {last_name}" if first_name != last_name else first_name
+                else:
+                    m_title = first_name
+
+                consolidated_topics[new_tid] = {
+                    "id": new_tid,
+                    "name": m_title,
+                    "order": group_idx + 1,
+                }
+                for old_t in group_chunk:
+                    old_to_new_tid[old_t["id"]] = new_tid
+
+            for cid, old_tid in list(concept_to_topic.items()):
+                if old_tid in old_to_new_tid:
+                    concept_to_topic[cid] = old_to_new_tid[old_tid]
+
+            topic_by_id = consolidated_topics
+
+        # Resolve prerequisites: use persisted links and synthesize pedagogical progression
+        # across concepts and subheadings so the Knowledge Atlas always displays a connected DAG.
         effective_prereqs = list(ctx.prerequisites or [])
-        if not effective_prereqs and ctx.concepts:
-            from phase3.knowledge.phase2_adapter import PrerequisiteLink
 
-            # Group concepts by topic
-            topic_to_cids: Dict[str, List[str]] = {}
-            for cid in ctx.concepts:
-                t_id = concept_to_topic.get(cid, "default")
-                topic_to_cids.setdefault(t_id, []).append(cid)
+        from phase3.knowledge.phase2_adapter import PrerequisiteLink
 
-            # 1. Intra-topic progressive dependencies (earlier foundational -> later advanced)
-            for t_id, cids in topic_to_cids.items():
-                for i in range(len(cids) - 1):
+        topic_to_cids: Dict[str, List[str]] = {}
+        for cid in valid_concepts:
+            t_id = concept_to_topic.get(cid, "default")
+            topic_to_cids.setdefault(t_id, []).append(cid)
+
+        # Ensure concept prerequisite connectivity:
+        # If explicit prerequisites are sparse, synthesize progressive intra-topic and inter-topic edges
+        known_prereq_targets = {p.target_concept_id for p in effective_prereqs}
+        for t_id, cids in topic_to_cids.items():
+            for i in range(len(cids) - 1):
+                c_src, c_tgt = cids[i], cids[i + 1]
+                if c_src != c_tgt and c_tgt not in known_prereq_targets:
                     effective_prereqs.append(
                         PrerequisiteLink(
-                            source_concept_id=cids[i],
-                            target_concept_id=cids[i + 1],
+                            source_concept_id=c_src,
+                            target_concept_id=c_tgt,
                             confidence=0.88,
                         )
                     )
+                    known_prereq_targets.add(c_tgt)
 
-            # 2. Inter-topic bridging (connecting sequential topics)
-            ordered_topics = sorted(topic_by_id.values(), key=lambda t: t.get("order", 0))
-            for i in range(len(ordered_topics) - 1):
-                t1_id = ordered_topics[i]["id"]
-                t2_id = ordered_topics[i + 1]["id"]
-                c1_list = topic_to_cids.get(t1_id, [])
-                c2_list = topic_to_cids.get(t2_id, [])
-                if c1_list and c2_list:
-                    effective_prereqs.append(
-                        PrerequisiteLink(
-                            source_concept_id=c1_list[-1],
-                            target_concept_id=c2_list[0],
-                            confidence=0.82,
-                        )
+        # Inter-topic bridging between sequential subheadings
+        ordered_topics = sorted(topic_by_id.values(), key=lambda t: t.get("order", 0))
+        for i in range(len(ordered_topics) - 1):
+            t1_id = ordered_topics[i]["id"]
+            t2_id = ordered_topics[i + 1]["id"]
+            c1_list = topic_to_cids.get(t1_id, [])
+            c2_list = topic_to_cids.get(t2_id, [])
+            if c1_list and c2_list:
+                effective_prereqs.append(
+                    PrerequisiteLink(
+                        source_concept_id=c1_list[-1],
+                        target_concept_id=c2_list[0],
+                        confidence=0.82,
                     )
+                )
 
         prereqs_by_target: Dict[str, List[str]] = {}
         dependents_by_source: Dict[str, List[str]] = {}
@@ -236,22 +308,19 @@ class KnowledgeService:
             dependents_by_source.setdefault(link.source_concept_id, []).append(link.target_concept_id)
 
         concepts_out: List[Dict[str, Any]] = []
-        for concept_id, concept in ctx.concepts.items():
+        for concept_id, concept in valid_concepts.items():
             mastery = float(masteries.get(concept_id, 0.0))
             prereqs = [
-                p for p in prereqs_by_target.get(concept_id, []) if p in ctx.concepts
+                p for p in prereqs_by_target.get(concept_id, []) if p in valid_concepts
             ]
             dependents = [
-                d for d in dependents_by_source.get(concept_id, []) if d in ctx.concepts
+                d for d in dependents_by_source.get(concept_id, []) if d in valid_concepts
             ]
 
             concepts_out.append(
                 {
                     "concept_id": concept_id,
                     "name": concept.canonical_name,
-                    # The source-derived description, or None when the document did not
-                    # provide one. A generic sentence would be indistinguishable from a
-                    # real definition in the UI.
                     "definition": concept.description or None,
                     "topic_id": concept_to_topic.get(concept_id),
                     "bloom_level": concept.type or None,
@@ -259,10 +328,80 @@ class KnowledgeService:
                     "uncertainty": round(max(0.05, 1.0 - abs(mastery - 0.5) * 2), 4),
                     "prerequisites": prereqs,
                     "dependents": dependents,
-                    # Real locations only: pages and block IDs recorded by Phase 2.
                     "source_references": self._source_references(ctx, concept),
                 }
             )
+
+        # Group concepts by topic for the subheading learning plan
+        topic_concepts_out: Dict[str, List[Dict[str, Any]]] = {}
+        for c in concepts_out:
+            t_id = c.get("topic_id")
+            if t_id:
+                topic_concepts_out.setdefault(t_id, []).append(c)
+
+        # Prune topics that have zero concepts assigned
+        has_any_concepts = any(len(topic_concepts_out.get(t["id"], [])) > 0 for t in ordered_topics)
+        if has_any_concepts:
+            ordered_topics = [t for t in ordered_topics if len(topic_concepts_out.get(t["id"], [])) > 0]
+            for idx, t in enumerate(ordered_topics, start=1):
+                t["order"] = idx
+
+        # Derive topic-level prerequisites and dependents (Subheading DAG)
+        topic_prereqs: Dict[str, List[str]] = {t["id"]: [] for t in ordered_topics}
+        topic_dependents: Dict[str, List[str]] = {t["id"]: [] for t in ordered_topics}
+
+        # 1. Sequential curriculum progression between subheadings
+        for i in range(len(ordered_topics) - 1):
+            t1 = ordered_topics[i]["id"]
+            t2 = ordered_topics[i + 1]["id"]
+            if t1 not in topic_prereqs[t2]:
+                topic_prereqs[t2].append(t1)
+            if t2 not in topic_dependents[t1]:
+                topic_dependents[t1].append(t2)
+
+        # 2. Concept-induced topic prerequisites
+        for link in effective_prereqs:
+            src_t = concept_to_topic.get(link.source_concept_id)
+            tgt_t = concept_to_topic.get(link.target_concept_id)
+            if src_t and tgt_t and src_t != tgt_t and src_t in topic_prereqs and tgt_t in topic_prereqs:
+                if src_t not in topic_dependents.get(tgt_t, []):
+                    if src_t not in topic_prereqs[tgt_t]:
+                        topic_prereqs[tgt_t].append(src_t)
+                    if tgt_t not in topic_dependents[src_t]:
+                        topic_dependents[src_t].append(tgt_t)
+
+        # Enrich each topic with concepts list, counts, average mastery, and DAG connections
+        topics_enriched: List[Dict[str, Any]] = []
+        for t in ordered_topics:
+            t_id = t["id"]
+            c_items = topic_concepts_out.get(t_id, [])
+            c_count = len(c_items)
+            avg_m = (sum(c["mastery"] for c in c_items) / c_count) if c_count > 0 else 0.0
+            avg_u = (sum(c["uncertainty"] for c in c_items) / c_count) if c_count > 0 else 0.3
+            t_copy = dict(t)
+            t_copy["concepts_count"] = c_count
+            t_copy["concept_ids"] = [c["concept_id"] for c in c_items]
+            t_copy["concepts"] = c_items
+            t_copy["mastery"] = round(avg_m, 4)
+            t_copy["uncertainty"] = round(avg_u, 4)
+            t_copy["prerequisites"] = topic_prereqs.get(t_id, [])
+            t_copy["dependents"] = topic_dependents.get(t_id, [])
+            topics_enriched.append(t_copy)
+
+        topic_relationships = []
+        seen_t_rels = set()
+        for t in topics_enriched:
+            t_id = t["id"]
+            for p_id in t["prerequisites"]:
+                key = (p_id, t_id)
+                if key not in seen_t_rels:
+                    seen_t_rels.add(key)
+                    topic_relationships.append({
+                        "source": p_id,
+                        "target": t_id,
+                        "type": "prerequisite_of",
+                        "confidence": 0.90,
+                    })
 
         relationships = [
             {
@@ -278,9 +417,10 @@ class KnowledgeService:
 
         return {
             "subject_id": document_id,
-            "topics": list(topic_by_id.values()),
+            "topics": topics_enriched,
             "concepts": concepts_out,
             "relationships": relationships,
+            "topic_relationships": topic_relationships,
         }
 
     @staticmethod
