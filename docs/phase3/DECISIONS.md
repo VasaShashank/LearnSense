@@ -1,6 +1,6 @@
 # Taproot — Phase 3 Architectural & Default Parameter Decisions
 
-This document details key engineering decisions, default parameter selections, and threshold justifications across **Taproot Phase 3 (Adaptive Learning Engine)** and its interface with Phase 1 and Phase 2.
+This document details key engineering decisions, default parameter selections, and threshold justifications across **Taproot Phase 3 (Adaptive Learning Engine & Learner Modeling)** and its interface with Phase 1 and Phase 2.
 
 ---
 
@@ -34,30 +34,36 @@ In standard Bayesian Knowledge Tracing (Corbett & Anderson, 1994):
 | **Chapter Assessment (`AssessmentConstraints`)** | `time_limit_seconds` | `1800.0` (30 min) | Configurable hard constraint for time-bounded adaptive assessments. |
 | **Answer Evaluation (`AnswerEvaluator`)** | Numerical Tolerance | `0.02` (2%) | Allows floating-point calculation variance within 2% margin. |
 | **Answer Evaluation (`AnswerEvaluator`)** | Short Answer Overlap | `0.6` (60%) | Word overlap/ngram threshold for short-answer semantic correctness scoring. |
-| **LLM Adapter (`Phase3LLMAdapter`)** | Replay Cache Directory | `.cache/llm_replay` | Standard directory for record/replay caching to eliminate duplicate API costs during testing. |
+| **Resource Recommender (`ResourceRecommender`)** | Minimum Match Score | `0.60` | Minimum semantic and notation equivalence score for suggesting external resources. |
 
 ---
 
-## 3. API Key & LLM Fallback Architecture
+## 3. Live LLM Generation & Zero-Template Contract
 
-### How the system handles LLM generation with/without API Keys
-
-1. **Environment Auto-Detection:**
-   - `Phase3LLMAdapter` automatically inspects `.env` files and `os.environ` for `GROQ_API_KEY` or `OPENAI_API_KEY`.
-   - If `GROQ_API_KEY` is present, it defaults to `llama-3.3-70b-versatile` via Groq's endpoint.
-   - If `OPENAI_API_KEY` is present, it defaults to `gpt-4o-mini` via OpenAI's endpoint.
-
-2. **Replay Cache First:**
-   - Before hitting live endpoints, the adapter checks `.cache/llm_replay` using SHA-256 hashes of the prompt, model, and configuration. If a cached response exists, it returns immediately without network calls.
-
-3. **Deterministic Mock Fallback:**
-   - If no API key is set, or if an API key is invalid/times out/encounters network errors, `Phase3LLMAdapter` falls back to `MockLLMAdapter`.
-   - `MockLLMAdapter` generates valid, schema-compliant JSON questions grounded in the user's uploaded Phase 2 concept metadata.
-   - This guarantees that local test suites, offline laptop execution, and automated CI pipelines run reliably without needing developer API keys.
+### Dynamic Live Question & Distractor Engine
+- **No Hardcoded Options**: Practice quiz questions and distractors are generated dynamically using Groq LLM (LLaMA 3.3 70B Versatile / GPT-OSS 120B).
+- **Eliminated Replay Mock Interception**: When `GROQ_API_KEY` is present and active, mock replay caches are bypassed to guarantee fresh, domain-grounded questions.
+- **Dual-Model Rate Limit Fallback**: Automatically retries 429 rate limit spikes with dual-model backoff (`openai/gpt-oss-120b` ↔ `openai/gpt-oss-20b`).
+- **Comprehensive Pedagogical Study Guides**: In addition to quizzes, generates university-grade study modules:
+  1. *Core Theory & Conceptual Foundation*
+  2. *Intuitive Mental Model & The "Why"*
+  3. *Governing Equations & Invariant Rules*
+  4. *Step-by-Step Worked Problems*
+  5. *Common Traps & Student Misconceptions*
+  6. *Key Takeaway Banners*
 
 ---
 
-## 4. Question Provenance Rules
+## 4. Notation-Matched External Resource Recommender
+
+- **`ResourceService` & `ResourceRecommender`**:
+  - Automatically recommends external learning resources (e.g. 3Blue1Brown, Khan Academy, MIT OpenCourseWare) grounded in concept semantics and notation systems.
+  - Matches symbol systems (e.g., Leibniz notation $\frac{dy}{dx}$ vs. Lagrange notation $f'(x)$) to ensure students receive resources aligned with their uploaded materials.
+  - Curated resources are stored in `storage/resources/` with verified educational metadata.
+
+---
+
+## 5. Question Provenance Rules
 
 Every question in the persistent bank maintains strict provenance (`QuestionSourceType`):
 * `SOURCE`: Directly extracted from user material via Phase 2 `AssessableItem`s.

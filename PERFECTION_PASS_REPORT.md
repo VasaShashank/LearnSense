@@ -110,17 +110,19 @@ Under the strict no-fallback mandate, every silent fallback, synthetic placehold
 | Subsystem | State | Evidence File |
 |---|---|---|
 | Ingestion & Native Extraction | **HARDENED** | `ingestion/pass_a.py`, `extraction/text.py` |
+| Multi-Format Ingestion (PPTX, DOCX, IMG) | **HARDENED** | `ingestion/document_formats.py`, `tests/unit/test_pptx_fidelity.py` |
 | OCR Engine | **HARDENED** (requires binary on host) | `adapters/tesseract_adapter.py`, `extraction/ocr.py` |
 | VLM Escalation & Extraction | **HARDENED** (configured `DISABLED_BY_CONFIG` when key absent) | `adapters/vlm_adapter.py`, `extraction/vlm.py` |
 | Phase 2 Concept & Relation Mining | **HARDENED** | `phase2/pipeline/runner.py`, `phase2/models.py` |
+| Subheading DAG & Topic Clusters | **HARDENED** | `phase2/pipeline/semantic_topic_extractor.py`, `frontend/src/components/atlas/` |
 | Bayesian Knowledge Tracing (BKT) | **HARDENED** | `phase3/learner/kt.py` |
 | Authoritative Evidence Retrieval | **HARDENED** | `phase3/retrieval/evidence_retriever.py` |
 | Server-Side Answer Evaluation | **HARDENED** | `phase3/evaluation/engine.py` |
-| Contextual Tutor | **HARDENED** | `backend/services/tutor_service.py` |
+| Contextual Tutor with Citations | **HARDENED** | `backend/services/tutor_service.py` |
 | Durable Persistence & Idempotency | **HARDENED** | `storage/idempotency.py`, `storage/job_repository.py` |
 | YouTube Recommendations & Resource Graph | **HARDENED** | `backend/services/resource_service.py`, `phase3/resources/` |
 | Teacher Collective Optimizer & Class State | **HARDENED** | `backend/services/teacher_service.py`, `phase4/teacher/` |
 | Institutional & B2B Architecture | **HARDENED** | `backend/services/institution_service.py`, `phase4/institution/` |
 | Contextual Bandits / RL Planning | **FUTURE** | Roadmap item |
 
-**Workstream 14, Notation-Matched Video Recommender (§9), Teacher Optimizer (§10), and Institutional RBAC (§11) are 100% complete, verified by test execution, and enforced by static AST tests.**
+**Workstream 14, Notation-Matched Video Recommender (§9), Teacher Optimizer (§10), Institutional RBAC (§11), Multi-Format Ingestion (§12), and Subheading DAG Navigation (§13) are 100% complete, verified by test execution, and enforced by static AST tests.**

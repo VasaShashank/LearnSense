@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Subject, KnowledgeGraphData, LearnerProgress, KnowledgeGap, LearningPathNode, LearningTarget, ConceptNode, TopicTerritory, SourceDocument } from './api/client';
 import { ApiClient } from './api/client';
 import { TopNavbar, type AppView } from './components/navigation/TopNavbar';
@@ -19,7 +19,7 @@ import { SourceLibrary } from './components/sources/SourceLibrary';
 import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
-import { getConceptDisplayName } from './utils/conceptName';
+import { getConceptDisplayName, registerConceptNameMap } from './utils/conceptName';
 
 
 export default function App() {
@@ -72,6 +72,22 @@ export default function App() {
 
   // "Knowledge Changed" Notification
   const [knowledgeChangedNotification, setKnowledgeChangedNotification] = useState<string | null>(null);
+
+  // Comprehensive concept & topic name mapping for human-readable labels across the app
+  const conceptMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (graphData?.concepts || []).forEach((c) => {
+      if (c.concept_id) map[c.concept_id] = c.name || c.concept_id;
+    });
+    (graphData?.topics || []).forEach((t) => {
+      if (t.id) map[t.id] = t.name || t.id;
+    });
+    (pathNodes || []).forEach((n) => {
+      if (n.concept_id) map[n.concept_id] = n.concept_name || n.name || map[n.concept_id] || n.concept_id;
+    });
+    registerConceptNameMap(map);
+    return map;
+  }, [graphData, pathNodes]);
 
   // 1. Initial Load
   const reloadSubjectsAndSources = useCallback(async () => {
@@ -154,7 +170,7 @@ export default function App() {
   };
 
   // Trace Downstream Impact (Transitive DAG traversal for Subheadings and Concepts)
-  const handleTraceImpact = (nodeId: string) => {
+  const handleTraceImpact = useCallback((nodeId: string) => {
     if (!graphData) return;
     setIsTracingImpact(true);
 
@@ -210,10 +226,10 @@ export default function App() {
     setTimeout(() => {
       setIsTracingImpact(false);
     }, 6000);
-  };
+  }, [graphData]);
 
   // Handle "Knowledge Changed" Event
-  const handleKnowledgeChanged = (updatedMasteries: Record<string, number>, conceptId: string) => {
+  const handleKnowledgeChanged = useCallback((updatedMasteries: Record<string, number>, conceptId: string) => {
     refreshSubjectData();
     const formattedConcept = conceptId.replace(/_/g, ' ').toUpperCase();
     const masteryVal = Math.round((updatedMasteries[conceptId] || 0.5) * 100);
@@ -221,7 +237,7 @@ export default function App() {
     setTimeout(() => {
       setKnowledgeChangedNotification(null);
     }, 5000);
-  };
+  }, [refreshSubjectData]);
 
   // ──────────────────────────────────────────────
   // Role guard: validate active view on role change
@@ -364,6 +380,7 @@ export default function App() {
           <LearningPathTimeline
             nodes={pathNodes}
             activeTarget={nextTarget}
+            conceptMap={conceptMap}
             onSelectConcept={(cId) => {
               let c = graphData?.concepts.find((item) => item.concept_id === cId);
               if (!c) {
@@ -428,6 +445,7 @@ export default function App() {
             {showAccessibleAtlas ? (
               <AccessibleAtlasView
                 graphData={graphData}
+                conceptMap={conceptMap}
                 onSelectConcept={(c) => setSelectedConcept(c)}
               />
             ) : (
@@ -436,6 +454,8 @@ export default function App() {
                   <LearningAtlas
                     graphData={graphData}
                     activeTargetId={nextTarget?.concept_id}
+                    nextTarget={nextTarget}
+                    learnerId={learnerId}
                     selectedTopicId={selectedTopic?.id}
                     selectedConceptId={selectedConcept?.concept_id}
                     onSelectTopic={(t) => {
@@ -444,6 +464,26 @@ export default function App() {
                     }}
                     onSelectConcept={(c) => {
                       setSelectedConcept(c);
+                    }}
+                    onStartLearning={(cId) => {
+                      if (currentPersona.role !== 'LEARNER') return;
+                      const c = graphData?.concepts.find((item) => item.concept_id === cId);
+                      if (c) {
+                        setSessionInitialTab('EXPLANATION');
+                        setActiveStudyConcept(c);
+                      }
+                      setSelectedConcept(null);
+                      setSelectedTopic(null);
+                    }}
+                    onStartPractice={(cId) => {
+                      if (currentPersona.role !== 'LEARNER') return;
+                      const c = graphData?.concepts.find((item) => item.concept_id === cId);
+                      if (c) {
+                        setSessionInitialTab('PRACTICE');
+                        setActiveStudyConcept(c);
+                      }
+                      setSelectedConcept(null);
+                      setSelectedTopic(null);
                     }}
                     isXRayMode={isXRayMode}
                     onToggleXRay={() => setIsXRayMode(!isXRayMode)}
@@ -558,6 +598,7 @@ export default function App() {
         <ConceptInspector
           concept={selectedConcept}
           topic={selectedTopic}
+          conceptMap={conceptMap}
           onClose={() => {
             setSelectedConcept(null);
             setSelectedTopic(null);

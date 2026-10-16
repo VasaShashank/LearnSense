@@ -177,18 +177,50 @@ Categorizes student learning gaps into 4 distinct taxonomies:
   - Immediate job dispatch returning `job_id` with real-time status polling at `/api/sources/upload/status/{job_id}`.
 - **Frontend Architecture (`frontend/src/`)**:
   - **Learning Atlas (`components/atlas/LearningAtlas.tsx`)**: Built with `@xyflow/react`, rendering interactive DAG nodes with dynamic color-coding by BKT mastery (Emerald for Mastered, Amber for Developing, Slate for Unlearned).
-  - **X-Ray Concept Inspector (`components/atlas/XRayInspector.tsx`)**: Inspects concept definition, mastery confidence interval, prerequisite links, and source page citations.
+  - **Topic Cluster Nodes (`components/atlas/TopicClusterNode.tsx`)**: Renders macro pedagogical territories (`Foundations`, `Core Principles`, `Advanced Applications`) with mastery progress bars.
+  - **Subheading DAG Navigation (`components/atlas/SubheadingNode.tsx`)**: Renders outline hierarchy connecting chapter/section nodes to granular concept nodes.
+  - **Atlas Intelligence (`components/atlas/atlasIntelligence.ts`)**: Client-side graph heuristics computing bottlenecks, path distances, and topological density.
+  - **Canvas Annotations (`utils/annotationStorage.ts`)**: User pins, bookmarks, and canvas notes stored with local persistence.
+  - **X-Ray Concept Inspector (`components/inspector/ConceptInspector.tsx`)**: Inspects concept definition, mastery confidence interval, prerequisite links, and source page citations.
   - **Onboarding Workflow (`components/onboarding/OnboardingWorkflow.tsx`)**: Multi-step wizard supporting document drag-and-drop, real-time ingestion timer, self-assessment checklist, and diagnostic assessment.
-  - **Learning Session Modal (`components/session/LearningSession.tsx`)**: In-depth curriculum reader with conceptual intuition, worked examples, common misconceptions, and grounded assessment problems.
-  - **Contextual AI Tutor (`components/tutor/ContextualTutor.tsx`)**: Sliding panel for real-time tutoring queries.
+  - **Learning Session Workspace (`components/session/LearningSession.tsx`)**: Dedicated dual-mode study environment: In-depth Study Guide (Core theory, mental model, worked example, misconceptions) and Practice Quizzes with authoritative server-side scoring.
+  - **Contextual AI Tutor (`components/tutor/ContextualTutor.tsx`)**: Sliding panel for real-time tutoring queries with verbatim source citations.
 
 ---
 
 ### Phase 7: Graph Stress & Persistence Hardening
 
 - **Performance Benchmarking (`tests/unit/test_phase7_graph_stress.py`)**: Tested and validated topological path generation on graphs with 10, 50, 100, and 250 concepts under cycle stress.
-- **Atomic Persistence (`storage/repositories.py`)**: Atomic file replacement prevents truncated writes during disk or server interruptions.
-- **Master Regression Suite**: 89 automated unit, integration, and failure test cases passing with zero errors.
+- **Atomic Persistence (`storage/repositories.py`)**: Atomic file replacement (`tempfile` + `os.replace`) prevents truncated writes during disk or server interruptions.
+- **Master Regression Suite**: 300+ automated unit, integration, and failure test cases passing with zero errors.
+
+---
+
+### Phase 8: Teacher Hub & Collective Teaching Optimizer
+
+- **Class Mastery Aggregation (`phase4/teacher/optimizer.py`, `backend/services/teacher_service.py`)**:
+  - Aggregates BKT mastery scores across student cohorts to compute mean, median, variance, and distribution percentiles.
+  - Detects class-wide knowledge bottlenecks where $> 30\%$ of students struggle with foundational prerequisites.
+- **Automated Intervention Generator**:
+  - Automatically synthesizes tailored class intervention plans (`storage/interventions/`).
+  - Matches struggling concepts with external instructional videos from Khan Academy, 3Blue1Brown, and MIT OpenCourseWare.
+  - Prescribes structured classroom group activities and diagnostic remediation mini-quizzes.
+- **Standalone Educator Mode & FERPA De-Identification**:
+  - Supports private educator classrooms without requiring full institutional single sign-on.
+  - Privacy toggle anonymizes student names into irreversible pseudonyms (`Student #104`), safeguarding student educational records under FERPA.
+
+---
+
+### Phase 9: B2B Multi-Tenant Institutional Portal
+
+- **Institutional Multi-Tenancy (`phase4/institution/models.py`, `backend/services/institution_service.py`)**:
+  - Manages enterprise organizations, departments, and course cohorts (`storage/institutions/`).
+  - Tracks seat license quotas, active student seats, and faculty instructor allocations.
+- **Institutional Admin Portal (`frontend/src/components/institution/InstitutionalPortal.tsx`)**:
+  - Visual dashboard for academic deans, department chairs, and IT administrators.
+  - Real-time cross-department learning velocity metrics and cohort completion benchmarks.
+- **Unified Persona Switcher (`frontend/src/components/common/LoginPersonaModal.tsx`)**:
+  - Direct navbar modal allowing immediate switching between `Student`, `Educator / Professor`, and `Institutional Admin` roles.
 
 ---
 
@@ -209,8 +241,20 @@ storage/
 │   └── {subject_id}.json
 ├── learner_states/
 │   └── {learner_id}.json
-└── sessions/
-    └── {session_id}.json
+├── sessions/
+│   └── {session_id}.json
+├── classes/
+│   └── {class_id}.json
+├── institutions/
+│   ├── organizations/
+│   ├── classes/
+│   └── memberships/
+├── interventions/
+│   └── {plan_id}.json
+└── resources/
+    ├── res_khan_kinematics_v_at.json
+    ├── res_3b1b_calculus_essence.json
+    └── res_organic_chem_chain_rule.json
 ```
 
 ---
@@ -219,13 +263,17 @@ storage/
 
 | Subsystem | Implemented Status | Verification |
 |---|---|---|
-| Phase 1 Document Extraction (PDF, PPTX, DOCX, PNG) | Fully Implemented & Optimized (50-DPI thumbs) | Unit & Failure Tests Passing |
+| Phase 1 Multi-Format Ingestion (PDF, PPTX, DOCX, IMG) | Fully Implemented & Hardened (3,000 pages, 500 MB) | Unit & Pipeline Tests Passing |
 | Phase 2 Educational Knowledge Graph (EKR) & DAG | Fully Implemented (Tarjan SCC + Cycle Breaking) | Unit Tests Passing |
+| Phase 2 Subheading DAG & Topic Clusters | Fully Implemented (Macro cluster territories) | Benchmark & Atlas Tests Passing |
 | Phase 3 Bayesian Knowledge Tracing (BKT) | Fully Implemented (Exact Probabilistic Formula) | Unit Tests Passing |
-| Phase 3 BM25 Retrieval & Grounded Questions | Fully Implemented (Zero-Template Engine) | Provenance Tests Passing |
-| Phase 4 Self-Assessment & Diagnostic Orchestration | Fully Implemented (KNOW-restricted quizzes) | Integration Tests Passing |
+| Phase 3 Live Groq Question & Study Guide Engine | Fully Implemented (Zero Templates, Dual-Model Retry) | Live Probes Passing |
+| Phase 3 Notation-Matched Resource Recommender | Fully Implemented (Symbol system matching) | Unit Tests Passing |
+| Phase 4 Self-Assessment & Diagnostic Protocol | Fully Implemented (KNOW-restricted quizzes) | Integration Tests Passing |
 | Phase 4 Gap Detection (4 Categories) & Planner | Fully Implemented (Topological Prerequisite Path) | Unit Tests Passing |
-| Phase 5 Validation, Sandboxing & Idempotency | Fully Implemented (In-memory token tracker) | Unit Tests Passing |
+| Phase 5 Validation, Sandboxing & Idempotency | Fully Implemented (In-memory & SQLite tracker) | Unit Tests Passing |
 | Phase 6 React Flow Atlas & Learning Session UI | Fully Implemented & Responsive | Vite Build Passing |
-| Phase 6 Async Upload & Real-Time Job Polling | Fully Implemented (Threaded Ingestion) | API Tests Passing |
-| Test Suite Health | 89 / 89 Unit and Integration Tests Passing | `pytest -v` Green |
+| Phase 6 Contextual AI Tutor with Citations | Fully Implemented (Authoritative BM25 Grounding) | Tutor Tests Passing |
+| Phase 8 Teacher Hub & Teaching Optimizer | Fully Implemented (Intervention plans & FERPA mode) | Unit & API Tests Passing |
+| Phase 9 B2B Multi-Tenant Institutional Portal | Fully Implemented (Seat licenses & departments) | B2B Tests Passing |
+| Test Suite Health | 100% Passing across all unit, integration, and security suites | `pytest -v` Green |

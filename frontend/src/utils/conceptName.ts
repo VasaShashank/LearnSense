@@ -1,7 +1,14 @@
 /**
- * Utility to resolve human-readable topic names from concept IDs or concept objects.
- * Guarantees that raw concept IDs (e.g. "c_0693846ace40") are NEVER displayed in the UI.
+ * Global cache of concept and topic name mappings so that even if a component
+ * does not pass conceptMap explicitly, IDs can still resolve to human-readable names.
  */
+let globalConceptNameMap: Record<string, string> = {};
+
+export function registerConceptNameMap(map: Record<string, string>) {
+  if (map && typeof map === 'object') {
+    globalConceptNameMap = { ...globalConceptNameMap, ...map };
+  }
+}
 
 export function getConceptDisplayName(
   conceptOrId:
@@ -12,12 +19,19 @@ export function getConceptDisplayName(
         canonical_name?: string;
         title?: string;
         concept_id?: string;
+        id?: string;
       }
     | null
     | undefined,
   conceptMap?: Record<string, string>
 ): string {
   if (!conceptOrId) return 'Topic';
+
+  const lookup = (id: string): string | null => {
+    if (conceptMap && conceptMap[id]) return conceptMap[id];
+    if (globalConceptNameMap[id]) return globalConceptNameMap[id];
+    return null;
+  };
 
   if (typeof conceptOrId === 'object') {
     if (conceptOrId.concept_name && !isRawConceptId(conceptOrId.concept_name)) {
@@ -32,18 +46,17 @@ export function getConceptDisplayName(
     if (conceptOrId.title && !isRawConceptId(conceptOrId.title)) {
       return conceptOrId.title;
     }
-    if (conceptOrId.concept_id) {
-      if (conceptMap && conceptMap[conceptOrId.concept_id]) {
-        return conceptMap[conceptOrId.concept_id];
-      }
-      return cleanConceptId(conceptOrId.concept_id);
+    const id = conceptOrId.concept_id || (conceptOrId as any).id;
+    if (id) {
+      const found = lookup(id);
+      if (found) return found;
+      return cleanConceptId(id);
     }
   }
 
   if (typeof conceptOrId === 'string') {
-    if (conceptMap && conceptMap[conceptOrId]) {
-      return conceptMap[conceptOrId];
-    }
+    const found = lookup(conceptOrId);
+    if (found) return found;
     return cleanConceptId(conceptOrId);
   }
 
@@ -56,12 +69,15 @@ function isRawConceptId(val: string): boolean {
 
 function cleanConceptId(id: string): string {
   if (isRawConceptId(id)) {
-    // If it's pure c_hex without any mapping, show clean fallback rather than hexadecimal noise
-    return 'Core Concept';
+    // If it's pure c_hex without any mapping, use shortened hex identifier rather than repeated generic text
+    return `Concept ${id.slice(2, 8).toUpperCase()}`;
   }
-  // Convert snake_case or slug to Title Case
+  // Convert topic or subheading IDs (e.g. "subheading_01", "topic_limits")
   return id
     .replace(/^c_/i, '')
+    .replace(/^topic_/i, 'Topic ')
+    .replace(/^subheading_/i, 'Subheading ')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
+

@@ -112,14 +112,21 @@ LearnSense processes educational materials through an authoritative, determinist
 
 ---
 
-## 7. Frontend Interaction Gaps Relevant to Learning Workflow
+## 7. Frontend Interaction Implementations Relevant to Learning Workflow
 
-1. **Course Workspace**: Supports upload and status monitoring.
-2. **Interactive Concept Map**: Visualizes nodes and directed prerequisite arrows.
+1. **Course Workspace**: Supports upload and status monitoring across PDF, PPTX, DOCX, and images.
+2. **Interactive Concept Map & Topic Clusters**:
+   - Visualizes nodes and directed prerequisite arrows.
+   - Encompasses concepts in macro pedagogical territories (`Foundations`, `Core Principles`, `Advanced Applications`) with `TopicClusterNode.tsx`.
+   - Connects section outline nodes via `SubheadingNode.tsx` for hierarchical DAG navigation.
 3. **Teaching Optimizer & Teacher Dashboard**:
    - Institutional class selection and cohort monitoring.
    - Dynamic concept-level mastery cards with human-readable labels instead of raw IDs.
-4. **Citation Inspection**: When clicking a source citation in tutor chat, the exact slide number and excerpt are displayed.
+   - Standalone educator support with FERPA-compliant de-identification (`Student #104`).
+4. **Citation Inspection & Contextual Tutoring**:
+   - When clicking a source citation in tutor chat, the exact slide/page number and excerpt are displayed.
+5. **Atlas Intelligence & Canvas Annotations**:
+   - Interactive local annotations, pins, and graph metrics computed directly on canvas.
 
 ---
 

@@ -116,7 +116,7 @@ export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
                 </span>
               </div>
               <p className="text-xs text-universe-text font-sans">
-                {prereqs.length > 0 ? prereqs.map((p) => p.replace(/_/g, ' ').toUpperCase()).join(', ') : 'None — Curriculum Root Module'}
+                {prereqs.length > 0 ? prereqs.map((p) => getConceptDisplayName(p, conceptMap)).join(', ') : 'None — Curriculum Root Module'}
               </p>
             </div>
 
@@ -128,7 +128,7 @@ export const ConceptInspector: React.FC<ConceptInspectorProps> = ({
                 </span>
               </div>
               <p className="text-xs text-universe-text font-sans">
-                {dependents.length > 0 ? dependents.map((d) => d.replace(/_/g, ' ').toUpperCase()).join(', ') : 'Terminal Module — No dependent subheadings'}
+                {dependents.length > 0 ? dependents.map((d) => getConceptDisplayName(d, conceptMap)).join(', ') : 'Terminal Module — No dependent subheadings'}
               </p>
             </div>
           </div>
