@@ -197,12 +197,11 @@ class SemanticChunker:
                 if is_heading and current_token_count >= self.min_chunk_tokens:
                     flush_current()
 
-                # Split condition 2: Section change when chunk has sufficient content
+                # Split condition 2: Section change always establishes a new chunk boundary
                 elif (
                     b_section_id
                     and current_section_id
                     and b_section_id != current_section_id
-                    and current_token_count >= self.min_chunk_tokens
                 ):
                     flush_current()
 

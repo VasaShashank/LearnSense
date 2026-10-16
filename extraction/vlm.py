@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import fitz  # PyMuPDF
 
 from adapters.vlm_adapter import VLMAdapter, get_vlm_adapter
+from ingestion.coordinate import CoordinateNormalizer
 from schemas.document import (
     BlockContent,
     BlockStatusEnum,
@@ -108,19 +109,15 @@ class VLMEngine:
             raw_type = str(raw.get("type", "paragraph")).lower()
             block_type = type_mapping.get(raw_type, BlockTypeEnum.PARAGRAPH)
 
-            # Validate & normalize bounding box
+            # Validate & normalize bounding box via canonical CoordinateNormalizer
             raw_bbox = raw.get("bbox")
             if isinstance(raw_bbox, (list, tuple)) and len(raw_bbox) == 4:
                 try:
-                    x0 = max(0.0, min(page_width, float(raw_bbox[0])))
-                    y0 = max(0.0, min(page_height, float(raw_bbox[1])))
-                    x1 = max(x0 + 1.0, min(page_width, float(raw_bbox[2])))
-                    y1 = max(y0 + 1.0, min(page_height, float(raw_bbox[3])))
-                    bbox = [round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2)]
+                    bbox = CoordinateNormalizer.vlm_to_points(raw_bbox, page_width, page_height)
                 except (ValueError, TypeError):
-                    bbox = [0.0, 0.0, page_width, page_height]
+                    bbox = [0.0, 0.0, round(page_width, 2), round(page_height, 2)]
             else:
-                bbox = [0.0, 0.0, page_width, page_height]
+                bbox = [0.0, 0.0, round(page_width, 2), round(page_height, 2)]
 
             confidence = float(raw.get("confidence", 0.90))
             confidence = max(0.0, min(1.0, confidence))

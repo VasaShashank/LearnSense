@@ -5,7 +5,7 @@ QuestionBank, and LLM Content Generation interfaces.
 """
 
 from typing import Dict, List, Optional, Tuple
-from phase3.adapters.llm_adapter import Phase3LLMAdapter
+from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
 from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.learner.kt import KnowledgeTracer
 from phase3.learner.models import LearnerState
@@ -42,7 +42,7 @@ class Phase3Adapter:
         target_selector: Optional[NextTargetSelector] = None,
     ):
         self.tracer = tracer or KnowledgeTracer()
-        self.llm_adapter = llm_adapter or Phase3LLMAdapter()
+        self.llm_adapter = llm_adapter or get_llm_adapter()
         self.self_assessment_handler = self_assessment_handler or ConceptSelfAssessmentHandler()
         self.sufficiency_checker = sufficiency_checker or KnowledgeSufficiencyChecker()
         self.diagnostic_orchestrator = diagnostic_orchestrator or DiagnosticOrchestrator(tracer=self.tracer)

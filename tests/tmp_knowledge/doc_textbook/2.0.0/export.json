@@ -139,14 +139,118 @@
       "source_confidence": 0.95
     },
     {
-      "evidence_id": "ev_095804b59aa3",
+      "evidence_id": "ev_585daacaa2d2",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 68
+      },
+      "excerpt": "Newton's Second",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_1a8bfeebc297",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 31
+      },
+      "excerpt": "Newton's Second",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_783781ba4aa2",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 15
+      },
+      "excerpt": "Newton's Second",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_088c8b3d5e69",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 72
+      },
+      "excerpt": "Newton's Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_d25f97a04097",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 35
+      },
+      "excerpt": "Newton's Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_02d63232db95",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 19
+      },
+      "excerpt": "Newton's Second Law",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_827f322527f1",
       "block_id": "blk_03",
       "span": {
         "field": "normalized_text",
         "start": 0,
-        "end": 68
+        "end": 67
       },
-      "excerpt": "Before studying Newton's Second Law, recall the definition of Force.",
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_827f322527f1",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 67
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
+      "level": "EXPLICIT",
+      "kind": "explicit_statement",
+      "source_confidence": 0.95
+    },
+    {
+      "evidence_id": "ev_827f322527f1",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 67
+      },
+      "excerpt": "Before studying Newton's Second Law, recall the definition of Force",
       "level": "EXPLICIT",
       "kind": "explicit_statement",
       "source_confidence": 0.95
@@ -210,6 +314,34 @@
       "confidence": 0.95
     },
     {
+      "mention_id": "m_309953ffb440",
+      "concept_id": "c_c68fff578b61",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 68
+      },
+      "surface_form": "Newton's Second",
+      "language": "en",
+      "unit_id": "u_41d3052bc6cd",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_b5c91ae4ee56",
+      "concept_id": "c_1d5505dbb5c7",
+      "block_id": "blk_02",
+      "span": {
+        "field": "normalized_text",
+        "start": 53,
+        "end": 72
+      },
+      "surface_form": "Newton's Second Law",
+      "language": "en",
+      "unit_id": "u_41d3052bc6cd",
+      "confidence": 0.95
+    },
+    {
       "mention_id": "m_b0173a8f3673",
       "concept_id": "c_c271e2cc7fe0",
       "block_id": "blk_03",
@@ -233,6 +365,34 @@
         "end": 35
       },
       "surface_form": "Second Law",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_6c05e4ed1696",
+      "concept_id": "c_c68fff578b61",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 31
+      },
+      "surface_form": "Newton's Second",
+      "language": "en",
+      "unit_id": "u_32bef7b4f34f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_74377bb99212",
+      "concept_id": "c_1d5505dbb5c7",
+      "block_id": "blk_03",
+      "span": {
+        "field": "normalized_text",
+        "start": 16,
+        "end": 35
+      },
+      "surface_form": "Newton's Second Law",
       "language": "en",
       "unit_id": "u_32bef7b4f34f",
       "confidence": 0.95
@@ -264,6 +424,34 @@
       "language": "en",
       "unit_id": "u_f06a8f25165f",
       "confidence": 0.95
+    },
+    {
+      "mention_id": "m_baf838d17682",
+      "concept_id": "c_c68fff578b61",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 15
+      },
+      "surface_form": "Newton's Second",
+      "language": "en",
+      "unit_id": "u_f06a8f25165f",
+      "confidence": 0.95
+    },
+    {
+      "mention_id": "m_8f6380943f61",
+      "concept_id": "c_1d5505dbb5c7",
+      "block_id": "blk_04",
+      "span": {
+        "field": "normalized_text",
+        "start": 0,
+        "end": 19
+      },
+      "surface_form": "Newton's Second Law",
+      "language": "en",
+      "unit_id": "u_f06a8f25165f",
+      "confidence": 0.95
     }
   ],
   "concepts": [
@@ -289,6 +477,7 @@
       "evidence_ids": [
         "ev_ee38af1e42ad"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -316,6 +505,7 @@
       "evidence_ids": [
         "ev_38019ef26b2c"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -347,6 +537,7 @@
         "ev_cfbddd65e46e",
         "ev_c9829a2f9920"
       ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -378,6 +569,71 @@
         "ev_a49beb609ed2",
         "ev_3f24621bb4c0"
       ],
+      "description": "",
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_c68fff578b61",
+      "canonical_name": "Newton's Second",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_309953ffb440",
+        "m_6c05e4ed1696",
+        "m_baf838d17682"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_585daacaa2d2",
+        "ev_1a8bfeebc297",
+        "ev_783781ba4aa2"
+      ],
+      "description": "",
+      "extraction": {
+        "method": "hybrid",
+        "pipeline_version": "2.0.0"
+      }
+    },
+    {
+      "concept_id": "c_1d5505dbb5c7",
+      "canonical_name": "Newton's Second Law",
+      "aliases": [],
+      "type": "concept",
+      "scope": "educational",
+      "status": "active",
+      "mention_ids": [
+        "m_b5c91ae4ee56",
+        "m_74377bb99212",
+        "m_8f6380943f61"
+      ],
+      "skill_ids": [],
+      "unit_links": [],
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "extraction": 0.95,
+          "resolution": 0.98
+        }
+      },
+      "evidence_ids": [
+        "ev_088c8b3d5e69",
+        "ev_d25f97a04097",
+        "ev_02d63232db95"
+      ],
+      "description": "",
       "extraction": {
         "method": "hybrid",
         "pipeline_version": "2.0.0"
@@ -418,11 +674,11 @@
       "parent_unit_id": null,
       "concept_links": [
         {
-          "concept_id": "c_778b27def4b6",
+          "concept_id": "c_1ad22c219f65",
           "link": "mentions"
         },
         {
-          "concept_id": "c_1ad22c219f65",
+          "concept_id": "c_778b27def4b6",
           "link": "mentions"
         }
       ]
@@ -445,6 +701,14 @@
       "concept_links": [
         {
           "concept_id": "c_c271e2cc7fe0",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_1d5505dbb5c7",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_c68fff578b61",
           "link": "mentions"
         },
         {
@@ -474,6 +738,14 @@
           "link": "mentions"
         },
         {
+          "concept_id": "c_1d5505dbb5c7",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_c68fff578b61",
+          "link": "mentions"
+        },
+        {
           "concept_id": "c_f36ae5d6784c",
           "link": "mentions"
         }
@@ -500,6 +772,14 @@
           "link": "mentions"
         },
         {
+          "concept_id": "c_1d5505dbb5c7",
+          "link": "mentions"
+        },
+        {
+          "concept_id": "c_c68fff578b61",
+          "link": "mentions"
+        },
+        {
           "concept_id": "c_f36ae5d6784c",
           "link": "mentions"
         }
@@ -517,29 +797,80 @@
       "status": "accepted",
       "evidence_level": "EXPLICIT",
       "confidence": {
-        "value": 0.85,
+        "value": 0.95,
         "components": {
           "source_quality": 0.95,
-          "extraction": 0.9,
+          "extraction": 0.92,
           "verification": 1.0
         }
       },
       "evidence_ids": [
-        "ev_095804b59aa3"
+        "ev_827f322527f1"
       ],
-      "flags": []
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
+    },
+    {
+      "relationship_id": "rel_a449bd151780",
+      "source": "c_f36ae5d6784c",
+      "type": "prerequisite_of",
+      "target": "c_c68fff578b61",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.92,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_827f322527f1"
+      ],
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
+    },
+    {
+      "relationship_id": "rel_21049093839c",
+      "source": "c_f36ae5d6784c",
+      "type": "prerequisite_of",
+      "target": "c_1d5505dbb5c7",
+      "status": "accepted",
+      "evidence_level": "EXPLICIT",
+      "confidence": {
+        "value": 0.95,
+        "components": {
+          "source_quality": 0.95,
+          "extraction": 0.92,
+          "verification": 1.0
+        }
+      },
+      "evidence_ids": [
+        "ev_827f322527f1"
+      ],
+      "flags": [],
+      "rationale": "Explicit recall/prior learning indicator",
+      "extraction_method": "deterministic_pattern",
+      "metadata": {}
     }
   ],
   "views": {
     "trusted": {
       "policy_version": "1.0",
       "relationship_ids": [
-        "rel_cec9ac6cff98"
+        "rel_cec9ac6cff98",
+        "rel_a449bd151780",
+        "rel_21049093839c"
       ]
     },
     "full": {
-      "total_nodes": 4,
-      "total_edges": 1
+      "total_nodes": 6,
+      "total_edges": 3
     }
   },
   "merge_records": [
@@ -570,18 +901,57 @@
       },
       "score": 1.0,
       "outcome": "merged"
+    },
+    {
+      "record_id": "mr_c_c68fff578b61",
+      "inputs": [
+        "Newton's Second",
+        "Newton's Second",
+        "Newton's Second"
+      ],
+      "canonical_name": "Newton's Second",
+      "signals": {
+        "exact_normalized_match": true
+      },
+      "score": 1.0,
+      "outcome": "merged"
+    },
+    {
+      "record_id": "mr_c_1d5505dbb5c7",
+      "inputs": [
+        "Newton's Second Law",
+        "Newton's Second Law",
+        "Newton's Second Law"
+      ],
+      "canonical_name": "Newton's Second Law",
+      "signals": {
+        "exact_normalized_match": true
+      },
+      "score": 1.0,
+      "outcome": "merged"
     }
   ],
   "id_map": [],
   "qc_report": {
     "hard_invariant_violations_count": 0,
     "hard_invariant_violations": [],
+    "groundedness_warnings_count": 0,
+    "groundedness_warnings": [],
+    "dag_warnings_count": 0,
+    "dag_warnings": [],
     "passed_qc": true
   },
   "coverage_report": {
-    "educational_units_count": 4,
-    "concepts_count": 4,
-    "relationships_count": 1
+    "total_concepts": 6,
+    "active_concepts": 6,
+    "concepts_with_evidence": 6,
+    "concepts_with_description": 0,
+    "evidence_coverage_pct": 100.0,
+    "total_relationships": 3,
+    "accepted_relationships": 3,
+    "relationships_with_evidence": 3,
+    "total_evidence": 18,
+    "educational_units_count": 4
   },
   "warnings": []
 }

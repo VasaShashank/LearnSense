@@ -76,44 +76,31 @@ def _merge_plural_variants(
             canonical_names.pop(drop, None)
 
 
+from phase2.pipeline.semantic_entity_resolver import SemanticEntityResolver
+
+
 def run_stage5_entity_resolution(
     norm_doc: NormalizedDocumentContext,
     candidates: Stage4ExtractionResult
 ) -> Tuple[List[Concept], List[MergeRecord]]:
-    # Group mentions by normalized surface form key
-    clusters: Dict[str, List[ConceptMention]] = {}
-    canonical_names: Dict[str, str] = {}
-
+    # Acronym expansion pass before resolution
     for mention in candidates.mentions:
         raw_name = mention.surface_form
         norm_key = norm_doc.normalize_text_key(raw_name)
-
-        # Expand acronym if present
         if norm_key.upper() in candidates.acronyms:
-            raw_name = candidates.acronyms[norm_key.upper()]
-            norm_key = norm_doc.normalize_text_key(raw_name)
+            mention.surface_form = candidates.acronyms[norm_key.upper()]
 
-        if norm_key not in clusters:
-            clusters[norm_key] = []
-            canonical_names[norm_key] = raw_name
-        clusters[norm_key].append(mention)
+    # Execute multi-stage semantic entity resolution
+    resolver = SemanticEntityResolver()
+    clusters, canonical_names, semantic_merge_records = resolver.resolve_mentions(
+        candidates.mentions, candidates.evidence
+    )
 
-    # Second pass: merge singular/plural variants of the same term.
+    # Second pass: merge singular/plural variants of the same term
     _merge_plural_variants(clusters, canonical_names)
 
-    # Canonical name = most frequent surface form (first-seen wins ties).
-    for norm_key, mentions in clusters.items():
-        counts: Dict[str, int] = {}
-        order: List[str] = []
-        for m in mentions:
-            if m.surface_form not in counts:
-                counts[m.surface_form] = 0
-                order.append(m.surface_form)
-            counts[m.surface_form] += 1
-        canonical_names[norm_key] = max(order, key=lambda name: counts[name])
-
     concepts: List[Concept] = []
-    merge_records: List[MergeRecord] = []
+    merge_records: List[MergeRecord] = list(semantic_merge_records)
 
     for norm_key, mentions in clusters.items():
         can_name = canonical_names[norm_key]
@@ -142,6 +129,36 @@ def run_stage5_entity_resolution(
         # Deduplicate evidence IDs
         ev_ids = list(dict.fromkeys(ev_ids))
 
+        # Check if an explicit definition was harvested for this concept
+        matched_def = None
+        for h_def in candidates.harvested_definitions:
+            term_h = h_def["term"].strip().lower()
+            if (
+                term_h == can_name.lower()
+                or any(term_h == m.surface_form.lower() for m in mentions)
+                or term_h in can_name.lower()
+                or can_name.lower() in term_h
+            ):
+                matched_def = h_def
+                break
+
+        if matched_def:
+            def_text = matched_def["definition"]
+            b_id = matched_def["block_id"]
+            ev_id = generate_evidence_id(norm_doc.doc_id, b_id, 0, min(len(def_text), 250), "definition")
+            ev = Evidence(
+                evidence_id=ev_id,
+                block_id=b_id,
+                span=TextSpan(start=0, end=min(len(def_text), 250)),
+                excerpt=def_text[:250],
+                level=EvidenceLevelEnum.EXPLICIT,
+                kind=EvidenceKindEnum.DEFINITION_PATTERN,
+                source_confidence=0.98,
+            )
+            candidates.evidence.append(ev)
+            ev_ids.append(ev_id)
+            ev_ids = list(dict.fromkeys(ev_ids))
+
         concept = Concept(
             concept_id=c_id,
             canonical_name=can_name,
@@ -154,7 +171,8 @@ def run_stage5_entity_resolution(
                 value=0.95,
                 components={"extraction": 0.95, "resolution": 0.98}
             ),
-            evidence_ids=ev_ids
+            evidence_ids=ev_ids,
+            description=matched_def["definition"] if matched_def else "",
         )
         concepts.append(concept)
 

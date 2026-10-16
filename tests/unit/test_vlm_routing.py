@@ -15,15 +15,16 @@ import pytest
 import fitz  # PyMuPDF
 
 from adapters.vlm_adapter import (
-    MockVLMAdapter,
     VLMCache,
     VLMTelemetry,
     get_vlm_adapter,
     get_vlm_telemetry,
 )
+from tests.support.mock_vlm import MockVLMAdapter
 from extraction.vlm import VLMEngine
 from ingestion.inspector import PageInspectionMetrics, PageInspector
 from ingestion.router import EscalationRouter
+from phase3.errors import VLMExtractionError
 from schemas.document import (
     BlockTypeEnum,
     ExtractionMethodEnum,
@@ -117,9 +118,14 @@ class TestVLMRoutingAndModes:
         metrics = inspector.inspect_page(page, page_index=0)
         metrics.requires_vlm = True
 
+        from unittest.mock import MagicMock
+        from extraction.ocr import OCREngine
+
         telemetry = VLMTelemetry()
         mock_vlm = MockVLMAdapter(mode="disabled", telemetry=telemetry)
-        router = EscalationRouter(vlm_engine=VLMEngine(vlm_adapter=mock_vlm))
+        mock_ocr = MagicMock(spec=OCREngine)
+        mock_ocr.process_scanned_page.return_value = []
+        router = EscalationRouter(vlm_engine=VLMEngine(vlm_adapter=mock_vlm), ocr_engine=mock_ocr)
         router.telemetry = telemetry
 
         blocks, assets = router.route_and_extract_page(
@@ -190,20 +196,22 @@ class TestVLMFallback:
         router = EscalationRouter(vlm_engine=VLMEngine(vlm_adapter=failing_vlm))
         router.telemetry = telemetry
 
-        blocks, assets = router.route_and_extract_page(
-            page=page,
-            page_idx=0,
-            metrics=metrics,
-            pdf_path="test.pdf",
-            document_id="doc_test_fallback",
-        )
+        # Under the strict no-fallback policy (§1.2 #1, §2 #2), VLM failure must
+        # FAIL the page loudly via VLMExtractionError, NEVER silently fall back to native/OCR.
+        with pytest.raises(VLMExtractionError) as exc_info:
+            router.route_and_extract_page(
+                page=page,
+                page_idx=0,
+                metrics=metrics,
+                pdf_path="test.pdf",
+                document_id="doc_test_fallback",
+            )
 
-        # Ingestion must not crash; fallback to traditional native extraction
-        assert len(blocks) > 0
-        assert any(b.extraction_method == ExtractionMethodEnum.NATIVE for b in blocks)
-        # Telemetry must record failure and fallback
+        assert "VLM extraction failed on page 1" in str(exc_info.value)
+        assert exc_info.value.details["page_index"] == 0
+        assert "Simulated network timeout" in exc_info.value.details["cause"]
+        # Telemetry must record failure
         assert telemetry.vlm_failures == 1
-        assert telemetry.vlm_fallbacks == 1
 
 
 class TestVLMCaching:
@@ -303,7 +311,6 @@ class TestVLMSchemaAndProvenance:
             ocr_pages=1,
             vlm_pages=1,
             vlm_failures=0,
-            vlm_fallbacks=0,
             vlm_calls=1,
             cache_hits=0,
             cache_misses=1,

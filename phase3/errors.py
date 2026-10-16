@@ -191,6 +191,249 @@ class QuestionBankError(LearnSenseError):
     recoverable = True
 
 
+# ---------------------------------------------------------------------------
+# OCR errors (no-fallback policy: Tesseract failures must be loud)
+# ---------------------------------------------------------------------------
+
+class OCRUnavailableError(LearnSenseError):
+    """Tesseract binary could not be found or executed."""
+
+    code = "OCR_UNAVAILABLE"
+    http_status = 503
+    recoverable = False
+
+
+class OCRLanguageMissingError(LearnSenseError):
+    """A required Tesseract language data pack is not installed."""
+
+    code = "OCR_LANGUAGE_MISSING"
+    http_status = 503
+    recoverable = False
+
+
+class OCRImageError(LearnSenseError):
+    """The image could not be decoded or processed by OCR."""
+
+    code = "OCR_IMAGE_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+# ---------------------------------------------------------------------------
+# VLM errors (no-fallback policy: VLM failures must be loud)
+# ---------------------------------------------------------------------------
+
+class VLMConfigurationError(LearnSenseError):
+    """VLM provider, model, or API key is not configured when VLM_MODE requires it."""
+
+    code = "VLM_NOT_CONFIGURED"
+    http_status = 503
+    recoverable = False
+
+
+class VLMExtractionError(LearnSenseError):
+    """VLM extraction failed for a page that was routed to VLM."""
+
+    code = "VLM_EXTRACTION_FAILED"
+    http_status = 502
+    recoverable = True
+
+
+# ---------------------------------------------------------------------------
+# Table / Math extraction errors
+# ---------------------------------------------------------------------------
+
+class TableExtractionError(LearnSenseError):
+    """Table extraction failed for a page."""
+
+    code = "TABLE_EXTRACTION_FAILED"
+    http_status = 422
+    recoverable = False
+
+
+class MathExtractionError(LearnSenseError):
+    """Math/equation extraction failed for a page."""
+
+    code = "MATH_EXTRACTION_FAILED"
+    http_status = 422
+    recoverable = False
+
+
+# ---------------------------------------------------------------------------
+# Tutor errors
+# ---------------------------------------------------------------------------
+
+class TutorGenerationError(LearnSenseError):
+    """The LLM-backed tutor could not produce a response."""
+
+    code = "TUTOR_GENERATION_FAILED"
+    http_status = 502
+    recoverable = True
+
+
+class NoGroundedTutorEvidenceError(LearnSenseError):
+    """
+    The document contains no extractable evidence for this concept to ground tutoring.
+    Enforces §2 / Issue 4: Never fabricate teaching prose when source grounding is missing.
+    """
+
+    code = "NO_GROUNDED_TUTOR_EVIDENCE"
+    http_status = 422
+    recoverable = False
+
+    def __init__(
+        self,
+        message: str = "No extractable source evidence found for this concept.",
+        *,
+        subject_id: str,
+        concept_id: str,
+        reason: Optional[str] = None,
+        evidence_status: str = "UNAVAILABLE",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        merged_details = {
+            "subject_id": subject_id,
+            "concept_id": concept_id,
+            "reason": reason or message,
+            "evidence_status": evidence_status,
+        }
+        if details:
+            merged_details.update(details)
+        super().__init__(message, details=merged_details, recoverable=False, http_status=422)
+        self.subject_id = subject_id
+        self.concept_id = concept_id
+        self.reason = reason or message
+        self.evidence_status = evidence_status
+
+
+# ---------------------------------------------------------------------------
+# Startup / preflight errors
+# ---------------------------------------------------------------------------
+
+class StartupPreflightError(LearnSenseError):
+    """A required dependency failed startup validation."""
+
+    code = "STARTUP_PREFLIGHT_FAILED"
+    http_status = 503
+    recoverable = False
+
+
+# ---------------------------------------------------------------------------
+# Section 39 Canonical Structured Errors
+# ---------------------------------------------------------------------------
+
+class ConfigurationError(LearnSenseError):
+    """Authoritative configuration error (provider, model, or parameter missing/invalid)."""
+    code = "CONFIGURATION_ERROR"
+    http_status = 503
+    recoverable = False
+
+
+class ValidationError(LearnSenseError):
+    """Generic or domain validation failure."""
+    code = "VALIDATION_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class OCRFailure(LearnSenseError):
+    """OCR execution or engine failure."""
+    code = "OCR_FAILURE"
+    http_status = 503
+    recoverable = False
+
+
+class VLMFailure(LearnSenseError):
+    """VLM execution or routing failure."""
+    code = "VLM_FAILURE"
+    http_status = 502
+    recoverable = True
+
+
+class ExtractionFailure(LearnSenseError):
+    """Document block, text, table, or math extraction failure."""
+    code = "EXTRACTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class SemanticResolutionFailure(LearnSenseError):
+    """Entity resolution or canonicalization failure."""
+    code = "SEMANTIC_RESOLUTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class RelationshipResolutionFailure(LearnSenseError):
+    """CKG relationship extraction or verification failure."""
+    code = "RELATIONSHIP_RESOLUTION_FAILURE"
+    http_status = 422
+    recoverable = False
+
+
+class RetrievalFailure(RetrievalError):
+    """Evidence retrieval failure matching Section 39."""
+    code = "RETRIEVAL_FAILURE"
+    http_status = 503
+    recoverable = True
+
+
+class LLMOutputValidationError(LLMOutputError):
+    """LLM output failed schema or semantic validation."""
+    code = "LLM_OUTPUT_VALIDATION_ERROR"
+    http_status = 502
+    recoverable = True
+
+
+class GroundingValidationError(ValidationError):
+    """Citation or claim failed evidence-grounding verification."""
+    code = "GROUNDING_VALIDATION_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class LearnerStateError(LearnSenseError):
+    """Learner state corruption, missing concept state, or invalid transition."""
+    code = "LEARNER_STATE_ERROR"
+    http_status = 422
+    recoverable = False
+
+
+class PersistenceError(LearnSenseError):
+    """Storage, database, or repository persistence failure."""
+    code = "PERSISTENCE_ERROR"
+    http_status = 500
+    recoverable = True
+
+
+class AuthenticationError(LearnSenseError):
+    """Unauthenticated access attempt or invalid caller identity."""
+    code = "AUTHENTICATION_ERROR"
+    http_status = 401
+    recoverable = False
+
+
+class AuthorizationError(LearnSenseError):
+    """Unauthorized learner or resource access attempt."""
+    code = "AUTHORIZATION_ERROR"
+    http_status = 403
+    recoverable = False
+
+
+class ConcurrencyError(LearnSenseError):
+    """Concurrent submission or state mutation conflict."""
+    code = "CONCURRENCY_ERROR"
+    http_status = 409
+    recoverable = True
+
+
+class CancellationError(LearnSenseError):
+    """Job, pipeline, or session cancelled upon user/system signal."""
+    code = "CANCELLATION_ERROR"
+    http_status = 499
+    recoverable = False
+
+
 __all__ = [
     "LearnSenseError",
     "LLMConfigurationError",
@@ -208,4 +451,31 @@ __all__ = [
     "KnowledgeBuildError",
     "KnowledgeNotFoundError",
     "QuestionBankError",
+    "OCRUnavailableError",
+    "OCRLanguageMissingError",
+    "OCRImageError",
+    "VLMConfigurationError",
+    "VLMExtractionError",
+    "TableExtractionError",
+    "MathExtractionError",
+    "TutorGenerationError",
+    "NoGroundedTutorEvidenceError",
+    "StartupPreflightError",
+    "ConfigurationError",
+    "ValidationError",
+    "OCRFailure",
+    "VLMFailure",
+    "ExtractionFailure",
+    "SemanticResolutionFailure",
+    "RelationshipResolutionFailure",
+    "RetrievalFailure",
+    "LLMOutputValidationError",
+    "GroundingValidationError",
+    "LearnerStateError",
+    "PersistenceError",
+    "AuthenticationError",
+    "AuthorizationError",
+    "ConcurrencyError",
+    "CancellationError",
 ]
+

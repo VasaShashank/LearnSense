@@ -3,6 +3,7 @@ Learner Service Facade for Taproot Application Layer.
 Manages persistent learner state, Bayesian Knowledge Tracing (BKT) updates, gap analysis, and personalized learning paths.
 """
 
+import logging
 from typing import Dict, List, Optional, Any
 from phase3.storage.learner_repository import LearnerStateRepository
 from phase3.learner.models import LearnerState
@@ -106,25 +107,112 @@ class LearnerService:
         for node in dumped_path.get("nodes", []):
             cid = node.get("concept_id")
             c_info = next((c for c in graph["concepts"] if c["concept_id"] == cid), None)
-            c_name = node.get("concept_name") or (c_info["name"] if c_info else cid.replace("_", " ").title())
+            c_name = node.get("concept_name") or (
+                c_info["name"] if c_info else (
+                    learning_context.concepts[cid].canonical_name if learning_context and cid in learning_context.concepts else cid
+                )
+            )
             node["name"] = c_name
             node["concept_name"] = c_name
-            node["mastery"] = node.get("estimated_mastery", 0.15)
+            node["mastery"] = round(learner_state.get_concept_state(cid).mastery_probability, 4)
             node["prerequisites"] = c_info.get("prerequisites", []) if c_info else []
 
         dumped_target = next_target.model_dump(mode="json") if next_target else None
         if dumped_target:
             t_cid = dumped_target.get("concept_id")
             c_info = next((c for c in graph["concepts"] if c["concept_id"] == t_cid), None)
-            t_name = dumped_target.get("concept_name") or (c_info["name"] if c_info else t_cid.replace("_", " ").title())
+            t_name = dumped_target.get("concept_name") or (
+                c_info["name"] if c_info else (
+                    learning_context.concepts[t_cid].canonical_name if learning_context and t_cid in learning_context.concepts else t_cid
+                )
+            )
             dumped_target["name"] = t_name
             dumped_target["concept_name"] = t_name
             dumped_target["estimated_minutes"] = 15
 
+        dumped_gaps = []
+        for g in prioritized_gaps:
+            g_dict = g.model_dump(mode="json")
+            cid = g_dict.get("concept_id")
+            c_info = next((c for c in graph["concepts"] if c["concept_id"] == cid), None)
+            c_name = g_dict.get("concept_name") or (
+                c_info["name"] if c_info else (
+                    learning_context.concepts[cid].canonical_name if learning_context and cid in learning_context.concepts else cid
+                )
+            )
+            g_dict["name"] = c_name
+            g_dict["concept_name"] = c_name
+            dumped_gaps.append(g_dict)
+
         return {
-            "gaps": [g.model_dump(mode="json") for g in prioritized_gaps],
+            "gaps": dumped_gaps,
             "learning_path": dumped_path,
             "next_target": dumped_target,
+        }
+
+    def diagnose_root_gap(
+        self,
+        learner_id: str,
+        subject_id: str,
+        target_concept_id: str,
+        confidence_threshold: float = 0.70,
+    ) -> Dict[str, Any]:
+        """
+        Executes authoritative Phase 4 root-gap diagnosis for a struggling learner on target_concept_id.
+        Builds competing hypotheses across ancestor DAG, scores discriminating questions via
+        mathematical Shannon Information Gain, and outputs DecisionTrace per Section 23/24/25.
+        """
+        from phase3.errors import KnowledgeNotFoundError
+        from phase4.gaps.root_gap_diagnosis import RootGapDiagnoser
+        from storage.repositories import QuestionBankRepository
+
+        learning_context = self.knowledge_service.get_learning_context(subject_id)
+        if not learning_context or not learning_context.concepts:
+            raise KnowledgeNotFoundError(
+                f"Learning context not found for subject '{subject_id}'",
+                details={"subject_id": subject_id},
+            )
+
+        if target_concept_id not in learning_context.concepts:
+            raise KnowledgeNotFoundError(
+                f"Target concept '{target_concept_id}' not found in subject '{subject_id}'",
+                details={"subject_id": subject_id, "concept_id": target_concept_id},
+            )
+
+        graph = self.knowledge_service.get_subject_graph(subject_id)
+        all_concepts = [c["concept_id"] for c in graph["concepts"]]
+        learner_state = self.get_or_create_learner_state(learner_id, all_concepts)
+
+        diagnoser = RootGapDiagnoser(confidence_threshold=confidence_threshold)
+        hypotheses = diagnoser.construct_hypotheses(
+            target_concept_id=target_concept_id,
+            learning_context=learning_context,
+            learner_state=learner_state,
+        )
+
+        bank = QuestionBankRepository().load_bank(subject_id)
+        candidate_questions = (
+            bank.get_grounded_questions() if bank and bank.get_grounded_questions()
+            else (list(bank.questions.values()) if bank else [])
+        )
+
+        best_q, trace = diagnoser.select_next_question(
+            hypotheses=hypotheses,
+            candidate_questions=candidate_questions,
+            learning_context=learning_context,
+            learner_state=learner_state,
+            target_concept_id=target_concept_id,
+        )
+
+        return {
+            "target_concept_id": target_concept_id,
+            "target_concept_name": learning_context.concepts[target_concept_id].canonical_name,
+            "hypotheses": [h.model_dump(mode="json") for h in hypotheses],
+            "selected_question": (
+                best_q.model_dump(mode="json", exclude={"correct_answer", "explanation"})
+                if best_q else None
+            ),
+            "decision_trace": trace.model_dump(mode="json") if trace else None,
         }
 
     def resume_learner_state(self, learner_id: str, subject_id: Optional[str] = None) -> Dict[str, Any]:
@@ -177,11 +265,16 @@ class LearnerService:
             }
 
         progress = None
+        progress_error = None
         if active_subject:
             try:
                 progress = self.get_learner_progress(learner_id, active_subject)
-            except Exception:
-                pass
+            except Exception as exc:
+                logging.getLogger(__name__).error(
+                    "Failed to load progress for learner=%s subject=%s: %s",
+                    learner_id, active_subject, exc,
+                )
+                progress_error = str(exc)
 
         session_repo = SessionRepository()
         active_assessment_id = None
@@ -199,7 +292,11 @@ class LearnerService:
                 latest_init = session_repo.find_any_init_session(learner_id, active_subject)
                 if latest_init:
                     active_init_session = latest_init.model_dump(mode="json")
-            except Exception:
+            except Exception as exc:
+                logging.getLogger(__name__).error(
+                    "Failed to load init session for learner=%s subject=%s: %s",
+                    learner_id, active_subject, exc,
+                )
                 active_init_session = None
 
         entry_state = self._resolve_entry_state(
@@ -218,6 +315,7 @@ class LearnerService:
             "entry_state": entry_state,
             "subject_id": active_subject,
             "progress": progress,
+            "progress_error": progress_error,
             "active_assessment_id": active_assessment_id,
             "active_init_session": active_init_session,
         }

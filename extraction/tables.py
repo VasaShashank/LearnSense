@@ -7,10 +7,14 @@ Matches Section 12 & Section 17 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md
 """
 
 import hashlib
+import io
+import logging
+import os
 from typing import Dict, Any, List, Tuple, Optional
 import fitz  # PyMuPDF
 import pdfplumber
 from ingestion.coordinate import CoordinateNormalizer
+from phase3.errors import TableExtractionError
 from schemas.document import (
     AssetTypeEnum,
     BlockContent,
@@ -21,6 +25,8 @@ from schemas.document import (
     EngineInfo,
     ExtractionMethodEnum,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class TableExtractor:
@@ -44,7 +50,14 @@ class TableExtractor:
         table_assets: List[DocumentAsset] = []
 
         try:
-            with pdfplumber.open(pdf_path) as plumber_pdf:
+            if pdf_path and os.path.exists(pdf_path):
+                plumber_source = pdf_path
+            elif fitz_page is not None and getattr(fitz_page, "parent", None) is not None:
+                plumber_source = io.BytesIO(fitz_page.parent.tobytes())
+            else:
+                raise FileNotFoundError(f"PDF source not found: '{pdf_path}'")
+
+            with pdfplumber.open(plumber_source) as plumber_pdf:
                 if page_index >= len(plumber_pdf.pages):
                     return [], []
                 plumber_page = plumber_pdf.pages[page_index]
@@ -99,8 +112,11 @@ class TableExtractor:
                         table_assets.append(asset)
 
         except Exception as e:
-            # Global exception fallback: return preserved asset
-            pass
+            logger.error("Table extraction failed on page %d for %s: %s", page_index + 1, document_id, e)
+            raise TableExtractionError(
+                f"Table extraction failed on page {page_index + 1}: {e}",
+                details={"page_index": page_index, "document_id": document_id, "cause": str(e)},
+            ) from e
 
         return table_blocks, table_assets
 
@@ -169,8 +185,8 @@ class TableExtractor:
             bbox=canonical_bbox,
             content=BlockContent(text="[Preserved Table Asset]", text_raw="[Preserved Table Asset]"),
             reading_order=tbl_idx,
-            extraction_method=ExtractionMethodEnum.PRESERVED,
-            engine=EngineInfo(name="TableFallback", version="1.0"),
+            extraction_method=ExtractionMethodEnum.IMAGE_PRESERVED,
+            engine=EngineInfo(name="TableImagePreservation", version="1.0"),
             confidence=0.0,
             status=BlockStatusEnum.PRESERVED_ONLY,
             asset_ids=[asset_id],

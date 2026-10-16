@@ -17,10 +17,12 @@ ground a question, :class:`~phase3.errors.QuestionBankError` is raised instead.
 
 from __future__ import annotations
 
+import concurrent.futures
 import logging
+import threading
 from typing import Dict, List, Optional, Sequence
 
-from phase3.adapters.llm_adapter import Phase3LLMAdapter
+from phase3.adapters.llm_adapter import Phase3LLMAdapter, get_llm_adapter
 from phase3.errors import QuestionBankError, RetrievalError
 from phase3.knowledge.phase2_adapter import LearningContext
 from phase3.question_bank.models import (
@@ -60,8 +62,9 @@ class QuestionBankBuilder:
     """
 
     def __init__(self, llm_adapter: Optional[Phase3LLMAdapter] = None) -> None:
-        self.llm_adapter = llm_adapter or Phase3LLMAdapter()
+        self.llm_adapter = llm_adapter or get_llm_adapter()
         self._llm_calls = 0
+        self._lock = threading.Lock()
 
     @property
     def llm_calls(self) -> int:
@@ -252,31 +255,12 @@ class QuestionBankBuilder:
             if chunk is not None:
                 citation = SourceCitation(**chunk.citation())
                 texts.append(chunk.text)
+                citations.append(citation)
             else:
-                # Fall back to the EKR evidence excerpt for this block.
-                excerpt = next(
-                    (
-                        ev.excerpt
-                        for ev in context.evidence.values()
-                        if ev.block_id == block_id and ev.excerpt
-                    ),
-                    "",
+                logger.warning(
+                    "Block %s cited by question item has no authoritative SourceChunk; rejected per §2 #18",
+                    block_id,
                 )
-                if not excerpt:
-                    continue
-                concept = next(
-                    (c for c in context.concepts.values() if block_id in c.block_ids), None
-                )
-                citation = SourceCitation(
-                    document_id=context.document_id,
-                    page=(concept.page_indices[0] + 1) if concept and concept.page_indices else 1,
-                    block_id=block_id,
-                    section=concept.section_titles[0] if concept and concept.section_titles else None,
-                    evidence_ids=[ev.evidence_id for ev in context.evidence.values() if ev.block_id == block_id],
-                    quote=excerpt,
-                )
-                texts.append(excerpt)
-            citations.append(citation)
 
         if not texts:
             return "", []
@@ -301,32 +285,48 @@ class QuestionBankBuilder:
         # rounds cannot fill the bank with copies of the same question.
         seen = {QuestionBankDeduplicator.compute_fingerprint(q.question_text) for q in bank.questions.values()}
 
-        deferred: List[str] = []
-        for concept_id in shortfalls:
-            if self._llm_calls >= _MAX_LLM_CALLS_PER_BUILD:
-                # Report what was left undone instead of quietly returning a partial
-                # bank. The next build resumes from the persisted bank, so the
-                # remaining concepts are still reached - just not all at once.
-                deferred.append(concept_id)
-                continue
-            concept = context.concepts.get(concept_id)
+        budget_remaining = max(0, _MAX_LLM_CALLS_PER_BUILD - self._llm_calls)
+        to_process = shortfalls[:budget_remaining]
+        deferred = shortfalls[budget_remaining:]
+
+        # For responsive generation, target 2 questions per concept (or 3 for a single concept),
+        # delivering high signal while cutting generation latency in half.
+        q_count = 2 if len(to_process) > 1 else 3
+
+        def _generate_single_concept(cid: str) -> tuple[str, List[QuestionBankItem]]:
+            concept = context.concepts.get(cid)
             if concept is None:
-                continue
+                return cid, []
 
             try:
                 chunks = retriever.retrieve_for_concept(
-                    concept_id,
+                    cid,
                     concept_name=concept.canonical_name,
                     top_k=_PASSAGES_PER_REQUEST,
                 )
             except RetrievalError as exc:
                 # A concept with no retrievable passage is reported, never papered over.
                 logger.warning(
-                    "Skipping question generation for concept %s: %s", concept_id, exc.message
+                    "Skipping question generation for concept %s: %s", cid, exc.message
                 )
-                continue
+                return cid, []
 
-            generated = self._generate_for_concept(context, concept_id, chunks, chapter_id)
+            try:
+                generated = self._generate_for_concept(context, cid, chunks, chapter_id, count=q_count)
+                return cid, generated
+            except Exception as gen_err:
+                logger.warning(
+                    "LLM generation failed for concept %s: %s; continuing with remaining concepts.",
+                    cid,
+                    gen_err,
+                )
+                return cid, []
+
+        max_workers = min(4, len(to_process)) if to_process else 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            results = list(executor.map(_generate_single_concept, to_process))
+
+        for concept_id, generated in results:
             for item in generated:
                 fingerprint = QuestionBankDeduplicator.compute_fingerprint(item.question_text)
                 if fingerprint in seen:
@@ -355,15 +355,17 @@ class QuestionBankBuilder:
         concept_id: str,
         chunks: Sequence[SourceChunk],
         chapter_id: str,
+        count: int = 4,
     ) -> List[QuestionBankItem]:
         concept = context.concepts[concept_id]
         evidence_block = EvidenceRetriever.format_evidence_for_prompt(chunks)
         ref_labels = {f"E{i}": chunk for i, chunk in enumerate(chunks, start=1)}
 
+        q_word = "1 multiple-choice question" if count == 1 else f"{count} multiple-choice questions"
         prompt = (
             f"Below are passages taken from the learner's own material.\n"
             f"{evidence_block}\n\n"
-            f"Write 4 multiple-choice questions about the concept "
+            f"Write {q_word} about the concept "
             f"\"{concept.canonical_name}\" that are answerable using ONLY the passages above.\n"
             f"RULES:\n"
             f"1. Every question must be answerable from the passages. Do not use outside "
@@ -391,7 +393,8 @@ class QuestionBankBuilder:
         }
 
         response = self.llm_adapter.generate_json(prompt, template)
-        self._llm_calls += 1
+        with self._lock:
+            self._llm_calls += 1
 
         accepted: List[QuestionBankItem] = []
         for raw in response.get("questions", []) or []:
@@ -442,9 +445,21 @@ class QuestionBankBuilder:
             key = str(ref).strip().upper().lstrip("[]")
             chunk = ref_labels.get(key)
             if chunk is None:
+                if f"E{key}" in ref_labels:
+                    chunk = ref_labels[f"E{key}"]
+                elif key.startswith("E") and key[1:] in ref_labels:
+                    chunk = ref_labels[key[1:]]
+            if chunk is None:
                 continue
             refs.append(key)
-            citation = SourceCitation(**chunk.citation())
+            cit_dict = chunk.citation()
+            best_quote = self._find_best_passage_excerpt(
+                chunk.text,
+                query_text=f"{question_text} {correct_answer} {explanation}",
+                fallback=cit_dict.get("quote", ""),
+            )
+            cit_dict["quote"] = best_quote
+            citation = SourceCitation(**cit_dict)
             if citation.block_id not in {c.block_id for c in citations}:
                 citations.append(citation)
 
@@ -543,3 +558,36 @@ class QuestionBankBuilder:
             if link.concept_id in context.concepts and link.concept_id not in concept_ids:
                 concept_ids.append(link.concept_id)
         return concept_ids
+
+    @staticmethod
+    def _find_best_passage_excerpt(
+        chunk_text: str, query_text: str, max_len: int = 400, fallback: str = ""
+    ) -> str:
+        clean_text = " ".join((chunk_text or "").split())
+        if not clean_text:
+            return fallback
+        if len(clean_text) <= max_len:
+            return clean_text
+
+        from phase3.question_bank.validator import _content_words
+
+        q_words = _content_words(query_text)
+        if not q_words:
+            return clean_text[:max_len]
+
+        words = clean_text.split()
+        window_words_count = max(1, int(max_len / 6))
+        best_score = -1
+        best_window = clean_text[:max_len]
+
+        step = max(1, int(window_words_count / 4))
+        for i in range(0, max(1, len(words) - window_words_count + 1), step):
+            window = words[i : i + window_words_count]
+            window_str = " ".join(window)
+            score = len(q_words & _content_words(window_str))
+            if score > best_score:
+                best_score = score
+                best_window = window_str[:max_len]
+
+        return best_window
+

@@ -67,6 +67,7 @@ def test_duplicate_activity_response_prevention(seeded_algebra_subject):
         correctness=1.0,
         all_subject_concept_ids=all_concepts,
         request_id=req_id,
+        allow_client_correctness=True,
     )
     assert resp1["duplicate_submission"] is False
 
@@ -78,6 +79,7 @@ def test_duplicate_activity_response_prevention(seeded_algebra_subject):
         correctness=1.0,
         all_subject_concept_ids=all_concepts,
         request_id=req_id,
+        allow_client_correctness=True,
     )
     assert resp2["duplicate_submission"] is True
     # Mastery probabilities should be identical

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Subject, LearnerProgress, KnowledgeGap, LearningTarget } from '../../api/client';
+import { getConceptDisplayName } from '../../utils/conceptName';
 import { Play, Sparkles, AlertTriangle, BookOpen, Compass, ArrowUpRight, ShieldCheck, Activity, Trophy } from 'lucide-react';
 
 export interface DashboardProps {
@@ -7,6 +8,7 @@ export interface DashboardProps {
   progress: LearnerProgress | null;
   gaps: KnowledgeGap[];
   nextTarget: LearningTarget | null;
+  conceptMap?: Record<string, string>;
   onNavigateToAtlas: () => void;
   onNavigateToPath: () => void;
   onNavigateToSession: (conceptId: string) => void;
@@ -19,6 +21,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   progress,
   gaps,
   nextTarget,
+  conceptMap,
   onNavigateToAtlas,
   onNavigateToPath,
   onNavigateToSession,
@@ -73,7 +76,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <button
               onClick={onNavigateToSources}
-              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-cyan-400/30 text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all"
+              className="w-full sm:w-auto px-5 py-3 rounded-xl bg-space-850 hover:bg-space-750 text-universe-text border border-white/[0.08] hover:border-cyan-400/30 text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
               <span>Ingested Sources ({currentSubject.page_count || 1} pgs)</span>
@@ -167,7 +170,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
-                {nextTarget.concept_name || nextTarget.name || nextTarget.concept_id}
+                {getConceptDisplayName(nextTarget, conceptMap)}
               </h2>
 
               <div className="p-3.5 rounded-xl bg-space-950/60 border border-white/[0.05] text-xs text-universe-slate font-sans leading-relaxed">
@@ -269,7 +272,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </div>
 
                   <h4 className="text-sm font-display font-bold text-white mt-2 group-hover:text-amber-200 transition-colors uppercase">
-                    {gap.concept_id.replace(/_/g, ' ')}
+                    {getConceptDisplayName(gap, conceptMap)}
                   </h4>
 
                   <p className="text-xs text-universe-slate mt-1 line-clamp-2 leading-relaxed">

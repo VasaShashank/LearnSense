@@ -1,14 +1,17 @@
 import React from 'react';
 import type { KnowledgeGraphData, ConceptNode } from '../../api/client';
+import { getConceptDisplayName } from '../../utils/conceptName';
 import { CheckCircle2, Sparkles, AlertCircle, HelpCircle, ArrowRight } from 'lucide-react';
 
 export interface AccessibleAtlasViewProps {
   graphData: KnowledgeGraphData;
+  conceptMap?: Record<string, string>;
   onSelectConcept: (concept: ConceptNode) => void;
 }
 
 export const AccessibleAtlasView: React.FC<AccessibleAtlasViewProps> = ({
   graphData,
+  conceptMap,
   onSelectConcept,
 }) => {
   return (
@@ -68,10 +71,14 @@ export const AccessibleAtlasView: React.FC<AccessibleAtlasViewProps> = ({
                   <td className="py-3.5 px-3 text-[11px]">{statusBadge}</td>
                   <td className="py-3.5 px-3 text-cyan-300 font-bold">{Math.round(concept.mastery * 100)}%</td>
                   <td className="py-3.5 px-3 text-universe-slate text-[11px]">
-                    {concept.prerequisites.length > 0 ? concept.prerequisites.join(', ') : 'None (Root)'}
+                    {concept.prerequisites.length > 0
+                      ? concept.prerequisites.map((p) => getConceptDisplayName(p, conceptMap)).join(', ')
+                      : 'None (Root)'}
                   </td>
                   <td className="py-3.5 px-3 text-universe-slate text-[11px]">
-                    {concept.dependents && concept.dependents.length > 0 ? concept.dependents.join(', ') : 'None'}
+                    {concept.dependents && concept.dependents.length > 0
+                      ? concept.dependents.map((d) => getConceptDisplayName(d, conceptMap)).join(', ')
+                      : 'None'}
                   </td>
                   <td className="py-3.5 px-3 text-right">
                     <button

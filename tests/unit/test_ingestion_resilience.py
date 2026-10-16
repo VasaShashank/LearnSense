@@ -29,9 +29,11 @@ from schemas.document import (
 class TestTesseractResilience:
     def test_tesseract_adapter_corrupted_image_handling(self):
         adapter = TesseractOCRAdapter()
-        # Invalid / corrupted bytes should return empty list without raising unhandled exceptions
-        results = adapter.ocr_image(b"invalid_non_image_bytes")
-        assert results == []
+        # No-fallback policy (§11): corrupted bytes must raise OCRImageError,
+        # never silently return []. That would hide a genuine image-decoding failure.
+        from phase3.errors import OCRImageError
+        with pytest.raises(OCRImageError):
+            adapter.ocr_image(b"invalid_non_image_bytes")
 
     def test_tesseract_availability_check(self):
         adapter = TesseractOCRAdapter()

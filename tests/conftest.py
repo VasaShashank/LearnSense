@@ -23,6 +23,7 @@ import os
 # must never require a live API key. This is set unconditionally (not setdefault)
 # so that a developer's .env with a real key does not accidentally run live LLM
 # calls during tests.
+os.environ["LEARNSENSE_TEST_HARNESS"] = "1"
 os.environ["LLM_MODE"] = "mock"
 
 import shutil
@@ -32,12 +33,30 @@ import pytest
 
 
 def pytest_configure(config):
-    """Reset the shared LLM adapter singleton so it picks up LLM_MODE=mock."""
+    """Reset the shared LLM adapter singleton and inject the test double."""
+    os.environ["LEARNSENSE_TEST_HARNESS"] = "1"
+    os.environ["LLM_MODE"] = "mock"
     try:
-        from phase3.adapters.llm_adapter import reset_llm_adapter
-        reset_llm_adapter()
+        from phase3.adapters.llm_adapter import set_llm_adapter
+        from tests.support.mock_llm import MockLLMAdapter
+        set_llm_adapter(MockLLMAdapter())
     except Exception:
         pass
+
+
+@pytest.fixture(autouse=True)
+def ensure_test_llm_adapter():
+    """Ensure test double is injected for each test unless the test sets up its own."""
+    from phase3.adapters.llm_adapter import set_llm_adapter, get_llm_adapter
+    from tests.support.mock_llm import MockLLMAdapter
+    try:
+        current = get_llm_adapter()
+        if current is None or getattr(current, "is_live", False):
+            set_llm_adapter(MockLLMAdapter())
+    except Exception:
+        set_llm_adapter(MockLLMAdapter())
+    yield
+
 
 CALCULUS_TEXT = (
     "Limits\n"

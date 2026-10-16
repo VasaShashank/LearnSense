@@ -1,0 +1,111 @@
+{
+  "domains": {
+    "economics": {
+      "aliases": {
+        "Y": "national_income",
+        "GDP": "national_income",
+        "C": "consumption",
+        "I": "investment",
+        "G": "government_spending",
+        "NX": "net_exports",
+        "X-M": "net_exports"
+      },
+      "canonical_laws": [
+        {
+          "id": "macro_gdp_expenditure",
+          "description": "GDP Expenditure Formula",
+          "patterns": [
+            "Y\\s*=\\s*C\\s*\\+\\s*I\\s*\\+\\s*G\\s*\\+\\s*NX",
+            "GDP\\s*=\\s*C\\s*\\+\\s*I\\s*\\+\\s*G\\s*\\+\\s*\\(?\\s*X\\s*-\\s*M\\s*\\)?"
+          ]
+        }
+      ]
+    },
+    "computer_science": {
+      "aliases": {
+        "O(n)": "asymptotic_upper_bound",
+        "Theta(n)": "asymptotic_tight_bound",
+        "\\Theta(n)": "asymptotic_tight_bound",
+        "BFS": "breadth_first_search",
+        "DFS": "depth_first_search"
+      },
+      "canonical_laws": [
+        {
+          "id": "merge_sort_recurrence",
+          "description": "Merge Sort Divide-and-Conquer Recurrence",
+          "patterns": [
+            "T\\(n\\)\\s*=\\s*2\\s*T\\(n/2\\)\\s*\\+\\s*O\\(n\\)",
+            "T\\(n\\)\\s*=\\s*2\\s*T\\(n/2\\)\\s*\\+\\s*(?:\\\\Theta|Theta)\\s*\\(n\\)"
+          ]
+        }
+      ]
+    },
+    "kinematics": {
+      "aliases": {
+        "u": "initial_velocity",
+        "v_0": "initial_velocity",
+        "v0": "initial_velocity",
+        "v": "final_velocity",
+        "a": "acceleration",
+        "t": "time",
+        "\\Delta t": "time",
+        "s": "displacement",
+        "d": "displacement",
+        "x": "displacement",
+        "\\Delta x": "displacement"
+      },
+      "canonical_laws": [
+        {
+          "id": "kinematics_velocity_time",
+          "description": "Velocity-Time Relation under Uniform Acceleration",
+          "patterns": [
+            "v\\s*=\\s*u\\s*\\+\\s*a\\s*\\*?\\s*t",
+            "v\\s*=\\s*v_0\\s*\\+\\s*a\\s*\\*?\\s*t",
+            "v\\s*=\\s*v0\\s*\\+\\s*a\\s*\\*?\\s*t",
+            "v\\s*=\\s*v_0\\s*\\+\\s*a\\s*\\*?\\s*(?:\\\\Delta|Delta)?\\s*t",
+            "v\\s*=\\s*v0\\s*\\+\\s*a\\s*\\*?\\s*(?:\\\\Delta|Delta)?\\s*t",
+            "v\\s*=\\s*u\\s*\\+\\s*at"
+          ]
+        }
+      ]
+    },
+    "calculus": {
+      "aliases": {
+        "dy/dx": "derivative",
+        "f'(x)": "derivative",
+        "\\frac{dy}{dx}": "derivative",
+        "\\int": "integral"
+      },
+      "canonical_laws": [
+        {
+          "id": "derivative_power_rule",
+          "description": "Power Rule for Derivatives",
+          "patterns": [
+            "d/dx\\s*\\[?x\\^n\\]?\\s*=\\s*n\\s*x\\^\\(n-1\\)",
+            "\\(x\\^n\\)'\\s*=\\s*n\\s*x\\^\\(n-1\\)"
+          ]
+        }
+      ]
+    },
+    "mechanics": {
+      "aliases": {
+        "F": "force",
+        "\\Sigma F": "net_force",
+        "F_net": "net_force",
+        "m": "mass",
+        "a": "acceleration"
+      },
+      "canonical_laws": [
+        {
+          "id": "newton_second_law",
+          "description": "Newton's Second Law of Motion",
+          "patterns": [
+            "F\\s*=\\s*m\\s*\\*?\\s*a",
+            "(?:\\\\Sigma|Sigma)?\\s*F\\s*=\\s*m\\s*\\*?\\s*a",
+            "F_net\\s*=\\s*m\\s*\\*?\\s*a"
+          ]
+        }
+      ]
+    }
+  }
+}

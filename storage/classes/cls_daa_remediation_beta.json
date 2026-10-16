@@ -1,0 +1,12 @@
+{
+  "class_id": "cls_daa_remediation_beta",
+  "subject_id": "doc_stud-share-sample_c_programs_daa-_lab_programs",
+  "class_name": "CS201-R: DAA Lab Prerequisite Remediation Cohort",
+  "enrolled_learner_ids": [
+    "student_sam",
+    "student_aisha",
+    "student_marcus",
+    "student_carlos"
+  ],
+  "updated_at": "2026-10-13T18:18:33.684309+00:00"
+}

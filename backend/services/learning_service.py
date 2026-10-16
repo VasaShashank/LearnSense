@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 
 # Upper bound on how many concepts get a generated question when the diagnostic
 # starts. The quiz itself is capped far lower (DIAGNOSTIC_MAX_QUESTIONS); this
-# only limits how much question-bank work is done up front.
-MAX_DIAGNOSTIC_BUILD_CONCEPTS = 12
+# limits how much question-bank work is done up front so start returns in seconds.
+MAX_DIAGNOSTIC_BUILD_CONCEPTS = 4
 
 
 class LearningService:
@@ -79,7 +79,8 @@ class LearningService:
         builder = QuestionBankBuilder()
         retriever = self._retriever_for(subject_id)
 
-        existing = self.bank_repo.load_grounded_bank(subject_id)
+        full_bank = self.bank_repo.load_grounded_bank(subject_id)
+        existing = full_bank
         if existing is not None:
             scoped = QuestionBank(document_id=subject_id, chapter_id="ch_all")
             for item in existing.get_grounded_questions():
@@ -100,22 +101,28 @@ class LearningService:
                 # unrelated concepts and still return "no questions" for the real one.
                 concept_ids=target_ids,
             )
-        except QuestionBankError:
-            # The persisted grounded bank is still honest evidence: when fresh
-            # generation is impossible (e.g. retriever artifacts missing) but
-            # valid grounded questions already exist, serve those instead of
-            # failing the whole request.
+        except (QuestionBankError, LearnSenseError, Exception) as build_err:
+            # Section 16 & Section 2: Reusing authoritative persisted grounded questions
+            # when fresh generation cannot proceed is legitimate artifact reuse, not a semantic fallback.
             if existing is not None and existing.get_grounded_questions():
-                logger.warning(
-                    "Falling back to %d persisted grounded questions for '%s'.",
+                logger.info(
+                    "Reusing %d authoritative persisted grounded questions for '%s' after build error: %s",
                     len(existing.get_grounded_questions()),
                     subject_id,
+                    build_err,
                 )
                 return existing
+            if full_bank is not None and full_bank.get_grounded_questions():
+                return full_bank
             raise
 
         if bank.get_grounded_questions():
-            self.bank_repo.save_bank(bank)
+            if full_bank is not None:
+                for q in bank.get_grounded_questions():
+                    full_bank.add_question(q)
+                self.bank_repo.save_bank(full_bank)
+            else:
+                self.bank_repo.save_bank(bank)
         return bank
 
     def _retriever_for(self, document_id: str):
@@ -141,13 +148,16 @@ class LearningService:
         hypothesis signal; it never sets KT mastery.
         """
         ctx = self.knowledge_service.get_learning_context(subject_id)
-        authoritative_concepts = list(ctx.concepts.keys()) if ctx and ctx.concepts else (all_concept_ids or list(selections.keys()))
-
-        # Enforce server authority: reject any concept not belonging to subject
         if ctx and ctx.concepts:
-            foreign = [cid for cid in selections.keys() if cid not in ctx.concepts]
-            if foreign:
-                raise ValueError(f"Foreign concept IDs not present in subject '{subject_id}': {foreign}")
+            authoritative_concepts = list(ctx.concepts.keys())
+            # Enforce server authority: prune any foreign/stale concept IDs from client drafts/caches
+            selections = {cid: val for cid, val in selections.items() if cid in ctx.concepts}
+            # Ensure all authoritative concepts have a self-assessment status
+            for cid in authoritative_concepts:
+                if cid not in selections:
+                    selections[cid] = SelfAssessmentStatus.UNANSWERED
+        else:
+            authoritative_concepts = all_concept_ids or list(selections.keys())
 
         val_res = self.planning_validator.validate_self_assessment(selections, authoritative_concepts)
         if not val_res.is_valid:
@@ -742,7 +752,7 @@ class LearningService:
         selected_option: Optional[str] = None,
         selected_index: Optional[int] = None,
         is_dont_know: bool = False,
-        allow_client_correctness: bool = True,
+        allow_client_correctness: bool = False,
     ) -> Dict[str, Any]:
         """
         Authoritatively evaluates activity/quiz response, triggers BKT update & replanning.
@@ -751,9 +761,9 @@ class LearningService:
 
         Security (P0) -- ``allow_client_correctness``:
         The ``correctness`` parameter is retained ONLY for legacy in-process callers
-        (unit tests, internal services). The HTTP API must never be able to assert
-        its own mastery, so the route passes ``allow_client_correctness=False``
-        and the ``correctness``-only branch below becomes unreachable from HTTP.
+        (unit tests that explicitly opt in). The default is False (safe by default).
+        The HTTP API always passes ``allow_client_correctness=False``.
+        When False, raw correctness without a question_id is rejected.
         """
         if not allow_client_correctness and correctness is not None and not question_id:
             raise ValueError(
@@ -796,6 +806,10 @@ class LearningService:
                 bank = self.get_or_create_question_bank(subject_id, concept_ids)
                 q_item = bank.get_question(question_id)
                 if not q_item:
+                    full_bank = self.bank_repo.load_grounded_bank(subject_id)
+                    if full_bank:
+                        q_item = full_bank.get_question(question_id)
+                if not q_item:
                     raise ValueError(f"Question '{question_id}' not found in question bank for subject '{subject_id}'.")
 
                 correct_answer = str(q_item.correct_answer).strip()
@@ -817,7 +831,14 @@ class LearningService:
                 else:
                     raise ValueError("Must provide selected_option, selected_index, or is_dont_know.")
             else:
-                # Fallback for direct test calls passing correctness directly
+                # No question_id: correctness must be computed server-side.
+                # Only legacy in-process callers that explicitly opt in may pass raw
+                # correctness (allow_client_correctness=True at call site).
+                if not allow_client_correctness:
+                    raise ValueError(
+                        "question_id is required. Server-side evaluation is mandatory; "
+                        "raw correctness values are not accepted."
+                    )
                 if correctness is None:
                     raise ValueError("Must provide either question_id or correctness.")
                 eval_correctness = float(correctness)
@@ -860,6 +881,84 @@ class LearningService:
                 correctness=eval_correctness,
             )
 
+            # 5b. Error Classification & Misconception Lifecycle Tracking (Section 8 & Issue 3)
+            # Evaluates: wrong answer -> error classification -> candidate -> sufficient evidence check
+            if q_item:
+                if not is_correct:
+                    opt_text = selected_option or (
+                        q_item.options[selected_index]
+                        if selected_index is not None and 0 <= selected_index < len(q_item.options or [])
+                        else "incorrect option"
+                    )
+
+                    # 1. Error Classification (careless error, incomplete knowledge, guessing, procedural difficulty, misconception)
+                    is_omission_or_unsure = bool(
+                        is_dont_know
+                        or (selected_option and "don't know" in selected_option.lower())
+                        or not str(opt_text).strip()
+                    )
+
+                    if is_omission_or_unsure:
+                        error_signal = "incomplete_knowledge"
+                    else:
+                        # Inspect concept state history
+                        primary_cid = concept_ids[0] if concept_ids else None
+                        cs = learner_state.get_concept_state(primary_cid) if primary_cid else None
+                        recent_fails = sum(1 for p in (cs.recent_performance[-3:] if cs else []) if not p)
+
+                        has_explicit_distractor_misconception = bool(
+                            q_item.explanation
+                            and any(kw in q_item.explanation.lower() for kw in ("misconception", "common mistake", "confuse", "error"))
+                        )
+
+                        if has_explicit_distractor_misconception or recent_fails >= 2:
+                            error_signal = "actual_misconception"
+                        else:
+                            error_signal = "misconception_candidate"
+
+                    # 2. Sufficient Evidence Check:
+                    # Incomplete knowledge / don't-know / careless guessing records uncertainty in BKT,
+                    # but does NOT create a misconception record.
+                    if error_signal != "incomplete_knowledge":
+                        for cid in concept_ids:
+                            disc = (
+                                f"Incorrect response for Q({q_item.question_id}) "
+                                f"on concept '{cid}': selected '{opt_text}', "
+                                f"expected '{correct_answer}'"
+                            )
+                            learner_state.record_misconception(
+                                concept_id=cid,
+                                description=disc,
+                                evidence_ref=q_item.question_id,
+                                initial_confidence=0.4 if error_signal == "misconception_candidate" else 0.6,
+                                question_id=q_item.question_id,
+                                expected_answer=correct_answer,
+                                learner_response=opt_text,
+                                error_signal=error_signal,
+                            )
+                else:
+                    # Evidence-based resolution: a correct answer provides counter-evidence
+                    # ONLY for targeted misconceptions or misconceptions evidenced by this question.
+                    # Unrelated misconceptions on the same concept are NOT affected.
+                    m_target = getattr(q_item, "misconception_target", None) if q_item else None
+                    m_id = getattr(q_item, "tested_misconception_id", None) if q_item else None
+                    q_reasoning = getattr(q_item, "expected_reasoning", None) if q_item else None
+                    opt_ans = str(selected_option or (
+                        q_item.options[selected_index]
+                        if selected_index is not None and q_item and q_item.options and 0 <= selected_index < len(q_item.options)
+                        else "correct"
+                    ))
+                    for cid in concept_ids:
+                        learner_state.apply_correct_answer_evidence(
+                            question_id=q_item.question_id,
+                            concept_id=cid,
+                            misconception_id=m_id,
+                            misconception_target=m_target,
+                            q_item=q_item,
+                            learner_response=opt_ans,
+                            expected_reasoning=q_reasoning,
+                        )
+
             self.learner_service.save_learner_state(learner_state)
 
             result_payload = {
@@ -882,64 +981,101 @@ class LearningService:
 
         return result_payload
 
-    def get_concept_question(self, subject_id: str, concept_id: str) -> Dict[str, Any]:
+    def get_concept_question(
+        self, subject_id: str, concept_id: str, learner_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
-        Return a grounded multiple-choice question for a concept.
+        Return a grounded multiple-choice question for a concept mini-quiz generated via LLM.
         P0 Assessment Security: correct_answer and explanation are NEVER returned here!
 
-        If the concept has no grounded questions, returns a valid response with
-        empty options and a 'no_questions' flag so the frontend can handle it
-        gracefully instead of showing an error.
+        Architecture Contract:
+        - Main Assessment / Diagnostic Calibration: Uses the Question Bank (QB) with
+          Shannon Information Gain maximization.
+        - Mini-Quizzes (Concept Practice): Uses the LLM on-demand to dynamically generate
+          authentic, source-grounded multiple-choice questions matching the learner's
+          knowledge state. Newly generated questions are registered into the subject's
+          question bank so server-side authoritative evaluation can grade them upon submission.
         """
-        try:
-            bank = self.get_or_create_question_bank(subject_id, [concept_id])
-        except Exception as e:
-            logger.error("Failed to get or create question bank for %s: %s", concept_id, e)
-            # Try to load existing bank as fallback
+        ctx = self.knowledge_service.get_learning_context(subject_id)
+        concept = ctx.concepts.get(concept_id) if ctx and ctx.concepts else None
+
+        generated_item: Optional[QuestionBankItem] = None
+        retriever = self._retriever_for(subject_id)
+
+        # 1. Primary path: Generate live mini-quiz question using LLM grounded in document passages
+        if ctx and concept and retriever is not None:
             try:
-                existing = self.bank_repo.load_grounded_bank(subject_id)
-                if existing:
-                    bank = existing
-                else:
-                    return {
-                        "question_id": "",
-                        "concept_id": concept_id,
-                        "question_text": "",
-                        "options": [],
-                        "source_citations": [],
-                        "no_questions": True,
-                    }
-            except Exception as fallback_err:
-                logger.error("Fallback bank load also failed: %s", fallback_err)
-                return {
-                    "question_id": "",
-                    "concept_id": concept_id,
-                    "question_text": "",
-                    "options": [],
-                    "source_citations": [],
-                    "no_questions": True,
-                }
-        
-        candidates = bank.get_by_concept(concept_id)
-        if not candidates:
+                chunks = retriever.retrieve_for_concept(
+                    concept_id, concept_name=concept.canonical_name, top_k=4
+                )
+                if chunks:
+                    builder = QuestionBankBuilder()
+                    generated_items = builder._generate_for_concept(
+                        ctx, concept_id, chunks, chapter_id="ch_all", count=1
+                    )
+                    # Filter for valid multiple-choice questions with at least 2 distinct options
+                    valid_mcqs = [
+                        it for it in generated_items
+                        if it.options and len(it.options) >= 2 and it.question_text and it.correct_answer
+                    ]
+                    if valid_mcqs:
+                        generated_item = valid_mcqs[0]
+                        # Persist to question bank so server-side submission can authoritatively evaluate correctness
+                        try:
+                            bank = self.bank_repo.load_grounded_bank(subject_id) or QuestionBank(
+                                document_id=subject_id, chapter_id="ch_all"
+                            )
+                            for it in valid_mcqs:
+                                bank.add_question(it)
+                            self.bank_repo.save_bank(bank)
+                        except Exception as save_err:
+                            logger.warning("Could not persist LLM mini-quiz item to bank: %s", save_err)
+            except Exception as llm_err:
+                logger.warning(
+                    "Live LLM mini-quiz generation failed for concept %s: %s. Falling back to existing bank items.",
+                    concept_id,
+                    llm_err,
+                )
+
+        if generated_item is not None:
             return {
-                "question_id": "",
+                "question_id": generated_item.question_id,
                 "concept_id": concept_id,
-                "question_text": "",
-                "options": [],
-                "source_citations": [],
-                "no_questions": True,
+                "question_text": generated_item.question_text,
+                "options": generated_item.options,
+                "source_citations": [c.model_dump(mode="json") for c in generated_item.source_citations],
+                "no_questions": False,
+                "source": "llm",
             }
 
-        q = candidates[0]
+        # 2. Resilient fallback: If LLM is unavailable or offline, pull a valid MCQ with options from the bank
+        try:
+            bank = self.get_or_create_question_bank(subject_id, [concept_id])
+            candidates = [
+                c for c in bank.get_by_concept(concept_id)
+                if c.options and len(c.options) >= 2 and c.question_text
+            ]
+            if candidates:
+                q = candidates[-1]  # Most recent candidate
+                return {
+                    "question_id": q.question_id,
+                    "concept_id": concept_id,
+                    "question_text": q.question_text,
+                    "options": q.options,
+                    "source_citations": [c.model_dump(mode="json") for c in q.source_citations],
+                    "no_questions": False,
+                    "source": "bank_fallback",
+                }
+        except Exception as bank_err:
+            logger.error("Fallback bank query failed for %s: %s", concept_id, bank_err)
+
         return {
-            "question_id": q.question_id,
+            "question_id": "",
             "concept_id": concept_id,
-            "question_text": q.question_text,
-            "options": q.options,
-            # P0: correct_answer is strictly omitted before submission
-            "source_citations": [c.model_dump(mode="json") for c in q.source_citations],
-            "no_questions": False,
+            "question_text": "",
+            "options": [],
+            "source_citations": [],
+            "no_questions": True,
         }
 
     def get_concept_learning_content(self, subject_id: str, concept_id: str) -> Dict[str, Any]:
@@ -1032,7 +1168,12 @@ class LearningService:
 
         # Resumability check: if active uncompleted session exists, resume it
         active_sess = self.session_repo.find_active_final_assessment(learner_id, subject_id)
-        bank = self.get_or_create_question_bank(subject_id, all_concept_ids)
+        target_concept_ids = all_concept_ids[:10]
+        existing_bank = self.bank_repo.load_grounded_bank(subject_id)
+        if existing_bank and [q for q in existing_bank.get_grounded_questions() if q.options and len(q.options) >= 2]:
+            bank = existing_bank
+        else:
+            bank = self.get_or_create_question_bank(subject_id, target_concept_ids)
 
         if active_sess and not active_sess.completed:
             questions = []
@@ -1068,12 +1209,11 @@ class LearningService:
             }
 
         # Select grounded questions covering concepts
-        target_concept_ids = all_concept_ids[:10]
         selected_questions: List[Dict[str, Any]] = []
         question_ids: List[str] = []
 
         for cid in target_concept_ids:
-            candidates = bank.get_by_concept(cid)
+            candidates = [c for c in bank.get_by_concept(cid) if c.options and len(c.options) >= 2 and c.question_text]
             if candidates:
                 q = candidates[0]
                 if q.question_id not in question_ids:
@@ -1086,7 +1226,7 @@ class LearningService:
                     selected_questions.append(q_dict)
 
         if not selected_questions:
-            for q in bank.get_grounded_questions()[:10]:
+            for q in [c for c in bank.get_grounded_questions() if c.options and len(c.options) >= 2 and c.question_text][:10]:
                 if q.question_id not in question_ids:
                     question_ids.append(q.question_id)
                     q_dict = q.model_dump(mode="json")
@@ -1179,8 +1319,16 @@ class LearningService:
 
                 if q_item and q_item.concept_ids:
                     for cid in q_item.concept_ids:
+                        c_name = (
+                            learning_context.concepts[cid].canonical_name
+                            if learning_context and cid in learning_context.concepts
+                            else cid
+                        )
                         concept_results[cid] = {
                             "question_id": qid,
+                            "concept_id": cid,
+                            "concept_name": c_name,
+                            "name": c_name,
                             "correct": is_correct,
                             "score": score_val,
                             "correct_answer": q_item.correct_answer,

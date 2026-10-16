@@ -328,9 +328,6 @@ class EvidenceRetriever:
             return [self._to_source_chunk(hit) for hit in hybrid_hits]
 
         hits = self.index.search(query_str, top_k=top_k)
-        if not hits and concept_name:
-            hits = self.index.search(concept_name, top_k=top_k)
-
         if not hits:
             raise RetrievalError(
                 "No source passages in the uploaded material relate to this concept, so "

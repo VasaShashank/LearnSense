@@ -77,6 +77,13 @@ class QuestionBankItem(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list)
     source_citations: List[SourceCitation] = Field(default_factory=list)
 
+    # -- targeted diagnostic and counter-evidence provenance -----------------
+    misconception_target: Optional[str] = None
+    tested_misconception_id: Optional[str] = None
+    diagnostic_purpose: Optional[str] = None
+    tested_relationship: Optional[str] = None
+    expected_reasoning: Optional[str] = None
+
     @property
     def is_grounded(self) -> bool:
         """True when the question is traceable to a real passage in the material."""

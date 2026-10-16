@@ -1,0 +1,71 @@
+{
+  "resource_id": "res_khan_kinematics_v_at",
+  "url": "https://www.youtube.com/watch?v=4yC_r_a8f9w",
+  "provider": "youtube",
+  "title": "Deriving Kinematic Equations: Velocity and Acceleration",
+  "channel": "Khan Academy",
+  "duration_seconds": 540,
+  "language": "en",
+  "transcript_available": true,
+  "transcript": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 120.0,
+      "text": "Welcome to kinematic motion with constant acceleration. We start with the definition of acceleration as change in velocity.",
+      "concept_ids": [
+        "acceleration"
+      ],
+      "formulas_mentioned": []
+    },
+    {
+      "start_seconds": 121.0,
+      "end_seconds": 310.0,
+      "text": "If our starting velocity is v naught (v_0) and acceleration is constant a, the final velocity v after time interval delta t is v = v_0 + a*delta t.",
+      "concept_ids": [
+        "velocity",
+        "acceleration"
+      ],
+      "formulas_mentioned": [
+        "v = v_0 + a*\\Delta t"
+      ]
+    }
+  ],
+  "concepts_covered": [
+    "kinematics",
+    "acceleration",
+    "velocity",
+    "c_kinematics"
+  ],
+  "prerequisite_concepts": [
+    "algebra",
+    "time"
+  ],
+  "notation_variants": [
+    {
+      "symbol": "v_0",
+      "meaning": "initial_velocity",
+      "canonical_symbol": "initial_velocity",
+      "subject_domain": null
+    },
+    {
+      "symbol": "\\Delta t",
+      "meaning": "time",
+      "canonical_symbol": "time",
+      "subject_domain": null
+    }
+  ],
+  "formulas": [
+    {
+      "raw_formula": "v = v_0 + a*\\Delta t",
+      "normalized_formula": "v = v_0 + a*t",
+      "canonical_formula_id": "kinematics_velocity_time",
+      "variable_mappings": {
+        "v_0": "u",
+        "\\Delta t": "t"
+      }
+    }
+  ],
+  "difficulty": 0.4,
+  "confidence": 1.0,
+  "tags": []
+}

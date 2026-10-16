@@ -1,7 +1,23 @@
 """
-Diagnostic Assessment Orchestrator.
+Diagnostic Assessment Orchestrator (Initial Knowledge Assessment).
 Builds and evaluates initial diagnostic assessments restricted strictly to concepts
-marked "KNOW" by the learner.
+marked "KNOW" by the learner during onboarding.
+
+DISTINCTION FROM RootGapDiagnoser (phase4/gaps/root_gap_diagnosis.py):
+  This module orchestrates INITIAL KNOWLEDGE ASSESSMENT during learner onboarding.
+  It selects questions to estimate per-concept mastery across verification concepts,
+  using single-concept Shannon Information Gain (binary entropy reduction on mastery)
+  via InformationGainPolicy / ChapterAssessmentEngine. There is NO competing
+  hypothesis space or prerequisite ancestor-gap attribution here.
+
+  RootGapDiagnoser (phase4/gaps/root_gap_diagnosis.py) performs ROOT-GAP DIAGNOSIS
+  during active learning when a learner fails on a target concept. It constructs
+  a Bayesian hypothesis space of competing prerequisite ancestor gaps, updates
+  posterior probabilities over those hypotheses using multi-hypothesis Shannon
+  Information Gain, and identifies the root causal gap.
+
+  These are two genuinely distinct operations serving different learner lifecycle stages.
+  Neither is a replacement for the other.
 """
 
 from datetime import datetime, timezone
@@ -181,6 +197,8 @@ class DiagnosticOrchestrator:
             item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
             if not item_concepts:
                 continue
+            if not item.options or len(item.options) < 2:
+                continue
             if all(used.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
                 continue
             item_copy = item.model_copy()
@@ -237,34 +255,49 @@ class DiagnosticOrchestrator:
                 usage[cid] = usage.get(cid, 0) + 1
         return usage
 
-    def _live_information_gain(
+    def calculate_mathematical_information_gain(
+        self,
+        item: QuestionBankItem,
+        learner_state: LearnerState,
+    ) -> float:
+        """
+        Computes mathematically exact Shannon Information Gain in bits:
+        IG(Q) = H_prior - E[H_posterior]
+        via InformationGainPolicy per Section 25.
+        """
+        from phase3.assessment.information_gain import InformationGainPolicy
+        return InformationGainPolicy.calculate_information_gain(item, learner_state).information_gain
+
+    def _verification_probe_policy_score(
         self,
         item: QuestionBankItem,
         learner_state: LearnerState,
         item_concepts: List[str],
     ) -> float:
         """
-        Information gain from asking ``item`` to ``learner_state`` right now.
-
-        Uncertain and never-probed concepts carry the most information; a concept
-        that has already reached MIN_EVIDENCE_COUNT attempts carries much less, so
-        the quiz stops burning items on concepts it has already resolved.
+        Separately named policy feature (Section 4): balances mathematical Shannon
+        information gain with unprobed concept coverage.
         """
-        score = 0.0
+        shannon_ig = self.calculate_mathematical_information_gain(item, learner_state)
+        # Explicit policy coverage factor: prioritize unprobed verification concepts
+        unprobed_bonus = 0.0
         for cid in item_concepts:
             cs = learner_state.concept_states.get(cid)
-            uncertainty = cs.uncertainty if cs is not None else 0.5
             attempts = cs.attempt_count if cs is not None else 0
-            weight = 0.25 if attempts >= self.config.MIN_EVIDENCE_COUNT else 1.0
-            score += uncertainty * weight
             if attempts == 0:
-                # Completely unprobed: maximum uncertainty reduction available.
-                score += 0.5
-        diff = getattr(item, "difficulty", 0.5)
-        # Maximum discriminability around difficulty 0.5, same shape as the
-        # static heuristic in create_diagnostic_quiz().
-        score += 1.0 - abs(diff - 0.5) * 1.5
-        return score
+                unprobed_bonus += 0.5
+            elif attempts < self.config.MIN_EVIDENCE_COUNT:
+                unprobed_bonus += 0.1
+        return round(shannon_ig + unprobed_bonus, 6)
+
+    def _live_information_gain(
+        self,
+        item: QuestionBankItem,
+        learner_state: LearnerState,
+        item_concepts: List[str],
+    ) -> float:
+        """Backward-compatible delegate to _verification_probe_policy_score."""
+        return self._verification_probe_policy_score(item, learner_state, item_concepts)
 
     def select_next_diagnostic_question(
         self,
@@ -299,13 +332,15 @@ class DiagnosticOrchestrator:
             item_concepts = [cid for cid in (item.concept_ids or []) if cid in verify_set]
             if not item_concepts:
                 continue
+            if not item.options or len(item.options) < 2:
+                continue
             if all(usage.get(cid, 0) >= caps.get(cid, 2) for cid in item_concepts):
                 continue
             key = (
                 max((priorities.get(cid, 0.0) for cid in item_concepts), default=0.0),
-                self._live_information_gain(item, learner_state, item_concepts),
+                self._verification_probe_policy_score(item, learner_state, item_concepts),
             )
-            # Highest (priority, live information gain) wins. Ties break on the
+            # Highest (priority, verification probe policy score) wins. Ties break on the
             # smallest question_id so selection stays reproducible.
             if best_key is None or key > best_key or (key == best_key and item.question_id < best_item.question_id):
                 best_key = key
@@ -394,18 +429,15 @@ class DiagnosticOrchestrator:
                     per_concept_scores.setdefault(cid, []).append(float(correctness))
 
         avg_score = round(total_score / len(question_responses), 4)
-        # Fallback applies ONLY to KNOW concepts lacking direct question coverage:
-        # a claimed-strong concept inherits the session average as weak
-        # verification. UNANSWERED concepts without coverage get NO update --
-        # manufacturing evidence for untested concepts would violate Batch 5.
+        # §2 #23: KNOW concepts without direct question coverage are recorded as
+        # self_claim_unverified. We do NOT manufacture BKT evidence from the session
+        # average — that would fabricate mastery evidence for untested concepts.
         for cid in init_session.know_concept_ids:
-            if cid not in covered:
-                concept_updates = self.tracer.update(
-                    learner_state=learner_state,
-                    concept_ids=[cid],
-                    correctness=avg_score,
-                )
-                updated_masteries.update(concept_updates)
+            if cid not in updated_masteries:
+                # Record the claim without altering BKT mastery probability.
+                # The concept state keeps its prior (default 0.15).
+                updated_masteries[cid] = learner_state.get_concept_state(cid).mastery_probability
+                per_concept_scores.setdefault(cid, [])  # empty = no evidence
 
         init_session.diagnostic_completed = True
         init_session.diagnostic_score = avg_score

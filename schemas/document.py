@@ -69,6 +69,7 @@ class ExtractionMethodEnum(str, Enum):
     TABLE_PARSER = "table_parser"
     MATH_PARSER = "math_parser"
     PRESERVED = "preserved"
+    IMAGE_PRESERVED = "image_preserved"
     VLM = "vlm"
 
 

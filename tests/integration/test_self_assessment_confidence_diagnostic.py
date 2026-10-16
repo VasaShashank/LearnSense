@@ -507,9 +507,9 @@ def test_16_calibration_gate_for_new_subject(ingested_calculus):
 
 # --- Test 15: Light Mode control is absent ---------------------------------------
 def test_15_light_mode_control_absent():
-    navbar = (FRONTEND / "components" / "navigation" / "TopNavbar.tsx").read_text()
+    navbar = (FRONTEND / "components" / "navigation" / "TopNavbar.tsx").read_text(encoding="utf-8")
     assert "onToggleTheme" not in navbar
     assert "Toggle Visual Mode" not in navbar
-    app_tsx = (FRONTEND / "App.tsx").read_text()
+    app_tsx = (FRONTEND / "App.tsx").read_text(encoding="utf-8")
     assert "onToggleTheme" not in app_tsx
     assert "setTheme" not in app_tsx

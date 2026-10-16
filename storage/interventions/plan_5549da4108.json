@@ -1,0 +1,54 @@
+{
+  "intervention_id": "plan_5549da4108",
+  "class_id": "cls_integration_test_101",
+  "subject_id": "test_fixture_calculus",
+  "created_at_iso": "2026-10-13T16:10:49.637445+00:00",
+  "status": "APPROVED",
+  "target_learning_objective": "Mastery Consolidation for Limits",
+  "total_class_duration_minutes": 45,
+  "actions": [
+    {
+      "priority": 1,
+      "action_type": "DIRECT_INSTRUCTION_AND_WORKED_EXAMPLES",
+      "target_concept_id": "c_bb936b957a19",
+      "target_concept_name": "Limits",
+      "rationale": "Core instruction on 'Limits'. Class mastery mean is 0.3 with 3 students below 0.40 mastery threshold.",
+      "allocated_time_minutes": 25,
+      "student_groups": [
+        {
+          "group_name": "Guided Practice Cohort",
+          "instructional_focus": "Step-by-step worked examples with intuitive analogies",
+          "learner_ids": [
+            "learner_a",
+            "learner_b",
+            "learner_c"
+          ],
+          "suggested_resource": null
+        },
+        {
+          "group_name": "Independent Application Cohort",
+          "instructional_focus": "Challenging transfer problems and multi-step applications",
+          "learner_ids": [],
+          "suggested_resource": null
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_bb936b957a19"
+      ]
+    },
+    {
+      "priority": 2,
+      "action_type": "FORMATIVE_REASSESSMENT",
+      "target_concept_id": "c_bb936b957a19",
+      "target_concept_name": "Limits",
+      "rationale": "Conduct 3-item adaptive verification probe to measure post-intervention learning gain.",
+      "allocated_time_minutes": 20,
+      "student_groups": [],
+      "recommended_probe_concept_ids": [
+        "c_bb936b957a19"
+      ]
+    }
+  ],
+  "teacher_notes": "Approved for 2nd period class session.",
+  "approved_at_iso": "2026-10-13T16:10:49.669496+00:00"
+}

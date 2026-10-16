@@ -101,8 +101,51 @@ Open `http://localhost:5173` in your web browser.
    - **Hint**: Targeted clue without spoiling the solution.
    - **Analogy**: Conceptual comparison to real-world objects.
    - **Why Wrong**: Common misconception analysis.
-3. Or type a custom question in the chat box to converse with the contextual tutor.
+3. Or type a custom question in the chat box to converse with the contextual tutor with citations.
 
 ### Feature 7: Session Progress & State Persistence
-- All progress, responses, and mastery levels automatically persist across page refreshes and server restarts.
+- All progress, responses, and mastery levels automatically persist across page refreshes and server restarts via SQLite and atomic JSON storage.
 - To continue where you left off, simply reopen the application.
+
+### Feature 8: Persona Switching (Student, Educator, Institutional Admin)
+1. Click the **Persona / Role Badge** in the top navigation bar.
+2. Select one of the available personas:
+   - **Student (Alex)**: Explores personalized knowledge graphs, takes diagnostic quizzes, and works through study guides.
+   - **Educator (Prof. Vance)**: Accesses class cohorts, collective analytics, and automated intervention plans.
+   - **Institutional Admin (Dean Sterling)**: Manages department-level seat allocations and institutional benchmarks.
+
+### Feature 9: Teacher Hub & Collective Teaching Optimizer
+1. Switch to the **Educator** persona or navigate to the **Teacher Hub** view.
+2. **Class Overview & Mastery Heatmap**:
+   - Select your target class cohort (e.g. *Calculus Cohort Alpha*).
+   - Review class-wide concept mastery distributions, average mastery scores, and struggling student counts.
+3. **FERPA De-Identification Toggle**:
+   - Toggle **De-Identify Students** on to replace student names with anonymous identifiers (`Student #104`), ensuring privacy compliance during classroom projections or research.
+4. **Generate Collective Intervention Plan**:
+   - Click **Generate Teaching Intervention**.
+   - The Teaching Optimizer identifies class-wide bottleneck concepts, recommends tailored classroom group activities, and assigns notation-matched external videos (Khan Academy, 3Blue1Brown, MIT OCW).
+   - Click **Save Intervention Plan** to store and track the plan.
+
+### Feature 10: B2B Institutional Portal
+1. Switch to the **Institutional Admin** persona.
+2. View organization statistics:
+   - Total enrolled learners, faculty accounts, active courses, and departments.
+   - Seat license quota tracker showing active vs. available licenses.
+3. Manage departments and courses:
+   - Review department-specific learning gains and cohort completion benchmarks.
+   - Assign instructors and monitor cross-section performance.
+
+### Feature 11: Multi-Format Ingestion & Synthesis (PDF, PPTX, DOCX, Images)
+1. Go to **Sources** or click **+ Upload Material...** in the top bar.
+2. Upload any supported format:
+   - **PDF (`.pdf`)**: Up to 3,000 pages with full layout, table, and equation extraction.
+   - **PowerPoint (`.pptx`)**: Slide outlines, table structures, speaker notes, and shape coordinates.
+   - **Word (`.docx`)**: Heading hierarchies, body paragraphs, and tables.
+   - **Diagrams / Images (`.png`, `.jpg`, `.jpeg`)**: Automatic visual document processing.
+3. TAPROOT automatically parses the material, synthesizes a formal Subject Title, extracts canonical concepts, builds a strict DAG knowledge graph, and initializes your interactive Atlas.
+
+### Feature 12: Subheading DAG Navigation, Topic Clusters & Canvas Annotations
+1. **Topic Cluster Boundaries**: Concepts in the Learning Atlas are grouped into visual territory boundaries (`Foundations`, `Core Principles`, `Advanced Applications`).
+2. **Subheading DAG Nodes**: Click on section and chapter outline nodes to expand and focus on specific sub-domains.
+3. **Canvas Annotations**: Add notes, pins, and highlights directly onto the Atlas canvas, automatically persisted in local browser storage.
+

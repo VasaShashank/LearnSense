@@ -52,3 +52,47 @@
 - **Learning Atlas (`LearningAtlas.tsx`, `XRayInspector.tsx`, `CustomConceptNode.tsx`)**:
   - Dynamic topic territory generation for custom subjects (Foundations, Core Principles, Advanced Topics).
   - TypeScript strict-mode null-safety improvements.
+
+---
+
+## 5. Teacher Hub & Collective Teaching Optimizer
+- **Class Mastery Analytics (`backend/services/teacher_service.py`, `phase4/teacher/optimizer.py`)**:
+  - Aggregates Bayesian Knowledge Tracing scores across student cohorts to compute mean, median, variance, and distribution buckets.
+  - Automatically flags curriculum bottlenecks where $> 30\%$ of a class struggles with foundational prerequisite concepts.
+- **Automated Intervention Generator (`TeacherDashboard.tsx`)**:
+  - Automatically synthesizes tailored class intervention plans with suggested teaching activities, group discussions, and remediation quizzes.
+- **Standalone Educator Mode & FERPA De-Identification**:
+  - Private class management for independent professors without institutional IT prerequisites.
+  - Student names are reversibly or irreversibly pseudonymized (`Student #104`) to safeguard educational privacy.
+
+---
+
+## 6. B2B Multi-Tenant Institutional Portal
+- **Enterprise Hierarchy & RBAC (`phase4/institution/models.py`, `backend/services/institution_service.py`)**:
+  - Multi-tenant data models representing Organizations, Departments, and Class Cohorts (`storage/institutions/`).
+  - Seat license tracking, faculty assignment, and capacity quotas.
+- **Institutional Admin Dashboard (`InstitutionalPortal.tsx`)**:
+  - Macro-level learning gains, student enrollment counts, and department-level velocity benchmarks.
+- **Role Switcher Modal (`LoginPersonaModal.tsx`)**:
+  - One-click persona switcher in the top navigation bar allowing seamless switching between `Student`, `Educator`, and `Institutional Admin`.
+
+---
+
+## 7. Subheading DAG Navigation & Topic Cluster Territories
+- **`TopicClusterNode.tsx`**:
+  - Visually encompasses related concepts into pedagogical territories with aggregate mastery progress indicators.
+- **`SubheadingNode.tsx`**:
+  - Connects table-of-contents chapter and section hierarchies directly into the concept dependency DAG.
+- **Atlas Intelligence (`atlasIntelligence.ts`)**:
+  - Heuristics for computing concept bottlenecks, path distances, and density clustering directly on the client canvas.
+- **Canvas Annotations (`annotationStorage.ts`)**:
+  - Local storage of user pins, bookmarks, and canvas notes.
+
+---
+
+## 8. Notation-Matched External Resource Recommendations
+- **Curated Educational Videos (`storage/resources/`)**:
+  - Curated collection of high-quality educational videos from Khan Academy, 3Blue1Brown, and MIT OpenCourseWare.
+- **Semantic & Notation Matching (`ResourceRecommender`)**:
+  - Automatically matches concept definitions and notation styles (e.g. Leibniz vs. Lagrange calculus notation) to recommend the most relevant external lessons.
+

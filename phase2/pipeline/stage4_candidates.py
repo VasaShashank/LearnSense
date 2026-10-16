@@ -5,6 +5,7 @@ Plan §7.
 """
 
 import re
+from collections import Counter
 from typing import Any, Dict, List, Set, Tuple
 from phase2.models import (
     ConceptMention,
@@ -31,6 +32,21 @@ from phase2.utils.id_generator import (
 # document to count as a teachable concept. Real subject terms recur; slide
 # titles, table headers and incidental proper nouns appear once.
 MIN_TERM_OCCURRENCES = 2
+
+# Functional stopwords that should not bound candidate noun phrases
+_EDGE_STOPWORDS = {
+    "a", "an", "the", "in", "on", "at", "by", "for", "with", "about", "against",
+    "between", "into", "through", "during", "before", "after", "above", "below",
+    "to", "from", "up", "down", "out", "off", "over", "under", "again",
+    "further", "then", "once", "here", "there", "when", "where", "why", "how",
+    "all", "any", "both", "each", "few", "more", "most", "other", "some", "such",
+    "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very",
+    "s", "t", "can", "will", "just", "don", "should", "now", "and", "or", "but",
+    "if", "because", "as", "until", "while", "of", "is", "are", "was", "were",
+    "be", "been", "being", "have", "has", "had", "having", "do", "does", "did",
+    "doing", "would", "could", "it", "its", "this", "that", "these", "those",
+    "they", "them", "their", "we", "our", "you", "your", "he", "she", "his", "her"
+}
 
 STOPWORDS = {
     "system", "method", "process", "thing", "item", "example", "chapter",
@@ -166,6 +182,198 @@ def _is_single_common_word(term: str) -> bool:
     if " " in term:
         return False
     return term.lower() in LEADING_FUNCTION_WORDS
+
+
+# Common action verbs that indicate conversational or procedural text rather than technical concepts
+ACTION_VERBS = {
+    "distributes", "distribute", "distributing", "distributed",
+    "adjusts", "adjust", "adjusting", "adjusted",
+    "ensures", "ensure", "ensuring", "ensured",
+    "provides", "provide", "providing", "provided",
+    "allows", "allow", "allowing", "allowed",
+    "enables", "enable", "enabling", "enabled",
+    "requires", "require", "requiring", "required",
+    "depends", "depend", "depending", "depended",
+    "supports", "support", "supporting", "supported",
+    "performs", "perform", "performing", "performed",
+    "operates", "operate", "operating", "operated",
+    "executes", "execute", "executing", "executed",
+    "manages", "manage", "managing", "managed",
+    "creates", "create", "creating", "created",
+    "builds", "build", "building", "built",
+    "runs", "run", "running",
+    "scales", "scale", "scaling", "scaled",
+    "deploys", "deploy", "deploying", "deployed",
+    "configures", "configure", "configuring", "configured",
+    "handles", "handle", "handling", "handled",
+    "processes", "process", "processing", "processed",
+    "stores", "store", "storing", "stored",
+    "sends", "send", "sending", "sent",
+    "receives", "receive", "receiving", "received",
+    "connects", "connect", "connecting", "connected",
+    "delivers", "deliver", "delivering", "delivered",
+    "serves", "serve", "serving", "served",
+    "optimizes", "optimize", "optimizing", "optimized",
+    "secures", "secure", "securing", "secured",
+    "monitors", "monitor", "monitoring", "monitored",
+    "accesses", "access", "accessing", "accessed",
+    "defines", "define", "defining", "defined",
+    "maintains", "maintain", "maintaining", "maintained",
+    "generates", "generate", "generating", "generated",
+    "analyzes", "analyze", "analyzing", "analyzed",
+    "calculates", "calculate", "calculating", "calculated",
+    "evaluates", "evaluate", "evaluating", "evaluated",
+    "identifies", "identify", "identifying", "identified",
+    "illustrates", "illustrate", "illustrating", "illustrated",
+    "selects", "select", "selecting", "selected",
+    "specifies", "specify", "specifying", "specified",
+    "summarizes", "summarize", "summarizing", "summarized",
+    "validates", "validate", "validating", "validated",
+    "verifies", "verify", "verifying", "verified",
+    "contains", "contain", "containing", "contained",
+    "includes", "include", "including", "included",
+    "consists", "consist", "consisting", "consisted",
+    "produces", "produce", "producing", "produced",
+    "reduces", "reduce", "reducing", "reduced",
+    "increases", "increase", "increasing", "increased",
+    "improves", "improve", "improving", "improved",
+    "enhances", "enhance", "enhancing", "enhanced",
+    "protects", "protect", "protecting", "protected",
+    "works", "work", "working", "worked",
+    "helps", "help", "helping", "helped",
+    "makes", "make", "making", "made",
+    "takes", "take", "taking", "taken",
+    "gives", "give", "giving", "given",
+    "finds", "find", "finding", "found",
+    "keeps", "keep", "keeping", "kept",
+    "shows", "show", "showing", "shown", "showed",
+    "starts", "start", "starting", "started",
+    "ends", "end", "ending", "ended",
+    "stops", "stop", "stopping", "stopped",
+    "begins", "begin", "beginning", "began", "begun",
+    "moves", "move", "moving", "moved",
+    "brings", "bring", "bringing", "brought",
+    "holds", "hold", "holding", "held",
+    "puts", "put", "putting",
+    "sets", "set", "setting",
+    "gets", "get", "getting", "got",
+    "leaves", "leave", "leaving", "left",
+    "leads", "lead", "leading", "led",
+    "means", "mean", "meaning", "meant",
+    "looks", "look", "looking", "looked",
+    "feels", "feel", "feeling", "felt",
+    "seems", "seem", "seeming", "seemed",
+    "becomes", "become", "becoming", "became",
+    "grows", "grow", "growing", "grew", "grown",
+    "turns", "turn", "turning", "turned",
+    "stands", "stand", "standing", "stood",
+    "falls", "fall", "falling", "fell", "fallen",
+    "passes", "pass", "passing", "passed",
+    "fails", "fail", "failing", "failed",
+    "commits", "commit", "committing", "committed",
+    "pays", "pay", "paying", "paid",
+    "tests", "test", "testing", "tested",
+    "learns", "learn", "learning", "learned",
+    "teaches", "teach", "teaching", "taught",
+    "reads", "read", "reading",
+    "writes", "write", "writing", "written",
+    "acted", "acts", "acting",
+    "binds", "bind", "binding", "bound",
+    "describes", "describe", "describing", "described",
+    "displays", "display", "displaying", "displayed",
+    "combines", "combine", "combining", "combined",
+    "presents", "present", "presenting", "presented",
+    "responds", "respond", "responding", "responded",
+    "exposes", "expose", "exposing", "exposed",
+    "occurs", "occur", "occurring", "occurred",
+}
+
+# Verbs, adverbs, non-topic adjectives, and conversational fragments that must never
+# be accepted as isolated single-word concepts.
+NON_CONCEPT_SINGLE_WORDS = {
+    # Common conversational adjectives / non-concept words
+    "static", "dynamic", "multi", "single", "various", "different",
+    "similar", "particular", "certain", "several", "few", "many", "much",
+    "more", "most", "less", "least", "other", "another", "such", "own",
+    "same", "able", "available", "possible", "impossible", "capable",
+    "suitable", "ready", "due", "likely", "unlikely", "true", "false",
+    "new", "old", "good", "bad", "high", "low", "great", "small", "large",
+    "huge", "major", "minor", "core", "basic", "main", "primary",
+    "secondary", "final", "initial", "total", "overall", "whole", "full",
+    "empty", "free", "open", "close", "fast", "slow", "easy", "hard",
+    "simple", "complex", "variety", "common", "general", "specific",
+    "multiple",
+    # User / audience terms
+    "developers", "developer", "users", "user", "administrators",
+    "administrator", "engineers", "engineer", "architects", "architect",
+    "customers", "customer", "clients", "client", "teams", "team",
+    "people", "members", "member", "audiences", "audience",
+}
+
+
+CLAUSE_AND_FRAGMENT_WORDS = {
+    "that", "which", "where", "who", "whom", "whose", "when", "while",
+    "upon", "into", "onto", "toward", "towards",
+    "itself", "themselves", "himself", "herself", "myself", "yourself",
+    "therefore", "however", "although", "though", "meanwhile",
+    "wouldn", "couldn", "shouldn", "didn", "doesn", "don", "isn", "aren", "wasn", "weren",
+    "cannot", "can't", "won't", "don't",
+}
+
+JUNK_FILLER_PHRASES = {
+    "term of art", "art in soa", "commonly used", "set of linked", "different contexts",
+    "set of rules", "console in different", "plays the role", "service where two",
+    "with", "many", "core values include",
+}
+
+INTERNAL_SENTENCE_VERBS = {
+    "presents", "presented", "presenting", "requires", "required", "requiring",
+    "responds", "responded", "responding", "exposes", "exposed", "exposing",
+    "performs", "performed", "performing", "provides", "provided", "providing",
+    "determines", "determined", "determining", "displays", "displayed", "displaying",
+    "plays", "played", "playing", "describes", "described", "describing",
+    "contains", "contained", "containing", "creates", "created", "creating",
+}
+
+
+def _is_isolated_verb_or_non_noun(term: str) -> bool:
+    """
+    True when a candidate is an action verb, clause fragment, sentence residue,
+    or generic non-topic modifier rather than an educational concept.
+    """
+    clean = term.strip().rstrip(":;,.!?")
+    if not clean or len(clean) < 3:
+        return True
+    low = clean.lower()
+    if low in JUNK_FILLER_PHRASES:
+        return True
+    if low in NON_CONCEPT_SINGLE_WORDS or low in ACTION_VERBS:
+        return True
+    if low.endswith("ly") and len(low) > 4 and " " not in low:
+        return True
+
+    words = [w.strip(".,;:!?()[]{}\"'") for w in low.split()]
+    if not words:
+        return True
+    # Single common word or quantifier
+    if len(words) == 1 and (words[0] in NON_CONCEPT_SINGLE_WORDS or words[0] in ACTION_VERBS or words[0] in {"with", "many", "few", "some", "any", "every"}):
+        return True
+    # First word is an action verb or leading stopword
+    if words[0] in ACTION_VERBS or words[0] in LEADING_FUNCTION_WORDS:
+        return True
+    # Last word is an action verb or trailing function word
+    if words[-1] in ACTION_VERBS or words[-1] in TRAILING_FUNCTION_WORDS or words[-1] in {"upon", "to", "for", "in", "with", "using"}:
+        return True
+    # Any token is a relative pronoun, clause marker, or contraction
+    if any(w in CLAUSE_AND_FRAGMENT_WORDS for w in words):
+        return True
+    # Internal verbs indicating sentence fragment ("message presents data")
+    if any(w in INTERNAL_SENTENCE_VERBS for w in words[1:-1]):
+        return True
+    # Broken syntax or terminal colon
+    if term.strip().endswith(":") or any(ch in term for ch in "{}[]"):
+        return True
+    return False
 
 
 def _is_pure_discourse(term: str) -> bool:
@@ -337,7 +545,11 @@ def extract_candidates(
             unit_by_block[s.block_id] = u
 
     # Regex patterns for definitions, acronyms, formulas
-    def_pattern = re.compile(r"([A-Z][A-Za-z0-9\s'-]{2,30})\s+(is defined as|refers to|is called)\s+(.+)", re.IGNORECASE)
+    def_pattern = re.compile(
+        r"([A-Za-z0-9\s'-]{2,40})\s+(is defined as|refers to|is called|is known as|can be defined as|is described as|means|is an? [A-Za-z\s-]{2,35} (?:that|which|by which|used to|designed to|for))\s+([^.\n]+)",
+        re.IGNORECASE,
+    )
+    colon_def_pattern = re.compile(r"(?:^|\n)\s*([A-Za-z0-9\s'-]{2,35}):\s+([A-Z][^\n]{10,})")
     acronym_pattern = re.compile(r"([A-Z][A-Za-z0-9\s'-]{2,40})\s*\(([A-Z]{2,6})\)")
     formula_pattern = re.compile(r"([A-Za-z_]+)\s*=\s*([A-Za-z0-9\s\+\-\*\/\^\(\)]+)")
 
@@ -440,6 +652,17 @@ def extract_candidates(
         if b["block_id"] not in skipped_block_ids
     ).lower()
 
+    # Precompute unigram and n-gram frequencies in one O(N) linear pass:
+    prose_tokens = [tok for tok in re.findall(r"\b[a-z0-9'-]+\b", lowercase_corpus)]
+    ngram_counts: Counter = Counter(prose_tokens)
+    for n in (2, 3):
+        for i in range(len(prose_tokens) - n + 1):
+            w0 = prose_tokens[i]
+            w_last = prose_tokens[i + n - 1]
+            if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
+                phrase = " ".join(prose_tokens[i : i + n])
+                ngram_counts[phrase] += 1
+
     for block in norm_doc.semantic_blocks:
         if not block["included_in_semantic_flow"]:
             continue
@@ -457,16 +680,32 @@ def extract_candidates(
             res.acronyms[acr] = full_term
 
         # 2. Harvest Definitions
-        def_match = def_pattern.search(text)
-        if def_match:
-            term = def_match.group(1).strip()
-            definition_text = def_match.group(3).strip()
-            res.harvested_definitions.append({
-                "term": term,
-                "definition": definition_text,
-                "block_id": blk_id,
-                "unit_id": unit_id
-            })
+        for def_match in def_pattern.finditer(text):
+            term = _trim_candidate(def_match.group(1).strip())
+            copula = def_match.group(2).strip()
+            rest = def_match.group(3).strip()
+            if copula.lower().startswith("is ") and not copula.lower().startswith(("is defined", "is called", "is known", "is described")):
+                definition_text = f"{copula[3:].strip()} {rest}"
+            else:
+                definition_text = rest
+            if term and len(term) >= 3 and term.lower() not in STOPWORDS:
+                res.harvested_definitions.append({
+                    "term": term,
+                    "definition": definition_text,
+                    "block_id": blk_id,
+                    "unit_id": unit_id
+                })
+
+        for c_match in colon_def_pattern.finditer(text):
+            term = _trim_candidate(c_match.group(1).strip())
+            definition_text = c_match.group(2).strip()
+            if term and len(term) >= 3 and term.lower() not in STOPWORDS and not _is_single_common_word(term):
+                res.harvested_definitions.append({
+                    "term": term,
+                    "definition": definition_text,
+                    "block_id": blk_id,
+                    "unit_id": unit_id
+                })
 
         # 3. Explicit Learning Objectives -> Skills
         if unit and unit.unit_type == "learning_objective" or "able to" in text.lower():
@@ -525,8 +764,29 @@ def extract_candidates(
             if s.endswith((".", ",", ";", ":", "!", "?")) or '"' in s or "(" in s:
                 continue
             line_standalone.add(s.lower())
-        words = re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text)
-        for w in words:
+        harvested_def_terms = {d["term"].lower() for d in res.harvested_definitions}
+        words: List[str] = list(re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text))
+        # Acronyms & uppercase tokens
+        words.extend(re.findall(r"\b[A-Z]{2,6}\b", text))
+        # Markdown bold concepts
+        words.extend(re.findall(r"\*\*([A-Za-z0-9\s'-]{3,40})\*\*", text))
+        # Terms defined in this block
+        for d in res.harvested_definitions:
+            if d.get("block_id") == blk_id:
+                words.append(d["term"])
+        # Multi-word domain concepts in prose (e.g. "binary search", "neural network", "dynamic programming")
+        tokens = [tok for tok in re.findall(r"\b[A-Za-z][A-Za-z0-9'-]+\b", text)]
+        for n in (2, 3):
+            for i in range(len(tokens) - n + 1):
+                w0 = tokens[i].lower()
+                w_last = tokens[i + n - 1].lower()
+                if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
+                    phrase = " ".join(tokens[i : i + n])
+                    comp_lower = phrase.lower()
+                    if comp_lower in harvested_def_terms or ngram_counts.get(comp_lower, 0) >= MIN_TERM_OCCURRENCES:
+                        words.append(phrase)
+
+        for w in dict.fromkeys(words):
             term = _trim_candidate(w.strip())
             if not term:
                 continue
@@ -534,29 +794,50 @@ def extract_candidates(
                 continue
             if _is_single_common_word(term):
                 continue
+            if _is_isolated_verb_or_non_noun(term):
+                continue
             if _is_pure_discourse(term):
                 continue
             if _is_ocr_garbage(term):
                 continue
             if _is_person_name(term, person_name_keys):
                 continue
-            # Accept when the document declares the term (heading block, or a
-            # standalone line). Otherwise require recurrence in PROSE: an inline
-            # capitalized phrase seen once is incidental, not a topic.
-            declared = is_heading or term.lower() in line_standalone
+            # Single lowercase words require explicit declaration or definition
+            if " " not in term and term.islower() and term.lower() not in harvested_def_terms:
+                continue
+
+            # Accept when the document declares the term (heading block, a
+            # standalone line, or an explicit definition sentence). Otherwise require recurrence
+            # in PROSE: an inline capitalized phrase seen once is incidental, not a topic.
+            declared = (
+                is_heading
+                or term.lower() in line_standalone
+                or term.lower() in harvested_def_terms
+                or any(term.lower() in dt or dt in term.lower() for dt in harvested_def_terms)
+            )
             if not declared:
                 # A word appearing only in the document title / short furniture
                 # lines is not subject matter ("Akasic" in "Akasic-Hybrid ...").
                 if term.lower() in furniture_keys or term.lower() in opening_title_tokens:
                     continue
-                if lowercase_corpus.count(term.lower()) < MIN_TERM_OCCURRENCES:
+                freq = ngram_counts.get(term.lower())
+                if freq is None:
+                    freq = lowercase_corpus.count(term.lower())
+                if freq < MIN_TERM_OCCURRENCES:
                     continue
             # A trimmed candidate must still occur verbatim so the Evidence span
             # remains a real substring of the block (Phase 2 QC enforces this).
             start = text.find(term)
             if start == -1:
-                continue
-            end = start + len(term)
+                m_sub = re.search(r"\b" + re.escape(term) + r"\b", text, re.IGNORECASE)
+                if m_sub:
+                    start = m_sub.start()
+                    end = m_sub.end()
+                    term = text[start:end]
+                else:
+                    continue
+            else:
+                end = start + len(term)
             m_id = generate_mention_id(norm_doc.doc_id, blk_id, start, end)
             mention = ConceptMention(
                 mention_id=m_id,

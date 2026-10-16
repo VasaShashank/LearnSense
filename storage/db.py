@@ -155,7 +155,7 @@ class DatabaseManager:
     def find_cached_document(self, cache_key: str) -> Optional[Dict[str, Any]]:
         with self._connection() as conn:
             row = conn.execute(
-                "SELECT * FROM documents WHERE cache_key = ? AND status IN ('completed', 'completed_with_warnings')",
+                "SELECT * FROM documents WHERE cache_key = ? AND status = 'completed'",
                 (cache_key,),
             ).fetchone()
             if row:

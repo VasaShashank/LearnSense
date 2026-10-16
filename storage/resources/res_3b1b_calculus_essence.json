@@ -1,0 +1,80 @@
+{
+  "resource_id": "res_3b1b_calculus_essence",
+  "url": "https://www.youtube.com/watch?v=WUvTyaaNkzM",
+  "provider": "youtube",
+  "title": "The Essence of Calculus - Chapter 1",
+  "channel": "3Blue1Brown",
+  "duration_seconds": 1025,
+  "language": "en",
+  "transcript_available": true,
+  "transcript": [
+    {
+      "start_seconds": 0.0,
+      "end_seconds": 145.0,
+      "text": "Calculus is fundamentally about geometry and tiny changes. Let's see what derivatives really represent visually.",
+      "concept_ids": [
+        "c_derivatives",
+        "derivatives"
+      ],
+      "formulas_mentioned": []
+    },
+    {
+      "start_seconds": 146.0,
+      "end_seconds": 380.0,
+      "text": "When we take the ratio of a tiny nudge in output df over a tiny nudge in input dx, we get the derivative df/dx.",
+      "concept_ids": [
+        "c_derivatives",
+        "derivatives"
+      ],
+      "formulas_mentioned": [
+        "df/dx"
+      ]
+    },
+    {
+      "start_seconds": 381.0,
+      "end_seconds": 600.0,
+      "text": "This brings us to limits: what does the ratio approach as dx gets arbitrarily close to zero?",
+      "concept_ids": [
+        "c_limits",
+        "limits"
+      ],
+      "formulas_mentioned": []
+    }
+  ],
+  "concepts_covered": [
+    "c_derivatives",
+    "derivatives",
+    "limits",
+    "c_limits",
+    "slope"
+  ],
+  "prerequisite_concepts": [
+    "functions",
+    "algebra"
+  ],
+  "notation_variants": [
+    {
+      "symbol": "df/dx",
+      "meaning": "derivative",
+      "canonical_symbol": "derivative",
+      "subject_domain": null
+    },
+    {
+      "symbol": "dx",
+      "meaning": "infinitesimal_change",
+      "canonical_symbol": "dx",
+      "subject_domain": null
+    }
+  ],
+  "formulas": [
+    {
+      "raw_formula": "df/dx = lim_{dx->0} (f(x+dx) - f(x))/dx",
+      "normalized_formula": "df/dx = lim(dx->0) (f(x+dx)-f(x))/dx",
+      "canonical_formula_id": "derivative_definition",
+      "variable_mappings": {}
+    }
+  ],
+  "difficulty": 0.45,
+  "confidence": 1.0,
+  "tags": []
+}

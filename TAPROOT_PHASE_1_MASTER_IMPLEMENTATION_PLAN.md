@@ -26,6 +26,7 @@
 14. **Pass B Aggregator (`ingestion/pass_b.py`)**: Cross-page repeated header/footer/page_number classification, cross-page sentence continuity linking, outline `SectionNode` tree building, and title inference.
 15. **Escalation Router & Pipeline Coordinator (`ingestion/router.py`, `ingestion/pipeline.py`)**: 4-rung progressive processing escalation ladder orchestrating end-to-end PDF processing from raw bytes to schema-valid JSON.
 16. **FastAPI Web Server (`backend/app.py`, `backend/routes/documents.py`)**: REST API endpoints supporting PDF upload, status polling, structured document retrieval, page streaming, and asset downloading.
+17. **Multi-Format Extractor & High Capacity (`ingestion/document_formats.py`)**: Ingestion dispatch for PowerPoint (`.pptx`), Word (`.docx`), and Images, supporting up to 3,000 pages with table grid recovery, speaker notes, and real proportional coordinate mapping.
 
 ---
 

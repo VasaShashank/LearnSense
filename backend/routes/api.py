@@ -19,6 +19,11 @@ from backend.services.learner_service import LearnerService
 from backend.services.learning_service import LearningService
 from backend.services.tutor_service import TutorService
 from backend.services.source_service import SourceService
+from backend.services.resource_service import ResourceService
+from backend.services.teacher_service import TeacherService
+from backend.services.institution_service import InstitutionService
+from phase3.resources.models import ResourceRecord
+from phase4.institution.models import UserRole
 from phase3.errors import LearnSenseError
 from phase4.models import ConfidenceLevel, SelfAssessmentStatus
 import logging
@@ -33,6 +38,9 @@ learner_service = LearnerService(knowledge_service=knowledge_service)
 learning_service = LearningService(learner_service=learner_service, knowledge_service=knowledge_service)
 tutor_service = TutorService(knowledge_service=knowledge_service, learner_service=learner_service)
 source_service = SourceService()
+resource_service = ResourceService(knowledge_service=knowledge_service, learner_service=learner_service)
+teacher_service = TeacherService(knowledge_service=knowledge_service, learner_service=learner_service)
+institution_service = InstitutionService()
 job_repo = JobRepository()
 
 
@@ -110,6 +118,12 @@ class FinalAssessmentStartApiRequest(BaseModel):
     subject_id: str
 
 
+class RootGapDiagnosisApiRequest(BaseModel):
+    subject_id: str
+    target_concept_id: str
+    confidence_threshold: Optional[float] = 0.70
+
+
 class FinalAssessmentSubmitApiRequest(BaseModel):
     assessment_id: str
     learner_id: str
@@ -121,7 +135,7 @@ class FinalAssessmentSubmitApiRequest(BaseModel):
 # --- SUBJECTS & KNOWLEDGE GRAPH ROUTES ---
 
 @router.get("/subjects")
-async def list_subjects():
+def list_subjects():
     """
     Returns list of available subjects with concept counts and metadata.
     """
@@ -129,14 +143,14 @@ async def list_subjects():
 
 
 @router.get("/subjects/{subject_id}/graph")
-async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
+def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
     """
     Returns frontend Knowledge Graph structure with topic territories, concepts, and relationships.
     """
     masteries = {}
     if learner_id:
-        graph_temp = knowledge_service.get_subject_graph(subject_id)
-        c_ids = [c["concept_id"] for c in graph_temp["concepts"]]
+        ctx = knowledge_service.get_learning_context(subject_id)
+        c_ids = list(ctx.concepts.keys())
         st = learner_service.get_or_create_learner_state(learner_id, c_ids)
         masteries = {cid: cs.mastery_probability for cid, cs in st.concept_states.items()}
 
@@ -144,13 +158,13 @@ async def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
 
 
 @router.get("/subjects/{subject_id}/concepts/{concept_id}/question")
-async def get_concept_question(subject_id: str, concept_id: str):
+async def get_concept_question(subject_id: str, concept_id: str, learner_id: Optional[str] = None):
     """
-    Returns authentic domain question and options for a specific concept.
+    Returns authentic domain question and options for a specific concept mini-quiz generated via LLM.
     P0 Security: correct_answer and explanation are strictly stripped before submission!
     """
     try:
-        return learning_service.get_concept_question(subject_id, concept_id)
+        return learning_service.get_concept_question(subject_id, concept_id, learner_id=learner_id)
     except LearnSenseError:
         raise
     except Exception as exc:
@@ -173,7 +187,7 @@ async def get_concept_learning_content(subject_id: str, concept_id: str):
 # --- LEARNER STATE, PROGRESS & PATH ROUTES ---
 
 @router.get("/learners/{learner_id}/progress")
-async def get_learner_progress(learner_id: str, subject_id: str):
+def get_learner_progress(learner_id: str, subject_id: str):
     """
     Returns learner mastery breakdown, exploration rates, and confidence level.
     """
@@ -181,11 +195,28 @@ async def get_learner_progress(learner_id: str, subject_id: str):
 
 
 @router.get("/learners/{learner_id}/path-and-gaps")
-async def get_path_and_gaps(learner_id: str, subject_id: str):
+def get_path_and_gaps(learner_id: str, subject_id: str):
     """
     Returns Phase 4 prioritized knowledge gaps, cycle-safe learning path, and active next target.
     """
     return learner_service.get_gaps_and_path(learner_id, subject_id)
+
+
+@router.post("/learners/{learner_id}/diagnose-root-gap")
+async def diagnose_root_gap(learner_id: str, req: RootGapDiagnosisApiRequest):
+    """
+    Authoritative Phase 4 Root-Gap Diagnosis using Bayesian competing hypotheses,
+    mathematical Shannon Information Gain, and DecisionTrace generation per Section 23/24/25.
+    """
+    try:
+        return learner_service.diagnose_root_gap(
+            learner_id=learner_id,
+            subject_id=req.subject_id,
+            target_concept_id=req.target_concept_id,
+            confidence_threshold=req.confidence_threshold or 0.70,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 # --- ONBOARDING & ASSESSMENT ROUTES ---
@@ -222,7 +253,7 @@ async def calibration_status(learner_id: str = Query(...), subject_id: str = Que
 
 
 @router.get("/learners/{learner_id}/entry-state")
-async def get_entry_state(learner_id: str, subject_id: Optional[str] = Query(None)):
+def get_entry_state(learner_id: str, subject_id: Optional[str] = Query(None)):
     """
     Server-authoritative routing state: where this learner belongs right now.
 
@@ -342,7 +373,7 @@ async def submit_activity_response(req: ActivityResponseApiRequest):
 
 
 @router.get("/learners/{learner_id}/resume")
-async def resume_learner(learner_id: str, subject_id: Optional[str] = Query(None)):
+def resume_learner(learner_id: str, subject_id: Optional[str] = Query(None)):
     """
     Returns persisted learner state, progress, and active assessment to resume UI after refresh.
     """
@@ -419,7 +450,7 @@ async def interact_with_tutor(req: TutorInteractApiRequest):
 # --- SOURCE LIBRARY ROUTES ---
 
 @router.get("/sources")
-async def list_sources():
+def list_sources():
     """
     Lists uploaded sources and processing/recovery statuses.
     """
@@ -435,10 +466,15 @@ async def api_health():
 
     adapter = get_llm_adapter()
     health = adapter.health()
+    # §2 #14: Mock can never count as ready. Only real provider + credentials = ready.
     return {
         "status": "healthy",
         "llm": health,
-        "llm_ready": bool(adapter.is_mock or (health["has_credentials"] and health["provider"])),
+        "llm_ready": bool(
+            not getattr(adapter, "is_mock", False)
+            and health.get("has_credentials")
+            and health.get("provider")
+        ),
     }
 
 
@@ -552,3 +588,329 @@ def _derive_document_id(filename: Optional[str]) -> str:
     stem = Path(filename or "document").stem
     slug = re.sub(r"[^A-Za-z0-9_-]+", "_", stem).strip("_").lower()
     return f"doc_{slug or 'document'}"
+
+
+# --- NOTATION-MATCHED VIDEO & RESOURCE ROUTES (§9) ---
+
+@router.get("/subjects/{subject_id}/concepts/{concept_id}/resources")
+async def get_concept_resources(
+    subject_id: str,
+    concept_id: str,
+    learner_id: Optional[str] = None,
+    top_k: int = 5,
+):
+    """
+    Returns notation-matched educational video recommendations with timestamp jump links.
+    Evaluates formula equivalence, prerequisite coverage, and learner mastery level (§9).
+    """
+    try:
+        return resource_service.get_recommendations_for_concept(
+            subject_id=subject_id,
+            concept_id=concept_id,
+            learner_id=learner_id,
+            top_k=top_k,
+        )
+    except LearnSenseError:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/resources")
+async def index_resource(resource: ResourceRecord):
+    """
+    Indexes an external educational resource with transcript, formulas, and notation variants.
+    """
+    try:
+        resource_service.save_resource(resource)
+        return {"resource_id": resource.resource_id, "status": "indexed"}
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/resources/{resource_id}")
+async def get_resource(resource_id: str):
+    """
+    Retrieves full resource record with transcript segments and notation details.
+    """
+    res = resource_service.get_resource(resource_id)
+    if not res:
+        raise HTTPException(status_code=404, detail=f"No resource found with id '{resource_id}'")
+    return res
+
+
+# --- TEACHER KNOWLEDGE STATE & TEACHING OPTIMIZER ROUTES (§10) ---
+
+class RegisterClassApiRequest(BaseModel):
+    subject_id: str
+    class_name: str
+    enrolled_learner_ids: List[str]
+
+
+class CreateTeachingPlanApiRequest(BaseModel):
+    subject_id: Optional[str] = None
+    target_concept_id: Optional[str] = None
+    duration_minutes: int = 50
+
+
+class ApproveTeachingPlanApiRequest(BaseModel):
+    teacher_notes: Optional[str] = None
+
+
+class EvaluateInterventionApiRequest(BaseModel):
+    target_concept_id: str
+
+
+@router.get("/classes")
+async def list_classes():
+    """
+    Lists registered classes and rosters for collective teacher tracing.
+    """
+    return teacher_service.list_classes()
+
+
+@router.post("/classes")
+async def register_class(req: RegisterClassApiRequest, class_id: Optional[str] = None):
+    """
+    Registers a class cohort with enrolled learners for teacher collective knowledge tracing.
+    """
+    cid = class_id or f"cls_{uuid.uuid4().hex[:8]}"
+    return teacher_service.register_class(
+        class_id=cid,
+        subject_id=req.subject_id,
+        class_name=req.class_name,
+        enrolled_learner_ids=req.enrolled_learner_ids,
+    )
+
+
+@router.get("/classes/{class_id}/knowledge-state")
+async def get_class_knowledge_state(class_id: str, subject_id: Optional[str] = None):
+    """
+    Aggregates mastery distributions, prerequisite bottlenecks, and recurring misconception
+    hypotheses across all enrolled students in the class (§10.1).
+    """
+    try:
+        return teacher_service.get_class_knowledge_state(class_id, subject_id=subject_id)
+    except LearnSenseError:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/classes/{class_id}/teaching-optimizer/plan")
+async def generate_teaching_plan(class_id: str, req: CreateTeachingPlanApiRequest):
+    """
+    Generates an evidence-grounded Teaching Optimizer intervention plan with
+    differentiated student groups and time budgets for teacher review (§10.2).
+    """
+    try:
+        return teacher_service.create_intervention_plan(
+            class_id=class_id,
+            subject_id=req.subject_id,
+            target_concept_id=req.target_concept_id,
+            duration_minutes=req.duration_minutes,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/classes/{class_id}/interventions/{intervention_id}/approve")
+async def approve_teaching_plan(
+    class_id: str, intervention_id: str, req: ApproveTeachingPlanApiRequest
+):
+    """
+    Records teacher review and approval of an intervention plan (§10.3).
+    """
+    try:
+        return teacher_service.approve_intervention_plan(
+            intervention_id=intervention_id,
+            teacher_notes=req.teacher_notes,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/classes/{class_id}/interventions/{intervention_id}/evaluate")
+async def evaluate_intervention_outcome(
+    class_id: str, intervention_id: str, req: EvaluateInterventionApiRequest
+):
+    """
+    Evaluates learning gains and reduction in struggling students after reassessment (§10.3).
+    """
+    try:
+        # Load baseline state before intervention
+        pre_state = teacher_service.get_class_knowledge_state(class_id)
+        return teacher_service.evaluate_intervention(
+            intervention_id=intervention_id,
+            target_concept_id=req.target_concept_id,
+            pre_state=pre_state,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# --- STUDENT LEARNING INSIGHTS (Dynamic Aggregation) ---
+
+@router.get("/classes/{class_id}/student-learning-insights")
+async def get_student_learning_insights(class_id: str, subject_id: Optional[str] = None):
+    """
+    Returns dynamically aggregated student learning insights: difficulty tiers,
+    misconception frequencies, attempt volumes, time-to-master estimates, and
+    evidence-based teaching recommendations — all computed from real class
+    knowledge states rather than hardcoded fixtures.
+    """
+    try:
+        return teacher_service.get_student_learning_insights(
+            class_id=class_id, subject_id=subject_id
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/student-learning-insights")
+async def get_global_student_learning_insights(subject_id: Optional[str] = None):
+    """
+    Returns platform-wide aggregated student learning insights without requiring
+    a specific class. Used by independent visiting educators who don't have access
+    to institutional class rosters.
+    """
+    try:
+        return teacher_service.get_student_learning_insights(subject_id=subject_id)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/classes/{class_id}/student-mastery")
+async def get_class_student_mastery(class_id: str, subject_id: Optional[str] = None):
+    """
+    Returns individual student mastery, concept-level breakdowns, knowledge gaps,
+    and targeted intervention recommendations for enrolled students in the class cohort (§10.1).
+    """
+    try:
+        return teacher_service.get_class_students_mastery(
+            class_id=class_id, subject_id=subject_id
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# --- INSTITUTIONAL & B2B RBAC ROUTES (§11) ---
+
+class CreateOrgApiRequest(BaseModel):
+    name: str
+    domain: Optional[str] = None
+
+
+class AddMembershipApiRequest(BaseModel):
+    org_id: str
+    user_id: str
+    role: UserRole = UserRole.LEARNER
+
+
+class CreateOrgClassApiRequest(BaseModel):
+    org_id: str
+    subject_id: str
+    title: str
+    teacher_ids: List[str]
+    creator_user_id: str
+    enrolled_learner_ids: Optional[List[str]] = None
+
+
+class EnrollLearnerApiRequest(BaseModel):
+    learner_id: str
+    enroller_user_id: str
+
+
+@router.post("/institutions/organizations")
+async def create_organization(req: CreateOrgApiRequest):
+    return institution_service.create_organization(name=req.name, domain=req.domain)
+
+
+@router.post("/institutions/memberships")
+async def add_membership(req: AddMembershipApiRequest):
+    return institution_service.add_membership(org_id=req.org_id, user_id=req.user_id, role=req.role)
+
+
+@router.post("/institutions/classes")
+async def create_institution_class(req: CreateOrgClassApiRequest):
+    return institution_service.create_class(
+        org_id=req.org_id,
+        subject_id=req.subject_id,
+        title=req.title,
+        teacher_ids=req.teacher_ids,
+        creator_user_id=req.creator_user_id,
+        enrolled_learner_ids=req.enrolled_learner_ids,
+    )
+
+
+@router.post("/institutions/classes/{class_id}/enroll")
+async def enroll_learner_in_class(class_id: str, req: EnrollLearnerApiRequest):
+    return institution_service.enroll_learner(
+        class_id=class_id,
+        learner_id=req.learner_id,
+        enroller_user_id=req.enroller_user_id,
+    )
+
+
+@router.get("/institutions/organizations")
+async def list_organizations():
+    return institution_service.list_organizations()
+
+
+@router.get("/institutions/classes")
+async def list_institution_classes(org_id: Optional[str] = None):
+    return institution_service.list_classes(org_id=org_id)
+
+
+@router.get("/institutions/classes/{class_id}/roster")
+async def get_class_roster(class_id: str, caller_user_id: str = Query(...)):
+    return {
+        "class_id": class_id,
+        "roster": institution_service.get_class_roster(class_id=class_id, caller_user_id=caller_user_id),
+    }
+
+
+@router.get("/auth/personas")
+async def get_personas():
+    """
+    Returns available role personas for swift switching between Student, Teacher, and B2B Admin modes.
+    """
+    return [
+        {
+            "id": "student_alex",
+            "name": "Alex Rivera",
+            "role": "LEARNER",
+            "title": "Undergraduate Scholar",
+            "avatar": "👨‍🎓",
+            "org_name": "Apex Institute of Science & Technology",
+            "email": "alex.rivera@apex.edu",
+        },
+        {
+            "id": "prof_vance",
+            "name": "Prof. Eleanor Vance",
+            "role": "TEACHER",
+            "title": "Lead Instructor, Systems & DAA",
+            "avatar": "👩‍🏫",
+            "org_name": "Apex Institute of Science & Technology",
+            "email": "e.vance@apex.edu",
+        },
+        {
+            "id": "admin_sterling",
+            "name": "Dr. Marcus Sterling",
+            "role": "ADMIN",
+            "title": "Dean of Academic Systems (B2B Admin)",
+            "avatar": "🏛️",
+            "org_name": "Apex Institute of Science & Technology",
+            "email": "m.sterling@apex.edu",
+        },
+        {
+            "id": "teacher_independent",
+            "name": "Dr. Sarah Lin",
+            "role": "TEACHER",
+            "title": "Independent Visiting Educator",
+            "avatar": "🧑‍🏫",
+            "org_name": "Open Academic Community (Non-B2B)",
+            "email": "sarah.lin@open-ed.org",
+        },
+    ]
+

@@ -3,9 +3,12 @@ PDF Validation and Automatic Repair Engine for Taproot Phase 1.
 Handles file integrity, size/page limits, PyMuPDF load checks, automatic xref repair, and password protection policies.
 """
 
+import logging
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 import fitz  # PyMuPDF
+
+logger = logging.getLogger("LearnSense.Validator")
 
 
 class ValidationResult:
@@ -158,6 +161,6 @@ class PDFValidator:
                         "message": "Damaged PDF structure successfully repaired.",
                     }],
                 )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("PDF repair could not recover document bytes: %s", exc)
         return None

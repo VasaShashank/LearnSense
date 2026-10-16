@@ -73,9 +73,9 @@ class QuestionValidator:
         result.metadata["question_type"] = str(item.question_type)
 
         if not result.is_valid:
-            result.recoverable = True
-            result.recovery_classification = RecoveryClassification.RECOVERABLE
-            result.suggested_action = "Regenerate question or fall back to pre-existing validated question bank item."
+            result.recoverable = False
+            result.recovery_classification = RecoveryClassification.NON_RECOVERABLE
+            result.suggested_action = "Reject invalid question with recorded validation errors."
             ValidationEventLogger.log_event(
                 "question_validation_failed",
                 "INVALID",

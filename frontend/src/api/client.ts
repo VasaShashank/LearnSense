@@ -33,13 +33,22 @@ export interface TopicTerritory {
   id: string;
   name: string;
   order: number;
+  concept_ids?: string[];
+  concepts_count?: number;
+  mastery?: number;
+  uncertainty?: number;
+  prerequisites?: string[];
+  dependents?: string[];
+  description?: string;
+  concepts?: ConceptNode[];
 }
 
 export interface KnowledgeGraphData {
   subject_id: string;
   topics: TopicTerritory[];
   concepts: ConceptNode[];
-  relationships: { source: string; target: string; type: string }[];
+  relationships: { source: string; target: string; type: string; confidence?: number }[];
+  topic_relationships?: { source: string; target: string; type: string; confidence?: number }[];
 }
 
 export interface LearnerProgress {
@@ -145,6 +154,11 @@ export interface TutorResponse {
   suggested_actions: string[];
   source_citations: { page: number; section: string; quote: string }[];
   grounded?: boolean;
+  status?: string;
+  code?: string;
+  error?: string;
+  reason?: string;
+  evidence_status?: string;
 }
 
 export interface SourceDocument {
@@ -513,7 +527,7 @@ export const ApiClient = {
       body: JSON.stringify(data),
     }),
 
-  getConceptQuestion: (subjectId: string, conceptId: string): Promise<{
+  getConceptQuestion: (subjectId: string, conceptId: string, learnerId?: string): Promise<{
     question_id: string;
     concept_id: string;
     question_text: string;
@@ -526,7 +540,8 @@ export const ApiClient = {
       quote: string;
     }>;
     no_questions?: boolean;
-  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question`),
+    source?: string;
+  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question${learnerId ? `?learner_id=${encodeURIComponent(learnerId)}` : ''}`),
 
   getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>
     fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/content`),
@@ -716,5 +731,255 @@ export const ApiClient = {
     concept_results: Record<string, any>;
   }> =>
     fetchJson(`/assessment/final/status/${assessmentId}${learnerId ? `?learner_id=${learnerId}` : ''}`),
+
+  /**
+   * Notation-matched educational video recommendations with timestamp jump links (§9).
+   */
+  getConceptResources: (
+    subjectId: string,
+    conceptId: string,
+    learnerId?: string,
+    topK = 5
+  ): Promise<Array<{
+    resource_id: string;
+    title: string;
+    url: string;
+    provider: string;
+    channel: string;
+    duration_seconds: number;
+    overall_score: number;
+    concept_score: number;
+    notation_score: number;
+    prerequisite_score: number;
+    pedagogical_fit_score: number;
+    recommended_timestamp_seconds?: number;
+    timestamp_end_seconds?: number;
+    matched_segment_text?: string;
+    notation_explanation: string;
+    matched_formulas: string[];
+    match_reasons: string[];
+  }>> =>
+    fetchJson(
+      `/subjects/${subjectId}/concepts/${conceptId}/resources?top_k=${topK}${learnerId ? `&learner_id=${learnerId}` : ''}`
+    ),
+
+  /**
+   * Get class-level collective knowledge tracing state for teachers (§10.1).
+   */
+  getClassKnowledgeState: (classId: string, subjectId?: string): Promise<{
+    class_id: string;
+    subject_id: string;
+    subject_title: string;
+    total_enrolled: number;
+    active_learners: number;
+    overall_class_readiness: number;
+    concept_distributions: Record<string, any>;
+    prerequisite_gap_clusters: any[];
+    misconception_clusters: any[];
+  }> =>
+    fetchJson(`/classes/${classId}/knowledge-state${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * Generate evidence-grounded Teaching Optimizer intervention plan (§10.2).
+   */
+  generateTeachingPlan: (
+    classId: string,
+    data: { subject_id?: string; target_concept_id?: string; duration_minutes?: number }
+  ): Promise<any> =>
+    fetchJson(`/classes/${classId}/teaching-optimizer/plan`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Approve an instructional intervention plan (§10.3).
+   */
+  approveTeachingPlan: (
+    classId: string,
+    interventionId: string,
+    teacherNotes?: string
+  ): Promise<any> =>
+    fetchJson(`/classes/${classId}/interventions/${interventionId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ teacher_notes: teacherNotes }),
+    }),
+
+  /**
+   * Evaluate learning gains after intervention (§10.3).
+   */
+  evaluateIntervention: (
+    classId: string,
+    interventionId: string,
+    targetConceptId: string
+  ): Promise<any> =>
+    fetchJson(`/classes/${classId}/interventions/${interventionId}/evaluate`, {
+      method: 'POST',
+      body: JSON.stringify({ target_concept_id: targetConceptId }),
+    }),
+
+  /**
+   * Dynamically aggregated student learning insights for a specific class cohort.
+   * Returns difficulty tiers, misconception patterns, attempt volumes, and
+   * evidence-based teaching recommendations computed from real class knowledge states.
+   */
+  getStudentLearningInsights: (classId: string, subjectId?: string): Promise<Array<{
+    concept_name: string;
+    concept_id: string;
+    total_attempts: number;
+    common_mistakes: { mistake: string; frequency_pct: number }[];
+    avg_first_try_accuracy: number;
+    avg_time_to_master_minutes: number;
+    difficulty_tier: 'EASY' | 'MODERATE' | 'HARD' | 'VERY_HARD';
+    teaching_recommendations: string[];
+  }>> =>
+    fetchJson(`/classes/${classId}/student-learning-insights${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * Individual student mastery, concept scores, and intervention guidance for a class.
+   */
+  getClassStudentsMastery: (classId: string, subjectId?: string): Promise<Array<{
+    learner_id: string;
+    name: string;
+    role: string;
+    avatar: string;
+    average_mastery: number;
+    accuracy_pct: number;
+    total_concepts: number;
+    mastered_concepts: number;
+    developing_concepts: number;
+    struggling_concepts: number;
+    total_attempts: number;
+    total_correct: number;
+    assigned_tier: string;
+    recommended_intervention: string;
+    weakest_concept?: {
+      concept_id: string;
+      name: string;
+      mastery: number;
+    };
+    concept_breakdown: Array<{
+      concept_id: string;
+      concept_name: string;
+      mastery: number;
+      status: 'MASTERED' | 'DEVELOPING' | 'STRUGGLING';
+      attempts: number;
+      correct: number;
+      incorrect: number;
+      confidence: number;
+      uncertainty: number;
+    }>;
+  }>> =>
+    fetchJson(`/classes/${classId}/student-mastery${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * Platform-wide aggregated student learning insights (no class required).
+   * Used by independent visiting educators without institutional class access.
+   */
+  getGlobalStudentLearningInsights: (subjectId?: string): Promise<Array<{
+    concept_name: string;
+    concept_id: string;
+    total_attempts: number;
+    common_mistakes: { mistake: string; frequency_pct: number }[];
+    avg_first_try_accuracy: number;
+    avg_time_to_master_minutes: number;
+    difficulty_tier: 'EASY' | 'MODERATE' | 'HARD' | 'VERY_HARD';
+    teaching_recommendations: string[];
+  }>> =>
+    fetchJson(`/student-learning-insights${subjectId ? `?subject_id=${subjectId}` : ''}`),
+
+  /**
+   * List all registered classes for teacher oversight.
+   */
+  listClasses: (): Promise<Array<{
+    class_id: string;
+    subject_id: string;
+    class_name: string;
+    enrolled_learner_ids: string[];
+    updated_at: string;
+  }>> =>
+    fetchJson('/classes'),
+
+  /**
+   * Register or update a classroom cohort roster.
+   */
+  registerClass: (data: {
+    subject_id: string;
+    class_name: string;
+    enrolled_learner_ids: string[];
+  }): Promise<any> =>
+    fetchJson('/classes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * List multi-tenant organizations for B2B institutional view.
+   */
+  listOrganizations: (): Promise<Array<{
+    org_id: string;
+    name: string;
+    domain?: string;
+    created_at_iso: string;
+  }>> =>
+    fetchJson('/institutions/organizations'),
+
+  /**
+   * List institutional course classes.
+   */
+  listInstitutionClasses: (orgId?: string): Promise<Array<{
+    class_id: string;
+    org_id: string;
+    subject_id: string;
+    title: string;
+    teacher_ids: string[];
+    created_at_iso: string;
+  }>> =>
+    fetchJson(`/institutions/classes${orgId ? `?org_id=${orgId}` : ''}`),
+
+  /**
+   * Create an institutional course class / cohort.
+   */
+  createInstitutionClass: (data: {
+    org_id: string;
+    subject_id: string;
+    title: string;
+    teacher_ids: string[];
+    creator_user_id: string;
+    enrolled_learner_ids?: string[];
+  }): Promise<any> =>
+    fetchJson('/institutions/classes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Get class roster with RBAC verification.
+   */
+  getClassRoster: (classId: string, callerUserId: string): Promise<{ class_id: string; roster: string[] }> =>
+    fetchJson(`/institutions/classes/${classId}/roster?caller_user_id=${encodeURIComponent(callerUserId)}`),
+
+  /**
+   * Enroll a learner in an institutional class.
+   */
+  enrollLearnerInClass: (classId: string, learnerId: string, enrollerUserId: string): Promise<any> =>
+    fetchJson(`/institutions/classes/${classId}/enroll`, {
+      method: 'POST',
+      body: JSON.stringify({ learner_id: learnerId, enroller_user_id: enrollerUserId }),
+    }),
+
+  /**
+   * Get preconfigured personas for switching between Student, Teacher, and B2B Admin modes.
+   */
+  getPersonas: (): Promise<Array<{
+    id: string;
+    name: string;
+    role: 'LEARNER' | 'TEACHER' | 'ADMIN';
+    title: string;
+    avatar: string;
+    org_name: string;
+    email: string;
+  }>> =>
+    fetchJson('/auth/personas'),
 };
+
 

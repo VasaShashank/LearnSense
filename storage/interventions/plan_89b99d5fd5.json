@@ -1,0 +1,52 @@
+{
+  "intervention_id": "plan_89b99d5fd5",
+  "class_id": "cls_79488767",
+  "subject_id": "doc_stud-share-sample_c_programs_daa-_lab_programs",
+  "created_at_iso": "2026-10-13T18:14:06.952637+00:00",
+  "status": "PROPOSED",
+  "target_learning_objective": "Mastery Consolidation for Practice Programs",
+  "target_concept_id": "c_e6dd46481837",
+  "target_concept_name": "Practice Programs",
+  "total_class_duration_minutes": 50,
+  "actions": [
+    {
+      "priority": 1,
+      "action_type": "DIRECT_INSTRUCTION_AND_WORKED_EXAMPLES",
+      "target_concept_id": "c_e6dd46481837",
+      "target_concept_name": "Practice Programs",
+      "rationale": "Core instruction on 'Practice Programs'. Class mastery mean is 0.3 with 0 students below 0.40 mastery threshold.",
+      "allocated_time_minutes": 25,
+      "student_groups": [
+        {
+          "group_name": "Guided Practice Cohort",
+          "instructional_focus": "Step-by-step worked examples with intuitive analogies",
+          "learner_ids": [],
+          "suggested_resource": null
+        },
+        {
+          "group_name": "Independent Application Cohort",
+          "instructional_focus": "Challenging transfer problems and multi-step applications",
+          "learner_ids": [],
+          "suggested_resource": null
+        }
+      ],
+      "recommended_probe_concept_ids": [
+        "c_e6dd46481837"
+      ]
+    },
+    {
+      "priority": 2,
+      "action_type": "FORMATIVE_REASSESSMENT",
+      "target_concept_id": "c_e6dd46481837",
+      "target_concept_name": "Practice Programs",
+      "rationale": "Conduct 3-item adaptive verification probe to measure post-intervention learning gain.",
+      "allocated_time_minutes": 25,
+      "student_groups": [],
+      "recommended_probe_concept_ids": [
+        "c_e6dd46481837"
+      ]
+    }
+  ],
+  "teacher_notes": null,
+  "approved_at_iso": null
+}

@@ -26,6 +26,8 @@ export interface OnboardingWorkflowProps {
    * can no longer fall into it by accident.
    */
   mode?: 'SOURCE_SELECTION' | 'CALIBRATION';
+  /** When true, forces the self-assessment survey quiz to open even if the subject was previously calibrated. */
+  forceSurvey?: boolean;
   /** Notifies the parent that the subject list changed (e.g. after an upload). */
   onSubjectsChanged?: () => void;
 }
@@ -44,11 +46,12 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   resumeInitSession,
   initialSubject,
   mode = 'SOURCE_SELECTION',
+  forceSurvey = false,
   onSubjectsChanged,
 }) => {
-  // Default step is decided by mode, never "SELECT_SUBJECT" unconditionally.
+  // Default step is decided by mode or forceSurvey
   const [step, setStep] = useState<'SELECT_SUBJECT' | 'SELF_ASSESSMENT' | 'DIAGNOSTIC' | 'COMPLETED'>(
-    mode === 'CALIBRATION' ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
+    mode === 'CALIBRATION' || forceSurvey ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
   );
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [learnerId] = useState<string>('student_alex');
@@ -138,7 +141,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   };
 
   // 1. Select Subject - loads data and checks calibration status
-  const handleSelectSubject = async (sub: Subject) => {
+  const handleSelectSubject = async (sub: Subject, bypassGate: boolean = false) => {
     setSelectedSubject(sub);
     setLoading(true);
     try {
@@ -146,17 +149,17 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setConcepts(graph.concepts);
       setTopics(graph.topics || []);
 
-      // Check if this subject needs calibration
-      const calibrationStatus = await ApiClient.getCalibrationStatus(learnerId, sub.id);
-
-      if (!calibrationStatus.needs_calibration && calibrationStatus.diagnostic_completed) {
-        // Subject already calibrated - allow direct continuation to learning
-        clearDraft(sub.id);
-        onCompleteOnboarding(sub.id, learnerId);
-        return;
+      // If not forcing the survey quiz, check if subject is already fully calibrated
+      if (!bypassGate && !forceSurvey) {
+        const calibrationStatus = await ApiClient.getCalibrationStatus(learnerId, sub.id);
+        if (!calibrationStatus.needs_calibration && calibrationStatus.diagnostic_completed) {
+          clearDraft(sub.id);
+          onCompleteOnboarding(sub.id, learnerId);
+          return;
+        }
       }
 
-      // Subject needs calibration - load self-assessment data and auto-proceed
+      // Subject needs calibration (or survey is requested) - load self-assessment data and auto-proceed
       const draft = loadDraft(sub.id);
       const initMap: Record<string, string> = {};
       const initConf: Record<string, Confidence> = {};
@@ -168,7 +171,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       setSelfAssessmentSelections(initMap);
       selfAssessmentSelectionsRef.current = initMap;
       setConfidenceSelections(initConf);
-      // Auto-proceed to self-assessment for existing subjects that need calibration
+      // Auto-proceed to self-assessment survey
       setStep('SELF_ASSESSMENT');
     } catch (err) {
       console.error('Failed to load subject graph', err);
@@ -177,28 +180,38 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     }
   };
 
-  // Check calibration status for all subjects on mount to show badges
+  // Check calibration status for all subjects on mount to show badges (only needed on SELECT_SUBJECT step)
   useEffect(() => {
+    if (step !== 'SELECT_SUBJECT' || subjects.length === 0) return;
+    let cancelled = false;
     const checkAllCalibrationStatus = async () => {
       const statusMap: Record<string, { needs_calibration: boolean; diagnostic_completed: boolean }> = {};
       await Promise.all(
         subjects.map(async (s) => {
           try {
             const status = await ApiClient.getCalibrationStatus(learnerId, s.id);
-            statusMap[s.id] = {
-              needs_calibration: status.needs_calibration,
-              diagnostic_completed: status.diagnostic_completed,
-            };
+            if (!cancelled) {
+              statusMap[s.id] = {
+                needs_calibration: status.needs_calibration,
+                diagnostic_completed: status.diagnostic_completed,
+              };
+            }
           } catch {
-            // Best-effort - if check fails, assume needs calibration
-            statusMap[s.id] = { needs_calibration: true, diagnostic_completed: false };
+            if (!cancelled) {
+              statusMap[s.id] = { needs_calibration: true, diagnostic_completed: false };
+            }
           }
         })
       );
-      setSubjectCalibrationStatus(statusMap);
+      if (!cancelled) {
+        setSubjectCalibrationStatus(statusMap);
+      }
     };
     checkAllCalibrationStatus();
-  }, [subjects, learnerId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [subjects, learnerId, step]);
 
   // 1b. Handle PDF/File Upload — ingestion states: uploading → processing →
   // extracting → ready for self-assessment. Self-assessment is only shown once
@@ -346,19 +359,15 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeInitSession?.session_id]);
 
-  // REMOVED: Automatic transition to self-assessment for initialSubject
-  // The calibration gate from App.tsx now only loads the subject data.
-  // The user must explicitly click to start self-assessment.
-  // This prevents automatic quiz/diagnostic start after ingestion.
+  // Transition to self-assessment survey when initialSubject is provided
   const initialSubjectHandled = React.useRef<string | null>(null);
   useEffect(() => {
     if (!initialSubject || resumeInitSession) return;
     if (initialSubjectHandled.current === initialSubject.id) return;
     initialSubjectHandled.current = initialSubject.id;
-    // Only load the subject data, do NOT auto-transition to self-assessment
-    handleSelectSubject(initialSubject);
+    handleSelectSubject(initialSubject, Boolean(forceSurvey || mode === 'CALIBRATION'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSubject?.id]);
+  }, [initialSubject?.id, mode, forceSurvey]);
 
   // 2. Submit Self Assessment — self-assessment + confidence is the initial
   // hypothesis only. The server stores it separately from BKT evidence and the
@@ -371,14 +380,16 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       console.log('[CALIBRATION] Submitting self-assessment...');
       const allConceptIds = concepts.map((c) => c.concept_id);
       const apiConfidences: Record<string, string> = {};
+      const filteredSelections: Record<string, string> = {};
       allConceptIds.forEach((cid) => {
+        filteredSelections[cid] = selfAssessmentSelections[cid] || 'UNANSWERED';
         const c = confidenceSelections[cid] || 'Medium';
         apiConfidences[cid] = c.toUpperCase();
       });
       const session = await ApiClient.submitSelfAssessment({
         learner_id: learnerId,
         subject_id: selectedSubject.id,
-        selections: selfAssessmentSelections,
+        selections: filteredSelections,
         all_subject_concept_ids: allConceptIds,
         confidences: apiConfidences,
       });
@@ -396,7 +407,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
       // Verification set = Strong claims + Unsure concepts. Confident Weak
       // (DONT_KNOW) needs no probing: its gap already drives the path.
-      const verifyCount = Object.values(selfAssessmentSelections).filter(
+      const verifyCount = Object.values(filteredSelections).filter(
         (v) => v === 'KNOW' || v === 'UNANSWERED',
       ).length;
       console.log('[CALIBRATION] Verification count:', verifyCount);
@@ -411,10 +422,6 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       console.log('[CALIBRATION] Starting diagnostic generation...');
       const diagData = await ApiClient.startDiagnostic(session.session_id, learnerId);
 
-      // A generation failure is an ERROR state, not a pass. Previously both
-      // `start_diagnostic` (server) and this branch (client) treated "no
-      // questions" as "verification complete", so an LLM/bank failure silently
-      // promoted an unverified learner straight to the dashboard.
       if (diagData.status === 'error') {
         setDiagnosticError(
           diagData.error ?? 'The verification test could not be prepared. Please retry.',
@@ -437,8 +444,19 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
       }
       setDiagnosticNext(diagData.next_question);
       setStep('DIAGNOSTIC');
-    } catch (err) {
+    } catch (err: any) {
       console.error('[CALIBRATION] Failed to submit self assessment', err);
+      // If error indicates outdated / foreign concept IDs from a stale draft, refresh graph state
+      if (err?.message?.includes('Foreign concept') && selectedSubject) {
+        clearDraft(selectedSubject.id);
+        try {
+          const freshGraph = await ApiClient.getSubjectGraph(selectedSubject.id, learnerId);
+          setConcepts(freshGraph.concepts);
+          setTopics(freshGraph.topics || []);
+        } catch {
+          // best effort
+        }
+      }
       setSubmitError(
         err instanceof ApiError
           ? `Could not start the verification test: ${err.message}`
