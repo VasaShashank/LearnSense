@@ -1,0 +1,2493 @@
+{
+  "concepts": [
+    {
+      "aliases": [
+        "PHY_KIN"
+      ],
+      "chapter_id": "ch_kinematics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Kinematics covering fundamental principles in Physics (Mechanics).",
+      "name": "Kinematics",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Kinematics",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Kinematics"
+        }
+      ],
+      "stable_key": "physics/mechanics/kinematics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_NLM"
+      ],
+      "chapter_id": "ch_laws_of_motion",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Laws of Motion covering fundamental principles in Physics (Mechanics).",
+      "name": "Laws of Motion",
+      "prerequisites": [
+        "physics/mechanics/kinematics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Laws of Motion",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Laws of Motion"
+        }
+      ],
+      "stable_key": "physics/mechanics/laws_of_motion",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_WPE"
+      ],
+      "chapter_id": "ch_work_power_and_energy",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Work, Power and Energy covering fundamental principles in Physics (Mechanics).",
+      "name": "Work, Power and Energy",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Work, Power and Energy",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Work, Power and Energy"
+        }
+      ],
+      "stable_key": "physics/mechanics/work_power_and_energy",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_COM"
+      ],
+      "chapter_id": "ch_centre_of_mass_and_collisions",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Centre of Mass and Collisions covering fundamental principles in Physics (Mechanics).",
+      "name": "Centre of Mass and Collisions",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Centre of Mass and Collisions",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Centre of Mass and Collisions"
+        }
+      ],
+      "stable_key": "physics/mechanics/centre_of_mass_and_collisions",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_ROT"
+      ],
+      "chapter_id": "ch_rotational_motion",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Rotational Motion covering fundamental principles in Physics (Mechanics).",
+      "name": "Rotational Motion",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion",
+        "physics/mechanics/work_power_and_energy"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Rotational Motion",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Rotational Motion"
+        }
+      ],
+      "stable_key": "physics/mechanics/rotational_motion",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_GRA"
+      ],
+      "chapter_id": "ch_gravitation",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Gravitation covering fundamental principles in Physics (Mechanics).",
+      "name": "Gravitation",
+      "prerequisites": [
+        "physics/mechanics/work_power_and_energy"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Gravitation",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Gravitation"
+        }
+      ],
+      "stable_key": "physics/mechanics/gravitation",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "mechanics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Mechanics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_ELA"
+      ],
+      "chapter_id": "ch_elasticity",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Elasticity covering fundamental principles in Physics (Properties of Matter).",
+      "name": "Elasticity",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Elasticity",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Elasticity"
+        }
+      ],
+      "stable_key": "physics/properties_of_matter/elasticity",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "properties_of_matter",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Properties of Matter"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_FLU"
+      ],
+      "chapter_id": "ch_fluid_mechanics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Fluid Mechanics covering fundamental principles in Physics (Properties of Matter).",
+      "name": "Fluid Mechanics",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Fluid Mechanics",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Fluid Mechanics"
+        }
+      ],
+      "stable_key": "physics/properties_of_matter/fluid_mechanics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "properties_of_matter",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Properties of Matter"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_THM"
+      ],
+      "chapter_id": "ch_thermal_properties",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Thermal Properties covering fundamental principles in Physics (Thermal Physics).",
+      "name": "Thermal Properties",
+      "prerequisites": [
+        "physics/mechanics/kinematics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Thermal Properties",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Thermal Properties"
+        }
+      ],
+      "stable_key": "physics/thermal_physics/thermal_properties",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "thermal_physics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Thermal Physics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_KTG"
+      ],
+      "chapter_id": "ch_kinetic_theory_of_gases",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Kinetic Theory of Gases covering fundamental principles in Physics (Thermal Physics).",
+      "name": "Kinetic Theory of Gases",
+      "prerequisites": [
+        "physics/thermal_physics/thermal_properties"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Kinetic Theory of Gases",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Kinetic Theory of Gases"
+        }
+      ],
+      "stable_key": "physics/thermal_physics/kinetic_theory_of_gases",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "thermal_physics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Thermal Physics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_THD"
+      ],
+      "chapter_id": "ch_thermodynamics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Thermodynamics covering fundamental principles in Physics (Thermal Physics).",
+      "name": "Thermodynamics",
+      "prerequisites": [
+        "physics/thermal_physics/kinetic_theory_of_gases"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Thermodynamics",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Thermodynamics"
+        }
+      ],
+      "stable_key": "physics/thermal_physics/thermodynamics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "thermal_physics",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Thermal Physics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_SHM",
+        "Simple Harmonic Motion",
+        "SHM"
+      ],
+      "chapter_id": "ch_oscillations",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Oscillations covering fundamental principles in Physics (Waves).",
+      "name": "Oscillations",
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Oscillations",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Oscillations"
+        }
+      ],
+      "stable_key": "physics/waves/oscillations",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "waves",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Waves"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_WAV"
+      ],
+      "chapter_id": "ch_waves",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Waves covering fundamental principles in Physics (Waves).",
+      "name": "Waves",
+      "prerequisites": [
+        "physics/waves/oscillations"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Waves",
+          "source_id": "NCERT-PHYSICS-XI",
+          "title": "NCERT Class 11 Physics: Waves"
+        }
+      ],
+      "stable_key": "physics/waves/waves",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "waves",
+        "class_11"
+      ],
+      "topic_path": [
+        "physics",
+        "Waves"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_ELE"
+      ],
+      "chapter_id": "ch_electrostatics",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Electrostatics covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Electrostatics",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Electrostatics",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Electrostatics"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/electrostatics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_CAP"
+      ],
+      "chapter_id": "ch_capacitance",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Capacitance covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Capacitance",
+      "prerequisites": [
+        "physics/electromagnetism/electrostatics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Capacitance",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Capacitance"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/capacitance",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_CUR"
+      ],
+      "chapter_id": "ch_current_electricity",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Current Electricity covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Current Electricity",
+      "prerequisites": [
+        "physics/electromagnetism/electrostatics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Current Electricity",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Current Electricity"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/current_electricity",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_MAG"
+      ],
+      "chapter_id": "ch_magnetic_effects_of_current",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Magnetic Effects of Current covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Magnetic Effects of Current",
+      "prerequisites": [
+        "physics/electromagnetism/current_electricity"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Magnetic Effects of Current",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Magnetic Effects of Current"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/magnetic_effects_of_current",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_EMI"
+      ],
+      "chapter_id": "ch_electromagnetic_induction",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Electromagnetic Induction covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Electromagnetic Induction",
+      "prerequisites": [
+        "physics/electromagnetism/magnetic_effects_of_current"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Electromagnetic Induction",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Electromagnetic Induction"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/electromagnetic_induction",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_AC"
+      ],
+      "chapter_id": "ch_alternating_current",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Alternating Current covering fundamental principles in Physics (Electromagnetism).",
+      "name": "Alternating Current",
+      "prerequisites": [
+        "physics/electromagnetism/electromagnetic_induction"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Alternating Current",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Alternating Current"
+        }
+      ],
+      "stable_key": "physics/electromagnetism/alternating_current",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_OPT",
+        "Optics",
+        "Ray Optics",
+        "Wave Optics"
+      ],
+      "chapter_id": "ch_ray_and_wave_optics",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Ray and Wave Optics covering fundamental principles in Physics (Optics).",
+      "name": "Ray and Wave Optics",
+      "prerequisites": [
+        "physics/mechanics/kinematics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Ray and Wave Optics",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Ray and Wave Optics"
+        }
+      ],
+      "stable_key": "physics/optics/ray_and_wave_optics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "optics",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Optics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_MOD"
+      ],
+      "chapter_id": "ch_modern_physics",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Modern Physics covering fundamental principles in Physics (Modern Physics).",
+      "name": "Modern Physics",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Modern Physics",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Modern Physics"
+        }
+      ],
+      "stable_key": "physics/modern_physics/modern_physics",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "modern_physics",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Modern Physics"
+      ]
+    },
+    {
+      "aliases": [
+        "PHY_SEM"
+      ],
+      "chapter_id": "ch_semiconductors",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Semiconductors covering fundamental principles in Physics (Modern Physics).",
+      "name": "Semiconductors",
+      "prerequisites": [
+        "physics/modern_physics/modern_physics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Semiconductors",
+          "source_id": "NCERT-PHYSICS-XII",
+          "title": "NCERT Class 12 Physics: Semiconductors"
+        }
+      ],
+      "stable_key": "physics/modern_physics/semiconductors",
+      "subject": "physics",
+      "tags": [
+        "physics",
+        "modern_physics",
+        "class_12"
+      ],
+      "topic_path": [
+        "physics",
+        "Modern Physics"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_MOL",
+        "Mole Concept",
+        "Some Basic Concepts of Chemistry",
+        "number of moles"
+      ],
+      "chapter_id": "ch_some_basic_concepts_mole_concept",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Some Basic Concepts / Mole Concept covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Some Basic Concepts / Mole Concept",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Some Basic Concepts / Mole Concept",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Some Basic Concepts / Mole Concept"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_ATM"
+      ],
+      "chapter_id": "ch_atomic_structure",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Atomic Structure covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Atomic Structure",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Atomic Structure",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Atomic Structure"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/atomic_structure",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_PER"
+      ],
+      "chapter_id": "ch_periodicity",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Periodicity covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "Periodicity",
+      "prerequisites": [
+        "chemistry/physical_chemistry/atomic_structure"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Periodicity",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Periodicity"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/periodicity",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_BND"
+      ],
+      "chapter_id": "ch_chemical_bonding",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Chemical Bonding covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "Chemical Bonding",
+      "prerequisites": [
+        "chemistry/physical_chemistry/atomic_structure",
+        "chemistry/inorganic_chemistry/periodicity"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Chemical Bonding",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Chemical Bonding"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_STS"
+      ],
+      "chapter_id": "ch_states_of_matter",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic States of Matter covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "States of Matter",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: States of Matter",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: States of Matter"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/states_of_matter",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_THM"
+      ],
+      "chapter_id": "ch_chemical_thermodynamics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Chemical Thermodynamics covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Chemical Thermodynamics",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Chemical Thermodynamics",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Chemical Thermodynamics"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/chemical_thermodynamics",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_EQM",
+        "Chemical Equilibrium",
+        "dynamic equilibrium"
+      ],
+      "chapter_id": "ch_equilibrium",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Equilibrium covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Equilibrium",
+      "prerequisites": [
+        "chemistry/physical_chemistry/chemical_thermodynamics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Equilibrium",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Equilibrium"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/equilibrium",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_ION"
+      ],
+      "chapter_id": "ch_ionic_equilibrium",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Ionic Equilibrium covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Ionic Equilibrium",
+      "prerequisites": [
+        "chemistry/physical_chemistry/equilibrium"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Ionic Equilibrium",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Ionic Equilibrium"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/ionic_equilibrium",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_RED"
+      ],
+      "chapter_id": "ch_redox_reactions",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Redox Reactions covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Redox Reactions",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Redox Reactions",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Redox Reactions"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/redox_reactions",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_ECH"
+      ],
+      "chapter_id": "ch_electrochemistry",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Electrochemistry covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Electrochemistry",
+      "prerequisites": [
+        "chemistry/physical_chemistry/redox_reactions",
+        "chemistry/physical_chemistry/equilibrium"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Electrochemistry",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Electrochemistry"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/electrochemistry",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_KIN"
+      ],
+      "chapter_id": "ch_chemical_kinetics",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Chemical Kinetics covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Chemical Kinetics",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Chemical Kinetics",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Chemical Kinetics"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/chemical_kinetics",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_SOL"
+      ],
+      "chapter_id": "ch_solutions",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Solutions covering fundamental principles in Chemistry (Physical Chemistry).",
+      "name": "Solutions",
+      "prerequisites": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Solutions",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Solutions"
+        }
+      ],
+      "stable_key": "chemistry/physical_chemistry/solutions",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "physical_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Physical Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_MET"
+      ],
+      "chapter_id": "ch_metallurgy",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Metallurgy covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "Metallurgy",
+      "prerequisites": [
+        "chemistry/physical_chemistry/redox_reactions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Metallurgy",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Metallurgy"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/metallurgy",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_HYD"
+      ],
+      "chapter_id": "ch_hydrogen_and_s_block",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Hydrogen and s-Block covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "Hydrogen and s-Block",
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/periodicity"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Hydrogen and s-Block",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Hydrogen and s-Block"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/hydrogen_and_s_block",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_PBL"
+      ],
+      "chapter_id": "ch_p_block_elements",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic p-Block Elements covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "p-Block Elements",
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/periodicity",
+        "chemistry/inorganic_chemistry/chemical_bonding"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: p-Block Elements",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: p-Block Elements"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/p_block_elements",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_DBL"
+      ],
+      "chapter_id": "ch_d_and_f_block_elements",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic d- and f-Block Elements covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "d- and f-Block Elements",
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/periodicity"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: d- and f-Block Elements",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: d- and f-Block Elements"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_COO"
+      ],
+      "chapter_id": "ch_coordination_compounds",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Coordination Compounds covering fundamental principles in Chemistry (Inorganic Chemistry).",
+      "name": "Coordination Compounds",
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/chemical_bonding",
+        "chemistry/inorganic_chemistry/d_and_f_block_elements"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Coordination Compounds",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Coordination Compounds"
+        }
+      ],
+      "stable_key": "chemistry/inorganic_chemistry/coordination_compounds",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "inorganic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Inorganic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_ORB"
+      ],
+      "chapter_id": "ch_organic_chemistry_basics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Organic Chemistry Basics covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Organic Chemistry Basics",
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/chemical_bonding"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Organic Chemistry Basics",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Organic Chemistry Basics"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_HC"
+      ],
+      "chapter_id": "ch_hydrocarbons",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Hydrocarbons covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Hydrocarbons",
+      "prerequisites": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Hydrocarbons",
+          "source_id": "NCERT-CHEMISTRY-XI",
+          "title": "NCERT Class 11 Chemistry: Hydrocarbons"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/hydrocarbons",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_11"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_HLG"
+      ],
+      "chapter_id": "ch_haloalkanes_and_haloarenes",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Haloalkanes and Haloarenes covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Haloalkanes and Haloarenes",
+      "prerequisites": [
+        "chemistry/organic_chemistry/hydrocarbons"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Haloalkanes and Haloarenes",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Haloalkanes and Haloarenes"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/haloalkanes_and_haloarenes",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_OXY"
+      ],
+      "chapter_id": "ch_alcohols_phenols_and_ethers",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Alcohols, Phenols and Ethers covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Alcohols, Phenols and Ethers",
+      "prerequisites": [
+        "chemistry/organic_chemistry/haloalkanes_and_haloarenes"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Alcohols, Phenols and Ethers",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Alcohols, Phenols and Ethers"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/alcohols_phenols_and_ethers",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_CAR"
+      ],
+      "chapter_id": "ch_carbonyl_compounds_and_carboxylic_acids",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Carbonyl Compounds and Carboxylic Acids covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Carbonyl Compounds and Carboxylic Acids",
+      "prerequisites": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Carbonyl Compounds and Carboxylic Acids",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Carbonyl Compounds and Carboxylic Acids"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_AMN"
+      ],
+      "chapter_id": "ch_amines",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Amines covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Amines",
+      "prerequisites": [
+        "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Amines",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Amines"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/amines",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "CHE_BIO"
+      ],
+      "chapter_id": "ch_biomolecules",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Biomolecules covering fundamental principles in Chemistry (Organic Chemistry).",
+      "name": "Biomolecules",
+      "prerequisites": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Biomolecules",
+          "source_id": "NCERT-CHEMISTRY-XII",
+          "title": "NCERT Class 12 Chemistry: Biomolecules"
+        }
+      ],
+      "stable_key": "chemistry/organic_chemistry/biomolecules",
+      "subject": "chemistry",
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12"
+      ],
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_SET"
+      ],
+      "chapter_id": "ch_sets_relations_and_functions",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Sets, Relations and Functions covering fundamental principles in Mathematics (Algebra).",
+      "name": "Sets, Relations and Functions",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Sets, Relations and Functions",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Sets, Relations and Functions"
+        }
+      ],
+      "stable_key": "mathematics/algebra/sets_relations_and_functions",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_CMP"
+      ],
+      "chapter_id": "ch_complex_numbers",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Complex Numbers covering fundamental principles in Mathematics (Algebra).",
+      "name": "Complex Numbers",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Complex Numbers",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Complex Numbers"
+        }
+      ],
+      "stable_key": "mathematics/algebra/complex_numbers",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_QUA"
+      ],
+      "chapter_id": "ch_quadratic_equations",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Quadratic Equations covering fundamental principles in Mathematics (Algebra).",
+      "name": "Quadratic Equations",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Quadratic Equations",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Quadratic Equations"
+        }
+      ],
+      "stable_key": "mathematics/algebra/quadratic_equations",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_SEQ"
+      ],
+      "chapter_id": "ch_sequences_and_series",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Sequences and Series covering fundamental principles in Mathematics (Algebra).",
+      "name": "Sequences and Series",
+      "prerequisites": [
+        "mathematics/algebra/quadratic_equations"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Sequences and Series",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Sequences and Series"
+        }
+      ],
+      "stable_key": "mathematics/algebra/sequences_and_series",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_BIN"
+      ],
+      "chapter_id": "ch_binomial_theorem",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Binomial Theorem covering fundamental principles in Mathematics (Algebra).",
+      "name": "Binomial Theorem",
+      "prerequisites": [
+        "mathematics/algebra/quadratic_equations"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Binomial Theorem",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Binomial Theorem"
+        }
+      ],
+      "stable_key": "mathematics/algebra/binomial_theorem",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_MAT"
+      ],
+      "chapter_id": "ch_matrices_and_determinants",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Matrices and Determinants covering fundamental principles in Mathematics (Algebra).",
+      "name": "Matrices and Determinants",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Matrices and Determinants",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Matrices and Determinants"
+        }
+      ],
+      "stable_key": "mathematics/algebra/matrices_and_determinants",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_TRI"
+      ],
+      "chapter_id": "ch_trigonometry",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Trigonometry covering fundamental principles in Mathematics (Trigonometry).",
+      "name": "Trigonometry",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Trigonometry",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Trigonometry"
+        }
+      ],
+      "stable_key": "mathematics/trigonometry/trigonometry",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "trigonometry",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Trigonometry"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_LIM"
+      ],
+      "chapter_id": "ch_limits_and_continuity",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Limits and Continuity covering fundamental principles in Mathematics (Calculus).",
+      "name": "Limits and Continuity",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Limits and Continuity",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Limits and Continuity"
+        }
+      ],
+      "stable_key": "mathematics/calculus/limits_and_continuity",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "calculus",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Calculus"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_DIF"
+      ],
+      "chapter_id": "ch_differentiation",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Differentiation covering fundamental principles in Mathematics (Calculus).",
+      "name": "Differentiation",
+      "prerequisites": [
+        "mathematics/calculus/limits_and_continuity"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Differentiation",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Differentiation"
+        }
+      ],
+      "stable_key": "mathematics/calculus/differentiation",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "calculus",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Calculus"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_APP"
+      ],
+      "chapter_id": "ch_applications_of_derivatives",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Applications of Derivatives covering fundamental principles in Mathematics (Calculus).",
+      "name": "Applications of Derivatives",
+      "prerequisites": [
+        "mathematics/calculus/differentiation"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Applications of Derivatives",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Applications of Derivatives"
+        }
+      ],
+      "stable_key": "mathematics/calculus/applications_of_derivatives",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "calculus",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Calculus"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_INT"
+      ],
+      "chapter_id": "ch_integral_calculus",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Integral Calculus covering fundamental principles in Mathematics (Calculus).",
+      "name": "Integral Calculus",
+      "prerequisites": [
+        "mathematics/calculus/differentiation"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Integral Calculus",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Integral Calculus"
+        }
+      ],
+      "stable_key": "mathematics/calculus/integral_calculus",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "calculus",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Calculus"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_DEQ"
+      ],
+      "chapter_id": "ch_differential_equations",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Differential Equations covering fundamental principles in Mathematics (Calculus).",
+      "name": "Differential Equations",
+      "prerequisites": [
+        "mathematics/calculus/integral_calculus"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Differential Equations",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Differential Equations"
+        }
+      ],
+      "stable_key": "mathematics/calculus/differential_equations",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "calculus",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Calculus"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_VEC"
+      ],
+      "chapter_id": "ch_vector_algebra",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Vector Algebra covering fundamental principles in Mathematics (Coordinate Geometry).",
+      "name": "Vector Algebra",
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Vector Algebra",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Vector Algebra"
+        }
+      ],
+      "stable_key": "mathematics/coordinate_geometry/vector_algebra",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_3D"
+      ],
+      "chapter_id": "ch_three_dimensional_geometry",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Three-Dimensional Geometry covering fundamental principles in Mathematics (Coordinate Geometry).",
+      "name": "Three-Dimensional Geometry",
+      "prerequisites": [
+        "mathematics/coordinate_geometry/vector_algebra"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Three-Dimensional Geometry",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Three-Dimensional Geometry"
+        }
+      ],
+      "stable_key": "mathematics/coordinate_geometry/three_dimensional_geometry",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_PRO"
+      ],
+      "chapter_id": "ch_probability",
+      "class_levels": [
+        "class_12"
+      ],
+      "description": "Core curriculum topic Probability covering fundamental principles in Mathematics (Probability).",
+      "name": "Probability",
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Probability",
+          "source_id": "NCERT-MATHEMATICS-XII",
+          "title": "NCERT Class 12 Mathematics: Probability"
+        }
+      ],
+      "stable_key": "mathematics/probability/probability",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "probability",
+        "class_12"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Probability"
+      ]
+    },
+    {
+      "aliases": [
+        "MAT_CON",
+        "Conic Sections",
+        "Conics"
+      ],
+      "chapter_id": "ch_coordinate_geometry_conics",
+      "class_levels": [
+        "class_11"
+      ],
+      "description": "Core curriculum topic Coordinate Geometry: Conics covering fundamental principles in Mathematics (Coordinate Geometry).",
+      "name": "Coordinate Geometry: Conics",
+      "prerequisites": [
+        "mathematics/algebra/quadratic_equations"
+      ],
+      "source_refs": [
+        {
+          "kind": "EXPLICIT",
+          "locator": "Chapter: Coordinate Geometry: Conics",
+          "source_id": "NCERT-MATHEMATICS-XI",
+          "title": "NCERT Class 11 Mathematics: Coordinate Geometry: Conics"
+        }
+      ],
+      "stable_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
+      "subject": "mathematics",
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_11"
+      ],
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ]
+    }
+  ],
+  "curriculum_id": "jee_class_11_12",
+  "metadata": {
+    "authored_by": "person2",
+    "coverage_target": "jee_full_simulator_parity",
+    "expert_reviewed": true,
+    "source_framework": "NCERT Class 11-12 & NTA JEE Syllabus"
+  },
+  "relationships": [
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Laws of Motion.",
+      "source_key": "physics/mechanics/kinematics",
+      "status": "accepted",
+      "target_key": "physics/mechanics/laws_of_motion",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Work, Power and Energy.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/mechanics/work_power_and_energy",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Centre of Mass and Collisions.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/mechanics/centre_of_mass_and_collisions",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Rotational Motion.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/mechanics/rotational_motion",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Rotational Motion.",
+      "source_key": "physics/mechanics/work_power_and_energy",
+      "status": "accepted",
+      "target_key": "physics/mechanics/rotational_motion",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Gravitation.",
+      "source_key": "physics/mechanics/work_power_and_energy",
+      "status": "accepted",
+      "target_key": "physics/mechanics/gravitation",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Elasticity.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/properties_of_matter/elasticity",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Fluid Mechanics.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/properties_of_matter/fluid_mechanics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Thermal Properties.",
+      "source_key": "physics/mechanics/kinematics",
+      "status": "accepted",
+      "target_key": "physics/thermal_physics/thermal_properties",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Kinetic Theory of Gases.",
+      "source_key": "physics/thermal_physics/thermal_properties",
+      "status": "accepted",
+      "target_key": "physics/thermal_physics/kinetic_theory_of_gases",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Thermodynamics.",
+      "source_key": "physics/thermal_physics/kinetic_theory_of_gases",
+      "status": "accepted",
+      "target_key": "physics/thermal_physics/thermodynamics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Oscillations.",
+      "source_key": "physics/mechanics/laws_of_motion",
+      "status": "accepted",
+      "target_key": "physics/waves/oscillations",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Waves.",
+      "source_key": "physics/waves/oscillations",
+      "status": "accepted",
+      "target_key": "physics/waves/waves",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Capacitance.",
+      "source_key": "physics/electromagnetism/electrostatics",
+      "status": "accepted",
+      "target_key": "physics/electromagnetism/capacitance",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Current Electricity.",
+      "source_key": "physics/electromagnetism/electrostatics",
+      "status": "accepted",
+      "target_key": "physics/electromagnetism/current_electricity",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Magnetic Effects of Current.",
+      "source_key": "physics/electromagnetism/current_electricity",
+      "status": "accepted",
+      "target_key": "physics/electromagnetism/magnetic_effects_of_current",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electromagnetic Induction.",
+      "source_key": "physics/electromagnetism/magnetic_effects_of_current",
+      "status": "accepted",
+      "target_key": "physics/electromagnetism/electromagnetic_induction",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Alternating Current.",
+      "source_key": "physics/electromagnetism/electromagnetic_induction",
+      "status": "accepted",
+      "target_key": "physics/electromagnetism/alternating_current",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Ray and Wave Optics.",
+      "source_key": "physics/mechanics/kinematics",
+      "status": "accepted",
+      "target_key": "physics/optics/ray_and_wave_optics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Semiconductors.",
+      "source_key": "physics/modern_physics/modern_physics",
+      "status": "accepted",
+      "target_key": "physics/modern_physics/semiconductors",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Atomic Structure.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/atomic_structure",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Periodicity.",
+      "source_key": "chemistry/physical_chemistry/atomic_structure",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/periodicity",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Bonding.",
+      "source_key": "chemistry/physical_chemistry/atomic_structure",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Bonding.",
+      "source_key": "chemistry/inorganic_chemistry/periodicity",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to States of Matter.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/states_of_matter",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Thermodynamics.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/chemical_thermodynamics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Equilibrium.",
+      "source_key": "chemistry/physical_chemistry/chemical_thermodynamics",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/equilibrium",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Ionic Equilibrium.",
+      "source_key": "chemistry/physical_chemistry/equilibrium",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/ionic_equilibrium",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Redox Reactions.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/redox_reactions",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electrochemistry.",
+      "source_key": "chemistry/physical_chemistry/redox_reactions",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/electrochemistry",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electrochemistry.",
+      "source_key": "chemistry/physical_chemistry/equilibrium",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/electrochemistry",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Kinetics.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/chemical_kinetics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Solutions.",
+      "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
+      "status": "accepted",
+      "target_key": "chemistry/physical_chemistry/solutions",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Metallurgy.",
+      "source_key": "chemistry/physical_chemistry/redox_reactions",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/metallurgy",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Hydrogen and s-Block.",
+      "source_key": "chemistry/inorganic_chemistry/periodicity",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/hydrogen_and_s_block",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to p-Block Elements.",
+      "source_key": "chemistry/inorganic_chemistry/periodicity",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/p_block_elements",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to p-Block Elements.",
+      "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/p_block_elements",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to d- and f-Block Elements.",
+      "source_key": "chemistry/inorganic_chemistry/periodicity",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordination Compounds.",
+      "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/coordination_compounds",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordination Compounds.",
+      "source_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
+      "status": "accepted",
+      "target_key": "chemistry/inorganic_chemistry/coordination_compounds",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Organic Chemistry Basics.",
+      "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Hydrocarbons.",
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/hydrocarbons",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Haloalkanes and Haloarenes.",
+      "source_key": "chemistry/organic_chemistry/hydrocarbons",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/haloalkanes_and_haloarenes",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Alcohols, Phenols and Ethers.",
+      "source_key": "chemistry/organic_chemistry/haloalkanes_and_haloarenes",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/alcohols_phenols_and_ethers",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Carbonyl Compounds and Carboxylic Acids.",
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Amines.",
+      "source_key": "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/amines",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Biomolecules.",
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "status": "accepted",
+      "target_key": "chemistry/organic_chemistry/biomolecules",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Complex Numbers.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/algebra/complex_numbers",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Quadratic Equations.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/algebra/quadratic_equations",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Sequences and Series.",
+      "source_key": "mathematics/algebra/quadratic_equations",
+      "status": "accepted",
+      "target_key": "mathematics/algebra/sequences_and_series",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Binomial Theorem.",
+      "source_key": "mathematics/algebra/quadratic_equations",
+      "status": "accepted",
+      "target_key": "mathematics/algebra/binomial_theorem",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Matrices and Determinants.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/algebra/matrices_and_determinants",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Trigonometry.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/trigonometry/trigonometry",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Limits and Continuity.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/calculus/limits_and_continuity",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Differentiation.",
+      "source_key": "mathematics/calculus/limits_and_continuity",
+      "status": "accepted",
+      "target_key": "mathematics/calculus/differentiation",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Applications of Derivatives.",
+      "source_key": "mathematics/calculus/differentiation",
+      "status": "accepted",
+      "target_key": "mathematics/calculus/applications_of_derivatives",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Integral Calculus.",
+      "source_key": "mathematics/calculus/differentiation",
+      "status": "accepted",
+      "target_key": "mathematics/calculus/integral_calculus",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Differential Equations.",
+      "source_key": "mathematics/calculus/integral_calculus",
+      "status": "accepted",
+      "target_key": "mathematics/calculus/differential_equations",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Three-Dimensional Geometry.",
+      "source_key": "mathematics/coordinate_geometry/vector_algebra",
+      "status": "accepted",
+      "target_key": "mathematics/coordinate_geometry/three_dimensional_geometry",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Probability.",
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "status": "accepted",
+      "target_key": "mathematics/probability/probability",
+      "type": "prerequisite_of"
+    },
+    {
+      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordinate Geometry: Conics.",
+      "source_key": "mathematics/algebra/quadratic_equations",
+      "status": "accepted",
+      "target_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
+      "type": "prerequisite_of"
+    }
+  ],
+  "syllabus_version": "2026.jee.v1",
+  "title": "Canonical JEE Curriculum (Physics, Chemistry, Mathematics)"
+}

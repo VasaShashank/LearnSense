@@ -1,0 +1,1975 @@
+{
+  "akt_vocabulary": {
+    "ambiguous": [],
+    "concept_count": 62,
+    "coverage_rate": 1.0,
+    "matched": [
+      {
+        "canonical_concept_id": "cc_7afae8395ccbe328",
+        "canonical_name": "Amines",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Amines",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_AMN"
+      },
+      {
+        "canonical_concept_id": "cc_a04390bce4f730b6",
+        "canonical_name": "Atomic Structure",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Atomic Structure",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_ATM"
+      },
+      {
+        "canonical_concept_id": "cc_49d1319313237e9b",
+        "canonical_name": "Biomolecules",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Biomolecules",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_BIO"
+      },
+      {
+        "canonical_concept_id": "cc_f11cab60cdf232c0",
+        "canonical_name": "Chemical Bonding",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Chemical Bonding",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_BND"
+      },
+      {
+        "canonical_concept_id": "cc_e9ef1dcc33f2c7fe",
+        "canonical_name": "Carbonyl Compounds and Carboxylic Acids",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Carbonyl Compounds and Carboxylic Acids",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_CAR"
+      },
+      {
+        "canonical_concept_id": "cc_0dbc8498c2b7d029",
+        "canonical_name": "Coordination Compounds",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Coordination Compounds",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_COO"
+      },
+      {
+        "canonical_concept_id": "cc_7a920726902bf06f",
+        "canonical_name": "d- and f-Block Elements",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "d- and f-Block Elements",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_DBL"
+      },
+      {
+        "canonical_concept_id": "cc_c978d6986e8cf847",
+        "canonical_name": "Electrochemistry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Electrochemistry",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_ECH"
+      },
+      {
+        "canonical_concept_id": "cc_926fa621060f7bb8",
+        "canonical_name": "Equilibrium",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Equilibrium",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_EQM"
+      },
+      {
+        "canonical_concept_id": "cc_411efd2e93a9cda3",
+        "canonical_name": "Hydrocarbons",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Hydrocarbons",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_HC"
+      },
+      {
+        "canonical_concept_id": "cc_83d678c26bcf0c28",
+        "canonical_name": "Haloalkanes and Haloarenes",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Haloalkanes and Haloarenes",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_HLG"
+      },
+      {
+        "canonical_concept_id": "cc_ebafa02826c9b205",
+        "canonical_name": "Hydrogen and s-Block",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Hydrogen and s-Block",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_HYD"
+      },
+      {
+        "canonical_concept_id": "cc_daf9f2e50bd09197",
+        "canonical_name": "Ionic Equilibrium",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Ionic Equilibrium",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_ION"
+      },
+      {
+        "canonical_concept_id": "cc_f2e56bbca85d817c",
+        "canonical_name": "Chemical Kinetics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Chemical Kinetics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_KIN"
+      },
+      {
+        "canonical_concept_id": "cc_105b9a15f20f98b3",
+        "canonical_name": "Metallurgy",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Metallurgy",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_MET"
+      },
+      {
+        "canonical_concept_id": "cc_ab411e6d3eeab1c1",
+        "canonical_name": "Some Basic Concepts / Mole Concept",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Some Basic Concepts / Mole Concept",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_MOL"
+      },
+      {
+        "canonical_concept_id": "cc_35d927e3767359c9",
+        "canonical_name": "Organic Chemistry Basics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Organic Chemistry Basics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_ORB"
+      },
+      {
+        "canonical_concept_id": "cc_283f9cf4017fc86b",
+        "canonical_name": "Alcohols, Phenols and Ethers",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Alcohols, Phenols and Ethers",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_OXY"
+      },
+      {
+        "canonical_concept_id": "cc_34f5fe0562332cb1",
+        "canonical_name": "p-Block Elements",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "p-Block Elements",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_PBL"
+      },
+      {
+        "canonical_concept_id": "cc_9ec87de03ff3a8a9",
+        "canonical_name": "Periodicity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Periodicity",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_PER"
+      },
+      {
+        "canonical_concept_id": "cc_b416ea16b4b84a1d",
+        "canonical_name": "Redox Reactions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Redox Reactions",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_RED"
+      },
+      {
+        "canonical_concept_id": "cc_c8427267deaceb32",
+        "canonical_name": "Solutions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Solutions",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_SOL"
+      },
+      {
+        "canonical_concept_id": "cc_e4951a49b665b28b",
+        "canonical_name": "States of Matter",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "States of Matter",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_STS"
+      },
+      {
+        "canonical_concept_id": "cc_f18f919f23ce794d",
+        "canonical_name": "Chemical Thermodynamics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Chemical Thermodynamics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "CHE_THM"
+      },
+      {
+        "canonical_concept_id": "cc_10098e97f1838609",
+        "canonical_name": "Three-Dimensional Geometry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Three-Dimensional Geometry",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_3D"
+      },
+      {
+        "canonical_concept_id": "cc_83a1f114500a1728",
+        "canonical_name": "Applications of Derivatives",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Applications of Derivatives",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_APP"
+      },
+      {
+        "canonical_concept_id": "cc_8f5d1eb506b612bd",
+        "canonical_name": "Binomial Theorem",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Binomial Theorem",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_BIN"
+      },
+      {
+        "canonical_concept_id": "cc_09fc2a9f83e7a09f",
+        "canonical_name": "Complex Numbers",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Complex Numbers",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_CMP"
+      },
+      {
+        "canonical_concept_id": "cc_566dd708e45bdf97",
+        "canonical_name": "Coordinate Geometry: Conics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Coordinate Geometry: Conics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_CON"
+      },
+      {
+        "canonical_concept_id": "cc_da38d2c914cea7c9",
+        "canonical_name": "Differential Equations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Differential Equations",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_DEQ"
+      },
+      {
+        "canonical_concept_id": "cc_c31f5c19a669612c",
+        "canonical_name": "Differentiation",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Differentiation",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_DIF"
+      },
+      {
+        "canonical_concept_id": "cc_7cead0c2605b359f",
+        "canonical_name": "Integral Calculus",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Integral Calculus",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_INT"
+      },
+      {
+        "canonical_concept_id": "cc_876e4da502f7bf45",
+        "canonical_name": "Limits and Continuity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Limits and Continuity",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_LIM"
+      },
+      {
+        "canonical_concept_id": "cc_c443472cef6d631c",
+        "canonical_name": "Matrices and Determinants",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Matrices and Determinants",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_MAT"
+      },
+      {
+        "canonical_concept_id": "cc_713e5601e8a4ee11",
+        "canonical_name": "Probability",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Probability",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_PRO"
+      },
+      {
+        "canonical_concept_id": "cc_f7955e764350a8d0",
+        "canonical_name": "Quadratic Equations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Quadratic Equations",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_QUA"
+      },
+      {
+        "canonical_concept_id": "cc_5f460d5c127958a0",
+        "canonical_name": "Sequences and Series",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Sequences and Series",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_SEQ"
+      },
+      {
+        "canonical_concept_id": "cc_5b5bdbe60072f33b",
+        "canonical_name": "Sets, Relations and Functions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Sets, Relations and Functions",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_SET"
+      },
+      {
+        "canonical_concept_id": "cc_43ca7c2876089376",
+        "canonical_name": "Trigonometry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Trigonometry",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_TRI"
+      },
+      {
+        "canonical_concept_id": "cc_807ba5262fa20f49",
+        "canonical_name": "Vector Algebra",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Vector Algebra",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "MAT_VEC"
+      },
+      {
+        "canonical_concept_id": "cc_35bc7ed00be8b71d",
+        "canonical_name": "Alternating Current",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Alternating Current",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_AC"
+      },
+      {
+        "canonical_concept_id": "cc_5a6cc0ef09b7a8b6",
+        "canonical_name": "Capacitance",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Capacitance",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_CAP"
+      },
+      {
+        "canonical_concept_id": "cc_613d1fef168fb22a",
+        "canonical_name": "Centre of Mass and Collisions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Centre of Mass and Collisions",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_COM"
+      },
+      {
+        "canonical_concept_id": "cc_0dc99667b34c7291",
+        "canonical_name": "Current Electricity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Current Electricity",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_CUR"
+      },
+      {
+        "canonical_concept_id": "cc_9d115aa17a5eb9d3",
+        "canonical_name": "Elasticity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Elasticity",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_ELA"
+      },
+      {
+        "canonical_concept_id": "cc_a07f4e55f2d6f8ca",
+        "canonical_name": "Electrostatics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Electrostatics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_ELE"
+      },
+      {
+        "canonical_concept_id": "cc_1ca3a58143a058cf",
+        "canonical_name": "Electromagnetic Induction",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Electromagnetic Induction",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_EMI"
+      },
+      {
+        "canonical_concept_id": "cc_288d8608260d96a9",
+        "canonical_name": "Fluid Mechanics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Fluid Mechanics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_FLU"
+      },
+      {
+        "canonical_concept_id": "cc_4a6258fa65430452",
+        "canonical_name": "Gravitation",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Gravitation",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_GRA"
+      },
+      {
+        "canonical_concept_id": "cc_3e003bf9b038a36b",
+        "canonical_name": "Kinematics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Kinematics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_KIN"
+      },
+      {
+        "canonical_concept_id": "cc_60bdc676a3ec6803",
+        "canonical_name": "Kinetic Theory of Gases",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Kinetic Theory of Gases",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_KTG"
+      },
+      {
+        "canonical_concept_id": "cc_0a599e2579d7239e",
+        "canonical_name": "Magnetic Effects of Current",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Magnetic Effects of Current",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_MAG"
+      },
+      {
+        "canonical_concept_id": "cc_a31583fae6c837cb",
+        "canonical_name": "Modern Physics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Modern Physics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_MOD"
+      },
+      {
+        "canonical_concept_id": "cc_e070c64d30e5e623",
+        "canonical_name": "Laws of Motion",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Laws of Motion",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_NLM"
+      },
+      {
+        "canonical_concept_id": "cc_a0f8c26d421e9c83",
+        "canonical_name": "Ray and Wave Optics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Ray and Wave Optics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_OPT"
+      },
+      {
+        "canonical_concept_id": "cc_f9b37ebf7ac48dce",
+        "canonical_name": "Rotational Motion",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Rotational Motion",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_ROT"
+      },
+      {
+        "canonical_concept_id": "cc_66718196a30c50c2",
+        "canonical_name": "Semiconductors",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Semiconductors",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_SEM"
+      },
+      {
+        "canonical_concept_id": "cc_1d9892fefa17f63c",
+        "canonical_name": "Oscillations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Oscillations",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_SHM"
+      },
+      {
+        "canonical_concept_id": "cc_a6e38645326c6a3e",
+        "canonical_name": "Thermodynamics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Thermodynamics",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_THD"
+      },
+      {
+        "canonical_concept_id": "cc_e80c8160863f87e8",
+        "canonical_name": "Thermal Properties",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Thermal Properties",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_THM"
+      },
+      {
+        "canonical_concept_id": "cc_45e6d2763944e1d4",
+        "canonical_name": "Waves",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Waves",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_WAV"
+      },
+      {
+        "canonical_concept_id": "cc_5f9917b8333fae45",
+        "canonical_name": "Work, Power and Energy",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_name": "Work, Power and Energy",
+        "status": "mapped",
+        "via_override": false,
+        "vocabulary_concept_id": "PHY_WPE"
+      }
+    ],
+    "not_in_concept_csv": [],
+    "note": "The vocabulary ids are simulator ids (PHY_*/CHE_*/MAT_*), never canonical ids. 'matched' rows are the only ids safe to carry into learner-state records, and only together with an explicit mapping; unmapped/ambiguous rows must stay unresolved until a curriculum editor decides.",
+    "unmapped": []
+  },
+  "canonical": {
+    "accepted_prerequisite_edge_count": 61,
+    "active_concept_count": 62,
+    "concept_count": 62,
+    "curriculum_id": "jee_class_11_12",
+    "deprecated_concept_ids": [],
+    "fingerprint": "44dffdbc1b5f1531",
+    "id_policy": {
+      "canonical_id_scheme": "cc_<sha256(curriculum_id::stable_key)[:16]>, frozen at creation",
+      "graph_version_detection": "compare curriculum_id + syllabus_version + content_fingerprint()",
+      "historical_ids_resolve_via": "graph.id_map (merged_into / replaced_by forward; removed resolves to nothing)",
+      "simulator_ids_are_canonical": false
+    },
+    "syllabus_version": "2026.jee.v1",
+    "title": "Canonical JEE Curriculum (Physics, Chemistry, Mathematics)",
+    "total_relationship_count": 61,
+    "traversal_policy": {
+      "accepted_only_default": true,
+      "deprecated_concepts_in_traversal": false,
+      "edge_convention": "A --prerequisite_of--> B means A is a prerequisite of B"
+    }
+  },
+  "claims": {
+    "complete_compatibility": true,
+    "disclaimer": "This report is a mechanical id/field/edge audit of the supplied inputs. It is not expert review of the curriculum and makes no accuracy claim about either model.",
+    "reasons": []
+  },
+  "concepts_requiring_authoring": [],
+  "field_compatibility": {
+    "canonical_records_checked": 62,
+    "canonical_records_emit_exactly_contract_keys": true,
+    "contract": "LearnSense_Shared_Contracts_v0_1/schemas/concept_schema.json (draft 2020-12)",
+    "missing_for_person3": [],
+    "notes": [
+      "Person 2 keeps aliases, topic_path, class_levels, review_status, curriculum_id, curriculum_version, stable_key and audit inside the contract's open 'metadata' object; the record itself stays contract-valid (see docs/curriculum/CONTRACT_REVIEW.md).",
+      "Person 3's ConceptNode has a 'topic_group' field that is not in the contract; the canonical equivalents are chapter_id and metadata.topic_path. No contract expansion is proposed here."
+    ],
+    "person3_required_fields": [
+      "concept_id",
+      "name",
+      "description",
+      "subject",
+      "chapter_id",
+      "tags",
+      "status",
+      "prerequisite_concept_ids",
+      "source_refs",
+      "metadata"
+    ]
+  },
+  "prerequisite_edges": {
+    "backed": [
+      {
+        "source": "cc_e9ef1dcc33f2c7fe",
+        "source_sim": "CHE_CAR",
+        "target": "cc_7afae8395ccbe328",
+        "target_sim": "CHE_AMN"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_a04390bce4f730b6",
+        "target_sim": "CHE_ATM"
+      },
+      {
+        "source": "cc_35d927e3767359c9",
+        "source_sim": "CHE_ORB",
+        "target": "cc_49d1319313237e9b",
+        "target_sim": "CHE_BIO"
+      },
+      {
+        "source": "cc_a04390bce4f730b6",
+        "source_sim": "CHE_ATM",
+        "target": "cc_f11cab60cdf232c0",
+        "target_sim": "CHE_BND"
+      },
+      {
+        "source": "cc_9ec87de03ff3a8a9",
+        "source_sim": "CHE_PER",
+        "target": "cc_f11cab60cdf232c0",
+        "target_sim": "CHE_BND"
+      },
+      {
+        "source": "cc_35d927e3767359c9",
+        "source_sim": "CHE_ORB",
+        "target": "cc_e9ef1dcc33f2c7fe",
+        "target_sim": "CHE_CAR"
+      },
+      {
+        "source": "cc_f11cab60cdf232c0",
+        "source_sim": "CHE_BND",
+        "target": "cc_0dbc8498c2b7d029",
+        "target_sim": "CHE_COO"
+      },
+      {
+        "source": "cc_7a920726902bf06f",
+        "source_sim": "CHE_DBL",
+        "target": "cc_0dbc8498c2b7d029",
+        "target_sim": "CHE_COO"
+      },
+      {
+        "source": "cc_9ec87de03ff3a8a9",
+        "source_sim": "CHE_PER",
+        "target": "cc_7a920726902bf06f",
+        "target_sim": "CHE_DBL"
+      },
+      {
+        "source": "cc_b416ea16b4b84a1d",
+        "source_sim": "CHE_RED",
+        "target": "cc_c978d6986e8cf847",
+        "target_sim": "CHE_ECH"
+      },
+      {
+        "source": "cc_926fa621060f7bb8",
+        "source_sim": "CHE_EQM",
+        "target": "cc_c978d6986e8cf847",
+        "target_sim": "CHE_ECH"
+      },
+      {
+        "source": "cc_f18f919f23ce794d",
+        "source_sim": "CHE_THM",
+        "target": "cc_926fa621060f7bb8",
+        "target_sim": "CHE_EQM"
+      },
+      {
+        "source": "cc_35d927e3767359c9",
+        "source_sim": "CHE_ORB",
+        "target": "cc_411efd2e93a9cda3",
+        "target_sim": "CHE_HC"
+      },
+      {
+        "source": "cc_411efd2e93a9cda3",
+        "source_sim": "CHE_HC",
+        "target": "cc_83d678c26bcf0c28",
+        "target_sim": "CHE_HLG"
+      },
+      {
+        "source": "cc_9ec87de03ff3a8a9",
+        "source_sim": "CHE_PER",
+        "target": "cc_ebafa02826c9b205",
+        "target_sim": "CHE_HYD"
+      },
+      {
+        "source": "cc_926fa621060f7bb8",
+        "source_sim": "CHE_EQM",
+        "target": "cc_daf9f2e50bd09197",
+        "target_sim": "CHE_ION"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_f2e56bbca85d817c",
+        "target_sim": "CHE_KIN"
+      },
+      {
+        "source": "cc_b416ea16b4b84a1d",
+        "source_sim": "CHE_RED",
+        "target": "cc_105b9a15f20f98b3",
+        "target_sim": "CHE_MET"
+      },
+      {
+        "source": "cc_f11cab60cdf232c0",
+        "source_sim": "CHE_BND",
+        "target": "cc_35d927e3767359c9",
+        "target_sim": "CHE_ORB"
+      },
+      {
+        "source": "cc_83d678c26bcf0c28",
+        "source_sim": "CHE_HLG",
+        "target": "cc_283f9cf4017fc86b",
+        "target_sim": "CHE_OXY"
+      },
+      {
+        "source": "cc_9ec87de03ff3a8a9",
+        "source_sim": "CHE_PER",
+        "target": "cc_34f5fe0562332cb1",
+        "target_sim": "CHE_PBL"
+      },
+      {
+        "source": "cc_f11cab60cdf232c0",
+        "source_sim": "CHE_BND",
+        "target": "cc_34f5fe0562332cb1",
+        "target_sim": "CHE_PBL"
+      },
+      {
+        "source": "cc_a04390bce4f730b6",
+        "source_sim": "CHE_ATM",
+        "target": "cc_9ec87de03ff3a8a9",
+        "target_sim": "CHE_PER"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_b416ea16b4b84a1d",
+        "target_sim": "CHE_RED"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_c8427267deaceb32",
+        "target_sim": "CHE_SOL"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_e4951a49b665b28b",
+        "target_sim": "CHE_STS"
+      },
+      {
+        "source": "cc_ab411e6d3eeab1c1",
+        "source_sim": "CHE_MOL",
+        "target": "cc_f18f919f23ce794d",
+        "target_sim": "CHE_THM"
+      },
+      {
+        "source": "cc_807ba5262fa20f49",
+        "source_sim": "MAT_VEC",
+        "target": "cc_10098e97f1838609",
+        "target_sim": "MAT_3D"
+      },
+      {
+        "source": "cc_c31f5c19a669612c",
+        "source_sim": "MAT_DIF",
+        "target": "cc_83a1f114500a1728",
+        "target_sim": "MAT_APP"
+      },
+      {
+        "source": "cc_f7955e764350a8d0",
+        "source_sim": "MAT_QUA",
+        "target": "cc_8f5d1eb506b612bd",
+        "target_sim": "MAT_BIN"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_09fc2a9f83e7a09f",
+        "target_sim": "MAT_CMP"
+      },
+      {
+        "source": "cc_f7955e764350a8d0",
+        "source_sim": "MAT_QUA",
+        "target": "cc_566dd708e45bdf97",
+        "target_sim": "MAT_CON"
+      },
+      {
+        "source": "cc_7cead0c2605b359f",
+        "source_sim": "MAT_INT",
+        "target": "cc_da38d2c914cea7c9",
+        "target_sim": "MAT_DEQ"
+      },
+      {
+        "source": "cc_876e4da502f7bf45",
+        "source_sim": "MAT_LIM",
+        "target": "cc_c31f5c19a669612c",
+        "target_sim": "MAT_DIF"
+      },
+      {
+        "source": "cc_c31f5c19a669612c",
+        "source_sim": "MAT_DIF",
+        "target": "cc_7cead0c2605b359f",
+        "target_sim": "MAT_INT"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_876e4da502f7bf45",
+        "target_sim": "MAT_LIM"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_c443472cef6d631c",
+        "target_sim": "MAT_MAT"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_713e5601e8a4ee11",
+        "target_sim": "MAT_PRO"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_f7955e764350a8d0",
+        "target_sim": "MAT_QUA"
+      },
+      {
+        "source": "cc_f7955e764350a8d0",
+        "source_sim": "MAT_QUA",
+        "target": "cc_5f460d5c127958a0",
+        "target_sim": "MAT_SEQ"
+      },
+      {
+        "source": "cc_5b5bdbe60072f33b",
+        "source_sim": "MAT_SET",
+        "target": "cc_43ca7c2876089376",
+        "target_sim": "MAT_TRI"
+      },
+      {
+        "source": "cc_1ca3a58143a058cf",
+        "source_sim": "PHY_EMI",
+        "target": "cc_35bc7ed00be8b71d",
+        "target_sim": "PHY_AC"
+      },
+      {
+        "source": "cc_a07f4e55f2d6f8ca",
+        "source_sim": "PHY_ELE",
+        "target": "cc_5a6cc0ef09b7a8b6",
+        "target_sim": "PHY_CAP"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_613d1fef168fb22a",
+        "target_sim": "PHY_COM"
+      },
+      {
+        "source": "cc_a07f4e55f2d6f8ca",
+        "source_sim": "PHY_ELE",
+        "target": "cc_0dc99667b34c7291",
+        "target_sim": "PHY_CUR"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_9d115aa17a5eb9d3",
+        "target_sim": "PHY_ELA"
+      },
+      {
+        "source": "cc_0a599e2579d7239e",
+        "source_sim": "PHY_MAG",
+        "target": "cc_1ca3a58143a058cf",
+        "target_sim": "PHY_EMI"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_288d8608260d96a9",
+        "target_sim": "PHY_FLU"
+      },
+      {
+        "source": "cc_5f9917b8333fae45",
+        "source_sim": "PHY_WPE",
+        "target": "cc_4a6258fa65430452",
+        "target_sim": "PHY_GRA"
+      },
+      {
+        "source": "cc_e80c8160863f87e8",
+        "source_sim": "PHY_THM",
+        "target": "cc_60bdc676a3ec6803",
+        "target_sim": "PHY_KTG"
+      },
+      {
+        "source": "cc_0dc99667b34c7291",
+        "source_sim": "PHY_CUR",
+        "target": "cc_0a599e2579d7239e",
+        "target_sim": "PHY_MAG"
+      },
+      {
+        "source": "cc_3e003bf9b038a36b",
+        "source_sim": "PHY_KIN",
+        "target": "cc_e070c64d30e5e623",
+        "target_sim": "PHY_NLM"
+      },
+      {
+        "source": "cc_3e003bf9b038a36b",
+        "source_sim": "PHY_KIN",
+        "target": "cc_a0f8c26d421e9c83",
+        "target_sim": "PHY_OPT"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_f9b37ebf7ac48dce",
+        "target_sim": "PHY_ROT"
+      },
+      {
+        "source": "cc_5f9917b8333fae45",
+        "source_sim": "PHY_WPE",
+        "target": "cc_f9b37ebf7ac48dce",
+        "target_sim": "PHY_ROT"
+      },
+      {
+        "source": "cc_a31583fae6c837cb",
+        "source_sim": "PHY_MOD",
+        "target": "cc_66718196a30c50c2",
+        "target_sim": "PHY_SEM"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_1d9892fefa17f63c",
+        "target_sim": "PHY_SHM"
+      },
+      {
+        "source": "cc_60bdc676a3ec6803",
+        "source_sim": "PHY_KTG",
+        "target": "cc_a6e38645326c6a3e",
+        "target_sim": "PHY_THD"
+      },
+      {
+        "source": "cc_3e003bf9b038a36b",
+        "source_sim": "PHY_KIN",
+        "target": "cc_e80c8160863f87e8",
+        "target_sim": "PHY_THM"
+      },
+      {
+        "source": "cc_1d9892fefa17f63c",
+        "source_sim": "PHY_SHM",
+        "target": "cc_45e6d2763944e1d4",
+        "target_sim": "PHY_WAV"
+      },
+      {
+        "source": "cc_e070c64d30e5e623",
+        "source_sim": "PHY_NLM",
+        "target": "cc_5f9917b8333fae45",
+        "target_sim": "PHY_WPE"
+      }
+    ],
+    "backing_rate": 1.0,
+    "checked": 61,
+    "contradicted": [],
+    "endpoint_resolution": {
+      "both_unmapped_count": 0,
+      "details": {
+        "both_unmapped": [],
+        "source_unmapped_only": [],
+        "target_unmapped_only": []
+      },
+      "source_unmapped_only_count": 0,
+      "target_unmapped_only_count": 0
+    },
+    "note": "A contradicted edge means the simulator asserts a prerequisite the canonical curriculum does not accept. The simulator is illustrative data; the canonical graph is the source of truth.",
+    "structural_checks": {
+      "cycles": [],
+      "duplicates": [],
+      "is_dag": true,
+      "missing_endpoints": [],
+      "self_loops": [],
+      "total_declared_edges": 61
+    },
+    "unchecked": []
+  },
+  "report_kind": "learnsense_person3_curriculum_compatibility",
+  "report_version": 1,
+  "simulator_concepts": {
+    "entries": [
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_7afae8395ccbe328",
+        "canonical_name": "Amines",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Amines",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_AMN",
+        "simulator_name": "Amines",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_a04390bce4f730b6",
+        "canonical_name": "Atomic Structure",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Atomic Structure",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_ATM",
+        "simulator_name": "Atomic Structure",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_49d1319313237e9b",
+        "canonical_name": "Biomolecules",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Biomolecules",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_BIO",
+        "simulator_name": "Biomolecules",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_f11cab60cdf232c0",
+        "canonical_name": "Chemical Bonding",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Chemical Bonding",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_BND",
+        "simulator_name": "Chemical Bonding",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_e9ef1dcc33f2c7fe",
+        "canonical_name": "Carbonyl Compounds and Carboxylic Acids",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Carbonyl Compounds and Carboxylic Acids",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_CAR",
+        "simulator_name": "Carbonyl Compounds and Carboxylic Acids",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_0dbc8498c2b7d029",
+        "canonical_name": "Coordination Compounds",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Coordination Compounds",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_COO",
+        "simulator_name": "Coordination Compounds",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_7a920726902bf06f",
+        "canonical_name": "d- and f-Block Elements",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "d- and f-Block Elements",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_DBL",
+        "simulator_name": "d- and f-Block Elements",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_c978d6986e8cf847",
+        "canonical_name": "Electrochemistry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Electrochemistry",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_ECH",
+        "simulator_name": "Electrochemistry",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [
+          "cc_daf9f2e50bd09197"
+        ],
+        "canonical_concept_id": "cc_926fa621060f7bb8",
+        "canonical_name": "Equilibrium",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Equilibrium",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_EQM",
+        "simulator_name": "Equilibrium",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_411efd2e93a9cda3",
+        "canonical_name": "Hydrocarbons",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Hydrocarbons",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_HC",
+        "simulator_name": "Hydrocarbons",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_83d678c26bcf0c28",
+        "canonical_name": "Haloalkanes and Haloarenes",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Haloalkanes and Haloarenes",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_HLG",
+        "simulator_name": "Haloalkanes and Haloarenes",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_ebafa02826c9b205",
+        "canonical_name": "Hydrogen and s-Block",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Hydrogen and s-Block",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_HYD",
+        "simulator_name": "Hydrogen and s-Block",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [
+          "cc_926fa621060f7bb8"
+        ],
+        "canonical_concept_id": "cc_daf9f2e50bd09197",
+        "canonical_name": "Ionic Equilibrium",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Ionic Equilibrium",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_ION",
+        "simulator_name": "Ionic Equilibrium",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_f2e56bbca85d817c",
+        "canonical_name": "Chemical Kinetics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Chemical Kinetics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_KIN",
+        "simulator_name": "Chemical Kinetics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_105b9a15f20f98b3",
+        "canonical_name": "Metallurgy",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Metallurgy",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_MET",
+        "simulator_name": "Metallurgy",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_ab411e6d3eeab1c1",
+        "canonical_name": "Some Basic Concepts / Mole Concept",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Some Basic Concepts / Mole Concept",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_MOL",
+        "simulator_name": "Some Basic Concepts / Mole Concept",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_35d927e3767359c9",
+        "canonical_name": "Organic Chemistry Basics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Organic Chemistry Basics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_ORB",
+        "simulator_name": "Organic Chemistry Basics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_283f9cf4017fc86b",
+        "canonical_name": "Alcohols, Phenols and Ethers",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Alcohols, Phenols and Ethers",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_OXY",
+        "simulator_name": "Alcohols, Phenols and Ethers",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_34f5fe0562332cb1",
+        "canonical_name": "p-Block Elements",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "p-Block Elements",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_PBL",
+        "simulator_name": "p-Block Elements",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_9ec87de03ff3a8a9",
+        "canonical_name": "Periodicity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Periodicity",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_PER",
+        "simulator_name": "Periodicity",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_b416ea16b4b84a1d",
+        "canonical_name": "Redox Reactions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Redox Reactions",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_RED",
+        "simulator_name": "Redox Reactions",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_c8427267deaceb32",
+        "canonical_name": "Solutions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Solutions",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_SOL",
+        "simulator_name": "Solutions",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_e4951a49b665b28b",
+        "canonical_name": "States of Matter",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "States of Matter",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_STS",
+        "simulator_name": "States of Matter",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [
+          "cc_a6e38645326c6a3e"
+        ],
+        "canonical_concept_id": "cc_f18f919f23ce794d",
+        "canonical_name": "Chemical Thermodynamics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Chemical Thermodynamics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "CHE_THM",
+        "simulator_name": "Chemical Thermodynamics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_10098e97f1838609",
+        "canonical_name": "Three-Dimensional Geometry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Three-Dimensional Geometry",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_3D",
+        "simulator_name": "Three-Dimensional Geometry",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_83a1f114500a1728",
+        "canonical_name": "Applications of Derivatives",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Applications of Derivatives",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_APP",
+        "simulator_name": "Applications of Derivatives",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_8f5d1eb506b612bd",
+        "canonical_name": "Binomial Theorem",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Binomial Theorem",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_BIN",
+        "simulator_name": "Binomial Theorem",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_09fc2a9f83e7a09f",
+        "canonical_name": "Complex Numbers",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Complex Numbers",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_CMP",
+        "simulator_name": "Complex Numbers",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_566dd708e45bdf97",
+        "canonical_name": "Coordinate Geometry: Conics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Coordinate Geometry: Conics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_CON",
+        "simulator_name": "Coordinate Geometry: Conics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_da38d2c914cea7c9",
+        "canonical_name": "Differential Equations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Differential Equations",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_DEQ",
+        "simulator_name": "Differential Equations",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_c31f5c19a669612c",
+        "canonical_name": "Differentiation",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Differentiation",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_DIF",
+        "simulator_name": "Differentiation",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_7cead0c2605b359f",
+        "canonical_name": "Integral Calculus",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Integral Calculus",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_INT",
+        "simulator_name": "Integral Calculus",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_876e4da502f7bf45",
+        "canonical_name": "Limits and Continuity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Limits and Continuity",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_LIM",
+        "simulator_name": "Limits and Continuity",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_c443472cef6d631c",
+        "canonical_name": "Matrices and Determinants",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Matrices and Determinants",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_MAT",
+        "simulator_name": "Matrices and Determinants",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_713e5601e8a4ee11",
+        "canonical_name": "Probability",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Probability",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_PRO",
+        "simulator_name": "Probability",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_f7955e764350a8d0",
+        "canonical_name": "Quadratic Equations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Quadratic Equations",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_QUA",
+        "simulator_name": "Quadratic Equations",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_5f460d5c127958a0",
+        "canonical_name": "Sequences and Series",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Sequences and Series",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_SEQ",
+        "simulator_name": "Sequences and Series",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_5b5bdbe60072f33b",
+        "canonical_name": "Sets, Relations and Functions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Sets, Relations and Functions",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_SET",
+        "simulator_name": "Sets, Relations and Functions",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_43ca7c2876089376",
+        "canonical_name": "Trigonometry",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Trigonometry",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_TRI",
+        "simulator_name": "Trigonometry",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_807ba5262fa20f49",
+        "canonical_name": "Vector Algebra",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Vector Algebra",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "MAT_VEC",
+        "simulator_name": "Vector Algebra",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_35bc7ed00be8b71d",
+        "canonical_name": "Alternating Current",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Alternating Current",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_AC",
+        "simulator_name": "Alternating Current",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_5a6cc0ef09b7a8b6",
+        "canonical_name": "Capacitance",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Capacitance",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_CAP",
+        "simulator_name": "Capacitance",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_613d1fef168fb22a",
+        "canonical_name": "Centre of Mass and Collisions",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Centre of Mass and Collisions",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_COM",
+        "simulator_name": "Centre of Mass and Collisions",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_0dc99667b34c7291",
+        "canonical_name": "Current Electricity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Current Electricity",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_CUR",
+        "simulator_name": "Current Electricity",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_9d115aa17a5eb9d3",
+        "canonical_name": "Elasticity",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Elasticity",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_ELA",
+        "simulator_name": "Elasticity",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_a07f4e55f2d6f8ca",
+        "canonical_name": "Electrostatics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Electrostatics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_ELE",
+        "simulator_name": "Electrostatics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_1ca3a58143a058cf",
+        "canonical_name": "Electromagnetic Induction",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Electromagnetic Induction",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_EMI",
+        "simulator_name": "Electromagnetic Induction",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_288d8608260d96a9",
+        "canonical_name": "Fluid Mechanics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Fluid Mechanics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_FLU",
+        "simulator_name": "Fluid Mechanics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_4a6258fa65430452",
+        "canonical_name": "Gravitation",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Gravitation",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_GRA",
+        "simulator_name": "Gravitation",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_3e003bf9b038a36b",
+        "canonical_name": "Kinematics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Kinematics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_KIN",
+        "simulator_name": "Kinematics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_60bdc676a3ec6803",
+        "canonical_name": "Kinetic Theory of Gases",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Kinetic Theory of Gases",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_KTG",
+        "simulator_name": "Kinetic Theory of Gases",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_0a599e2579d7239e",
+        "canonical_name": "Magnetic Effects of Current",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Magnetic Effects of Current",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_MAG",
+        "simulator_name": "Magnetic Effects of Current",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_a31583fae6c837cb",
+        "canonical_name": "Modern Physics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Modern Physics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_MOD",
+        "simulator_name": "Modern Physics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_e070c64d30e5e623",
+        "canonical_name": "Laws of Motion",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Laws of Motion",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_NLM",
+        "simulator_name": "Laws of Motion",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_a0f8c26d421e9c83",
+        "canonical_name": "Ray and Wave Optics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Ray and Wave Optics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_OPT",
+        "simulator_name": "Ray and Wave Optics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_f9b37ebf7ac48dce",
+        "canonical_name": "Rotational Motion",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Rotational Motion",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_ROT",
+        "simulator_name": "Rotational Motion",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_66718196a30c50c2",
+        "canonical_name": "Semiconductors",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Semiconductors",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_SEM",
+        "simulator_name": "Semiconductors",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_1d9892fefa17f63c",
+        "canonical_name": "Oscillations",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Oscillations",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_SHM",
+        "simulator_name": "Oscillations",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [
+          "cc_f18f919f23ce794d"
+        ],
+        "canonical_concept_id": "cc_a6e38645326c6a3e",
+        "canonical_name": "Thermodynamics",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Thermodynamics",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_THD",
+        "simulator_name": "Thermodynamics",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_e80c8160863f87e8",
+        "canonical_name": "Thermal Properties",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Thermal Properties",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_THM",
+        "simulator_name": "Thermal Properties",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_45e6d2763944e1d4",
+        "canonical_name": "Waves",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Waves",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_WAV",
+        "simulator_name": "Waves",
+        "status": "mapped",
+        "via_override": false
+      },
+      {
+        "alternative_concept_ids": [],
+        "canonical_concept_id": "cc_5f9917b8333fae45",
+        "canonical_name": "Work, Power and Energy",
+        "match_kind": "canonical_name",
+        "match_strength": 1.0,
+        "matched_surface": "Work, Power and Energy",
+        "reason": "decisive rule-table match at 1.00",
+        "simulator_concept_id": "PHY_WPE",
+        "simulator_name": "Work, Power and Energy",
+        "status": "mapped",
+        "via_override": false
+      }
+    ],
+    "summary": {
+      "ambiguous": 0,
+      "canonical_curriculum_id": "jee_class_11_12",
+      "canonical_fingerprint": "44dffdbc1b5f1531",
+      "excluded": 0,
+      "mapped": 62,
+      "mapped_rate": 1.0,
+      "total": 62,
+      "unmapped": 0,
+      "unmapped_ids": []
+    },
+    "unmapped_in_csv_but_not_in_vocabulary": []
+  },
+  "sources": {
+    "akt_vocabulary": "../References/LearnSense-Person3-FINAL/data/models/akt_vocabulary.json",
+    "canonical_spec": "tests/fixtures/curriculum/jee_curriculum_spec.json",
+    "overrides": null,
+    "simulator_concepts_csv": "../References/learnsense_jee_simulator_v2/concepts.csv"
+  }
+}

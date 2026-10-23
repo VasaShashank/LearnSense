@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.routes import documents, api
+from backend.routes import curriculum, documents, api
 from phase3.errors import LearnSenseError
 
 logger = logging.getLogger(__name__)
@@ -138,6 +138,8 @@ app.add_middleware(
 # Mount REST API Routers
 app.include_router(api.router, prefix="/api", tags=["application_facades"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
+# Canonical curriculum & knowledge graph (Person 2): /api/curriculum/...
+app.include_router(curriculum.router, prefix="/api", tags=["curriculum"])
 
 
 @app.on_event("startup")

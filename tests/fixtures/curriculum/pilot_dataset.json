@@ -1,0 +1,246 @@
+{
+  "name": "pilot_jee_slice_v1",
+  "note": "Synthetic slice written by hand to regression-test the deterministic rule table and the metric arithmetic in evaluation/curriculum_eval.py. It is NOT expert-reviewed and makes no accuracy claim beyond the hand-enumerated counts in expected_counts. Items p5 and h3 are deliberate failure cases: p5 covers two concepts while the reference tags only one (a single-label mapper must be wrong about one of them), and h3 is an extraction/coverage gap where the expected term never reaches the mapper. The same file doubles as the seed spec: tests load 'concepts'/'relationships' into CurriculumSpec and pass the whole object to evaluate_curriculum as the reference. Prerequisite edges appear both in each concept's 'prerequisites' list and in 'relationships' so that 'relationships' is the complete gold edge list; CurriculumGraphValidator reports any disagreement between the two as PREREQUISITE_DIRECTION_MISMATCH or PREREQUISITE_LIST_UNBACKED, and seed_curriculum de-duplicates the edges it creates from them.",
+  "curriculum_id": "pilot_jee_v1",
+  "syllabus_version": "2026.pilot.v1",
+  "title": "Pilot JEE slice (physics, chemistry, mathematics)",
+  "metadata": {
+    "fixture": true,
+    "authored_by": "person2",
+    "expert_reviewed": false
+  },
+  "concepts": [
+    {
+      "stable_key": "physics/units/units-and-measurement",
+      "name": "Units and Measurement",
+      "subject": "physics",
+      "chapter_id": "ch_units",
+      "class_levels": ["class_11"],
+      "aliases": ["SI units"],
+      "description": "Physical quantities are compared through agreed units; the SI system fixes a set of base units so measurements are reproducible."
+    },
+    {
+      "stable_key": "physics/kinematics/distance",
+      "name": "Distance",
+      "subject": "physics",
+      "chapter_id": "ch_kinematics",
+      "class_levels": ["class_11"],
+      "aliases": ["path length"],
+      "description": "Total length of the path actually travelled, a scalar with no direction.",
+      "prerequisites": ["physics/units/units-and-measurement"]
+    },
+    {
+      "stable_key": "physics/kinematics/displacement",
+      "name": "Displacement",
+      "subject": "physics",
+      "chapter_id": "ch_kinematics",
+      "class_levels": ["class_11"],
+      "aliases": ["change in position"],
+      "description": "Change in position of a body, a vector pointing from the initial to the final position.",
+      "prerequisites": ["physics/units/units-and-measurement"]
+    },
+    {
+      "stable_key": "physics/kinematics/position-time-graph",
+      "name": "Position-Time Graph",
+      "subject": "physics",
+      "chapter_id": "ch_kinematics",
+      "class_levels": ["class_11"],
+      "aliases": ["x-t graph"],
+      "description": "Plot of position against time; its slope at a point is the instantaneous velocity.",
+      "prerequisites": ["physics/kinematics/displacement"]
+    },
+    {
+      "stable_key": "physics/kinematics/velocity-time-graph",
+      "name": "Velocity-Time Graph",
+      "subject": "physics",
+      "chapter_id": "ch_kinematics",
+      "class_levels": ["class_11"],
+      "aliases": ["v-t graph"],
+      "description": "Plot of velocity against time; its slope is acceleration and the area under it is displacement.",
+      "prerequisites": ["physics/kinematics/position-time-graph"]
+    },
+    {
+      "stable_key": "chemistry/stoichiometry/mole-concept",
+      "name": "Mole Concept",
+      "subject": "chemistry",
+      "chapter_id": "ch_stoichiometry",
+      "class_levels": ["class_11"],
+      "aliases": ["number of moles"],
+      "description": "The mole ties a measurable mass to a countable number of particles through the Avogadro constant."
+    },
+    {
+      "stable_key": "chemistry/equilibrium/equilibrium",
+      "name": "Equilibrium",
+      "subject": "chemistry",
+      "chapter_id": "ch_equilibrium",
+      "class_levels": ["class_11"],
+      "aliases": ["dynamic equilibrium"],
+      "description": "The state in which forward and reverse processes proceed at equal rates so net amounts stop changing.",
+      "prerequisites": ["chemistry/stoichiometry/mole-concept"]
+    },
+    {
+      "stable_key": "chemistry/equilibrium/chemical-equilibrium",
+      "name": "Chemical Equilibrium",
+      "subject": "chemistry",
+      "chapter_id": "ch_equilibrium",
+      "class_levels": ["class_12"],
+      "aliases": ["reversible reaction equilibrium"],
+      "description": "Equilibrium as it applies to a reversible reaction, described by the equilibrium constant.",
+      "prerequisites": ["chemistry/equilibrium/equilibrium"]
+    },
+    {
+      "stable_key": "mathematics/calculus/logarithm",
+      "name": "Logarithm",
+      "subject": "mathematics",
+      "chapter_id": "ch_calculus",
+      "class_levels": ["class_11"],
+      "aliases": ["log"],
+      "description": "The logarithm is the inverse of exponentiation: log_b(x) is the power to which b must be raised to give x."
+    },
+    {
+      "stable_key": "mathematics/calculus/logarithmic-function",
+      "name": "Logarithmic Function",
+      "subject": "mathematics",
+      "chapter_id": "ch_calculus",
+      "class_levels": ["class_12"],
+      "aliases": [],
+      "description": "The function x -> log_b(x), its domain, range, graph and derivatives.",
+      "prerequisites": ["mathematics/calculus/logarithm"]
+    }
+  ],
+  "relationships": [
+    {
+      "source_key": "physics/units/units-and-measurement",
+      "target_key": "physics/kinematics/distance",
+      "type": "prerequisite_of",
+      "rationale": "Units are needed before any measurement of length."
+    },
+    {
+      "source_key": "physics/units/units-and-measurement",
+      "target_key": "physics/kinematics/displacement",
+      "type": "prerequisite_of",
+      "rationale": "Units are needed before any measurement of length."
+    },
+    {
+      "source_key": "physics/kinematics/displacement",
+      "target_key": "physics/kinematics/position-time-graph",
+      "type": "prerequisite_of",
+      "rationale": "A position axis is built from displacement."
+    },
+    {
+      "source_key": "physics/kinematics/position-time-graph",
+      "target_key": "physics/kinematics/velocity-time-graph",
+      "type": "prerequisite_of",
+      "rationale": "Velocity is read off the slope of a position-time graph."
+    },
+    {
+      "source_key": "chemistry/stoichiometry/mole-concept",
+      "target_key": "chemistry/equilibrium/equilibrium",
+      "type": "prerequisite_of",
+      "rationale": "Amounts of substance are needed to express equilibrium compositions."
+    },
+    {
+      "source_key": "chemistry/equilibrium/equilibrium",
+      "target_key": "chemistry/equilibrium/chemical-equilibrium",
+      "type": "prerequisite_of",
+      "rationale": "The general idea of equilibrium precedes its chemical application."
+    },
+    {
+      "source_key": "mathematics/calculus/logarithm",
+      "target_key": "mathematics/calculus/logarithmic-function",
+      "type": "prerequisite_of",
+      "rationale": "The logarithm must be defined before it can be studied as a function."
+    },
+    {
+      "source_key": "chemistry/equilibrium/chemical-equilibrium",
+      "target_key": "chemistry/equilibrium/equilibrium",
+      "type": "part_of",
+      "rationale": "Chemical equilibrium is one case of equilibrium generally."
+    }
+  ],
+  "alias_groups": [
+    ["Units and Measurement", "SI units"],
+    ["Distance", "path length"],
+    ["Displacement", "change in position"],
+    ["Position-Time Graph", "x-t graph"],
+    ["Velocity-Time Graph", "v-t graph"],
+    ["Mole Concept", "number of moles"],
+    ["Equilibrium", "dynamic equilibrium"],
+    ["Chemical Equilibrium", "reversible reaction equilibrium"],
+    ["Logarithm", "log"]
+  ],
+  "items": [
+    {
+      "item_id": "pilot_01",
+      "split": "pilot",
+      "text": "SI units are the standard units used across the physical sciences.",
+      "expected": ["physics/units/units-and-measurement"]
+    },
+    {
+      "item_id": "pilot_02",
+      "split": "pilot",
+      "text": "Displacement is the change in position of an object measured along the shortest path.",
+      "expected": ["physics/kinematics/displacement"]
+    },
+    {
+      "item_id": "pilot_03",
+      "split": "pilot",
+      "text": "A Velocity-Time Graph shows how the velocity of a particle varies with time, and its slope gives acceleration.",
+      "expected": ["physics/kinematics/velocity-time-graph"]
+    },
+    {
+      "item_id": "pilot_04",
+      "split": "pilot",
+      "text": "Chemical equilibrium is dynamic and the rates of the forward and reverse reactions are equal.",
+      "expected": [
+        "chemistry/equilibrium/equilibrium",
+        "chemistry/equilibrium/chemical-equilibrium"
+      ]
+    },
+    {
+      "item_id": "pilot_05",
+      "split": "pilot",
+      "text": "The total path length covered by a body is its distance, which is a scalar quantity, unlike the change in position.",
+      "expected": ["physics/kinematics/displacement"]
+    },
+    {
+      "item_id": "pilot_06",
+      "split": "pilot",
+      "text": "The school closed early for the festival holiday and the students went home.",
+      "expected": []
+    },
+    {
+      "item_id": "held_out_01",
+      "split": "held_out",
+      "text": "The number of moles in 18 g of water is one, since the molar mass of water is 18 g/mol.",
+      "expected": ["chemistry/stoichiometry/mole-concept"]
+    },
+    {
+      "item_id": "held_out_02",
+      "split": "held_out",
+      "text": "The logarithm of a product equals the sum of the logarithms of its factors.",
+      "expected": ["mathematics/calculus/logarithm"]
+    },
+    {
+      "item_id": "held_out_03",
+      "split": "held_out",
+      "text": "Page 4 of 12. Copyright material.",
+      "expected": ["physics/units/units-and-measurement"]
+    },
+    {
+      "item_id": "held_out_04",
+      "split": "held_out",
+      "text": "Photosynthesis converts light energy into chemical energy in green plants.",
+      "expected": []
+    }
+  ],
+  "expected_counts": {
+    "concept_mapping": {
+      "pilot": { "tp": 4, "fp": 1, "fn": 0 },
+      "held_out": { "tp": 2, "fp": 0, "fn": 1 }
+    },
+    "relationship_extraction": { "tp": 8, "fp": 0, "fn": 0 },
+    "prerequisite_direction": { "correct_orientation": 7, "reversed_orientation": 0 },
+    "alias_normalization": { "merged_correctly": 9, "split_concepts": 0 }
+  }
+}
