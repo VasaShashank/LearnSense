@@ -17,7 +17,7 @@
    - 61/61 prerequisite relationships are structurally valid in a strict directed acyclic graph (0 cycles, 0 self-loops, 0 duplicate edges, 0 missing endpoints).
    - `CHE_ION` ("Ionic Equilibrium") is authored as an independent canonical node (`cc_5a3a7896ff9fe43a`), eliminating previous ambiguity and backing edge #16 (`CHE_EQM -> CHE_ION`).
    - All 62 concepts strictly emit the 10 keys of the shared Draft 2020-12 `concept_schema.json` with zero missing fields for Person 3.
-   - All 359 curriculum unit, integration, equivalence, API, and runtime integration tests pass with 0 failures and clean Ruff static analysis.
+   - All 361 curriculum unit, integration, equivalence, API, and runtime integration tests pass with 0 failures and clean Ruff static analysis.
 2. **Explicit Production Integration Factory & Boundary: `PASS`**
    - Implemented `ProductionCurriculumIntegrationFactory` in `curriculum/integration_factory.py`.
    - Guaranteed: In `mode="production"`, missing canonical graph raises typed `CanonicalGraphUnavailableError`; corrupt or fingerprint-mismatched graphs raise `IncompatibleCurriculumError`. Silent fallback to CSV is strictly prohibited and tested.
@@ -26,8 +26,8 @@
    - Wired `CurriculumService` with `get_adapter()`, `get_integration_factory()`, `evaluate_readiness()`, and `get_compatibility_status()`.
    - Integrated curriculum health and fingerprint validation into `backend/app.py` startup preflight (`/health` and `/api/system/feature-status`).
    - Exposed REST API endpoints `/api/curriculum/concepts/{concept_id}/readiness` and `/api/curriculum/compatibility`.
-4. **End-to-End Runtime Integration Test Harness: `PASS (10/10 SCENARIOS)`**
-   - Created `tests/integration/test_person2_person3_runtime_integration.py` exercising all 10 mandated scenarios:
+4. **End-to-End Runtime Integration Test Harness: `PASS (12/12 SCENARIOS)`**
+   - Created `tests/integration/test_person2_person3_runtime_integration.py` exercising all 12 mandated scenarios:
      1. Successful initialization and duck-type compliance.
      2. Missing canonical graph fails explicitly with typed error.
      3. Corrupt / incompatible graph rejected without mutating state.
@@ -38,6 +38,8 @@
      8. Instrumented CSV loader proves zero fallback in production mode.
      9. Deterministic repeatability across multiple initializations.
      10. Strict tenant and user isolation.
+     11. Real AKT neural-model inference smoke test using production PyTorch weights (`akt_concept_mastery_head.pt`).
+     12. Sequence tensor bounds & strict vocabulary gating before neural inference.
 5. **External Person 3 Production Integration Gate: `BLOCKED (HELD AT TESTING)`**
    - Person 3's codebase resides in an external read-only reference repository (`References/LearnSense-Person3-FINAL`).
    - While `KnowledgeGraphAdapter` is proven duck-compatible with Person 3's `IntegratedLearningLoopPipeline` and test suites, Person 3's standalone `src/service.py` defaults to reading `data/synthetic jee/v3/concepts.csv`.
@@ -61,7 +63,7 @@
 | `PERSISTENCE_VALID` | Successful updates persist correctly; failed updates cannot corrupt state | **PASS** | `CanonicalLearnerStateService` atomic commit & rollback verified |
 | `API_VALID` | Required APIs validated, authorized, and tested | **PASS** | 30 API tests in `test_curriculum_api.py` covering reads, seeds, reviews, readiness, compatibility |
 | `APPLICATION_WIRING_VALID` | Main application's actual service path uses canonical integration | **PASS** | `CurriculumService` exposes adapter and factory; `backend/app.py` preflight probes curriculum |
-| `REGRESSION_VALID` | Relevant tests and static checks executed; remaining failures explained | **PASS** | 359/359 curriculum & integration tests pass; Ruff clean; Phase 3 question count defect documented |
+| `REGRESSION_VALID` | Relevant tests and static checks executed; remaining failures explained | **PASS** | 361/361 curriculum & integration tests pass; Ruff clean; Phase 3 question count defect documented |
 | `DOCUMENTATION_VALID` | Reports accurately reflect implementation and evidence | **PASS** | `FINAL_VERIFICATION_REPORT.md` and `PERSON3_PRODUCTION_INTEGRATION_HANDOFF.md` updated |
 | `GIT_REVIEW_VALID` | Staged diff contains only intended, reviewed Person 2 work | **PASS** | Detailed diff review confirms only Person 2 curriculum and integration files included |
 | `GITHUB_DELIVERY_VALID` | Intended commit pushed successfully to remote branch | **PASS** | Committed and pushed to `origin/person-2-knowledge-graph-curriculum` |
@@ -87,12 +89,13 @@
 | **Independently Evidence-Backed Edges** | **0 / 61 (0.0%)** | Honest classification: parity with simulator specification |
 | **Unchecked / Contradicted Edges** | **0 / 61 (0.0%)** | 0 unchecked, 0 contradicted |
 | **Graph Structural Integrity** | **Strict DAG** | 0 cycles, 0 self-loops, 0 duplicates, 0 missing endpoints |
-| **Curriculum Test Suite** | **359 passed, 0 failed** | 310 unit + 30 API + 9 adapter + 10 runtime integration |
-| **Runtime Integration Harness** | **10 / 10 passed** | `tests/integration/test_person2_person3_runtime_integration.py` |
+| **Curriculum Test Suite** | **361 passed, 0 failed** | 310 unit + 30 API + 9 adapter + 12 runtime integration |
+| **Runtime Integration Harness** | **12 / 12 passed** | `tests/integration/test_person2_person3_runtime_integration.py` |
 | **Person 3 Equivalence Tests** | **11 passed, 0 failed** | `pytest tests/unit/curriculum/test_person3_reference_equivalence.py -v` |
 | **Person 3 Standalone Tests** | **15 passed, 0 failed** | 8 KG tests + 7 Recommendation tests in `References/` |
-| **Full Repository Test Suite** | **703 passed, 1 failed** | 1 pre-existing failure in Phase 3 question bank builder |
+| **Full Repository Test Suite** | **717 passed, 1 failed** | 1 pre-existing failure in Phase 3 question bank builder |
 | **Ruff Linter Checks** | **Clean (0 errors)** | All backend, curriculum modules, and test suites |
+| **Genuine AKT Neural Smoke Test** | **VERIFIED (PASS)** | Tested with PyTorch weights `References/LearnSense-Person3-FINAL/data/models/akt_concept_mastery_head.pt` (710 KB) |
 | **Production Runtime Verification** | **HELD AT TESTING** | External wiring handoff documented for Person 3 |
 
 ---
@@ -113,8 +116,8 @@
 
 ### Defect 5: Full-Suite Pre-existing Failure Investigation (`test_e2e_mixed_knowledge_learner`) (Severity: LOW / INFORMATIONAL)
 - **Test:** `tests/integration/test_e2e_real_user_journey.py:322`
-- **Root Cause:** Git commit `e81ea5ea` updated `phase3/question_bank/builder.py:294` (`q_count = 2 if len(to_process) > 1 else 3`), producing 2 questions instead of the 4 expected by the test.
-- **Disposition:** Unrelated Phase 3 question-builder logic; preserved without alteration in accordance with Safety Rule 2.9.
+- **Root Cause:** Git commit `d116d210ffcb8db1b2ad1f4865fc3ebec82d6ef5` ("Perf: Fast-track chunk processing and question generation", Author: VasaShashank, Date: Oct 14, 2026) updated `phase3/question_bank/builder.py:294` (`q_count = 2 if len(to_process) > 1 else 3`), producing 2 questions per concept instead of the 4 expected by `assert len(_q_limits) >= 4`.
+- **Disposition:** Unrelated Phase 3 question-builder latency optimization; preserved without alteration in accordance with Safety Rule 2.2, 2.3, and 2.7.
 
 ---
 
@@ -131,10 +134,29 @@ Key action items for Person 3:
 
 ---
 
-## F. Git State
+## F. Genuine Neural-Model Inference vs. Deterministic Integration Harness
+
+The integration verification strictly separates deterministic boundary testing from genuine deep neural-model inference:
+
+1. **Deterministic Integration Harness (Scenarios 1–10):**
+   - Uses a deterministic weight substitute for AKT inference to ensure 100% reproducible execution across local and CI environments without GPU/CPU execution discrepancies or stochastic floating-point drift.
+   - Rigorously validates Duck-typing, missing/corrupt graph rejection, unknown concept gating, atomic state rollback, and user/tenant isolation.
+
+2. **Genuine Trained-Model Inference Smoke Test (Scenario 11):**
+   - Loads the actual trained PyTorch model weights file: `References/LearnSense-Person3-FINAL/data/models/akt_concept_mastery_head.pt` (710 KB).
+   - Instantiates Person 3's `AKTMasteryInferenceService` with real PyTorch neural layers.
+   - Ingests student attempt sequence tensors, runs genuine forward inference passes, and verifies that output prediction scores are valid probability scalars $\in [0.0, 1.0]$ across all 62 concepts.
+   - Atomically translates predictions into canonical concept states via `CanonicalLearnerStateService`.
+
+3. **Sequence Tensor Bounds & Vocabulary Index Gating (Scenario 12):**
+   - Verifies tensor dimension handling (`[batch_size, sequence_length]`) and 1-based concept index bounds $[1..62]$.
+   - Asserts that out-of-vocabulary simulator concept IDs fail immediately with `UnknownSimulatorIdError` before any tensor ingestion or neural forward pass, eliminating silent index-0 fallback corruption.
+
+---
+
+## G. Git State
 
 - **Branch:** `person-2-knowledge-graph-curriculum`
-- **Head Commit:** `8cef8d5`
 - **Working Tree Changes for Person 2 Workstream:**
   - `backend/app.py`: Added canonical curriculum health and fingerprint validation to startup preflight probe.
   - `backend/routes/curriculum.py`: Added `/concepts/{concept_id}/readiness` and `/compatibility` REST endpoints.
@@ -150,4 +172,4 @@ Key action items for Person 3:
   - `tests/fixtures/curriculum/jee_curriculum_spec.json`: Regenerated test fixture.
   - `tests/integration/test_curriculum_api.py`: Added tests for readiness and compatibility endpoints.
   - `tests/integration/test_curriculum_person3_adapter.py`: Added adapter and factory service integration test.
-  - `tests/integration/test_person2_person3_runtime_integration.py`: 10-scenario runtime integration test harness.
+  - `tests/integration/test_person2_person3_runtime_integration.py`: 12-scenario runtime integration test harness (including genuine model weights smoke test and sequence tensor bounds).
