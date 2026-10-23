@@ -67,8 +67,8 @@ def build_spec() -> dict:
 
         source_ref = {
             "source_id": f"NCERT-{subj.upper()}-{roman_class}",
-            "locator": f"Chapter: {name}",
-            "kind": "EXPLICIT",
+            "locator": f"NCERT Class {12 if class_level == 'class_12' else 11} {subj.title()} Syllabus: {name}",
+            "kind": "CURRICULUM_FRAMEWORK",
             "title": f"NCERT Class {12 if class_level == 'class_12' else 11} {subj.title()}: {name}",
         }
 
@@ -92,7 +92,7 @@ def build_spec() -> dict:
                 "target_key": sim_to_key[cid],
                 "type": "prerequisite_of",
                 "status": "accepted",
-                "rationale": f"Mastery of prerequisite concept is pedagogically required before advancing to {name}.",
+                "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
             })
 
     return {
@@ -102,12 +102,15 @@ def build_spec() -> dict:
         "metadata": {
             "authored_by": "person2",
             "source_framework": "NCERT Class 11-12 & NTA JEE Syllabus",
-            "expert_reviewed": True,
+            "expert_reviewed": False,
+            "review_status": "provisional_simulator_parity",
             "coverage_target": "jee_full_simulator_parity",
+            "verification_note": "Concepts and prerequisite structure match the simulator specification (concepts.csv) aligned with NCERT Class 11-12 topic taxonomy. Formal independent pedagogical expert panel review is pending.",
         },
         "concepts": concepts,
         "relationships": relationships,
     }
+
 
 
 def main():

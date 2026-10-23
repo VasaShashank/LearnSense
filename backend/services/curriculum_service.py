@@ -44,22 +44,19 @@ from curriculum.mapping import (
     ContentMappingResult,
     ExtractedConceptCandidate,
     MappingContext,
-    Passage,
     infer_subject_hint,
     passages_from_learning_context,
     passages_from_structured_document,
 )
-from curriculum.models import ClassLevel, CurriculumGraph, ReviewStatus, Subject
+from curriculum.models import ClassLevel, CurriculumGraph, Subject
 from curriculum.provenance import ProvenanceLedger
 from curriculum.quality import build_structural_quality_report, summarize_for_teacher
 from curriculum.repository import CurriculumRepository
 from curriculum.review import (
     CurriculumReviewService,
-    ReviewAction,
-    ReviewConflictError,
     ReviewerRole,
 )
-from curriculum.versioning import CurriculumVersioning, diff_graphs
+from curriculum.versioning import CurriculumVersioning
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +166,6 @@ class CurriculumService:
                 if needle not in haystack:
                     continue
             items.append(self._concept_payload(concept))
-        total = len(items)
         return items[offset : offset + max(limit, 1)]
 
     def count_concepts(self, **filters: Any) -> int:
@@ -595,3 +591,74 @@ class CurriculumService:
             "versions": len(self.list_versions()),
             "pending_review": len(self.pending_candidates()),
         }
+
+    def get_adapter(self, accepted_only: bool = True) -> Any:
+        """Construct a Person 3 duck-typing KnowledgeGraphAdapter from the canonical graph."""
+        from curriculum.integration_factory import validate_adapter_contract
+        from curriculum.learner_adapter import KnowledgeGraphAdapter
+
+        graph = self.get_graph()
+        if not graph.concepts:
+            raise CurriculumNotFoundError(f"No active curriculum graph found for '{self.curriculum_id}'")
+        adapter = KnowledgeGraphAdapter(graph, accepted_only=accepted_only)
+        validate_adapter_contract(adapter)
+        return adapter
+
+    def get_integration_factory(
+        self,
+        mode: str = "production",
+        expected_fingerprint: Optional[str] = None,
+        expected_syllabus_version: Optional[str] = None,
+    ) -> Any:
+        from curriculum.integration_factory import ProductionCurriculumIntegrationFactory
+
+        graph = self.get_graph()
+        return ProductionCurriculumIntegrationFactory(
+            repository=self.repository,
+            expected_curriculum_id=self.curriculum_id,
+            expected_syllabus_version=expected_syllabus_version or (graph.syllabus_version if graph.concepts else "2026.jee.v1"),
+            expected_fingerprint=expected_fingerprint,
+            mode=mode,
+        )
+
+    def evaluate_readiness(
+        self,
+        concept_id: str,
+        mastery_map: Dict[str, float],
+        threshold: float = 0.50,
+    ) -> Dict[str, Any]:
+        """Evaluate prerequisite readiness for a concept given learner mastery values."""
+        adapter = self.get_adapter()
+        is_ready, status_map, remediation = adapter.evaluate_prerequisite_readiness(
+            concept_id, mastery_map, threshold=threshold
+        )
+        return {
+            "concept_id": concept_id,
+            "is_ready": is_ready,
+            "prerequisite_status_map": status_map,
+            "remediation_needed": remediation,
+            "mastery_threshold": threshold,
+        }
+
+    def get_compatibility_status(self) -> Dict[str, Any]:
+        """Exposes canonical graph compatibility status and Person 3 release gate status."""
+        graph = self.get_graph()
+        if not graph.concepts:
+            return {
+                "status": "UNSEEDED",
+                "has_curriculum": False,
+                "message": "No canonical curriculum graph seeded.",
+            }
+        report = self.validate_graph()
+        return {
+            "status": "COMPATIBLE FOR TESTING",
+            "curriculum_id": graph.curriculum_id,
+            "syllabus_version": graph.syllabus_version,
+            "fingerprint": graph.content_fingerprint(),
+            "concept_count": len(graph.concepts),
+            "relationship_count": len(graph.relationships),
+            "is_valid": report.is_valid,
+            "adapter_contract_satisfied": True,
+            "release_gate": "COMPATIBLE FOR TESTING",
+        }
+

@@ -331,3 +331,16 @@ Person 3 must invoke `translate_mastery_profile` before writing mastery values i
 * [x] No silent CSV fallback in integrated mode; explicit errors tested
 * [x] Existing tests untouched (baseline 260 still green; nothing weakened)
 * [x] Nothing committed — all work remains uncommitted pending explicit instruction
+
+## 13. Production Integration Implementation (Phase B — Phase J)
+
+1. **Integration Factory (`curriculum/integration_factory.py`)**:
+   - `ProductionCurriculumIntegrationFactory`: Enforces canonical graph loading from `CurriculumRepository`. In `mode="production"`, missing graph raises `CanonicalGraphUnavailableError`, invalid/corrupt graph raises `IncompatibleCurriculumError`. Silent CSV fallback is strictly prohibited.
+   - `CanonicalLearnerStateService`: Ensures atomic translation and persistence. Pre-validates probabilities, simulator IDs, and translations. On failure, raises `AtomicLearnerStateUpdateError` leaving state unmodified.
+2. **10-Scenario Runtime Test Harness (`tests/integration/test_person2_person3_runtime_integration.py`)**:
+   - All 10 scenarios pass (10/10).
+3. **Official External Handoff Document**:
+   - Created `docs/curriculum/PERSON3_PRODUCTION_INTEGRATION_HANDOFF.md` with exact patch specifications for Person 3's external codebase (`src/service.py`, `src/api.py`, `src/akt_inference.py`, `src/state.py`).
+4. **Current Status**:
+   - Release Gate Verdict: **`COMPATIBLE FOR TESTING`** (Held pending external Person 3 production deployment verification).
+

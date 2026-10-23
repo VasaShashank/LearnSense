@@ -68,11 +68,23 @@ from curriculum.translation import (
     translate_mastery_profile,
     validate_simulator_ids,
 )
+from curriculum.integration_factory import (
+    AdapterInterfaceValidationError,
+    AtomicLearnerStateUpdateError,
+    CanonicalLearnerStateService,
+    IncompatibleCurriculumError,
+    ProductionCSVFallbackForbiddenError,
+    ProductionCurriculumIntegrationFactory,
+    validate_adapter_contract,
+)
 
 __all__ = [
+    "AdapterInterfaceValidationError",
+    "AtomicLearnerStateUpdateError",
     "AuditInfo",
     "CanonicalGraphUnavailableError",
     "CanonicalConcept",
+    "CanonicalLearnerStateService",
     "ConceptLifecycleStatus",
     "ConceptRelationship",
     "CurriculumGraph",
@@ -83,10 +95,13 @@ __all__ = [
     "GraphIssue",
     "GraphValidationReport",
     "IdReference",
+    "IncompatibleCurriculumError",
     "IssueSeverity",
     "KnowledgeGraphAdapter",
     "MasteryTranslationEntry",
     "MasteryTranslationResult",
+    "ProductionCSVFallbackForbiddenError",
+    "ProductionCurriculumIntegrationFactory",
     "UnknownSimulatorIdError",
     "PrerequisiteCycleError",
     "ReviewStatus",
@@ -102,6 +117,8 @@ __all__ = [
     "mastery_profile_from_indexed_output",
     "slugify",
     "translate_mastery_profile",
+    "validate_adapter_contract",
     "validate_simulator_ids",
     "stable_key_from_name",
 ]
+

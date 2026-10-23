@@ -697,7 +697,7 @@
     "concept_count": 62,
     "curriculum_id": "jee_class_11_12",
     "deprecated_concept_ids": [],
-    "fingerprint": "44dffdbc1b5f1531",
+    "fingerprint": "f2abc879a392e538",
     "id_policy": {
       "canonical_id_scheme": "cc_<sha256(curriculum_id::stable_key)[:16]>, frozen at creation",
       "graph_version_detection": "compare curriculum_id + syllabus_version + content_fingerprint()",
@@ -1956,7 +1956,7 @@
     "summary": {
       "ambiguous": 0,
       "canonical_curriculum_id": "jee_class_11_12",
-      "canonical_fingerprint": "44dffdbc1b5f1531",
+      "canonical_fingerprint": "f2abc879a392e538",
       "excluded": 0,
       "mapped": 62,
       "mapped_rate": 1.0,

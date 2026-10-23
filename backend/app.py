@@ -101,12 +101,30 @@ def _run_startup_preflight() -> dict:
     # --- Teacher Optimizer (§10) ---
     try:
         from backend.services.teacher_service import TeacherService
-        t_svc = TeacherService()
+        TeacherService()
         results["teacher_optimizer"] = {"status": "OK"}
     except Exception as exc:
         results["teacher_optimizer"] = {"status": "FAILED", "reason": str(exc)}
 
+    # --- Canonical Curriculum (§Person 2) ---
+    try:
+        from backend.services.curriculum_service import CurriculumService
+        curr_svc = CurriculumService()
+        if curr_svc.has_curriculum:
+            graph = curr_svc.get_graph()
+            results["curriculum"] = {
+                "status": "OK",
+                "curriculum_id": curr_svc.curriculum_id,
+                "concept_count": len(graph.concepts),
+                "fingerprint": graph.content_fingerprint(),
+            }
+        else:
+            results["curriculum"] = {"status": "UNSEEDED", "reason": "No curriculum seeded yet"}
+    except Exception as exc:
+        results["curriculum"] = {"status": "FAILED", "reason": str(exc)}
+
     return results
+
 
 
 app = FastAPI(

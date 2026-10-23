@@ -92,6 +92,11 @@ class SeedRequest(BaseModel):
     reviewer_id: str = "curriculum_seeder"
 
 
+class ReadinessEvaluationRequest(BaseModel):
+    mastery_map: Dict[str, float] = Field(default_factory=dict)
+    threshold: float = Field(default=0.50, ge=0.0, le=1.0)
+
+
 # ------------------------------------------------------------------- dependencies
 
 
@@ -420,3 +425,29 @@ def export_contract(service: CurriculumService = Depends(get_service)) -> Dict[s
     """Every canonical concept in the proposed shared ``concept_schema.json`` shape."""
     records = service.export_contracts()
     return {"count": len(records), "concepts": records}
+
+
+@router.post("/concepts/{concept_id}/readiness")
+def evaluate_concept_readiness(
+    concept_id: str,
+    payload: ReadinessEvaluationRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Evaluate prerequisite readiness for candidate concept given learner concept mastery."""
+    try:
+        return service.evaluate_readiness(
+            concept_id,
+            payload.mastery_map,
+            threshold=payload.threshold,
+        )
+    except (CurriculumNotFoundError, KeyError) as exc:
+        raise _not_found(exc)
+
+
+@router.get("/compatibility")
+def get_curriculum_compatibility(
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Exposes Person 2 x Person 3 compatibility status and release gate metrics."""
+    return service.get_compatibility_status()
+

@@ -474,3 +474,68 @@ class TestVersioningEndpoints:
         )
         assert response.status_code == 404
         assert "cv_missing" in response.json()["detail"]
+
+
+class TestReadinessAndCompatibilityEndpoints:
+    def test_compatibility_unseeded(self, client):
+        res = client.get("/api/curriculum/compatibility")
+        assert res.status_code == 200
+        body = res.json()
+        assert body["has_curriculum"] is False
+        assert body["status"] == "UNSEEDED"
+
+    def test_compatibility_seeded(self, client, seed_body):
+        res = client.get("/api/curriculum/compatibility")
+        assert res.status_code == 200
+        body = res.json()
+        assert body["status"] == "COMPATIBLE FOR TESTING"
+        assert body["concept_count"] == 4
+        assert body["relationship_count"] == 3
+        assert body["adapter_contract_satisfied"] is True
+        assert body["release_gate"] == "COMPATIBLE FOR TESTING"
+
+    def test_readiness_evaluation(self, client, seed_body):
+        concepts = client.get("/api/curriculum/concepts").json()["concepts"]
+        by_name = {c["name"]: c["concept_id"] for c in concepts}
+        pos_id = by_name["Position"]
+        vel_id = by_name["Velocity"]
+
+        # Root concept (Position) is always ready with no prerequisites
+        res_root = client.post(
+            f"/api/curriculum/concepts/{pos_id}/readiness",
+            json={"mastery_map": {}, "threshold": 0.50},
+        )
+        assert res_root.status_code == 200
+        assert res_root.json()["is_ready"] is True
+        assert res_root.json()["remediation_needed"] == []
+
+        # Velocity requires Position >= 0.50
+        # 1. Unsatisfied: Position at 0.30
+        res_unready = client.post(
+            f"/api/curriculum/concepts/{vel_id}/readiness",
+            json={"mastery_map": {pos_id: 0.30}, "threshold": 0.50},
+        )
+        assert res_unready.status_code == 200
+        body_unready = res_unready.json()
+        assert body_unready["is_ready"] is False
+        assert pos_id in body_unready["remediation_needed"]
+        assert body_unready["prerequisite_status_map"][pos_id] == "unsatisfied"
+
+        # 2. Satisfied: Position at 0.85
+        res_ready = client.post(
+            f"/api/curriculum/concepts/{vel_id}/readiness",
+            json={"mastery_map": {pos_id: 0.85}, "threshold": 0.50},
+        )
+        assert res_ready.status_code == 200
+        body_ready = res_ready.json()
+        assert body_ready["is_ready"] is True
+        assert body_ready["remediation_needed"] == []
+        assert body_ready["prerequisite_status_map"][pos_id] == "satisfied"
+
+    def test_readiness_unknown_concept_is_404(self, client, seed_body):
+        res = client.post(
+            "/api/curriculum/concepts/cc_missing/readiness",
+            json={"mastery_map": {}, "threshold": 0.50},
+        )
+        assert res.status_code == 404
+

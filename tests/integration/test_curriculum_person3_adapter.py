@@ -210,3 +210,37 @@ def test_adapter_translation_service_integration(seeded_client, repo):
     assert result.is_complete is False
     assert result.coverage_rate == 0.5
 
+
+def test_service_get_adapter_and_integration_factory(seeded_client, repo):
+    """Test CurriculumService provides duck-typed adapter and production integration factory."""
+    service = CurriculumService(repository=repo, curriculum_id=CURRICULUM_ID)
+    
+    # 1. get_adapter() returns duck-compliant adapter
+    adapter = service.get_adapter()
+    assert len(adapter) == 4
+    assert adapter.concept_ids
+    assert adapter.fingerprint == service.get_graph().content_fingerprint()
+
+    # 2. get_integration_factory() creates working factory in production mode
+    factory = service.get_integration_factory(mode="production")
+    created_adapter = factory.create_adapter(CURRICULUM_ID)
+    assert created_adapter.fingerprint == adapter.fingerprint
+
+    # 3. evaluate_readiness() evaluates prerequisite DAG via service
+    concepts = service.list_concepts()
+    by_name = {c["name"]: c["concept_id"] for c in concepts}
+    pos_id = by_name["Position"]
+    vel_id = by_name["Velocity"]
+
+    # Position is root
+    r_pos = service.evaluate_readiness(pos_id, {})
+    assert r_pos["is_ready"] is True
+
+    # Velocity needs Position >= 0.50
+    r_vel_fail = service.evaluate_readiness(vel_id, {pos_id: 0.25})
+    assert r_vel_fail["is_ready"] is False
+    assert pos_id in r_vel_fail["remediation_needed"]
+
+    r_vel_pass = service.evaluate_readiness(vel_id, {pos_id: 0.80})
+    assert r_vel_pass["is_ready"] is True
+

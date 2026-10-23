@@ -13,8 +13,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Kinematics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Kinematics",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Kinematics"
         }
@@ -46,8 +46,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Laws of Motion",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Laws of Motion",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Laws of Motion"
         }
@@ -79,8 +79,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Work, Power and Energy",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Work, Power and Energy",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Work, Power and Energy"
         }
@@ -112,8 +112,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Centre of Mass and Collisions",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Centre of Mass and Collisions",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Centre of Mass and Collisions"
         }
@@ -146,8 +146,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Rotational Motion",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Rotational Motion",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Rotational Motion"
         }
@@ -179,8 +179,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Gravitation",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Gravitation",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Gravitation"
         }
@@ -212,8 +212,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Elasticity",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Elasticity",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Elasticity"
         }
@@ -245,8 +245,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Fluid Mechanics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Fluid Mechanics",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Fluid Mechanics"
         }
@@ -278,8 +278,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Thermal Properties",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Thermal Properties",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Thermal Properties"
         }
@@ -311,8 +311,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Kinetic Theory of Gases",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Kinetic Theory of Gases",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Kinetic Theory of Gases"
         }
@@ -344,8 +344,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Thermodynamics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Thermodynamics",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Thermodynamics"
         }
@@ -379,8 +379,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Oscillations",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Oscillations",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Oscillations"
         }
@@ -412,8 +412,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Waves",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Physics Syllabus: Waves",
           "source_id": "NCERT-PHYSICS-XI",
           "title": "NCERT Class 11 Physics: Waves"
         }
@@ -443,8 +443,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Electrostatics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Electrostatics",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Electrostatics"
         }
@@ -476,8 +476,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Capacitance",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Capacitance",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Capacitance"
         }
@@ -509,8 +509,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Current Electricity",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Current Electricity",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Current Electricity"
         }
@@ -542,8 +542,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Magnetic Effects of Current",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Magnetic Effects of Current",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Magnetic Effects of Current"
         }
@@ -575,8 +575,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Electromagnetic Induction",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Electromagnetic Induction",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Electromagnetic Induction"
         }
@@ -608,8 +608,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Alternating Current",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Alternating Current",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Alternating Current"
         }
@@ -644,8 +644,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Ray and Wave Optics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Ray and Wave Optics",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Ray and Wave Optics"
         }
@@ -675,8 +675,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Modern Physics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Modern Physics",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Modern Physics"
         }
@@ -708,8 +708,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Semiconductors",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Physics Syllabus: Semiconductors",
           "source_id": "NCERT-PHYSICS-XII",
           "title": "NCERT Class 12 Physics: Semiconductors"
         }
@@ -742,8 +742,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Some Basic Concepts / Mole Concept",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Some Basic Concepts / Mole Concept",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Some Basic Concepts / Mole Concept"
         }
@@ -775,8 +775,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Atomic Structure",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Atomic Structure",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Atomic Structure"
         }
@@ -808,8 +808,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Periodicity",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Periodicity",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Periodicity"
         }
@@ -842,8 +842,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Chemical Bonding",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Chemical Bonding",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Chemical Bonding"
         }
@@ -875,8 +875,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: States of Matter",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: States of Matter",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: States of Matter"
         }
@@ -908,8 +908,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Chemical Thermodynamics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Chemical Thermodynamics",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Chemical Thermodynamics"
         }
@@ -943,8 +943,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Equilibrium",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Equilibrium",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Equilibrium"
         }
@@ -976,8 +976,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Ionic Equilibrium",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Ionic Equilibrium",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Ionic Equilibrium"
         }
@@ -1009,8 +1009,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Redox Reactions",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Redox Reactions",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Redox Reactions"
         }
@@ -1043,8 +1043,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Electrochemistry",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Electrochemistry",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Electrochemistry"
         }
@@ -1076,8 +1076,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Chemical Kinetics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Chemical Kinetics",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Chemical Kinetics"
         }
@@ -1109,8 +1109,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Solutions",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Solutions",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Solutions"
         }
@@ -1142,8 +1142,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Metallurgy",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Metallurgy",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Metallurgy"
         }
@@ -1175,8 +1175,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Hydrogen and s-Block",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Hydrogen and s-Block",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Hydrogen and s-Block"
         }
@@ -1209,8 +1209,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: p-Block Elements",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: p-Block Elements",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: p-Block Elements"
         }
@@ -1242,8 +1242,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: d- and f-Block Elements",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: d- and f-Block Elements",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: d- and f-Block Elements"
         }
@@ -1276,8 +1276,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Coordination Compounds",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Coordination Compounds",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Coordination Compounds"
         }
@@ -1309,8 +1309,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Organic Chemistry Basics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Organic Chemistry Basics",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Organic Chemistry Basics"
         }
@@ -1342,8 +1342,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Hydrocarbons",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Chemistry Syllabus: Hydrocarbons",
           "source_id": "NCERT-CHEMISTRY-XI",
           "title": "NCERT Class 11 Chemistry: Hydrocarbons"
         }
@@ -1375,8 +1375,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Haloalkanes and Haloarenes",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Haloalkanes and Haloarenes",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Haloalkanes and Haloarenes"
         }
@@ -1408,8 +1408,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Alcohols, Phenols and Ethers",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Alcohols, Phenols and Ethers",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Alcohols, Phenols and Ethers"
         }
@@ -1441,8 +1441,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Carbonyl Compounds and Carboxylic Acids",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Carbonyl Compounds and Carboxylic Acids",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Carbonyl Compounds and Carboxylic Acids"
         }
@@ -1474,8 +1474,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Amines",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Amines",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Amines"
         }
@@ -1507,8 +1507,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Biomolecules",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Chemistry Syllabus: Biomolecules",
           "source_id": "NCERT-CHEMISTRY-XII",
           "title": "NCERT Class 12 Chemistry: Biomolecules"
         }
@@ -1538,8 +1538,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Sets, Relations and Functions",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Sets, Relations and Functions",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Sets, Relations and Functions"
         }
@@ -1571,8 +1571,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Complex Numbers",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Complex Numbers",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Complex Numbers"
         }
@@ -1604,8 +1604,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Quadratic Equations",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Quadratic Equations",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Quadratic Equations"
         }
@@ -1637,8 +1637,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Sequences and Series",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Sequences and Series",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Sequences and Series"
         }
@@ -1670,8 +1670,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Binomial Theorem",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Binomial Theorem",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Binomial Theorem"
         }
@@ -1703,8 +1703,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Matrices and Determinants",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Matrices and Determinants",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Matrices and Determinants"
         }
@@ -1736,8 +1736,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Trigonometry",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Trigonometry",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Trigonometry"
         }
@@ -1769,8 +1769,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Limits and Continuity",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Limits and Continuity",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Limits and Continuity"
         }
@@ -1802,8 +1802,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Differentiation",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Differentiation",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Differentiation"
         }
@@ -1835,8 +1835,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Applications of Derivatives",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Applications of Derivatives",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Applications of Derivatives"
         }
@@ -1868,8 +1868,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Integral Calculus",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Integral Calculus",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Integral Calculus"
         }
@@ -1901,8 +1901,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Differential Equations",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Differential Equations",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Differential Equations"
         }
@@ -1932,8 +1932,8 @@
       "prerequisites": [],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Vector Algebra",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Vector Algebra",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Vector Algebra"
         }
@@ -1965,8 +1965,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Three-Dimensional Geometry",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Three-Dimensional Geometry",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Three-Dimensional Geometry"
         }
@@ -1998,8 +1998,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Probability",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 12 Mathematics Syllabus: Probability",
           "source_id": "NCERT-MATHEMATICS-XII",
           "title": "NCERT Class 12 Mathematics: Probability"
         }
@@ -2033,8 +2033,8 @@
       ],
       "source_refs": [
         {
-          "kind": "EXPLICIT",
-          "locator": "Chapter: Coordinate Geometry: Conics",
+          "kind": "CURRICULUM_FRAMEWORK",
+          "locator": "NCERT Class 11 Mathematics Syllabus: Coordinate Geometry: Conics",
           "source_id": "NCERT-MATHEMATICS-XI",
           "title": "NCERT Class 11 Mathematics: Coordinate Geometry: Conics"
         }
@@ -2056,432 +2056,434 @@
   "metadata": {
     "authored_by": "person2",
     "coverage_target": "jee_full_simulator_parity",
-    "expert_reviewed": true,
-    "source_framework": "NCERT Class 11-12 & NTA JEE Syllabus"
+    "expert_reviewed": false,
+    "review_status": "provisional_simulator_parity",
+    "source_framework": "NCERT Class 11-12 & NTA JEE Syllabus",
+    "verification_note": "Concepts and prerequisite structure match the simulator specification (concepts.csv) aligned with NCERT Class 11-12 topic taxonomy. Formal independent pedagogical expert panel review is pending."
   },
   "relationships": [
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Laws of Motion.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/kinematics",
       "status": "accepted",
       "target_key": "physics/mechanics/laws_of_motion",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Work, Power and Energy.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/mechanics/work_power_and_energy",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Centre of Mass and Collisions.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/mechanics/centre_of_mass_and_collisions",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Rotational Motion.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/mechanics/rotational_motion",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Rotational Motion.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/work_power_and_energy",
       "status": "accepted",
       "target_key": "physics/mechanics/rotational_motion",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Gravitation.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/work_power_and_energy",
       "status": "accepted",
       "target_key": "physics/mechanics/gravitation",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Elasticity.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/properties_of_matter/elasticity",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Fluid Mechanics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/properties_of_matter/fluid_mechanics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Thermal Properties.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/kinematics",
       "status": "accepted",
       "target_key": "physics/thermal_physics/thermal_properties",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Kinetic Theory of Gases.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/thermal_physics/thermal_properties",
       "status": "accepted",
       "target_key": "physics/thermal_physics/kinetic_theory_of_gases",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Thermodynamics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/thermal_physics/kinetic_theory_of_gases",
       "status": "accepted",
       "target_key": "physics/thermal_physics/thermodynamics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Oscillations.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/laws_of_motion",
       "status": "accepted",
       "target_key": "physics/waves/oscillations",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Waves.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/waves/oscillations",
       "status": "accepted",
       "target_key": "physics/waves/waves",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Capacitance.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/electromagnetism/electrostatics",
       "status": "accepted",
       "target_key": "physics/electromagnetism/capacitance",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Current Electricity.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/electromagnetism/electrostatics",
       "status": "accepted",
       "target_key": "physics/electromagnetism/current_electricity",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Magnetic Effects of Current.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/electromagnetism/current_electricity",
       "status": "accepted",
       "target_key": "physics/electromagnetism/magnetic_effects_of_current",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electromagnetic Induction.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/electromagnetism/magnetic_effects_of_current",
       "status": "accepted",
       "target_key": "physics/electromagnetism/electromagnetic_induction",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Alternating Current.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/electromagnetism/electromagnetic_induction",
       "status": "accepted",
       "target_key": "physics/electromagnetism/alternating_current",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Ray and Wave Optics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/mechanics/kinematics",
       "status": "accepted",
       "target_key": "physics/optics/ray_and_wave_optics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Semiconductors.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/modern_physics/modern_physics",
       "status": "accepted",
       "target_key": "physics/modern_physics/semiconductors",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Atomic Structure.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/atomic_structure",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Periodicity.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/atomic_structure",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/periodicity",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Bonding.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/atomic_structure",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/chemical_bonding",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Bonding.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/periodicity",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/chemical_bonding",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to States of Matter.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/states_of_matter",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Thermodynamics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/chemical_thermodynamics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Equilibrium.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/chemical_thermodynamics",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/equilibrium",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Ionic Equilibrium.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/equilibrium",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/ionic_equilibrium",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Redox Reactions.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/redox_reactions",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electrochemistry.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/redox_reactions",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/electrochemistry",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Electrochemistry.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/equilibrium",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/electrochemistry",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Chemical Kinetics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/chemical_kinetics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Solutions.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/some_basic_concepts_mole_concept",
       "status": "accepted",
       "target_key": "chemistry/physical_chemistry/solutions",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Metallurgy.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/physical_chemistry/redox_reactions",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/metallurgy",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Hydrogen and s-Block.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/periodicity",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/hydrogen_and_s_block",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to p-Block Elements.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/periodicity",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/p_block_elements",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to p-Block Elements.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/p_block_elements",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to d- and f-Block Elements.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/periodicity",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordination Compounds.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/coordination_compounds",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordination Compounds.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
       "status": "accepted",
       "target_key": "chemistry/inorganic_chemistry/coordination_compounds",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Organic Chemistry Basics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/inorganic_chemistry/chemical_bonding",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/organic_chemistry_basics",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Hydrocarbons.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/hydrocarbons",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Haloalkanes and Haloarenes.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/hydrocarbons",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/haloalkanes_and_haloarenes",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Alcohols, Phenols and Ethers.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/haloalkanes_and_haloarenes",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/alcohols_phenols_and_ethers",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Carbonyl Compounds and Carboxylic Acids.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Amines.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/amines",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Biomolecules.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
       "status": "accepted",
       "target_key": "chemistry/organic_chemistry/biomolecules",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Complex Numbers.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/algebra/complex_numbers",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Quadratic Equations.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/algebra/quadratic_equations",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Sequences and Series.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/quadratic_equations",
       "status": "accepted",
       "target_key": "mathematics/algebra/sequences_and_series",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Binomial Theorem.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/quadratic_equations",
       "status": "accepted",
       "target_key": "mathematics/algebra/binomial_theorem",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Matrices and Determinants.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/algebra/matrices_and_determinants",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Trigonometry.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/trigonometry/trigonometry",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Limits and Continuity.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/calculus/limits_and_continuity",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Differentiation.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/calculus/limits_and_continuity",
       "status": "accepted",
       "target_key": "mathematics/calculus/differentiation",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Applications of Derivatives.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/calculus/differentiation",
       "status": "accepted",
       "target_key": "mathematics/calculus/applications_of_derivatives",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Integral Calculus.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/calculus/differentiation",
       "status": "accepted",
       "target_key": "mathematics/calculus/integral_calculus",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Differential Equations.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/calculus/integral_calculus",
       "status": "accepted",
       "target_key": "mathematics/calculus/differential_equations",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Three-Dimensional Geometry.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/coordinate_geometry/vector_algebra",
       "status": "accepted",
       "target_key": "mathematics/coordinate_geometry/three_dimensional_geometry",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Probability.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/sets_relations_and_functions",
       "status": "accepted",
       "target_key": "mathematics/probability/probability",
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Mastery of prerequisite concept is pedagogically required before advancing to Coordinate Geometry: Conics.",
+      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "mathematics/algebra/quadratic_equations",
       "status": "accepted",
       "target_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
