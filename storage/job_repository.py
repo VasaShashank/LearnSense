@@ -14,6 +14,7 @@ import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from storage.id_validation import validate_storage_id
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,11 @@ class JobRepository:
         self._cancel_events: Dict[str, threading.Event] = {}
 
     def get_path(self, job_id: str) -> Path:
-        return self.base_dir / f"{job_id}.json"
+        safe_id = validate_storage_id(job_id, name="job_id")
+        path = (self.base_dir / f"{safe_id}.json").resolve()
+        if not path.is_relative_to(self.base_dir.resolve()):
+            raise ValueError("Invalid job_id")
+        return path
 
     def get_cancel_event(self, job_id: str) -> threading.Event:
         with self._lock:
@@ -34,10 +39,13 @@ class JobRepository:
                 self._cancel_events[job_id] = threading.Event()
             return self._cancel_events[job_id]
 
-    def create_job(self, job_id: str, filename: str) -> Dict[str, Any]:
+    def create_job(
+        self, job_id: str, filename: str, owner_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         now = time.time()
         job = {
             "job_id": job_id,
+            "owner_id": owner_id,
             "filename": filename,
             "status": "queued",
             "progress_pct": 5,
@@ -76,7 +84,10 @@ class JobRepository:
                 pass
 
     def load_job(self, job_id: str) -> Optional[Dict[str, Any]]:
-        path = self.get_path(job_id)
+        try:
+            path = self.get_path(job_id)
+        except ValueError:
+            return None
         if not path.exists():
             return None
         try:
@@ -85,8 +96,17 @@ class JobRepository:
         except (json.JSONDecodeError, OSError):
             return None
 
-    def cancel_job(self, job_id: str) -> bool:
+    def load_owned_job(self, job_id: str, owner_id: str) -> Optional[Dict[str, Any]]:
+        """Return a job only when persisted owner metadata matches exactly."""
         job = self.load_job(job_id)
+        if not job or job.get("owner_id") != owner_id:
+            return None
+        return job
+
+    def cancel_job(self, job_id: str, owner_id: Optional[str] = None) -> bool:
+        # Route callers always supply the verified owner. owner_id=None remains
+        # available for trusted internal maintenance and existing repository tests.
+        job = self.load_job(job_id) if owner_id is None else self.load_owned_job(job_id, owner_id)
         if not job:
             return False
         with self._lock:

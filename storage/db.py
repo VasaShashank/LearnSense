@@ -57,6 +57,7 @@ class DatabaseManager:
                 sha256 TEXT NOT NULL,
                 filename TEXT NOT NULL,
                 size_bytes INTEGER NOT NULL,
+                owner_id TEXT,
                 cache_key TEXT UNIQUE,
                 status TEXT NOT NULL,
                 page_count INTEGER DEFAULT 0,
@@ -91,6 +92,17 @@ class DatabaseManager:
             CREATE INDEX IF NOT EXISTS idx_documents_cache_key ON documents (cache_key);
             CREATE INDEX IF NOT EXISTS idx_warnings_doc ON warnings (document_id);
             """)
+            # Safe forward-only local SQLite schema update. Existing rows remain
+            # owner_id=NULL and are denied by the upload routes.
+            columns = {
+                row["name"] for row in conn.execute("PRAGMA table_info(documents)").fetchall()
+            }
+            if "owner_id" not in columns:
+                conn.execute("ALTER TABLE documents ADD COLUMN owner_id TEXT")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_documents_owner_cache "
+                "ON documents (owner_id, cache_key)"
+            )
 
     def create_document_job(
         self,
@@ -100,6 +112,7 @@ class DatabaseManager:
         size_bytes: int,
         cache_key: Optional[str] = None,
         status: str = "queued",
+        owner_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Register (or re-register) a document job.
@@ -112,6 +125,11 @@ class DatabaseManager:
         """
         now = self._now_iso()
         with self._connection() as conn:
+            existing = conn.execute(
+                "SELECT owner_id FROM documents WHERE document_id = ?", (document_id,)
+            ).fetchone()
+            if existing is not None and existing["owner_id"] != owner_id:
+                raise ValueError("Document ID is already registered to a different or unknown owner")
             # A cache key may still be held by a different document_id from an earlier
             # run. Release it first so the UNIQUE index does not reject this insert.
             if cache_key:
@@ -127,21 +145,22 @@ class DatabaseManager:
             conn.execute(
                 """
                 INSERT INTO documents (
-                    document_id, sha256, filename, size_bytes, cache_key, status,
+                    document_id, sha256, filename, size_bytes, owner_id, cache_key, status,
                     page_count, processed_pages, created_at, updated_at
                 )
-                VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?)
                 ON CONFLICT(document_id) DO UPDATE SET
                     sha256 = excluded.sha256,
                     filename = excluded.filename,
                     size_bytes = excluded.size_bytes,
+                    owner_id = excluded.owner_id,
                     cache_key = excluded.cache_key,
                     status = excluded.status,
                     page_count = 0,
                     processed_pages = 0,
                     updated_at = excluded.updated_at
                 """,
-                (document_id, sha256, filename, size_bytes, cache_key, status, now, now),
+                (document_id, sha256, filename, size_bytes, owner_id, cache_key, status, now, now),
             )
         return self.get_document_job(document_id)
 
@@ -152,12 +171,20 @@ class DatabaseManager:
                 return dict(row)
             return None
 
-    def find_cached_document(self, cache_key: str) -> Optional[Dict[str, Any]]:
+    def find_cached_document(
+        self, cache_key: str, owner_id: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
         with self._connection() as conn:
-            row = conn.execute(
-                "SELECT * FROM documents WHERE cache_key = ? AND status = 'completed'",
-                (cache_key,),
-            ).fetchone()
+            if owner_id is None:
+                row = conn.execute(
+                    "SELECT * FROM documents WHERE cache_key = ? AND status = 'completed'",
+                    (cache_key,),
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    "SELECT * FROM documents WHERE cache_key = ? AND owner_id = ? AND status = 'completed'",
+                    (cache_key, owner_id),
+                ).fetchone()
             if row:
                 return dict(row)
             return None

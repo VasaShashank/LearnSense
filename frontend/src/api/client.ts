@@ -3,6 +3,8 @@
  * Connects frontend views to backend facade endpoints (/api/...) with robust error handling and fallback mock generation if server is offline.
  */
 
+import { getCurrentAccessToken } from '../auth/supabase'
+
 export interface Subject {
   id: string;
   title: string;
@@ -307,12 +309,17 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
+    const headers = new Headers(options?.headers);
+    if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    // Only a Supabase session can provide identity. Drop stale or caller-provided
+    // bearer headers when no current session exists; persona IDs are never credentials.
+    headers.delete('Authorization');
+    const accessToken = await getCurrentAccessToken();
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+
     const res = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {}),
-      },
+      headers,
       signal: controller.signal,
     });
 

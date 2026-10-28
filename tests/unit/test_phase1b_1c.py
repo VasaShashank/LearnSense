@@ -11,6 +11,7 @@ import fitz  # PyMuPDF
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import app
+from backend.auth import AuthenticatedUser, get_current_user
 from extraction.figures import FigureExtractor
 from extraction.math import MathExtractor
 from extraction.ocr import OCREngine
@@ -133,18 +134,24 @@ def test_fastapi_backend_endpoints():
     pdf_bytes = doc.write()
     doc.close()
 
-    upload_res = client.post(
-        "/documents",
-        files={"file": ("test_upload.pdf", pdf_bytes, "application/pdf")},
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(
+        id="phase1b-test-uploader", email=None
     )
-    assert upload_res.status_code == 202
-    doc_id = upload_res.json()["document_id"]
+    try:
+        upload_res = client.post(
+            "/documents",
+            files={"file": ("test_upload.pdf", pdf_bytes, "application/pdf")},
+        )
+        assert upload_res.status_code == 202
+        doc_id = upload_res.json()["document_id"]
 
-    # Status check
-    status_res = client.get(f"/documents/{doc_id}/status")
-    assert status_res.status_code == 200
+        # Status check
+        status_res = client.get(f"/documents/{doc_id}/status")
+        assert status_res.status_code == 200
 
-    # Structured Document output check
-    struct_res = client.get(f"/documents/{doc_id}/structured")
-    assert struct_res.status_code == 200
-    assert struct_res.json()["document_id"] == doc_id
+        # Structured Document output check
+        struct_res = client.get(f"/documents/{doc_id}/structured")
+        assert struct_res.status_code == 200
+        assert struct_res.json()["document_id"] == doc_id
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)

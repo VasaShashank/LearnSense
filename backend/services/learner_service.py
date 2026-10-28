@@ -5,11 +5,12 @@ Manages persistent learner state, Bayesian Knowledge Tracing (BKT) updates, gap 
 
 import logging
 from typing import Dict, List, Optional, Any
-from phase3.storage.learner_repository import LearnerStateRepository
+from phase3.storage.learner_repository import LearnerStateRepository, get_learner_lock
 from phase3.learner.models import LearnerState
 from phase4.integration.phase3_adapter import Phase3Adapter
 from backend.services.knowledge_service import KnowledgeService
 from storage.repositories import ActiveSubjectRepository
+from storage.id_validation import validate_canonical_learner_id
 
 
 class LearnerService:
@@ -40,6 +41,31 @@ class LearnerService:
                     state.concept_states[cid] = self.adapter.tracer.initialize_concept_state(cid)
                 self.repo.save_state(state)
         return state
+
+    def provision_authenticated_learner(self, learner_id: str) -> tuple[LearnerState, bool]:
+        """Create or retrieve a Supabase learner without claiming legacy records.
+
+        Existing unmarked records cannot prove how they were created, so they are
+        preserved and rejected. The UUID is never mapped to a persona ID.
+        """
+        canonical_id = validate_canonical_learner_id(learner_id)
+        with get_learner_lock(canonical_id):
+            path = self.repo.get_path(canonical_id)
+            state = self.repo.load_state(canonical_id)
+            if state is not None:
+                if state.learner_id != canonical_id or state.identity_provider != "supabase":
+                    raise ValueError("Existing learner state has no trusted Supabase provenance.")
+                return state, False
+
+            # Do not replace corrupt, unreadable, or old-format files: their
+            # ownership cannot be established safely.
+            if path.exists():
+                raise ValueError("Existing learner state cannot be verified safely.")
+
+            state = self.adapter.tracer.initialize_learner(canonical_id, [])
+            state.identity_provider = "supabase"
+            self.repo.save_state(state)
+            return state, True
 
     def save_learner_state(self, state: LearnerState) -> None:
         self.repo.save_state(state)
@@ -215,7 +241,12 @@ class LearnerService:
             "decision_trace": trace.model_dump(mode="json") if trace else None,
         }
 
-    def resume_learner_state(self, learner_id: str, subject_id: Optional[str] = None) -> Dict[str, Any]:
+    def resume_learner_state(
+        self,
+        learner_id: str,
+        subject_id: Optional[str] = None,
+        visible_document_ids: Optional[set[str]] = None,
+    ) -> Dict[str, Any]:
         """
         Determines whether the learner has persisted progress / initialized subjects on the server.
         Allows frontend to restore active learning state and dashboard after browser refresh.
@@ -231,7 +262,7 @@ class LearnerService:
         """
         from storage.repositories import SessionRepository
 
-        subjects = self.knowledge_service.list_subjects()
+        subjects = self.knowledge_service.list_subjects(visible_document_ids)
         valid_subject_ids = {s["id"] for s in subjects}
 
         active_subject = subject_id if subject_id in valid_subject_ids else None

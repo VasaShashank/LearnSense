@@ -20,9 +20,29 @@ import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
 import { getConceptDisplayName, registerConceptNameMap } from './utils/conceptName';
+import { AuthGate } from './auth/AuthGate';
+import { authSessionStore, useSupabaseAuth } from './auth/session';
 
 
 export default function App() {
+  const auth = useSupabaseAuth();
+
+  if (auth.loading) {
+    return (
+      <main className="min-h-screen universe-canvas flex items-center justify-center text-universe-slate" aria-live="polite">
+        Restoring your Supabase session…
+      </main>
+    );
+  }
+
+  return <AuthGate auth={auth} configured={authSessionStore.configured} />;
+}
+
+/**
+ * Legacy persona demo workspace. It is deliberately not mounted by the normal
+ * authenticated app entry until a separate, explicit demo mode is designed.
+ */
+export function DemoPersonaWorkspace() {
   const [currentPersona, setCurrentPersona] = useState<Persona>(PRESET_PERSONAS[0]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const learnerId = currentPersona.id;

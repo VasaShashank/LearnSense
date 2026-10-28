@@ -6,6 +6,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import app
+from backend.auth import AuthenticatedUser, get_current_user
 from phase3.knowledge.phase2_adapter import ConceptView, LearningContext, PrerequisiteLink
 from phase3.learner.models import LearnerState
 from phase4.integration.phase3_adapter import Phase3Adapter
@@ -16,7 +17,13 @@ client = TestClient(app)
 
 def test_api_upload_invalid_file_rejected():
     """Verify Phase 5 input validation rejects non-PDF upload."""
-    response = client.post("/documents", files={"file": ("invalid.txt", b"hello world", "text/plain")})
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(
+        id="phase5-test-uploader", email=None
+    )
+    try:
+        response = client.post("/documents", files={"file": ("invalid.txt", b"hello world", "text/plain")})
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
     assert response.status_code == 400
     assert "PDF" in response.json()["detail"]
 

@@ -9,12 +9,29 @@ from pathlib import Path
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.routes import documents, api
 from phase3.errors import LearnSenseError
 
 logger = logging.getLogger(__name__)
 
-# Load environment configuration if .env exists
+# The institutional service selects its persistence backend during route
+# import. Load only those settings before importing routes; loading unrelated
+# configuration here can initialize other integrations with changed behavior.
+for p in [Path(".env"), Path(__file__).resolve().parent.parent / ".env"]:
+    if p.exists():
+        with open(p, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k, v = k.strip(), v.strip().strip("'\"")
+                    if k in {"DATABASE_URL", "LEARNSENSE_REQUIRE_PG"} and k not in os.environ:
+                        os.environ[k] = v
+
+# Import routes only after environment loading: the institutional service
+# selects PostgreSQL vs JSON persistence when it is constructed at import time.
+from backend.routes import documents, api
+
+# Preserve the app's existing configuration loading order for other settings.
 for p in [Path(".env"), Path(__file__).resolve().parent.parent / ".env"]:
     if p.exists():
         with open(p, "r", encoding="utf-8") as f:
@@ -143,6 +160,20 @@ app.include_router(documents.router, prefix="/documents", tags=["documents"])
 @app.on_event("startup")
 async def on_startup():
     global _preflight_results
+    if os.getenv("LEARNSENSE_REQUIRE_PG", "0").strip() == "1":
+        from backend.db.pg_connection import get_pg_pool, is_pg_configured
+
+        if not is_pg_configured():
+            raise RuntimeError(
+                "LEARNSENSE_REQUIRE_PG=1 but DATABASE_URL is not configured."
+            )
+
+        from backend.services.institution_service import _await_background
+
+        # Fail startup on connection or pool initialization errors rather than
+        # accepting traffic with an unusable PostgreSQL configuration.
+        await _await_background(get_pg_pool())
+
     logger.info("Running startup preflight checks...")
     _preflight_results = _run_startup_preflight()
     for subsystem, result in _preflight_results.items():
@@ -153,6 +184,20 @@ async def on_startup():
             logger.info("Preflight [%s]: %s — %s", subsystem, st, result.get("reason", ""))
         else:
             logger.warning("Preflight [%s]: %s — %s", subsystem, st, result.get("reason", ""))
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    """Close the asyncpg pool on the persistent event loop that owns it."""
+    from backend.db.pg_connection import is_pg_configured, close_pg_pool
+
+    if is_pg_configured():
+        from backend.services.institution_service import _run_async
+
+        try:
+            _run_async(close_pg_pool())
+        except Exception:
+            logger.exception("Failed to close institutional PostgreSQL pool")
 
 
 @app.exception_handler(ValueError)

@@ -28,16 +28,16 @@ class KnowledgeService:
     ):
         self.doc_storage = doc_storage or DocumentStorage()
         self.context_repo = context_repo or LearningContextRepository()
-        self._subjects_cache: Optional[List[Dict[str, Any]]] = None
-        self._subjects_cache_time: float = 0.0
+        self._subjects_cache: Dict[Any, Any] = {}
 
     def invalidate_cache(self) -> None:
-        self._subjects_cache = None
-        self._subjects_cache_time = 0.0
+        self._subjects_cache.clear()
 
     # -- listing ------------------------------------------------------------
 
-    def list_subjects(self) -> List[Dict[str, Any]]:
+    def list_subjects(
+        self, visible_document_ids: Optional[Set[str]] = None
+    ) -> List[Dict[str, Any]]:
         """
         List ingested documents that have a persisted learning context.
 
@@ -45,20 +45,23 @@ class KnowledgeService:
         subjects.
         """
         now = time.time()
-        if self._subjects_cache is not None and (now - self._subjects_cache_time) < 10.0:
-            return self._subjects_cache
+        visible_key = None if visible_document_ids is None else tuple(sorted(visible_document_ids))
+        cached_entry = self._subjects_cache.get(visible_key)
+        if cached_entry and now - cached_entry[0] < 10.0:
+            return cached_entry[1]
 
         subjects: List[Dict[str, Any]] = []
         root_dir = self.doc_storage.root_dir
         if not root_dir.exists():
-            self._subjects_cache = subjects
-            self._subjects_cache_time = now
+            self._subjects_cache[visible_key] = (now, subjects)
             return subjects
 
         for doc_dir in sorted(root_dir.iterdir()):
             if not doc_dir.is_dir():
                 continue
             doc_id = doc_dir.name
+            if visible_document_ids is not None and doc_id not in visible_document_ids:
+                continue
 
             ctx = self.context_repo.load_context(doc_id)
             if ctx is None:
@@ -83,8 +86,7 @@ class KnowledgeService:
                     "has_ekr": True,
                 }
             )
-        self._subjects_cache = subjects
-        self._subjects_cache_time = now
+        self._subjects_cache[visible_key] = (now, subjects)
         return subjects
 
     # -- context ------------------------------------------------------------

@@ -49,12 +49,15 @@ class SourceService:
         self._knowledge_builder = knowledge_builder
 
     # In-memory caches to avoid re-reading dozens of giant JSON files on every call
-    _cached_sources: Optional[List[Dict[str, Any]]] = None
-    _cached_sources_time: float = 0.0
+    _cached_sources: Dict[Any, Any] = {}
     _CACHE_TTL: float = 15.0
     _doc_meta_cache: Dict[str, Any] = {}
 
-    def list_sources(self) -> List[Dict[str, Any]]:
+    def list_sources(
+        self,
+        visible_document_ids: Optional[set[str]] = None,
+        owner_scope: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """
         Lists stored documents with metadata, page counts, and Phase 5 ingestion status.
         Uses cached document metadata to avoid parsing dozens of large JSON files.
@@ -62,8 +65,11 @@ class SourceService:
         import time
 
         now = time.time()
-        if SourceService._cached_sources is not None and (now - SourceService._cached_sources_time) < SourceService._CACHE_TTL:
-            return SourceService._cached_sources
+        visible_key = None if visible_document_ids is None else tuple(sorted(visible_document_ids))
+        cache_key = (owner_scope, visible_key)
+        cached_entry = SourceService._cached_sources.get(cache_key)
+        if cached_entry and now - cached_entry[0] < SourceService._CACHE_TTL:
+            return cached_entry[1]
 
         sources = []
         root_dir = self.doc_storage.root_dir
@@ -71,6 +77,8 @@ class SourceService:
             for doc_dir in root_dir.iterdir():
                 if doc_dir.is_dir():
                     doc_id = doc_dir.name
+                    if visible_document_ids is not None and doc_id not in visible_document_ids:
+                        continue
                     pdf_path = self.doc_storage.get_original_pdf_path(doc_id)
                     json_file = self.doc_storage.get_document_dir(doc_id) / "structured" / "document.json"
 
@@ -127,8 +135,7 @@ class SourceService:
                         "is_demo": False,
                     })
 
-        SourceService._cached_sources = sources
-        SourceService._cached_sources_time = now
+        SourceService._cached_sources[cache_key] = (now, sources)
         return sources
 
     def save_uploaded_source(self, document_id: str, file_bytes: bytes, filename: str) -> Dict[str, Any]:
@@ -150,5 +157,5 @@ class SourceService:
 
         builder = self._knowledge_builder or KnowledgeBuildService(storage=self.doc_storage)
         result = builder.build(document_id, file_bytes, filename)
-        SourceService._cached_sources = None
+        SourceService._cached_sources.clear()
         return result

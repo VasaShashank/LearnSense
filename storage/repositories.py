@@ -34,18 +34,34 @@ def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
 
 
 from phase4.models import KnowledgeInitializationSession, FinalAssessmentSession
+from storage.id_validation import validate_storage_id
+
+
+def _contained_storage_path(base_dir: Path, filename: str) -> Path:
+    root = base_dir.resolve()
+    candidate = (root / filename).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        raise ValueError("Storage path resolves outside its configured root.") from None
+    return candidate
 
 
 class SessionRepository:
     def __init__(self, base_dir: str = "storage/sessions"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def get_path(self, session_id: str) -> Path:
-        return self.base_dir / f"{session_id}.json"
+        session_id = validate_storage_id(session_id, name="session_id")
+        return _contained_storage_path(self.base_dir, f"{session_id}.json")
 
     def save_session(self, session: Any) -> Path:
         sess_id = getattr(session, "session_id", None) or getattr(session, "assessment_id", None)
+        validate_storage_id(sess_id, name="session_id")
+        learner_id = getattr(session, "learner_id", None)
+        if learner_id is not None:
+            validate_storage_id(learner_id, name="learner_id")
         path = self.get_path(sess_id)
         data = session.model_dump(mode="json") if hasattr(session, "model_dump") else session
         return _atomic_write_json(path, data, self.base_dir)
@@ -59,6 +75,7 @@ class SessionRepository:
             return KnowledgeInitializationSession.model_validate(data)
 
     def save_final_assessment(self, session: FinalAssessmentSession) -> Path:
+        validate_storage_id(session.learner_id, name="learner_id")
         path = self.get_path(session.assessment_id)
         data = session.model_dump(mode="json")
         return _atomic_write_json(path, data, self.base_dir)
@@ -77,6 +94,7 @@ class SessionRepository:
             return None
         for file in self.base_dir.glob("final_*.json"):
             try:
+                file = _contained_storage_path(self.base_dir, file.name)
                 with open(file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
@@ -96,6 +114,7 @@ class SessionRepository:
         candidates = []
         for file in self.base_dir.glob("init_sess_*.json"):
             try:
+                file = _contained_storage_path(self.base_dir, file.name)
                 with open(file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     if data.get("learner_id") == learner_id and data.get("subject_id") == subject_id:
@@ -237,16 +256,25 @@ class ActiveSubjectRepository:
     """
 
     def __init__(self, base_dir: str = "storage/learner_states"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_path(self, learner_id: str) -> Path:
-        safe = "".join(ch for ch in str(learner_id) if ch.isalnum() or ch in ("-", "_"))
-        return self.base_dir / f"active_subject_{safe or 'anonymous'}.json"
+        learner_id = validate_storage_id(learner_id, name="learner_id")
+        return _contained_storage_path(self.base_dir, f"active_subject_{learner_id}.json")
 
     def set_active_subject(self, learner_id: str, subject_id: str) -> Path:
+        path = self._get_path(learner_id)
+        if path.exists():
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                existing = None
+            if isinstance(existing, dict) and existing.get("learner_id") != learner_id:
+                raise ValueError("Existing active-subject record belongs to a different learner ID.")
         return _atomic_write_json(
-            self._get_path(learner_id),
+            path,
             {"learner_id": learner_id, "subject_id": subject_id},
             self.base_dir,
         )
@@ -259,6 +287,8 @@ class ActiveSubjectRepository:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except (json.JSONDecodeError, OSError):
+            return None
+        if not isinstance(data, dict) or data.get("learner_id") != learner_id:
             return None
         subject_id = data.get("subject_id")
         return subject_id if isinstance(subject_id, str) and subject_id else None

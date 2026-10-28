@@ -26,6 +26,7 @@ from phase4.integration.phase3_adapter import Phase3Adapter
 from phase4.models import ConfidenceLevel, KnowledgeInitializationSession, SelfAssessmentStatus, FinalAssessmentSession, KnowledgeSufficiencyStatus
 from phase5.validation import IdempotencyTracker, LearnerStateValidator, PlanningValidator
 from storage.repositories import QuestionBankRepository, SessionRepository
+from storage.id_validation import validate_storage_id
 
 from backend.services.knowledge_service import KnowledgeService
 from backend.services.learner_service import LearnerService
@@ -627,7 +628,12 @@ class LearningService:
     # ------------------------------------------------------------------
     # Server-authoritative routing state
     # ------------------------------------------------------------------
-    def get_entry_state(self, learner_id: str, subject_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_entry_state(
+        self,
+        learner_id: str,
+        subject_id: Optional[str] = None,
+        visible_document_ids: Optional[set[str]] = None,
+    ) -> Dict[str, Any]:
         """
         The single authoritative answer to "where should this learner be right now?".
 
@@ -635,7 +641,7 @@ class LearningService:
         booleans, so a stale browser tab cannot redirect a learner into the
         ingestion screen or past an unfinished verification.
         """
-        subjects = self.knowledge_service.list_subjects()
+        subjects = self.knowledge_service.list_subjects(visible_document_ids)
         has_any_source = bool(subjects)
         subject = None
         if subject_id:
@@ -765,6 +771,7 @@ class LearningService:
         The HTTP API always passes ``allow_client_correctness=False``.
         When False, raw correctness without a question_id is rejected.
         """
+        validate_storage_id(learner_id, name="learner_id")
         if not allow_client_correctness and correctness is not None and not question_id:
             raise ValueError(
                 "Client-reported correctness is not accepted. Supply question_id so the "
@@ -773,8 +780,15 @@ class LearningService:
 
         with self._get_learner_lock(learner_id):
             # 1. Idempotency Check: return cached replay if already processed
-            if request_id and self.idempotency_tracker.is_duplicate(request_id):
-                cached = self.idempotency_tracker.get_cached_response(request_id)
+            activity_resource = f"{subject_id}:{question_id or ','.join(sorted(concept_ids))}"
+            if request_id and self.idempotency_tracker.is_scoped_duplicate(
+                request_id, owner_id=learner_id, resource_id=activity_resource,
+                operation="activity_response",
+            ):
+                cached = self.idempotency_tracker.get_scoped_cached_response(
+                    request_id, owner_id=learner_id, resource_id=activity_resource,
+                    operation="activity_response",
+                )
                 if cached:
                     cached["duplicate_submission"] = True
                     return cached
@@ -851,6 +865,7 @@ class LearningService:
                 correctness=eval_correctness,
                 request_id=request_id,
                 valid_subject_concepts=set(authoritative_concepts),
+                check_idempotency=False,
             )
             if not val_res.is_valid:
                 raise ValueError(val_res.errors[0])
@@ -973,8 +988,9 @@ class LearningService:
 
             # 6. Save durable idempotency token with response payload
             if request_id:
-                self.idempotency_tracker.mark_processed(
-                    request_id, learner_id=learner_id, response_payload=result_payload
+                self.idempotency_tracker.mark_scoped_processed(
+                    request_id, owner_id=learner_id, resource_id=activity_resource,
+                    operation="activity_response", response_payload=result_payload,
                 )
 
             return result_payload
@@ -1272,13 +1288,8 @@ class LearningService:
         Updates BKT masteries across all tested concepts and marks assessment complete.
         Protected by durable idempotency and per-learner thread locks.
         """
+        validate_storage_id(learner_id, name="learner_id")
         with self._get_learner_lock(learner_id):
-            if request_id and self.idempotency_tracker.is_duplicate(request_id):
-                cached = self.idempotency_tracker.get_cached_response(request_id)
-                if cached:
-                    cached["duplicate_submission"] = True
-                    return cached
-
             session = self.session_repo.load_final_assessment(assessment_id)
             if not session:
                 raise ValueError(f"Final Assessment session '{assessment_id}' not found.")
@@ -1288,6 +1299,20 @@ class LearningService:
 
             if session.subject_id != subject_id:
                 raise ValueError(f"Assessment '{assessment_id}' belongs to subject '{session.subject_id}', not '{subject_id}'.")
+
+            # The stored assessment record is checked before replay lookup. The
+            # request's learner_id alone is not treated as proof of ownership.
+            if request_id and self.idempotency_tracker.is_scoped_duplicate(
+                request_id, owner_id=session.learner_id, resource_id=assessment_id,
+                operation="final_assessment_submit",
+            ):
+                cached = self.idempotency_tracker.get_scoped_cached_response(
+                    request_id, owner_id=session.learner_id, resource_id=assessment_id,
+                    operation="final_assessment_submit",
+                )
+                if cached:
+                    cached["duplicate_submission"] = True
+                    return cached
 
             learning_context = self.knowledge_service.get_learning_context(subject_id)
             all_concept_ids = list(learning_context.concepts.keys()) if learning_context else list(session.concept_ids)
@@ -1377,8 +1402,9 @@ class LearningService:
             }
 
             if request_id:
-                self.idempotency_tracker.mark_processed(
-                    request_id, learner_id=learner_id, response_payload=result_payload
+                self.idempotency_tracker.mark_scoped_processed(
+                    request_id, owner_id=session.learner_id, resource_id=assessment_id,
+                    operation="final_assessment_submit", response_payload=result_payload,
                 )
 
             return result_payload

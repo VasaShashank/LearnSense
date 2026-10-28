@@ -11,6 +11,7 @@ import threading
 from pathlib import Path
 from typing import Dict, Optional
 from phase3.learner.models import LearnerState
+from storage.id_validation import validate_storage_id
 
 _LEARNER_LOCKS: Dict[str, threading.RLock] = {}
 _LOCKS_MUTEX = threading.Lock()
@@ -26,14 +27,16 @@ def get_learner_lock(learner_id: str) -> threading.RLock:
 
 class LearnerStateRepository:
     def __init__(self, base_dir: str = "storage/learner_states"):
-        self.base_dir = Path(base_dir)
+        self.base_dir = Path(base_dir).resolve()
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def get_path(self, learner_id: str) -> Path:
-        return self.base_dir / f"{learner_id}.json"
+        learner_id = validate_storage_id(learner_id, name="learner_id")
+        return _contained_path(self.base_dir, f"{learner_id}.json")
 
     def save_state(self, state: LearnerState) -> Path:
         """Write learner state atomically and flush to disk to ensure crash resilience."""
+        validate_storage_id(state.learner_id, name="learner_id")
         path = self.get_path(state.learner_id)
         data = state.model_dump(mode="json")
 
@@ -64,3 +67,14 @@ class LearnerStateRepository:
                 return LearnerState.model_validate(data)
             except (json.JSONDecodeError, ValueError):
                 return None
+
+
+def _contained_path(base_dir: Path, filename: str) -> Path:
+    """Resolve a storage filename and reject symlinks or traversal outside its root."""
+    root = base_dir.resolve()
+    candidate = (root / filename).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        raise ValueError("Storage path resolves outside its configured root.") from None
+    return candidate

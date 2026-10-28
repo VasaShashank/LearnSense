@@ -3,6 +3,7 @@ Integration tests for Institutional Architecture, B2B Multi-Tenancy,
 and New REST Endpoints for Resources & Teacher Optimizer (§9, §10, §11).
 """
 
+import uuid
 import pytest
 from fastapi.testclient import TestClient
 from backend.app import app
@@ -85,10 +86,24 @@ def test_teacher_optimizer_and_class_api(ingested_calculus):
     assert approve_res.json()["teacher_notes"] == "Approved for 2nd period class session."
 
 
-def test_institutional_rbac_and_tenant_isolation(tmp_path):
+def test_institutional_rbac_and_tenant_isolation(tmp_path, monkeypatch):
+    # This service-level regression deliberately exercises the JSON backend;
+    # never inherit a developer's local DATABASE_URL or require-PG setting.
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("LEARNSENSE_REQUIRE_PG", raising=False)
+    monkeypatch.chdir(tmp_path)
     from backend.services.institution_service import InstitutionService
+    from phase3.learner.models import LearnerState
+    from phase3.storage.learner_repository import LearnerStateRepository
 
-    svc = InstitutionService(base_dir=str(tmp_path))
+    learner_id = str(uuid.UUID("a20d9df0-2792-4fc2-9d94-20ac476863e0"))
+    learner_repo = LearnerStateRepository(str(tmp_path / "learner_states"))
+    learner_repo.save_state(
+        LearnerState(learner_id=learner_id, identity_provider="supabase")
+    )
+    svc = InstitutionService(
+        base_dir=str(tmp_path / "institutions"), learner_state_repo=learner_repo
+    )
 
     # 1. Create Organization
     org1 = svc.create_organization(name="Apex University")
@@ -96,7 +111,7 @@ def test_institutional_rbac_and_tenant_isolation(tmp_path):
 
     # 2. Assign Memberships
     svc.add_membership(org1.org_id, "user_prof_smith", UserRole.TEACHER)
-    svc.add_membership(org1.org_id, "user_student_jane", UserRole.LEARNER)
+    svc.add_membership(org1.org_id, learner_id, UserRole.LEARNER)
     svc.add_membership(org2.org_id, "user_intruder", UserRole.TEACHER)
 
     # 3. Create Class in Org 1 by Teacher in Org 1 (Allowed)
@@ -115,8 +130,8 @@ def test_institutional_rbac_and_tenant_isolation(tmp_path):
             org_id=org1.org_id,
             subject_id="subj_calc",
             title="Unauthorized Class",
-            teacher_ids=["user_student_jane"],
-            creator_user_id="user_student_jane",
+            teacher_ids=[learner_id],
+            creator_user_id=learner_id,
         )
 
     # 5. Teacher from Org 2 tries to access Org 1 class roster -> Cross-tenant isolated
@@ -124,6 +139,6 @@ def test_institutional_rbac_and_tenant_isolation(tmp_path):
         svc.get_class_roster(class_id=cls.class_id, caller_user_id="user_intruder")
 
     # 6. Teacher from Org 1 enrolls student and views roster -> Allowed
-    svc.enroll_learner(class_id=cls.class_id, learner_id="user_student_jane", enroller_user_id="user_prof_smith")
+    svc.enroll_learner(class_id=cls.class_id, learner_id=learner_id, enroller_user_id="user_prof_smith")
     roster = svc.get_class_roster(class_id=cls.class_id, caller_user_id="user_prof_smith")
-    assert "user_student_jane" in roster
+    assert learner_id in roster

@@ -1,6 +1,10 @@
 # API
 fastapi>=0.100.0
+httpx>=0.24.0
 uvicorn>=0.22.0
+
+# PostgreSQL (institutional persistence — Person 1 / feat/supabase-auth-postgres)
+asyncpg>=0.29.0
 
 # Document ingestion
 pymupdf>=1.23.0

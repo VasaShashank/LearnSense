@@ -29,6 +29,27 @@ class IdempotencyTracker:
     def get_cached_response(self, token: str) -> Optional[Dict[str, Any]]:
         return self._durable.get_cached_response(token)
 
+    def is_scoped_duplicate(self, request_id: str, *, owner_id: str, resource_id: str, operation: str) -> bool:
+        return self._durable.is_scoped_duplicate(
+            request_id, owner_id=owner_id, resource_id=resource_id, operation=operation
+        )
+
+    def get_scoped_cached_response(
+        self, request_id: str, *, owner_id: str, resource_id: str, operation: str
+    ) -> Optional[Dict[str, Any]]:
+        return self._durable.get_scoped_cached_response(
+            request_id, owner_id=owner_id, resource_id=resource_id, operation=operation
+        )
+
+    def mark_scoped_processed(
+        self, request_id: str, *, owner_id: str, resource_id: str, operation: str,
+        response_payload: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self._durable.mark_scoped_processed(
+            request_id, owner_id=owner_id, resource_id=resource_id, operation=operation,
+            response_payload=response_payload,
+        )
+
 
 class LearnerStateValidator:
     """Validates learner state integrity, response submissions, and KT update boundary bounds."""
@@ -43,11 +64,12 @@ class LearnerStateValidator:
         correctness: float,
         request_id: Optional[str] = None,
         valid_subject_concepts: Optional[Set[str]] = None,
+        check_idempotency: bool = True,
     ) -> ValidationResult:
         result = ValidationResult(status=ValidationStatus.VALID, is_valid=True)
 
         # 1. Idempotency Check
-        if request_id:
+        if request_id and check_idempotency:
             if self.idempotency.is_duplicate(request_id):
                 result.add_warning(f"Duplicate response submission detected for request_id '{request_id}'. KT update skipped.")
                 result.metadata["duplicate_submission"] = True
