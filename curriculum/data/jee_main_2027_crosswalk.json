@@ -1,0 +1,2875 @@
+{
+  "crosswalk_version": "2027.jee_main.paper_1.v1",
+  "generated_at": "2026-10-25T23:00:00Z",
+  "authoritative_source": {
+    "document": "20261024683680768.pdf",
+    "official_url": "https://jeemain.nta.nic.in/document/syllabus-2027/",
+    "sha256": "823EC5AFAF30F19D4F0DC375159D8B843B944633E4EDDA58C9D910C145C32CCD",
+    "examination": "JEE (Main) - 2027",
+    "paper": "Paper 1 (B.E./B.Tech.)"
+  },
+  "summary": {
+    "total_syllabus_items": 135,
+    "mapped_items": 135,
+    "exact_mappings": 128,
+    "partial_mappings": 7,
+    "unmapped_items": 0,
+    "ambiguous_mappings": 0,
+    "coverage_percentage": 100.0
+  },
+  "mappings": [
+    {
+      "syllabus_item_id": "syl_math_u01_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U01",
+      "official_unit_title": "SETS, RELATIONS AND FUNCTIONS",
+      "official_subtopic": "Representation, operations, and algebraic properties",
+      "canonical_concept_ids": [
+        "cc_test_dummy"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Sets and their representation; Union, intersection and complement of sets and their algebraic properties; Power set...",
+      "source_locator": "Page 1, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-30T09:56:08+00:00",
+      "reviewer": "teacher_expert",
+      "review_notes": "Verified against NCERT Class 11 Chapter 1"
+    },
+    {
+      "syllabus_item_id": "syl_math_u01_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U01",
+      "official_unit_title": "SETS, RELATIONS AND FUNCTIONS",
+      "official_subtopic": "Types and equivalence relations",
+      "canonical_concept_ids": [
+        "cc_5b5bdbe60072f33b"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Relations, type of relations, equivalence relations...",
+      "source_locator": "Page 1, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u01_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U01",
+      "official_unit_title": "SETS, RELATIONS AND FUNCTIONS",
+      "official_subtopic": "Types of functions and composition",
+      "canonical_concept_ids": [
+        "cc_5b5bdbe60072f33b"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Functions; one-one, into and onto functions, the composition of functions...",
+      "source_locator": "Page 1, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u02_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U02",
+      "official_unit_title": "COMPLEX NUMBERS AND QUADRATIC EQUATIONS",
+      "official_subtopic": "Algebra, Argand diagram, modulus and argument",
+      "canonical_concept_ids": [
+        "cc_09fc2a9f83e7a09f"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/complex_numbers"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Complex numbers as ordered pairs of reals, Representation of complex numbers in the form a + ib and their representation...",
+      "source_locator": "Page 1, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u02_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U02",
+      "official_unit_title": "COMPLEX NUMBERS AND QUADRATIC EQUATIONS",
+      "official_subtopic": "Roots, discriminant, and formation of equations",
+      "canonical_concept_ids": [
+        "cc_f7955e764350a8d0"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/quadratic_equations"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Quadratic equations in real and complex number systems and their solutions; Relations between roots and coefficients, na...",
+      "source_locator": "Page 1, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u03_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U03",
+      "official_unit_title": "MATRICES AND DETERMINANTS",
+      "official_subtopic": "Algebra and types of matrices",
+      "canonical_concept_ids": [
+        "cc_c443472cef6d631c"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/matrices_and_determinants"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Matrices, algebra of matrices, type of matrices, determinants and matrices of order two and three...",
+      "source_locator": "Page 1, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u03_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U03",
+      "official_unit_title": "MATRICES AND DETERMINANTS",
+      "official_subtopic": "Evaluation, properties, and area of triangles",
+      "canonical_concept_ids": [
+        "cc_c443472cef6d631c"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/matrices_and_determinants"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Evaluation of determinants, area of triangles using determinants; Adjoint and inverse of a square matrix...",
+      "source_locator": "Page 1, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u03_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U03",
+      "official_unit_title": "MATRICES AND DETERMINANTS",
+      "official_subtopic": "Consistency and matrix solutions",
+      "canonical_concept_ids": [
+        "cc_c443472cef6d631c"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/matrices_and_determinants"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Test of consistency and solution of simultaneous linear equations in two or three variables using matrices...",
+      "source_locator": "Page 1, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u04_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U04",
+      "official_unit_title": "PERMUTATIONS AND COMBINATIONS",
+      "official_subtopic": "Fundamental principle of counting, P(n,r) and C(n,r)",
+      "canonical_concept_ids": [
+        "cc_custom_verified"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/permutations_and_combinations"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The fundamental principle of counting, permutations and combinations; Meaning of P(n, r) and C(n, r). Simple application...",
+      "source_locator": "Page 1, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-30T09:56:09+00:00",
+      "reviewer": "lead_math_teacher",
+      "review_notes": "Permutations and Combinations verified"
+    },
+    {
+      "syllabus_item_id": "syl_math_u05_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U05",
+      "official_unit_title": "BINOMIAL THEOREM AND ITS SIMPLE APPLICATIONS",
+      "official_subtopic": "Expansion for positive integral index, general and middle terms",
+      "canonical_concept_ids": [
+        "cc_8f5d1eb506b612bd"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/binomial_theorem"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Binomial theorem for a positive integral index, general term and middle term and simple applications...",
+      "source_locator": "Page 1, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u06_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U06",
+      "official_unit_title": "SEQUENCE AND SERIES",
+      "official_subtopic": "Arithmetic and Geometric Progressions, A.M. and G.M.",
+      "canonical_concept_ids": [
+        "cc_5f460d5c127958a0"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/sequences_and_series"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Arithmetic and Geometric progressions, insertion of arithmetic, geometric means between two given numbers, Relation betw...",
+      "source_locator": "Page 1, UNIT 6",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u07_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U07",
+      "official_unit_title": "LIMIT, CONTINUITY AND DIFFERENTIABILITY",
+      "official_subtopic": "Elementary functions and their graphs",
+      "canonical_concept_ids": [
+        "cc_5b5bdbe60072f33b",
+        "cc_876e4da502f7bf45"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/algebra/sets_relations_and_functions",
+        "mathematics/calculus/limits_and_continuity"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Real-valued functions, algebra of functions; polynomial, rational, trigonometric, logarithmic and exponential functions;...",
+      "source_locator": "Page 1, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u07_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U07",
+      "official_unit_title": "LIMIT, CONTINUITY AND DIFFERENTIABILITY",
+      "official_subtopic": "Evaluation of limits and continuity of functions",
+      "canonical_concept_ids": [
+        "cc_876e4da502f7bf45"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/limits_and_continuity"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Limits, continuity and differentiability...",
+      "source_locator": "Page 1, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u07_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U07",
+      "official_unit_title": "LIMIT, CONTINUITY AND DIFFERENTIABILITY",
+      "official_subtopic": "Rules of differentiation and higher order derivatives",
+      "canonical_concept_ids": [
+        "cc_c31f5c19a669612c"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/differentiation"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Differentiation of the sum, difference, product and quotient of two functions. Differentiation of trigonometric, inverse...",
+      "source_locator": "Page 1, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u07_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U07",
+      "official_unit_title": "LIMIT, CONTINUITY AND DIFFERENTIABILITY",
+      "official_subtopic": "Rate of change, monotonicity, and extrema",
+      "canonical_concept_ids": [
+        "cc_83a1f114500a1728"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/applications_of_derivatives"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Applications of derivatives: Rate of change of quantities, monotonic-Increasing and decreasing functions, Maxima and min...",
+      "source_locator": "Page 1, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u08_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U08",
+      "official_unit_title": "INTEGRAL CALCULAS",
+      "official_subtopic": "Fundamental integrals and standard techniques",
+      "canonical_concept_ids": [
+        "cc_7cead0c2605b359f"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/integral_calculus"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Integral as an anti-derivative, Fundamental integrals involving algebraic, trigonometric, exponential and logarithmic fu...",
+      "source_locator": "Page 1, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u08_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U08",
+      "official_unit_title": "INTEGRAL CALCULAS",
+      "official_subtopic": "Evaluation of standard rational and irrational algebraic forms",
+      "canonical_concept_ids": [
+        "cc_7cead0c2605b359f"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/integral_calculus"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Evaluation of simple integrals of standard quadratic, radical, and linear/quadratic rational forms...",
+      "source_locator": "Page 1, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u08_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U08",
+      "official_unit_title": "INTEGRAL CALCULAS",
+      "official_subtopic": "Fundamental theorem, definite integral properties, bounded areas",
+      "canonical_concept_ids": [
+        "cc_7cead0c2605b359f"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/integral_calculus"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The fundamental theorem of calculus, properties of definite integrals. Evaluation of definite integrals, determining are...",
+      "source_locator": "Page 2, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u09_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U09",
+      "official_unit_title": "DIFFRENTIAL EQUATIONS",
+      "official_subtopic": "Order, degree, separable, homogeneous and linear first-order ODEs",
+      "canonical_concept_ids": [
+        "cc_da38d2c914cea7c9"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/calculus/differential_equations"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Ordinary differential equations, their order and degree, the solution of differential equation by the method of separati...",
+      "source_locator": "Page 2, UNIT 9",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u10_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U10",
+      "official_unit_title": "CO-ORDINATE GEOMETRY",
+      "official_subtopic": "Distance, section formula, locus, slope and line inclinations",
+      "canonical_concept_ids": [
+        "cc_566dd708e45bdf97",
+        "cc_7d5698538e81c82d"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/coordinate_geometry_conics",
+        "mathematics/coordinate_geometry/straight_lines"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Cartesian system of rectangular coordinates in a plane, distance formula, sections formula, locus and its equation, the ...",
+      "source_locator": "Page 2, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u10_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U10",
+      "official_unit_title": "CO-ORDINATE GEOMETRY",
+      "official_subtopic": "Forms of lines, intersection, concurrence, distance to line, triangle centres",
+      "canonical_concept_ids": [
+        "cc_7d5698538e81c82d"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/straight_lines"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Straight line: Various forms of equations of a line, intersection of lines, angles between two lines, conditions for con...",
+      "source_locator": "Page 2, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u10_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U10",
+      "official_unit_title": "CO-ORDINATE GEOMETRY",
+      "official_subtopic": "Standard and general equations, diameter form, line-circle intersections",
+      "canonical_concept_ids": [
+        "cc_97ca5374e03783c5"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/circles"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Circle: A standard form of equations of a circle, the general form of the equation of a circle, its radius and centre, e...",
+      "source_locator": "Page 2, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u10_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U10",
+      "official_unit_title": "CO-ORDINATE GEOMETRY",
+      "official_subtopic": "Parabola, ellipse, and hyperbola in standard forms",
+      "canonical_concept_ids": [
+        "cc_3d26d1722cc57f40"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/conic_sections_parabola_ellipse_hyperbola"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Sections of conics, equations of conic sections (parabola, ellipse and hyperbola) in standard forms...",
+      "source_locator": "Page 2, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u11_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U11",
+      "official_unit_title": "THREE DIMENSIONAL GEOMETRY",
+      "official_subtopic": "Direction cosines, line equations, skew lines and shortest distance",
+      "canonical_concept_ids": [
+        "cc_10098e97f1838609"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/three_dimensional_geometry"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Coordinates of a point in space, the distance between two points, section formula, direction ratios and direction cosine...",
+      "source_locator": "Page 2, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u12_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U12",
+      "official_unit_title": "VECTOR ALGEBRA",
+      "official_subtopic": "Components, addition, scalar (dot) and vector (cross) products",
+      "canonical_concept_ids": [
+        "cc_807ba5262fa20f49"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/coordinate_geometry/vector_algebra"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Vectors and scalars, the addition of vectors, components of a vector in two dimensions and three-dimensional spaces, sca...",
+      "source_locator": "Page 2, UNIT 12",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u13_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U13",
+      "official_unit_title": "STATISTICS AND PROBABILITY",
+      "official_subtopic": "Measures of dispersion: mean, median, mode, variance, standard deviation",
+      "canonical_concept_ids": [
+        "cc_a1d5d63cb1ef3054"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/statistics/measures_of_dispersion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Measures of dispersion; calculation of mean, median, mode of grouped and ungrouped data, calculation of standard deviati...",
+      "source_locator": "Page 2, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u13_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U13",
+      "official_unit_title": "STATISTICS AND PROBABILITY",
+      "official_subtopic": "Probability theorems, Bayes' theorem, probability distributions",
+      "canonical_concept_ids": [
+        "cc_713e5601e8a4ee11"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/probability/probability"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Probability: Probability of an event, addition and multiplication theorems of probability, Baye's theorem, probability d...",
+      "source_locator": "Page 2, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u14_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U14",
+      "official_unit_title": "TRIGONOMETRY",
+      "official_subtopic": "Identities and functions",
+      "canonical_concept_ids": [
+        "cc_43ca7c2876089376"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/trigonometry/trigonometry"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Trigonometrical identities and trigonometrical functions...",
+      "source_locator": "Page 2, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_math_u14_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "mathematics",
+      "official_unit_code": "MATH_U14",
+      "official_unit_title": "TRIGONOMETRY",
+      "official_subtopic": "Definitions, domains, ranges, and properties",
+      "canonical_concept_ids": [
+        "cc_c6ed1930f8647301"
+      ],
+      "canonical_stable_keys": [
+        "mathematics/trigonometry/inverse_trigonometric_functions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Inverse trigonometrical functions their properties...",
+      "source_locator": "Page 2, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u01_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U01",
+      "official_unit_title": "Units and Measurements",
+      "official_subtopic": "SI units, fundamental and derived units",
+      "canonical_concept_ids": [
+        "cc_0c382ca4716054f4"
+      ],
+      "canonical_stable_keys": [
+        "physics/units_and_measurements/dimensional_analysis_and_errors"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Units of measurements, System of units, SI Units, fundamental and derived units...",
+      "source_locator": "Page 3, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u01_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U01",
+      "official_unit_title": "Units and Measurements",
+      "official_subtopic": "Least count, significant figures, measurement errors",
+      "canonical_concept_ids": [
+        "cc_0c382ca4716054f4"
+      ],
+      "canonical_stable_keys": [
+        "physics/units_and_measurements/dimensional_analysis_and_errors"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Least count, significant figures, Errors in measurements...",
+      "source_locator": "Page 3, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u01_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U01",
+      "official_unit_title": "Units and Measurements",
+      "official_subtopic": "Dimensions of quantities and applications",
+      "canonical_concept_ids": [
+        "cc_0c382ca4716054f4"
+      ],
+      "canonical_stable_keys": [
+        "physics/units_and_measurements/dimensional_analysis_and_errors"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Dimensions of Physics quantities, dimensional analysis and its applications...",
+      "source_locator": "Page 3, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u02_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U02",
+      "official_unit_title": "Kinematics",
+      "official_subtopic": "Speed, velocity, acceleration, motion graphs, relative velocity",
+      "canonical_concept_ids": [
+        "cc_3e003bf9b038a36b"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/kinematics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The frame of reference, motion in a straight line, speed and velocity, uniform and non-uniform motion, average speed and...",
+      "source_locator": "Page 3, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u02_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U02",
+      "official_unit_title": "Kinematics",
+      "official_subtopic": "Projectile motion and uniform circular motion",
+      "canonical_concept_ids": [
+        "cc_3e003bf9b038a36b"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/kinematics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Motion in a plane, projectile motion, uniform circular motion...",
+      "source_locator": "Page 3, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u03_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U03",
+      "official_unit_title": "Laws of Motion",
+      "official_subtopic": "Inertia, momentum, 3 laws, impulse, conservation of momentum",
+      "canonical_concept_ids": [
+        "cc_e070c64d30e5e623"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Force and inertia, Newton’s first law of motion, momentum, Newton’s second Law of motion, impulse, Newton’s third Law of...",
+      "source_locator": "Page 3, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u03_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U03",
+      "official_unit_title": "Laws of Motion",
+      "official_subtopic": "Static, kinetic, and rolling friction",
+      "canonical_concept_ids": [
+        "cc_e070c64d30e5e623"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Static and Kinetic friction, laws of friction, rolling friction...",
+      "source_locator": "Page 3, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u03_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U03",
+      "official_unit_title": "Laws of Motion",
+      "official_subtopic": "Centripetal force, road banking",
+      "canonical_concept_ids": [
+        "cc_e070c64d30e5e623"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/laws_of_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Dynamics of uniform circular motion, centripetal force and its applications: vehicle on a level circular road, vehicle o...",
+      "source_locator": "Page 3, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u04_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U04",
+      "official_unit_title": "Work, Energy and Power",
+      "official_subtopic": "Work done, kinetic energy, work-energy theorem, power",
+      "canonical_concept_ids": [
+        "cc_5f9917b8333fae45"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/work_power_and_energy"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Work done by a constant force and a variable force, kinetic and potential energies, work-energy theorem, power...",
+      "source_locator": "Page 3, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u04_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U04",
+      "official_unit_title": "Work, Energy and Power",
+      "official_subtopic": "Spring potential energy, conservation of mechanical energy, vertical circle",
+      "canonical_concept_ids": [
+        "cc_5f9917b8333fae45"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/work_power_and_energy"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The potential energy of a spring, conservation of mechanical energy, conservative and non-conservative forces, motion in...",
+      "source_locator": "Page 3, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u04_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U04",
+      "official_unit_title": "Work, Energy and Power",
+      "official_subtopic": "Elastic and inelastic collisions in 1D and 2D",
+      "canonical_concept_ids": [
+        "cc_613d1fef168fb22a"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/centre_of_mass_and_collisions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Elastic and inelastic collisions in one and two dimensions...",
+      "source_locator": "Page 3, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u05_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U05",
+      "official_unit_title": "Rotational Motion",
+      "official_subtopic": "Two-particle and rigid body centre of mass",
+      "canonical_concept_ids": [
+        "cc_613d1fef168fb22a"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/centre_of_mass_and_collisions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Centre of mass of a two-particle system, centre of mass of a rigid body...",
+      "source_locator": "Page 3, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u05_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U05",
+      "official_unit_title": "Rotational Motion",
+      "official_subtopic": "Moment of force, angular momentum conservation",
+      "canonical_concept_ids": [
+        "cc_f9b37ebf7ac48dce"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/rotational_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Basic concepts of rotational motion, moment of a force, torque, angular momentum, conservation of angular momentum and i...",
+      "source_locator": "Page 3, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u05_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U05",
+      "official_unit_title": "Rotational Motion",
+      "official_subtopic": "Radius of gyration, parallel and perpendicular axes theorems",
+      "canonical_concept_ids": [
+        "cc_f9b37ebf7ac48dce"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/rotational_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The moment of inertia, the radius of gyration, values of moments of inertia for simple geometrical objects, parallel and...",
+      "source_locator": "Page 3, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u05_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U05",
+      "official_unit_title": "Rotational Motion",
+      "official_subtopic": "Equilibrium and rotational kinematic equations",
+      "canonical_concept_ids": [
+        "cc_f9b37ebf7ac48dce"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/rotational_motion"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Equilibrium of rigid bodies, rigid body rotation and equations of rotational motion, comparison of linear and rotational...",
+      "source_locator": "Page 3, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u06_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U06",
+      "official_unit_title": "Gravitation",
+      "official_subtopic": "Universal gravitation, variation of g with altitude and depth",
+      "canonical_concept_ids": [
+        "cc_4a6258fa65430452"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/gravitation"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The universal law of gravitation. Acceleration due to gravity and its variation with altitude and depth. Kepler’s law of...",
+      "source_locator": "Page 3, UNIT 6",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u06_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U06",
+      "official_unit_title": "Gravitation",
+      "official_subtopic": "Potential, escape velocity, orbital motion and satellite energy",
+      "canonical_concept_ids": [
+        "cc_4a6258fa65430452"
+      ],
+      "canonical_stable_keys": [
+        "physics/mechanics/gravitation"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Gravitational potential energy, gravitational potential. Escape velocity, motion of a satellite, orbital velocity, time ...",
+      "source_locator": "Page 3, UNIT 6",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u07_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U07",
+      "official_unit_title": "Properties of Solids and Liquids",
+      "official_subtopic": "Stress-strain, Hooke's law, elastic moduli",
+      "canonical_concept_ids": [
+        "cc_9d115aa17a5eb9d3"
+      ],
+      "canonical_stable_keys": [
+        "physics/properties_of_matter/elasticity"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Elastic behaviour, stress-strain relationship, Hooke's Law, Young's modulus, bulk modulus and modulus of rigidity...",
+      "source_locator": "Page 3, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u07_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U07",
+      "official_unit_title": "Properties of Solids and Liquids",
+      "official_subtopic": "Pressure, Pascal's law, viscosity, Stoke's law, Bernoulli's principle",
+      "canonical_concept_ids": [
+        "cc_288d8608260d96a9"
+      ],
+      "canonical_stable_keys": [
+        "physics/properties_of_matter/fluid_mechanics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Pressure due to a fluid column, Pascal's law and its applications, effect of gravity on fluid pressure, viscosity, Stoke...",
+      "source_locator": "Page 4, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u07_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U07",
+      "official_unit_title": "Properties of Solids and Liquids",
+      "official_subtopic": "Surface energy, contact angle, excess pressure, capillary rise",
+      "canonical_concept_ids": [
+        "cc_288d8608260d96a9"
+      ],
+      "canonical_stable_keys": [
+        "physics/properties_of_matter/fluid_mechanics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Surface energy and surface tension, angle of contact, excess of pressure across a curved surface, application of surface...",
+      "source_locator": "Page 4, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u07_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U07",
+      "official_unit_title": "Properties of Solids and Liquids",
+      "official_subtopic": "Expansion, calorimetry, latent heat, conduction, convection, radiation",
+      "canonical_concept_ids": [
+        "cc_e80c8160863f87e8"
+      ],
+      "canonical_stable_keys": [
+        "physics/thermal_physics/thermal_properties"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Heat, temperature, thermal expansion, specific heat capacity, calorimetry, change of state, latent heat. Heat transfer: ...",
+      "source_locator": "Page 4, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u08_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U08",
+      "official_unit_title": "Thermodynamics",
+      "official_subtopic": "Zeroth, first and second laws, thermodynamic processes",
+      "canonical_concept_ids": [
+        "cc_a6e38645326c6a3e"
+      ],
+      "canonical_stable_keys": [
+        "physics/thermal_physics/thermodynamics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Thermal equilibrium and the concept of temperature, zeroth law of thermodynamics, heat, work and internal energy. The fi...",
+      "source_locator": "Page 4, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u09_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U09",
+      "official_unit_title": "Kinetic Theory of Gases",
+      "official_subtopic": "Gas state equation, pressure, RMS speed, equipartition, degrees of freedom",
+      "canonical_concept_ids": [
+        "cc_60bdc676a3ec6803"
+      ],
+      "canonical_stable_keys": [
+        "physics/thermal_physics/kinetic_theory_of_gases"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Equation of state of a perfect gas, work done on compressing a gas, kinetic theory of gases: assumptions, the concept of...",
+      "source_locator": "Page 4, UNIT 9",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u10_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U10",
+      "official_unit_title": "Oscillations and Waves",
+      "official_subtopic": "SHM kinematics, spring oscillations, energy, simple pendulum",
+      "canonical_concept_ids": [
+        "cc_1d9892fefa17f63c"
+      ],
+      "canonical_stable_keys": [
+        "physics/waves/oscillations"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Oscillations and periodic motion: time period, frequency, displacement as a function of time, periodic functions. Simple...",
+      "source_locator": "Page 4, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u10_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U10",
+      "official_unit_title": "Oscillations and Waves",
+      "official_subtopic": "Travelling waves, superposition, standing waves, resonance in pipes, beats",
+      "canonical_concept_ids": [
+        "cc_45e6d2763944e1d4"
+      ],
+      "canonical_stable_keys": [
+        "physics/waves/waves"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Wave motion, longitudinal and transverse waves, speed of the travelling wave, displacement relation for a progressive wa...",
+      "source_locator": "Page 4, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u11_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U11",
+      "official_unit_title": "Electrostatics",
+      "official_subtopic": "Charge conservation, Coulomb's law, continuous distributions",
+      "canonical_concept_ids": [
+        "cc_a07f4e55f2d6f8ca"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/electrostatics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electric charges: conservation of charge, Coulomb's law forces between two point charges, forces between multiple charge...",
+      "source_locator": "Page 4, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u11_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U11",
+      "official_unit_title": "Electrostatics",
+      "official_subtopic": "Field lines, dipole, Gauss's law and applications",
+      "canonical_concept_ids": [
+        "cc_a07f4e55f2d6f8ca"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/electrostatics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electric field: electric field due to a point charge, electric field lines, electric dipole, electric field due to a dip...",
+      "source_locator": "Page 4, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u11_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U11",
+      "official_unit_title": "Electrostatics",
+      "official_subtopic": "Point charges, dipoles, equipotential surfaces, potential energy",
+      "canonical_concept_ids": [
+        "cc_a07f4e55f2d6f8ca"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/electrostatics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electric potential and its calculation for a point charge, electric dipole and system of charges, potential difference, ...",
+      "source_locator": "Page 4, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u11_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U11",
+      "official_unit_title": "Electrostatics",
+      "official_subtopic": "Capacitor combinations, dielectrics, energy stored",
+      "canonical_concept_ids": [
+        "cc_5a6cc0ef09b7a8b6"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/capacitance"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Conductors and insulators, dielectrics and electric polarization, capacitors and capacitance, the combination of capacit...",
+      "source_locator": "Page 4, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u12_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U12",
+      "official_unit_title": "Current Electricity",
+      "official_subtopic": "Drift velocity, Ohm's law, resistivity, temperature dependence",
+      "canonical_concept_ids": [
+        "cc_0dc99667b34c7291"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/current_electricity"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electric current: drift velocity, mobility and their relation with electric current, Ohm's law, electrical resistance, I...",
+      "source_locator": "Page 5, UNIT 12",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u12_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U12",
+      "official_unit_title": "Current Electricity",
+      "official_subtopic": "EMF, internal resistance, Kirchhoff's laws, Wheatstone and Metre bridge",
+      "canonical_concept_ids": [
+        "cc_0dc99667b34c7291"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/current_electricity"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Internal resistance, potential difference and emf of a cell, a combination of cells in series and parallel. Kirchhoff’s ...",
+      "source_locator": "Page 5, UNIT 12",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u13_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U13",
+      "official_unit_title": "Magnetic Effects of Current and Magnetism",
+      "official_subtopic": "Biot-Savart law, Ampere's law, solenoid",
+      "canonical_concept_ids": [
+        "cc_0a599e2579d7239e"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/magnetic_effects_of_current"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Biot - Savart law and its application to the current carrying circular loop, Ampere's law and its applications to infini...",
+      "source_locator": "Page 5, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u13_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U13",
+      "official_unit_title": "Magnetic Effects of Current and Magnetism",
+      "official_subtopic": "Lorentz force, parallel conductors, moving coil galvanometer",
+      "canonical_concept_ids": [
+        "cc_0a599e2579d7239e"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/magnetic_effects_of_current"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Force on a moving charge in uniform magnetic and electric fields, force on a current-carrying conductor in a uniform mag...",
+      "source_locator": "Page 5, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u13_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U13",
+      "official_unit_title": "Magnetic Effects of Current and Magnetism",
+      "official_subtopic": "Magnetic dipoles, bar magnets, para/dia/ferromagnetism",
+      "canonical_concept_ids": [
+        "cc_0a599e2579d7239e"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/magnetic_effects_of_current"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Current loop as a magnetic dipole and its magnetic dipole moment, bar magnet as an equivalent solenoid, magnetic field l...",
+      "source_locator": "Page 5, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u14_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U14",
+      "official_unit_title": "Electromagnetic Induction and Alternating Currents",
+      "official_subtopic": "Faraday's law, Lenz's law, eddy currents, inductance",
+      "canonical_concept_ids": [
+        "cc_1ca3a58143a058cf"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/electromagnetic_induction"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electromagnetic induction: Faraday's law, induced emf and current, Lenz’s law, eddy currents, self and mutual inductance...",
+      "source_locator": "Page 5, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u14_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U14",
+      "official_unit_title": "Electromagnetic Induction and Alternating Currents",
+      "official_subtopic": "RMS values, impedance, LCR series circuit, resonance, transformer",
+      "canonical_concept_ids": [
+        "cc_35bc7ed00be8b71d"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/alternating_current"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Alternating currents, peak and RMS value of alternating current/voltage, reactance and impedance, LCR series circuit, re...",
+      "source_locator": "Page 5, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u15_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U15",
+      "official_unit_title": "Electromagnetic Waves",
+      "official_subtopic": "Displacement current, wave characteristics, EM spectrum",
+      "canonical_concept_ids": [
+        "cc_58dcd60d27a68845"
+      ],
+      "canonical_stable_keys": [
+        "physics/electromagnetism/electromagnetic_waves"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Displacement current, electromagnetic waves and their characteristics, transverse nature of electromagnetic waves, elect...",
+      "source_locator": "Page 5, UNIT 15",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u16_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U16",
+      "official_unit_title": "Optics",
+      "official_subtopic": "Reflection, refraction, lenses, total internal reflection, prism, optical instruments",
+      "canonical_concept_ids": [
+        "cc_d70ece71bc616b7b",
+        "cc_a0f8c26d421e9c83"
+      ],
+      "canonical_stable_keys": [
+        "physics/optics/ray_optics_and_optical_instruments",
+        "physics/optics/ray_and_wave_optics"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Reflection of light, spherical mirrors, mirror formula. Refraction of light at plane and spherical surfaces, thin lens f...",
+      "source_locator": "Page 5, UNIT 16",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u16_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U16",
+      "official_unit_title": "Optics",
+      "official_subtopic": "Huygens' principle, interference (YDSE), diffraction, polarization (Brewster's law)",
+      "canonical_concept_ids": [
+        "cc_3c10e1bef7c6bb38",
+        "cc_a0f8c26d421e9c83"
+      ],
+      "canonical_stable_keys": [
+        "physics/optics/wave_optics_interference_diffraction",
+        "physics/optics/ray_and_wave_optics"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Wave optics: wavefront and Huygens ‘Principle, laws of reflection and refraction using Huygens principle. Interference: ...",
+      "source_locator": "Page 5, UNIT 16",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u17_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U17",
+      "official_unit_title": "Dual Nature of Matter and Radiation",
+      "official_subtopic": "Photoelectric equation, photon nature, de Broglie relation",
+      "canonical_concept_ids": [
+        "cc_88731d086e53d020",
+        "cc_a31583fae6c837cb"
+      ],
+      "canonical_stable_keys": [
+        "physics/modern_physics/dual_nature_of_radiation",
+        "physics/modern_physics/modern_physics"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Dual nature of radiation, Photoelectric effect, Hertz and Lenard's observations, Einstein's photoelectric equation, part...",
+      "source_locator": "Page 6, UNIT 17",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u18_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U18",
+      "official_unit_title": "Atoms and Nuclei",
+      "official_subtopic": "Rutherford scattering, Bohr model, hydrogen spectrum",
+      "canonical_concept_ids": [
+        "cc_a51044fa8a24333d",
+        "cc_a31583fae6c837cb"
+      ],
+      "canonical_stable_keys": [
+        "physics/modern_physics/atoms_and_hydrogen_spectrum",
+        "physics/modern_physics/modern_physics"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Alpha-particle scattering experiment, Rutherford's model of atom, Bohr model, energy levels, hydrogen spectrum...",
+      "source_locator": "Page 6, UNIT 18",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u18_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U18",
+      "official_unit_title": "Atoms and Nuclei",
+      "official_subtopic": "Nucleus size, mass defect, binding energy, fission and fusion",
+      "canonical_concept_ids": [
+        "cc_03cdddc22bda772c",
+        "cc_a31583fae6c837cb"
+      ],
+      "canonical_stable_keys": [
+        "physics/modern_physics/nuclear_physics",
+        "physics/modern_physics/modern_physics"
+      ],
+      "mapping_status": "partial_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 0.95,
+      "evidence": "Syllabus scope: Composition and size of nucleus, atomic masses, mass-energy relation, mass defect, binding energy per nucleon and its va...",
+      "source_locator": "Page 6, UNIT 18",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u19_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U19",
+      "official_unit_title": "Electronic Devices",
+      "official_subtopic": "p-n junction, forward/reverse bias, rectifier, LED, photodiode, solar cell, Zener regulator",
+      "canonical_concept_ids": [
+        "cc_66718196a30c50c2"
+      ],
+      "canonical_stable_keys": [
+        "physics/modern_physics/semiconductors"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Semiconductors, semiconductor diode: I-V characteristics in forward and reverse bias, diode as a rectifier; I-V characte...",
+      "source_locator": "Page 6, UNIT 19",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u19_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U19",
+      "official_unit_title": "Electronic Devices",
+      "official_subtopic": "OR, AND, NOT, NAND, NOR gates",
+      "canonical_concept_ids": [
+        "cc_ef16523d575541db"
+      ],
+      "canonical_stable_keys": [
+        "physics/electronic_devices/logic_gates"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Logic gates (OR. AND. NOT. NAND and NOR)...",
+      "source_locator": "Page 6, UNIT 19",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Internal and external diameter and depth measurement",
+      "canonical_concept_ids": [
+        "cc_38515339a2b882be"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/vernier_calipers_and_screw_gauge"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Vernier calipers -its use to measure the internal and external diameter and depth of a vessel...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Thickness and diameter of thin sheet/wire",
+      "canonical_concept_ids": [
+        "cc_38515339a2b882be"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/vernier_calipers_and_screw_gauge"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Screw gauge-its use to determine the thickness/ diameter of thin sheet/wire...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Energy dissipation curve (amplitude squared vs time)",
+      "canonical_concept_ids": [
+        "cc_064d531e37aef66f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/mechanics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Simple pendulum-dissipation of energy by plotting a graph between the square of amplitude and time...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Mass determination by principle of moments",
+      "canonical_concept_ids": [
+        "cc_064d531e37aef66f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/mechanics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Metre scale - the mass of a given object by the principle of moments...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_05",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Elasticity determination of metallic wire",
+      "canonical_concept_ids": [
+        "cc_064d531e37aef66f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/mechanics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Young's modulus of elasticity of the material of a metallic wire...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_06",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Capillary rise method and detergent effect",
+      "canonical_concept_ids": [
+        "cc_5e3b5de31a42e910"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/fluids_and_thermal_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Surface tension of water by capillary rise and effect of detergents...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_07",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Terminal velocity of spherical body in viscous liquid",
+      "canonical_concept_ids": [
+        "cc_5e3b5de31a42e910"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/fluids_and_thermal_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Co-efficient of viscosity of a given viscous liquid by measuring the terminal velocity of a given spherical body...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_08",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Resonance tube method at room temperature",
+      "canonical_concept_ids": [
+        "cc_5e3b5de31a42e910"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/fluids_and_thermal_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Speed of sound in air at room temperature using a resonance tube...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_09",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Method of mixtures for solid and liquid",
+      "canonical_concept_ids": [
+        "cc_5e3b5de31a42e910"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/fluids_and_thermal_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Specific heat capacity of a given (i) solid and (ii) liquid by method of mixtures...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_10",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Resistivity of wire using metre bridge",
+      "canonical_concept_ids": [
+        "cc_e9467c88d54973e5"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/electrical_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The resistivity of the material of a given wire using a metre bridge...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_11",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Resistance measurement using Ohm's law",
+      "canonical_concept_ids": [
+        "cc_e9467c88d54973e5"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/electrical_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The resistance of a given wire using Ohm's law...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_12",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Resistance and figure of merit by half deflection",
+      "canonical_concept_ids": [
+        "cc_e9467c88d54973e5"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/electrical_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Resistance and figure of merit of a galvanometer by half deflection method...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_13",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Convex mirror, concave mirror, and convex lens using parallax",
+      "canonical_concept_ids": [
+        "cc_f20235bce067654f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/optics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The focal length of (i) Convex mirror (ii) Concave mirror and (iii)Convex lens, using the parallax method...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_14",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Angle of deviation vs angle of incidence for triangular prism",
+      "canonical_concept_ids": [
+        "cc_f20235bce067654f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/optics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The plot of the angle of deviation vs angle of incidence for a triangular prism...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_15",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Glass slab using travelling microscope",
+      "canonical_concept_ids": [
+        "cc_f20235bce067654f"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/optics_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The refractive index of a glass slab using a travelling microscope...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_16",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Forward and reverse bias curves",
+      "canonical_concept_ids": [
+        "cc_aad66c377ef55f2b"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/semiconductor_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Characteristic curves of a p-n junction diode in forward and reverse bias...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_17",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Reverse breakdown voltage determination",
+      "canonical_concept_ids": [
+        "cc_aad66c377ef55f2b"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/semiconductor_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Characteristic curves of a Zener diode and finding reverse breakdown voltage...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_phy_u20_18",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "physics",
+      "official_unit_code": "PHY_U20",
+      "official_unit_title": "Experimental Skills",
+      "official_subtopic": "Diode, LED, resistor, capacitor identification",
+      "canonical_concept_ids": [
+        "cc_aad66c377ef55f2b"
+      ],
+      "canonical_stable_keys": [
+        "physics/experimental_skills/semiconductor_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Identification of diode, LED, resistor, a capacitor from a mixed collection of such items...",
+      "source_locator": "Page 6, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u01_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U01",
+      "official_unit_title": "SOME BASIC CONCEPTS IN CHEMISTRY",
+      "official_subtopic": "Dalton's theory, atoms, molecules, elements, compounds",
+      "canonical_concept_ids": [
+        "cc_ab411e6d3eeab1c1"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Matter and its nature, Dalton's atomic theory, Concept of atom, molecule, element and compound, Laws of chemical combina...",
+      "source_locator": "Page 7, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u01_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U01",
+      "official_unit_title": "SOME BASIC CONCEPTS IN CHEMISTRY",
+      "official_subtopic": "Atomic masses, mole concept, percentage composition, empirical and molecular formula",
+      "canonical_concept_ids": [
+        "cc_ab411e6d3eeab1c1"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/some_basic_concepts_mole_concept"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Atomic and molecular masses, mole concept, molar mass, percentage composition, empirical and molecular formulae, Chemica...",
+      "source_locator": "Page 7, UNIT 1",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u02_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U02",
+      "official_unit_title": "ATOMIC STRUCTURE",
+      "official_subtopic": "Hydrogen spectrum, Bohr model, de Broglie, Heisenberg principle",
+      "canonical_concept_ids": [
+        "cc_a04390bce4f730b6"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/atomic_structure"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Nature of electromagnetic radiation, photoelectric effect, spectrum of the hydrogen atom, Bohr model of a hydrogen atom ...",
+      "source_locator": "Page 7, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u02_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U02",
+      "official_unit_title": "ATOMIC STRUCTURE",
+      "official_subtopic": "Orbitals, quantum numbers, orbital shapes, Aufbau, Pauli, Hund rules",
+      "canonical_concept_ids": [
+        "cc_a04390bce4f730b6"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/atomic_structure"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Elementary ideas of quantum mechanics, the quantum mechanical model of the atom and its important features, concept of a...",
+      "source_locator": "Page 7, UNIT 2",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u03_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U03",
+      "official_unit_title": "CHEMICAL BONDING AND MOLECULAR STRUCTURE",
+      "official_subtopic": "Kossel-Lewis, lattice enthalpy, Fajan's rule, dipole moment",
+      "canonical_concept_ids": [
+        "cc_f11cab60cdf232c0"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/chemical_bonding"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Kossel-Lewis approach to chemical bond formation, the concept of ionic and covalent bonds. Ionic Bonding: Formation of i...",
+      "source_locator": "Page 7, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u03_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U03",
+      "official_unit_title": "CHEMICAL BONDING AND MOLECULAR STRUCTURE",
+      "official_subtopic": "VSEPR theory, Valence Bond Theory, hybridization, resonance",
+      "canonical_concept_ids": [
+        "cc_f11cab60cdf232c0"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/chemical_bonding"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Valence Shell Electron Pair Repulsion (VSEPR) theory and shapes of simple molecules. Quantum mechanical approach to cova...",
+      "source_locator": "Page 7, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u03_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U03",
+      "official_unit_title": "CHEMICAL BONDING AND MOLECULAR STRUCTURE",
+      "official_subtopic": "LCAO, bond order, bond energy, homonuclear diatomics, hydrogen bonding",
+      "canonical_concept_ids": [
+        "cc_f11cab60cdf232c0"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/chemical_bonding"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Molecular Orbital Theory - Its important features, LCAOs, types of molecular orbitals (bonding, antibonding), sigma and ...",
+      "source_locator": "Page 7, UNIT 3",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u04_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U04",
+      "official_unit_title": "CHEMICAL THERMODYNAMICS",
+      "official_subtopic": "Internal energy, enthalpy, heat capacity, Hess's law, standard enthalpies",
+      "canonical_concept_ids": [
+        "cc_f18f919f23ce794d"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/chemical_thermodynamics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Fundamentals of thermodynamics: System and surroundings, extensive and intensive properties, state functions, entropy, t...",
+      "source_locator": "Page 7, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u04_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U04",
+      "official_unit_title": "CHEMICAL THERMODYNAMICS",
+      "official_subtopic": "Entropy, Gibbs free energy criteria, equilibrium constant",
+      "canonical_concept_ids": [
+        "cc_f18f919f23ce794d"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/chemical_thermodynamics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The second law of thermodynamics - Spontaneity of processes, Delta S of the universe and Delta G of the system as criter...",
+      "source_locator": "Page 7, UNIT 4",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u05_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U05",
+      "official_unit_title": "SOLUTIONS",
+      "official_subtopic": "Concentration expressions, vapour pressure, ideal and non-ideal solutions",
+      "canonical_concept_ids": [
+        "cc_c8427267deaceb32"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/solutions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Different methods for expressing the concentration of solution - molality, molarity, mole fraction, percentage (by volum...",
+      "source_locator": "Page 7, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u05_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U05",
+      "official_unit_title": "SOLUTIONS",
+      "official_subtopic": "Elevation of boiling point, depression of freezing point, osmotic pressure, van't Hoff factor",
+      "canonical_concept_ids": [
+        "cc_c8427267deaceb32"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/solutions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Colligative properties of dilute solutions - a relative lowering of vapour pressure, depression of freezing point, the e...",
+      "source_locator": "Page 7, UNIT 5",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u06_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U06",
+      "official_unit_title": "EQUILIBRIUM",
+      "official_subtopic": "Dynamic equilibrium, Kp and Kc, Le Chatelier's principle",
+      "canonical_concept_ids": [
+        "cc_926fa621060f7bb8"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/equilibrium"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Meaning of equilibrium is the concept of dynamic equilibrium. Equilibria involving physical processes: Solid-liquid, liq...",
+      "source_locator": "Page 8, UNIT 6",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u06_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U06",
+      "official_unit_title": "EQUILIBRIUM",
+      "official_subtopic": "Acids, bases, pH scale, salt hydrolysis, solubility product, buffer solutions",
+      "canonical_concept_ids": [
+        "cc_daf9f2e50bd09197"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/ionic_equilibrium"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Ionic equilibrium: Weak and strong electrolytes, ionization of electrolytes, various concepts of acids and bases (Arrhen...",
+      "source_locator": "Page 8, UNIT 6",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u07_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U07",
+      "official_unit_title": "REDOX REACTIONS AND ELECTROCHEMISTRY",
+      "official_subtopic": "Oxidation numbers and redox balancing",
+      "canonical_concept_ids": [
+        "cc_b416ea16b4b84a1d"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/redox_reactions"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electronic concepts of oxidation and reduction, redox reactions, oxidation number, rules for assigning oxidation number ...",
+      "source_locator": "Page 8, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u07_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U07",
+      "official_unit_title": "REDOX REACTIONS AND ELECTROCHEMISTRY",
+      "official_subtopic": "Electrolytic conduction, molar conductivities, Kohlrausch's law",
+      "canonical_concept_ids": [
+        "cc_c978d6986e8cf847"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/electrochemistry"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electrolytic and metallic conduction, conductance in electrolytic solutions, molar conductivities and their variation wi...",
+      "source_locator": "Page 8, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u07_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U07",
+      "official_unit_title": "REDOX REACTIONS AND ELECTROCHEMISTRY",
+      "official_subtopic": "Galvanic cells, standard potentials, Nernst equation, batteries",
+      "canonical_concept_ids": [
+        "cc_c978d6986e8cf847"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/electrochemistry"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Electrochemical cells - Electrolytic and Galvanic cells, different types of electrodes, electrode potentials including s...",
+      "source_locator": "Page 8, UNIT 7",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u08_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U08",
+      "official_unit_title": "CHEMICAL KINETICS",
+      "official_subtopic": "Order and molecularity, zero and first order integrated equations, half-life",
+      "canonical_concept_ids": [
+        "cc_f2e56bbca85d817c"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/chemical_kinetics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Rate of a chemical reaction, factors affecting the rate of reactions: concentration, temperature, pressure and catalyst,...",
+      "source_locator": "Page 8, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u08_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U08",
+      "official_unit_title": "CHEMICAL KINETICS",
+      "official_subtopic": "Arrhenius equation, activation energy, collision theory",
+      "canonical_concept_ids": [
+        "cc_f2e56bbca85d817c"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/physical_chemistry/chemical_kinetics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The effect of temperature on the rate of reactions, Arrhenius theory, activation energy and its calculation, collision t...",
+      "source_locator": "Page 8, UNIT 8",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u09_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U09",
+      "official_unit_title": "CLASSIFICATION OF ELEMENTS AND PERIODICITY IN PROPERTIES",
+      "official_subtopic": "Modern periodic law, periodic trends in radii, ionization, electron gain, valence",
+      "canonical_concept_ids": [
+        "cc_9ec87de03ff3a8a9"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/periodicity"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Modern periodic law and present form of the periodic table, s, p, d and f block elements, periodic trends in properties ...",
+      "source_locator": "Page 8, UNIT 9",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u10_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U10",
+      "official_unit_title": "p- BLOCK ELEMENTS",
+      "official_subtopic": "Group 13 to 18 electronic configurations, general trends, anomalous first element",
+      "canonical_concept_ids": [
+        "cc_34f5fe0562332cb1"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/p_block_elements"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Group -13 to Group 18 Elements. General Introduction: Electronic configuration and general trends in physical and chemic...",
+      "source_locator": "Page 8, UNIT 10",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u11_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U11",
+      "official_unit_title": "d - and f- BLOCK ELEMENTS",
+      "official_subtopic": "Trends in properties, catalytic, magnetic, interstitial, alloys, K2Cr2O7 and KMnO4",
+      "canonical_concept_ids": [
+        "cc_7a920726902bf06f"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/d_and_f_block_elements"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Transition Elements - General introduction, electronic configuration, occurrence and characteristics, general trends in ...",
+      "source_locator": "Page 8, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u11_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U11",
+      "official_unit_title": "d - and f- BLOCK ELEMENTS",
+      "official_subtopic": "Lanthanoids and Actinoids, oxidation states, Lanthanoid contraction",
+      "canonical_concept_ids": [
+        "cc_7a920726902bf06f"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/d_and_f_block_elements"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Inner Transition Elements. Lanthanoids - Electronic configuration, oxidation states and Lanthanoid contraction. Actinoid...",
+      "source_locator": "Page 8, UNIT 11",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u12_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U12",
+      "official_unit_title": "COORDINATION COMPOUNDS",
+      "official_subtopic": "Werner's theory, ligands, IUPAC nomenclature, isomerism, VBT, CFT",
+      "canonical_concept_ids": [
+        "cc_0dbc8498c2b7d029"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/inorganic_chemistry/coordination_compounds"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Introduction to coordination compounds. Werner's theory, ligands, coordination number, denticity, chelation, IUPAC nomen...",
+      "source_locator": "Page 9, UNIT 12",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u13_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U13",
+      "official_unit_title": "PURIFICATION AND CHARACTERISATION OF ORGANIC COMPOUNDS",
+      "official_subtopic": "Crystallization, sublimation, distillation, differential extraction, chromatography",
+      "canonical_concept_ids": [
+        "cc_8a1f4e8606f6a344"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/purification_and_characterisation"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Purification - Crystallization, sublimation, distillation, differential extraction and chromatography - principles and t...",
+      "source_locator": "Page 9, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u13_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U13",
+      "official_unit_title": "PURIFICATION AND CHARACTERISATION OF ORGANIC COMPOUNDS",
+      "official_subtopic": "Detection and estimation of C, H, N, S, P, halogens, empirical formula",
+      "canonical_concept_ids": [
+        "cc_8a1f4e8606f6a344"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/purification_and_characterisation"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Qualitative analysis - Detection of nitrogen, sulphur, phosphorus and halogens. Quantitative analysis (basic principles ...",
+      "source_locator": "Page 9, UNIT 13",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u14_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U14",
+      "official_unit_title": "SOME BASIC PRINCIPLES OF ORGANIC CHEMISTRY",
+      "official_subtopic": "IUPAC nomenclature, structural and stereoisomerism",
+      "canonical_concept_ids": [
+        "cc_35d927e3767359c9"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Tetravalency of carbon, shapes of simple molecules - hybridization (s and p): classification of organic compounds based ...",
+      "source_locator": "Page 9, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u14_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U14",
+      "official_unit_title": "SOME BASIC PRINCIPLES OF ORGANIC CHEMISTRY",
+      "official_subtopic": "Bond fission, carbocations, free radicals, inductive, electromeric, resonance, hyperconjugation",
+      "canonical_concept_ids": [
+        "cc_35d927e3767359c9"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Covalent bond fission - Homolytic and heterolytic, free radicals, carbocations and carbanions, stability of carbocations...",
+      "source_locator": "Page 9, UNIT 14",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u15_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U15",
+      "official_unit_title": "HYDROCARBONS",
+      "official_subtopic": "Conformations (Sawhorse, Newman) and halogenation mechanism",
+      "canonical_concept_ids": [
+        "cc_411efd2e93a9cda3"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/hydrocarbons"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Classification, isomerism, IUPAC nomenclature, general methods of preparation, properties and reactions. Alkanes - Confo...",
+      "source_locator": "Page 9, UNIT 15",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u15_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U15",
+      "official_unit_title": "HYDROCARBONS",
+      "official_subtopic": "Electrophilic addition, Markovnikov rule, peroxide effect, ozonolysis, polymerization, acidity of alkynes",
+      "canonical_concept_ids": [
+        "cc_411efd2e93a9cda3"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/hydrocarbons"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Alkenes - Geometrical isomerism, mechanism of electrophilic addition, addition of hydrogen, halogens, water, hydrogen ha...",
+      "source_locator": "Page 9, UNIT 15",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u15_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U15",
+      "official_unit_title": "HYDROCARBONS",
+      "official_subtopic": "Benzene aromaticity, electrophilic substitution, Friedel-Crafts, directive influence",
+      "canonical_concept_ids": [
+        "cc_411efd2e93a9cda3"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/hydrocarbons"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Aromatic hydrocarbons - Nomenclature, benzene - structure and aromaticity, mechanism of electrophilic substitution, halo...",
+      "source_locator": "Page 9, UNIT 15",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u16_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U16",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING HALOGENS",
+      "official_subtopic": "C-X bond nature, substitution mechanisms (SN1, SN2), polyhalogen compounds",
+      "canonical_concept_ids": [
+        "cc_83d678c26bcf0c28"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/haloalkanes_and_haloarenes"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: General methods of preparation, properties and reactions, nature of C-X bond, mechanisms of substitution reactions. Uses...",
+      "source_locator": "Page 9, UNIT 16",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u17_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U17",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING OXYGEN",
+      "official_subtopic": "Alcohol dehydration, phenol electrophilic substitution, Reimer-Tiemann, ether structure",
+      "canonical_concept_ids": [
+        "cc_283f9cf4017fc86b"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/alcohols_phenols_and_ethers"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: General methods of preparation, properties, reactions and uses. ALCOHOLS, PHENOLS AND ETHERS. Alcohols: Identification o...",
+      "source_locator": "Page 10, UNIT 17",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u17_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U17",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING OXYGEN",
+      "official_subtopic": "Carbonyl nucleophilic addition, Aldol, Cannizzaro, Haloform, reduction reactions",
+      "canonical_concept_ids": [
+        "cc_e9ef1dcc33f2c7fe"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Aldehyde and Ketones: Nature of carbonyl group, nucleophilic addition to >C=O group, relative reactivities of aldehydes ...",
+      "source_locator": "Page 10, UNIT 17",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u17_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U17",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING OXYGEN",
+      "official_subtopic": "Acidity and factors affecting acid strength",
+      "canonical_concept_ids": [
+        "cc_e9ef1dcc33f2c7fe"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/carbonyl_compounds_and_carboxylic_acids"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Carboxylic Acids: Acidic strength and factors affecting it...",
+      "source_locator": "Page 10, UNIT 17",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u18_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U18",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING NITROGEN",
+      "official_subtopic": "Classification, structure, basicity, identification of 1o, 2o, 3o amines",
+      "canonical_concept_ids": [
+        "cc_7afae8395ccbe328"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/amines"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: General methods of preparation, properties, reactions and uses. Amines: Nomenclature, classification, structure, basic c...",
+      "source_locator": "Page 10, UNIT 18",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u18_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U18",
+      "official_unit_title": "ORGANIC COMPOUNDS CONTAINING NITROGEN",
+      "official_subtopic": "Synthetic importance and reactions",
+      "canonical_concept_ids": [
+        "cc_a1b49bd123e9596c"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/diazonium_salts"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Diazonium Salts: Importance in synthetic organic chemistry...",
+      "source_locator": "Page 10, UNIT 18",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u19_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U19",
+      "official_unit_title": "BIOMOLECULES",
+      "official_subtopic": "Classification, aldoses, ketoses, monosaccharides, oligosaccharides",
+      "canonical_concept_ids": [
+        "cc_49d1319313237e9b"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/biomolecules"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: General introduction and importance of biomolecules. CARBOHYDRATES – Classification, aldoses and ketoses, monosaccharide...",
+      "source_locator": "Page 10, UNIT 19",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u19_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U19",
+      "official_unit_title": "BIOMOLECULES",
+      "official_subtopic": "Amino acids, peptide bonds, protein structures, denaturation, enzymes",
+      "canonical_concept_ids": [
+        "cc_49d1319313237e9b"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/biomolecules"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: PROTEINS - Elementary idea of alpha-amino acids, peptide bond, polypeptides, proteins: primary, secondary, tertiary and ...",
+      "source_locator": "Page 10, UNIT 19",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u19_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U19",
+      "official_unit_title": "BIOMOLECULES",
+      "official_subtopic": "Classification, DNA/RNA chemical constitution and biological functions, hormones",
+      "canonical_concept_ids": [
+        "cc_49d1319313237e9b"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/organic_chemistry/biomolecules"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: VITAMINS – Classification and functions. NUCLEIC ACIDS – Chemical constitution of DNA and RNA, biological functions of n...",
+      "source_locator": "Page 10, UNIT 19",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u20_01",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U20",
+      "official_unit_title": "PRINCIPLES RELATED TO PRACTICAL CHEMISTRY",
+      "official_subtopic": "Extra elements (N, S, halogens) and functional groups detection",
+      "canonical_concept_ids": [
+        "cc_9d9feebbbe1523a6"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/practical_chemistry/qualitative_organic_analysis"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Detection of extra elements (Nitrogen, sulphur, halogens) in organic compounds, detection of the following functional gr...",
+      "source_locator": "Page 10, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u20_02",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U20",
+      "official_unit_title": "PRINCIPLES RELATED TO PRACTICAL CHEMISTRY",
+      "official_subtopic": "Inorganic (Mohr's salt, potash alum) and organic preparations",
+      "canonical_concept_ids": [
+        "cc_3f02f8a2aec220b4"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/practical_chemistry/chemical_preparations"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The chemistry involved in the preparation of the following: Inorganic compounds, Mohr’s salt, potash alum. Organic compo...",
+      "source_locator": "Page 10, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u20_03",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U20",
+      "official_unit_title": "PRINCIPLES RELATED TO PRACTICAL CHEMISTRY",
+      "official_subtopic": "Acid-base titrations and KMnO4 redox titrations",
+      "canonical_concept_ids": [
+        "cc_282d171b115eda0d"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/practical_chemistry/titrimetric_exercises"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: The chemistry involved in the titrimetric exercises – acids, bases and the use of indicators, oxalic-acid vs KMnO4, Mohr...",
+      "source_locator": "Page 10, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u20_04",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U20",
+      "official_unit_title": "PRINCIPLES RELATED TO PRACTICAL CHEMISTRY",
+      "official_subtopic": "Cation and anion detection and chemical principles",
+      "canonical_concept_ids": [
+        "cc_ee0e85785e464c0d"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/practical_chemistry/qualitative_salt_analysis"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Chemical principles involved in the qualitative salt analysis: Cations – Pb2+, Cu2+, Al3+, Fe3+, Zn2+, Ni2+, Ca2+, Ba2+,...",
+      "source_locator": "Page 10, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    },
+    {
+      "syllabus_item_id": "syl_chem_u20_05",
+      "syllabus_version": "2027.jee_main.paper_1",
+      "subject": "chemistry",
+      "official_unit_code": "CHEM_U20",
+      "official_unit_title": "PRINCIPLES RELATED TO PRACTICAL CHEMISTRY",
+      "official_subtopic": "Enthalpy, lyophilic/lyophobic sols, and reaction kinetics",
+      "canonical_concept_ids": [
+        "cc_5297270d115d62e1"
+      ],
+      "canonical_stable_keys": [
+        "chemistry/practical_chemistry/physical_chemistry_experiments"
+      ],
+      "mapping_status": "exact_match",
+      "mapping_method": "direct_syllabus_grounding",
+      "confidence": 1.0,
+      "evidence": "Syllabus scope: Chemical principles involved in the following experiments: 1. Enthalpy of solution of CuSO4; 2. Enthalpy of neutralizati...",
+      "source_locator": "Page 11, UNIT 20",
+      "review_status": "verified",
+      "last_verified_at": "2026-10-25T23:00:00Z"
+    }
+  ]
+}

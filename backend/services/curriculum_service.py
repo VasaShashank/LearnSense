@@ -38,7 +38,7 @@ from curriculum.graph import (
     prerequisite_subgraph,
     topological_order,
 )
-from curriculum.ids import DEFAULT_CURRICULUM_ID
+from curriculum.ids import DEFAULT_CURRICULUM_ID, slugify
 from curriculum.mapping import (
     ContentMapper,
     ContentMappingResult,
@@ -48,7 +48,7 @@ from curriculum.mapping import (
     passages_from_learning_context,
     passages_from_structured_document,
 )
-from curriculum.models import ClassLevel, CurriculumGraph, Subject
+from curriculum.models import ClassLevel, CurriculumGraph, Subject, utc_now_iso
 from curriculum.provenance import ProvenanceLedger
 from curriculum.quality import build_structural_quality_report, summarize_for_teacher
 from curriculum.repository import CurriculumRepository
@@ -560,6 +560,235 @@ class CurriculumService:
         from curriculum.seed import load_spec
 
         return self.seed_from_spec(load_spec(Path(path)), reviewer_id=reviewer_id)
+
+    # ------------------------------------------------------------- chapters
+    def list_chapters(
+        self,
+        subject: Optional[str] = None,
+        class_level: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """List all curriculum chapters, aggregated from graph concepts and metadata."""
+        graph = self.get_graph()
+        meta_chapters = graph.metadata.get("chapters", {})
+        chapters_map: Dict[str, Dict[str, Any]] = {}
+
+        # First collect known chapters from metadata
+        for ch_id, ch_data in meta_chapters.items():
+            chapters_map[ch_id] = {
+                "chapter_id": ch_id,
+                "name": ch_data.get("name") or ch_id.replace("ch_", "").replace("_", " ").title(),
+                "subject": ch_data.get("subject", ""),
+                "class_levels": list(ch_data.get("class_levels") or []),
+                "description": ch_data.get("description", ""),
+                "concept_ids": [],
+                "concept_count": 0,
+            }
+
+        # Aggregate concepts into chapters
+        for concept in graph.concepts.values():
+            if concept.status.value == "deprecated":
+                continue
+            ch_id = concept.chapter_id or f"ch_{slugify(concept.topic_path[-1] if concept.topic_path else 'general')}"
+            if ch_id not in chapters_map:
+                ch_name = concept.topic_path[-1] if concept.topic_path else ch_id.replace("ch_", "").replace("_", " ").title()
+                subj_str = concept.subject.value if isinstance(concept.subject, Subject) else str(concept.subject)
+                chapters_map[ch_id] = {
+                    "chapter_id": ch_id,
+                    "name": ch_name,
+                    "subject": subj_str,
+                    "class_levels": [lvl.value if hasattr(lvl, "value") else str(lvl) for lvl in concept.class_levels],
+                    "description": f"Chapter covering {ch_name}",
+                    "concept_ids": [],
+                    "concept_count": 0,
+                }
+            entry = chapters_map[ch_id]
+            entry["concept_ids"].append(concept.concept_id)
+            entry["concept_count"] += 1
+            for lvl in concept.class_levels:
+                lvl_str = lvl.value if hasattr(lvl, "value") else str(lvl)
+                if lvl_str not in entry["class_levels"]:
+                    entry["class_levels"].append(lvl_str)
+            if not entry["subject"]:
+                entry["subject"] = concept.subject.value if isinstance(concept.subject, Subject) else str(concept.subject)
+
+        result = list(chapters_map.values())
+        if subject:
+            norm_subj = Subject.coerce(subject).value
+            result = [ch for ch in result if ch["subject"] == norm_subj]
+        if class_level:
+            result = [ch for ch in result if class_level in ch["class_levels"]]
+
+        result.sort(key=lambda ch: (ch["subject"], ch["name"]))
+        return result
+
+    def create_chapter(
+        self,
+        chapter_id: str,
+        name: str,
+        subject: str,
+        class_levels: Optional[List[str]] = None,
+        description: str = "",
+        reviewer_id: str = "teacher",
+    ) -> Dict[str, Any]:
+        """Create or register a chapter in curriculum metadata."""
+        graph = self.get_graph()
+        if not chapter_id or not name:
+            raise ValueError("chapter_id and name are required")
+        subj = Subject.coerce(subject).value
+        meta_chapters = graph.metadata.setdefault("chapters", {})
+        if chapter_id in meta_chapters:
+            raise ValueError(f"Chapter '{chapter_id}' already exists")
+
+        chapter_record = {
+            "chapter_id": chapter_id,
+            "name": name,
+            "subject": subj,
+            "class_levels": list(class_levels or []),
+            "description": description,
+            "created_by": reviewer_id,
+            "created_at": utc_now_iso(),
+        }
+        meta_chapters[chapter_id] = chapter_record
+        self._persist()
+        return chapter_record
+
+    def update_chapter(
+        self,
+        chapter_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        reviewer_id: str = "teacher",
+    ) -> Dict[str, Any]:
+        """Update chapter metadata."""
+        graph = self.get_graph()
+        meta_chapters = graph.metadata.setdefault("chapters", {})
+        if chapter_id not in meta_chapters:
+            # Check if it exists among concepts
+            known_ids = {c.chapter_id for c in graph.concepts.values() if c.chapter_id}
+            if chapter_id not in known_ids:
+                raise CurriculumNotFoundError(f"Chapter '{chapter_id}' not found")
+            meta_chapters[chapter_id] = {
+                "chapter_id": chapter_id,
+                "name": chapter_id.replace("ch_", "").replace("_", " ").title(),
+                "subject": "",
+                "class_levels": [],
+                "description": "",
+            }
+
+        rec = meta_chapters[chapter_id]
+        if name:
+            rec["name"] = name
+        if description is not None:
+            rec["description"] = description
+        rec["updated_by"] = reviewer_id
+        rec["updated_at"] = utc_now_iso()
+        self._persist()
+        return rec
+
+    def reassign_concept_chapter(
+        self,
+        concept_id: str,
+        chapter_id: str,
+        reviewer_id: str = "teacher",
+        note: str = "",
+    ) -> Dict[str, Any]:
+        """Reassign a concept to a different chapter with subject consistency check."""
+        graph = self.get_graph()
+        concept = graph.get_concept(concept_id)
+        if concept is None:
+            raise CurriculumNotFoundError(f"Concept '{concept_id}' not found")
+        if not chapter_id:
+            raise ValueError("chapter_id cannot be empty")
+
+        meta_chapters = graph.metadata.get("chapters", {})
+        if chapter_id in meta_chapters:
+            ch_subj = meta_chapters[chapter_id].get("subject")
+            if ch_subj and ch_subj != concept.subject.value:
+                raise ValueError(
+                    f"Subject mismatch: concept '{concept.name}' is in '{concept.subject.value}' "
+                    f"but chapter '{chapter_id}' belongs to '{ch_subj}'"
+                )
+
+        old_chapter = concept.chapter_id
+        concept.chapter_id = chapter_id
+        concept.audit.touch(reviewer_id)
+        if note:
+            concept.metadata.setdefault("review_notes", []).append({
+                "action": "reassign_chapter",
+                "old_chapter": old_chapter,
+                "new_chapter": chapter_id,
+                "reviewer_id": reviewer_id,
+                "note": note,
+                "timestamp": utc_now_iso(),
+            })
+
+        self._persist()
+        return self._concept_payload(concept)
+
+    # ---------------------------------------------------- syllabus mapping
+    def list_syllabus_items(
+        self,
+        subject: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """List official JEE Main 2027 syllabus items and their canonical crosswalk mappings."""
+        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        if not crosswalk_path.exists():
+            return []
+        import json
+        with open(crosswalk_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        mappings = data.get("mappings", [])
+        if subject:
+            norm_subj = Subject.coerce(subject).value
+            mappings = [m for m in mappings if m.get("subject") == norm_subj]
+        if status:
+            mappings = [m for m in mappings if m.get("mapping_status") == status]
+        return mappings
+
+    def syllabus_coverage_summary(self) -> Dict[str, Any]:
+        """Summary metrics of JEE Main 2027 syllabus coverage."""
+        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        if not crosswalk_path.exists():
+            return {"has_crosswalk": False}
+        import json
+        with open(crosswalk_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {
+            "has_crosswalk": True,
+            "version": data.get("crosswalk_version"),
+            "authoritative_source": data.get("authoritative_source"),
+            "summary": data.get("summary", {}),
+        }
+
+    def review_syllabus_mapping(
+        self,
+        syllabus_item_id: str,
+        status: str,
+        canonical_concept_ids: List[str],
+        reviewer_id: str = "teacher",
+        review_notes: str = "",
+    ) -> Dict[str, Any]:
+        """Teacher review decision on a syllabus mapping."""
+        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        if not crosswalk_path.exists():
+            raise CurriculumNotFoundError("Crosswalk file not found")
+        import json
+        with open(crosswalk_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        item = next((m for m in data.get("mappings", []) if m["syllabus_item_id"] == syllabus_item_id), None)
+        if item is None:
+            raise CurriculumNotFoundError(f"Syllabus item '{syllabus_item_id}' not found in crosswalk")
+
+        item["mapping_status"] = status
+        item["canonical_concept_ids"] = list(canonical_concept_ids)
+        item["reviewer"] = reviewer_id
+        item["review_notes"] = review_notes
+        item["last_verified_at"] = utc_now_iso()
+
+        with open(crosswalk_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return item
 
     # ------------------------------------------------------------------ bridging
     def learning_context(self) -> Any:

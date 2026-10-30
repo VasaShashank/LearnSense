@@ -87,7 +87,7 @@ def test_scenario_1_successful_initialization(
     assert adapter.curriculum_id == "jee_class_11_12"
     assert adapter.syllabus_version == "2026.jee.v1"
     assert adapter.fingerprint == graph.content_fingerprint()
-    assert len(adapter.concept_ids) == 62
+    assert len(adapter.concept_ids) == len(graph.concepts)
 
     # Validate duck-typing contract against Person 3 requirements
     validate_adapter_contract(adapter)
@@ -202,19 +202,20 @@ def test_scenario_5_successful_mastery_translation_and_persistence(
         for alias in concept.aliases
         if alias.startswith("PHY_") or alias.startswith("CHE_") or alias.startswith("MAT_")
     }
-    assert len(sim_profile) == 62
+    expected_count = len(graph.concepts)
+    assert len(sim_profile) == expected_count
 
     learner_id = "learner_prod_001"
     result = service.process_learner_mastery_update(learner_id, sim_profile)
 
     assert result.is_complete is True
     assert result.coverage_rate == 1.0
-    assert len(result.canonical_mastery) == 62
+    assert len(result.canonical_mastery) == expected_count
 
     # Verify persisted state on disk
     persisted = state_repo.load_state(learner_id)
     assert persisted is not None
-    assert len(persisted.concept_states) == 62
+    assert len(persisted.concept_states) == expected_count
     for canonical_id in result.canonical_mastery:
         assert canonical_id in persisted.concept_states
         assert persisted.concept_states[canonical_id].mastery_probability == 0.78

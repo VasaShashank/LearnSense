@@ -31,3 +31,4 @@ storage/classes/
 storage/interventions/
 storage/institutions/
 tests/tmp_knowledge/
+storage/curriculum/

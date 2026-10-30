@@ -53,6 +53,8 @@ from curriculum.graph import (
     IssueSeverity,
     CurriculumGraphValidator,
     PrerequisiteCycleError,
+    derive_topological_depth,
+    topological_order,
 )
 from curriculum.normalization import normalize_formula, normalize_term, normalize_text
 from curriculum.learner_adapter import (
@@ -92,6 +94,8 @@ __all__ = [
     "CurriculumGraphValidator",
     "DEFAULT_CURRICULUM_ID",
     "DEFAULT_SYLLABUS_VERSION",
+    "derive_topological_depth",
+    "topological_order",
     "GraphIssue",
     "GraphValidationReport",
     "IdReference",

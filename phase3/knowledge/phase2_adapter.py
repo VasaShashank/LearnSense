@@ -89,6 +89,7 @@ class LearningContext(BaseModel):
     evidence: Dict[str, Evidence] = Field(default_factory=dict)
     prerequisites: List[PrerequisiteLink] = Field(default_factory=list)
     trusted_relationships: List[Relationship] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def concept(self, concept_id: str) -> Optional[ConceptView]:
         return self.concepts.get(concept_id)

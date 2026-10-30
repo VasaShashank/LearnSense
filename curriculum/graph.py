@@ -50,6 +50,15 @@ __all__ = [
     "IssueSeverity",
     "PrerequisiteCycleError",
     "SCC",
+    "cycle_safe_topological_order",
+    "dependent_closure",
+    "derive_topological_depth",
+    "prerequisite_adjacency",
+    "prerequisite_closure",
+    "prerequisite_subgraph",
+    "reverse_prerequisite_adjacency",
+    "topological_order",
+    "would_create_cycle",
 ]
 
 
@@ -689,6 +698,30 @@ def topological_order(
         cycles = CurriculumGraphValidator().prerequisite_cycles(graph)
         raise PrerequisiteCycleError(cycles or [remaining])
     return order
+
+
+def derive_topological_depth(
+    graph: CurriculumGraph, concept_ids: Optional[Iterable[str]] = None
+) -> Dict[str, int]:
+    """
+    Derive the topological depth for each concept in the reviewed prerequisite DAG.
+
+    Semantics:
+    * Root concepts (no reviewed prerequisites) have depth 0.
+    * A node's depth is 1 + max(depth of its direct reviewed prerequisites).
+    * Supports multiple parents (longest prerequisite path).
+    * Raises PrerequisiteCycleError if any prerequisite cycles exist.
+    """
+    order = topological_order(graph, concept_ids)
+    rev_adj = reverse_prerequisite_adjacency(graph, concept_ids)
+    depths: Dict[str, int] = {}
+    for node in order:
+        prereqs = rev_adj.get(node, [])
+        if not prereqs:
+            depths[node] = 0
+        else:
+            depths[node] = 1 + max(depths[p] for p in prereqs)
+    return depths
 
 
 def cycle_safe_topological_order(

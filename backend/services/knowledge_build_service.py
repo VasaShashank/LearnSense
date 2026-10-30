@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from backend.services.curriculum_service import CurriculumService
 from phase3.errors import (
     IngestionError,
     KnowledgeBuildError,
@@ -53,10 +54,12 @@ class KnowledgeBuildService:
         storage: Optional[DocumentStorage] = None,
         db: Optional[DatabaseManager] = None,
         context_repo: Optional[LearningContextRepository] = None,
+        curriculum_service: Optional[CurriculumService] = None,
     ) -> None:
         self.storage = storage or DocumentStorage()
         self.db = db or DatabaseManager()
         self.context_repo = context_repo or LearningContextRepository()
+        self.curriculum_service = curriculum_service
 
     # ------------------------------------------------------------------
     # Public API
@@ -94,7 +97,7 @@ class KnowledgeBuildService:
 
         # -- Step 1: Phase 5 input validation -------------------------
         logger.info("Step 1: Validating input...")
-        validation = self._validate(file_bytes, filename)
+        self._validate(file_bytes, filename)
 
         # -- Step 2/3: format normalisation + Phase 1 ingestion ------
         logger.info("Step 2: Running ingestion pipeline...")
@@ -171,6 +174,42 @@ class KnowledgeBuildService:
         logger.info("Step 5: Validating groundedness...")
         self._assert_grounded(context, structured_doc)
 
+        # -- Step 5.5: Canonical curriculum mapping -------------------
+        logger.info("Step 5.5: Mapping extracted learning context onto canonical curriculum...")
+        try:
+            curr_svc = self.curriculum_service or CurriculumService(
+                context_repo=self.context_repo,
+                doc_storage=self.storage,
+            )
+            curr_svc.context_repo = self.context_repo
+            curr_svc.doc_storage = self.storage
+            # Ensure context is saved so map_learning_context can load it
+            self.context_repo.save_context(context)
+            if curr_svc.has_curriculum:
+                mapping_result = curr_svc.map_learning_context(document_id, persist=True)
+                canonical_mappings = []
+                for candidate in mapping_result.candidates:
+                    concept_id = candidate.predicted_concept_id
+                    if concept_id:
+                        canonical_mappings.append({
+                            "candidate_id": candidate.item_id,
+                            "label": candidate.label,
+                            "canonical_concept_id": concept_id,
+                            "status": candidate.status.value if hasattr(candidate.status, "value") else str(candidate.status),
+                            "confidence": candidate.matches[0].match_strength if candidate.matches else 0.0,
+                        })
+                context.metadata["canonical_mappings"] = canonical_mappings
+                context.metadata["curriculum_id"] = curr_svc.curriculum_id
+                context.metadata["curriculum_version"] = curr_svc.get_graph().syllabus_version
+                logger.info(
+                    "Canonical mapping complete for %s: %d candidates mapped (%d accepted)",
+                    document_id,
+                    len(mapping_result.candidates),
+                    mapping_result.summary.get("accepted", 0),
+                )
+        except Exception as exc:
+            logger.warning("Canonical curriculum mapping bypassed: %s", exc)
+
         # -- Step 6: persist -----------------------------------------
         logger.info("Step 6: Persisting LearningContext...")
         self.context_repo.save_context(context)
@@ -191,6 +230,7 @@ class KnowledgeBuildService:
             "formula_count": len(context.formulas),
             "prerequisite_count": len(context.prerequisites),
             "topic_count": len(context.topics),
+            "canonical_mapping_count": len(context.metadata.get("canonical_mappings") or []),
             "knowledge_document_id": context.knowledge_document_id,
             "warnings": [w.code for w in structured_doc.warnings],
             "build_seconds": round(time.time() - started, 2),

@@ -97,6 +97,35 @@ class ReadinessEvaluationRequest(BaseModel):
     threshold: float = Field(default=0.50, ge=0.0, le=1.0)
 
 
+class CreateChapterRequest(BaseModel):
+    chapter_id: str = Field(..., min_length=1)
+    name: str = Field(..., min_length=1)
+    subject: str = Field(..., min_length=1)
+    class_levels: List[str] = Field(default_factory=list)
+    description: str = ""
+    reviewer_id: str = Field(default="teacher", min_length=1)
+
+
+class UpdateChapterRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    reviewer_id: str = Field(default="teacher", min_length=1)
+
+
+class ReassignChapterRequest(BaseModel):
+    chapter_id: str = Field(..., min_length=1)
+    reviewer_id: str = Field(default="teacher", min_length=1)
+    note: str = ""
+
+
+class ReviewSyllabusMappingRequest(BaseModel):
+    syllabus_item_id: str = Field(..., min_length=1)
+    status: str = Field(..., min_length=1)
+    canonical_concept_ids: List[str] = Field(default_factory=list)
+    reviewer_id: str = Field(default="teacher", min_length=1)
+    review_notes: str = ""
+
+
 # ------------------------------------------------------------------- dependencies
 
 
@@ -450,4 +479,115 @@ def get_curriculum_compatibility(
 ) -> Dict[str, Any]:
     """Exposes Person 2 x Person 3 compatibility status and release gate metrics."""
     return service.get_compatibility_status()
+
+
+# --------------------------------------------------------------------- chapters
+
+
+@router.get("/chapters")
+def list_chapters(
+    subject: Optional[str] = None,
+    class_level: Optional[str] = None,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """List curriculum chapters with concept counts and metadata."""
+    chapters = service.list_chapters(subject=subject, class_level=class_level)
+    return {"count": len(chapters), "chapters": chapters}
+
+
+@router.post("/chapters")
+def create_chapter(
+    payload: CreateChapterRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Create or register chapter metadata."""
+    try:
+        return service.create_chapter(
+            payload.chapter_id,
+            payload.name,
+            payload.subject,
+            class_levels=payload.class_levels,
+            description=payload.description,
+            reviewer_id=payload.reviewer_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.put("/chapters/{chapter_id}")
+def update_chapter(
+    chapter_id: str,
+    payload: UpdateChapterRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Update chapter metadata."""
+    try:
+        return service.update_chapter(
+            chapter_id,
+            name=payload.name,
+            description=payload.description,
+            reviewer_id=payload.reviewer_id,
+        )
+    except CurriculumNotFoundError as exc:
+        raise _not_found(exc)
+
+
+@router.put("/concepts/{concept_id}/chapter")
+def reassign_concept_chapter(
+    concept_id: str,
+    payload: ReassignChapterRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Reassign a concept to a different chapter with consistency validation."""
+    try:
+        return service.reassign_concept_chapter(
+            concept_id,
+            payload.chapter_id,
+            reviewer_id=payload.reviewer_id,
+            note=payload.note,
+        )
+    except CurriculumNotFoundError as exc:
+        raise _not_found(exc)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+# --------------------------------------------------------------------- syllabus
+
+
+@router.get("/syllabus/items")
+def list_syllabus_items(
+    subject: Optional[str] = None,
+    mapping_status: Optional[str] = Query(default=None, alias="status"),
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """List official JEE Main 2027 syllabus items and their canonical mappings."""
+    items = service.list_syllabus_items(subject=subject, status=mapping_status)
+    return {"count": len(items), "items": items}
+
+
+@router.get("/syllabus/coverage")
+def syllabus_coverage(
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Summary metrics of JEE Main 2027 syllabus coverage."""
+    return service.syllabus_coverage_summary()
+
+
+@router.post("/syllabus/review")
+def review_syllabus_mapping(
+    payload: ReviewSyllabusMappingRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Review, update, or flag a syllabus-to-canonical mapping."""
+    try:
+        return service.review_syllabus_mapping(
+            payload.syllabus_item_id,
+            payload.status,
+            payload.canonical_concept_ids,
+            reviewer_id=payload.reviewer_id,
+            review_notes=payload.review_notes,
+        )
+    except CurriculumNotFoundError as exc:
+        raise _not_found(exc)
 

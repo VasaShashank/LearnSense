@@ -1,4 +1,19 @@
 {
+  "curriculum_id": "jee_class_11_12",
+  "syllabus_version": "2026.jee.v1",
+  "title": "Canonical JEE Main 2027 Curriculum (Physics, Chemistry, Mathematics)",
+  "metadata": {
+    "authored_by": "person2",
+    "source_framework": "Official NTA JEE (Main) - 2027 Syllabus (Paper 1 PCM)",
+    "source_document": "20261024683680768.pdf",
+    "source_sha256": "823EC5AFAF30F19D4F0DC375159D8B843B944633E4EDDA58C9D910C145C32CCD",
+    "official_url": "https://jeemain.nta.nic.in/document/syllabus-2027/",
+    "verified_at": "2026-10-25T23:00:00Z",
+    "coverage_target": "jee_main_2027_paper_1_pcm_complete",
+    "total_canonical_concepts": 89,
+    "legacy_retained_concepts_count": 3,
+    "active_jee_main_2027_concepts_count": 86
+  },
   "concepts": [
     {
       "aliases": [
@@ -886,7 +901,9 @@
       "tags": [
         "chemistry",
         "physical_chemistry",
-        "class_11"
+        "class_11",
+        "legacy_retained",
+        "excluded_from_jee_main_2027"
       ],
       "topic_path": [
         "chemistry",
@@ -1153,7 +1170,9 @@
       "tags": [
         "chemistry",
         "inorganic_chemistry",
-        "class_12"
+        "class_12",
+        "legacy_retained",
+        "excluded_from_jee_main_2027"
       ],
       "topic_path": [
         "chemistry",
@@ -1186,7 +1205,9 @@
       "tags": [
         "chemistry",
         "inorganic_chemistry",
-        "class_11"
+        "class_11",
+        "legacy_retained",
+        "excluded_from_jee_main_2027"
       ],
       "topic_path": [
         "chemistry",
@@ -2050,17 +2071,977 @@
         "mathematics",
         "Coordinate Geometry"
       ]
+    },
+    {
+      "stable_key": "mathematics/algebra/permutations_and_combinations",
+      "name": "Permutations and Combinations",
+      "subject": "mathematics",
+      "description": "Fundamental counting principle, permutations and combinations, P(n,r) and C(n,r), and simple applications.",
+      "chapter_id": "ch_permutations_and_combinations",
+      "topic_path": [
+        "mathematics",
+        "Algebra"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "mathematics",
+        "algebra",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "P&C",
+        "P and C",
+        "MAT_PNC",
+        "permutations",
+        "combinations"
+      ],
+      "prerequisites": [
+        "mathematics/algebra/sets_relations_and_functions"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 1, UNIT 4",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 4: Permutations and Combinations"
+        }
+      ]
+    },
+    {
+      "stable_key": "mathematics/coordinate_geometry/straight_lines",
+      "name": "Straight Lines and Triangle Centres",
+      "subject": "mathematics",
+      "description": "Forms of lines, intersection, concurrence, distance to line, centroid, orthocentre and circumcentre of a triangle.",
+      "chapter_id": "ch_straight_lines",
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Straight Lines",
+        "MAT_STL",
+        "line equations",
+        "triangle centres"
+      ],
+      "prerequisites": [
+        "mathematics/coordinate_geometry/coordinate_geometry_conics"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 2, UNIT 10",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 10: Straight Lines"
+        }
+      ]
+    },
+    {
+      "stable_key": "mathematics/coordinate_geometry/circles",
+      "name": "Circles and Tangents",
+      "subject": "mathematics",
+      "description": "Standard and general forms of circle equations, diameter form, points of intersection of a line and a circle.",
+      "chapter_id": "ch_circles",
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Circles",
+        "MAT_CIR",
+        "circle equations"
+      ],
+      "prerequisites": [
+        "mathematics/coordinate_geometry/straight_lines"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 2, UNIT 10",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 10: Circles"
+        }
+      ]
+    },
+    {
+      "stable_key": "mathematics/coordinate_geometry/conic_sections_parabola_ellipse_hyperbola",
+      "name": "Conic Sections (Parabola, Ellipse, Hyperbola)",
+      "subject": "mathematics",
+      "description": "Sections of conics and standard equations of parabola, ellipse, and hyperbola.",
+      "chapter_id": "ch_conic_sections",
+      "topic_path": [
+        "mathematics",
+        "Coordinate Geometry"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "mathematics",
+        "coordinate_geometry",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Parabola Ellipse Hyperbola",
+        "Standard Conics",
+        "MAT_CNC"
+      ],
+      "prerequisites": [
+        "mathematics/coordinate_geometry/circles"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 2, UNIT 10",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 10: Conic Sections"
+        }
+      ]
+    },
+    {
+      "stable_key": "mathematics/statistics/measures_of_dispersion",
+      "name": "Statistics and Measures of Dispersion",
+      "subject": "mathematics",
+      "description": "Calculation of mean, median, mode, standard deviation, variance, and mean deviation for grouped and ungrouped data.",
+      "chapter_id": "ch_statistics",
+      "topic_path": [
+        "mathematics",
+        "Statistics"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "mathematics",
+        "statistics",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Statistics",
+        "Measures of Dispersion",
+        "MAT_STA"
+      ],
+      "prerequisites": [
+        "mathematics/algebra/sequences_and_series"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 2, UNIT 13",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 13: Statistics"
+        }
+      ]
+    },
+    {
+      "stable_key": "mathematics/trigonometry/inverse_trigonometric_functions",
+      "name": "Inverse Trigonometric Functions",
+      "subject": "mathematics",
+      "description": "Inverse trigonometrical functions, principal values, domains, ranges, and fundamental properties.",
+      "chapter_id": "ch_inverse_trigonometric_functions",
+      "topic_path": [
+        "mathematics",
+        "Trigonometry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "mathematics",
+        "trigonometry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "ITF",
+        "Inverse Trigonometry",
+        "MAT_ITF"
+      ],
+      "prerequisites": [
+        "mathematics/trigonometry/trigonometry"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-MATH",
+          "locator": "Page 2, UNIT 14",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Mathematics Unit 14: Inverse Trigonometry"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/units_and_measurements/dimensional_analysis_and_errors",
+      "name": "Units, Dimensions and Errors",
+      "subject": "physics",
+      "description": "SI units, least count, significant figures, measurement errors, and dimensional analysis applications.",
+      "chapter_id": "ch_units_and_measurements",
+      "topic_path": [
+        "physics",
+        "Measurement"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "physics",
+        "measurement",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Dimensions and Errors",
+        "Measurement Errors",
+        "PHY_DIM"
+      ],
+      "prerequisites": [],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 3, UNIT 1",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 1: Units and Measurements"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/electromagnetism/electromagnetic_waves",
+      "name": "Electromagnetic Waves",
+      "subject": "physics",
+      "description": "Displacement current, electromagnetic wave characteristics, transverse nature, and electromagnetic spectrum.",
+      "chapter_id": "ch_electromagnetic_waves",
+      "topic_path": [
+        "physics",
+        "Electromagnetism"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "electromagnetism",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "EM Waves",
+        "Displacement Current",
+        "PHY_EMW"
+      ],
+      "prerequisites": [
+        "physics/electromagnetism/electromagnetic_induction"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 5, UNIT 15",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 15: Electromagnetic Waves"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/optics/ray_optics_and_optical_instruments",
+      "name": "Ray Optics and Optical Instruments",
+      "subject": "physics",
+      "description": "Spherical mirrors, lenses, prism refraction, total internal reflection, microscopes, and astronomical telescopes.",
+      "chapter_id": "ch_ray_optics",
+      "topic_path": [
+        "physics",
+        "Optics"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "optics",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Geometrical Optics",
+        "Optical Instruments",
+        "PHY_ROP"
+      ],
+      "prerequisites": [
+        "physics/waves/waves"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 5, UNIT 16",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 16: Ray Optics"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/optics/wave_optics_interference_diffraction",
+      "name": "Wave Optics and Wave Phenomena",
+      "subject": "physics",
+      "description": "Huygens' principle, Young's double-slit interference, single-slit diffraction, Brewster's law, and polarization.",
+      "chapter_id": "ch_wave_optics",
+      "topic_path": [
+        "physics",
+        "Optics"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "optics",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Physical Optics",
+        "Interference and Diffraction",
+        "PHY_WOP"
+      ],
+      "prerequisites": [
+        "physics/optics/ray_optics_and_optical_instruments"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 5, UNIT 16",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 16: Wave Optics"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/modern_physics/dual_nature_of_radiation",
+      "name": "Dual Nature of Matter and Radiation",
+      "subject": "physics",
+      "description": "Photoelectric effect, Hertz and Lenard observations, Einstein equation, and de Broglie matter waves.",
+      "chapter_id": "ch_dual_nature",
+      "topic_path": [
+        "physics",
+        "Modern Physics"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "modern_physics",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Photoelectric Effect",
+        "Matter Waves",
+        "PHY_DNL"
+      ],
+      "prerequisites": [
+        "physics/electromagnetism/electromagnetic_waves"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 17",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 17: Dual Nature"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/modern_physics/atoms_and_hydrogen_spectrum",
+      "name": "Atoms and Bohr Model",
+      "subject": "physics",
+      "description": "Rutherford alpha scattering, Bohr model postulates, energy levels, and hydrogen emission spectrum.",
+      "chapter_id": "ch_atoms",
+      "topic_path": [
+        "physics",
+        "Modern Physics"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "modern_physics",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Atoms",
+        "Hydrogen Spectrum",
+        "PHY_ATM"
+      ],
+      "prerequisites": [
+        "physics/modern_physics/dual_nature_of_radiation"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 18",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 18: Atoms"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/modern_physics/nuclear_physics",
+      "name": "Nuclear Physics and Radioactivity",
+      "subject": "physics",
+      "description": "Composition and size of nucleus, mass defect, binding energy per nucleon curve, and nuclear fission and fusion.",
+      "chapter_id": "ch_nuclei",
+      "topic_path": [
+        "physics",
+        "Modern Physics"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "modern_physics",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Nuclei",
+        "Mass Defect",
+        "PHY_NUC"
+      ],
+      "prerequisites": [
+        "physics/modern_physics/atoms_and_hydrogen_spectrum"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 18",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 18: Nuclei"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/electronic_devices/logic_gates",
+      "name": "Logic Gates and Digital Circuits",
+      "subject": "physics",
+      "description": "Basic and universal logic gates (OR, AND, NOT, NAND, NOR) and digital truth tables.",
+      "chapter_id": "ch_logic_gates",
+      "topic_path": [
+        "physics",
+        "Electronic Devices"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "electronic_devices",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Logic Gates",
+        "Digital Electronics",
+        "PHY_LOG"
+      ],
+      "prerequisites": [
+        "physics/modern_physics/semiconductors"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 19",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 19: Logic Gates"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/vernier_calipers_and_screw_gauge",
+      "name": "Vernier Calipers and Screw Gauge",
+      "subject": "physics",
+      "description": "Measurements of diameter, depth, thickness of thin sheet and wire using vernier calipers and screw gauge.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Vernier Calipers",
+        "Screw Gauge",
+        "PHY_EXP_CAL"
+      ],
+      "prerequisites": [
+        "physics/units_and_measurements/dimensional_analysis_and_errors"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Vernier and Screw Gauge"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/mechanics_experiments",
+      "name": "Mechanics Experimental Skills",
+      "subject": "physics",
+      "description": "Simple pendulum energy dissipation, metre scale principle of moments, and metallic wire Young's modulus.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Pendulum Metre Scale Youngs Modulus",
+        "PHY_EXP_MEC"
+      ],
+      "prerequisites": [
+        "physics/mechanics/laws_of_motion",
+        "physics/properties_of_matter/elasticity"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Mechanics Experiments"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/fluids_and_thermal_experiments",
+      "name": "Fluids and Thermal Experimental Skills",
+      "subject": "physics",
+      "description": "Capillary rise surface tension, liquid terminal velocity viscosity, speed of sound resonance tube, specific heat.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Surface Tension Viscosity Resonance Tube",
+        "PHY_EXP_FLT"
+      ],
+      "prerequisites": [
+        "physics/properties_of_matter/fluid_mechanics",
+        "physics/thermal_physics/thermal_properties"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Fluids and Thermal Experiments"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/electrical_experiments",
+      "name": "Electrical Experimental Skills",
+      "subject": "physics",
+      "description": "Metre bridge resistivity, Ohm's law wire resistance, and galvanometer figure of merit by half deflection.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Metre Bridge Ohms Law Galvanometer",
+        "PHY_EXP_ELE"
+      ],
+      "prerequisites": [
+        "physics/electromagnetism/current_electricity"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Electrical Experiments"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/optics_experiments",
+      "name": "Optics Experimental Skills",
+      "subject": "physics",
+      "description": "Focal lengths by parallax, prism angle of deviation, and glass slab refractive index using travelling microscope.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Mirrors Lenses Prism Glass Slab",
+        "PHY_EXP_OPT"
+      ],
+      "prerequisites": [
+        "physics/optics/ray_optics_and_optical_instruments"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Optics Experiments"
+        }
+      ]
+    },
+    {
+      "stable_key": "physics/experimental_skills/semiconductor_experiments",
+      "name": "Semiconductor and Electronic Component Skills",
+      "subject": "physics",
+      "description": "p-n junction diode forward/reverse curves, Zener breakdown voltage, and passive component identification.",
+      "chapter_id": "ch_experimental_skills",
+      "topic_path": [
+        "physics",
+        "Experimental Skills"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "physics",
+        "experimental_skills",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Diode Zener Component ID",
+        "PHY_EXP_SEM"
+      ],
+      "prerequisites": [
+        "physics/modern_physics/semiconductors"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-PHYSICS",
+          "locator": "Page 6, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Physics Unit 20: Semiconductor Experiments"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/organic_chemistry/purification_and_characterisation",
+      "name": "Purification and Characterisation of Organic Compounds",
+      "subject": "chemistry",
+      "description": "Purification techniques (crystallization, distillation, chromatography) and qualitative/quantitative elemental analysis.",
+      "chapter_id": "ch_purification",
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ],
+      "class_levels": [
+        "class_11"
+      ],
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_11",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Purification and Elemental Analysis",
+        "CHE_PUR"
+      ],
+      "prerequisites": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 9, UNIT 13",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 13: Purification and Characterisation"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/organic_chemistry/diazonium_salts",
+      "name": "Diazonium Salts",
+      "subject": "chemistry",
+      "description": "Preparation, chemical properties, synthetic importance of diazonium salts in organic transformations.",
+      "chapter_id": "ch_diazonium_salts",
+      "topic_path": [
+        "chemistry",
+        "Organic Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "organic_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Diazonium Compounds",
+        "CHE_DIA"
+      ],
+      "prerequisites": [
+        "chemistry/organic_chemistry/amines"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 10, UNIT 18",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 18: Diazonium Salts"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/practical_chemistry/qualitative_organic_analysis",
+      "name": "Qualitative Organic Analysis",
+      "subject": "chemistry",
+      "description": "Detection of extra elements (N, S, halogens) and identification of functional groups in organic compounds.",
+      "chapter_id": "ch_practical_chemistry",
+      "topic_path": [
+        "chemistry",
+        "Practical Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "practical_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Functional Group Detection",
+        "Extra Elements Detection",
+        "CHE_PRC_ORG"
+      ],
+      "prerequisites": [
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 10, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 20: Qualitative Organic Analysis"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/practical_chemistry/chemical_preparations",
+      "name": "Chemical Preparations in Laboratory",
+      "subject": "chemistry",
+      "description": "Inorganic preparations of Mohr's salt and potash alum; organic preparations of acetanilide and iodoform.",
+      "chapter_id": "ch_practical_chemistry",
+      "topic_path": [
+        "chemistry",
+        "Practical Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "practical_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Mohrs Salt Potash Alum Acetanilide",
+        "CHE_PRC_PRP"
+      ],
+      "prerequisites": [
+        "chemistry/inorganic_chemistry/coordination_compounds",
+        "chemistry/organic_chemistry/organic_chemistry_basics"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 10, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 20: Chemical Preparations"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/practical_chemistry/titrimetric_exercises",
+      "name": "Titrimetric and Volumetric Analysis",
+      "subject": "chemistry",
+      "description": "Acid-base indicators, redox titrations with KMnO4 against oxalic acid and Mohr's salt.",
+      "chapter_id": "ch_practical_chemistry",
+      "topic_path": [
+        "chemistry",
+        "Practical Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "practical_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Acid Base and KMnO4 Titrations",
+        "CHE_PRC_TIT"
+      ],
+      "prerequisites": [
+        "chemistry/physical_chemistry/redox_reactions",
+        "chemistry/physical_chemistry/solutions"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 10, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 20: Titrimetric Exercises"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/practical_chemistry/qualitative_salt_analysis",
+      "name": "Qualitative Salt Analysis (Inorganic)",
+      "subject": "chemistry",
+      "description": "Systematic wet tests for cations (Pb2+, Cu2+, Al3+, Fe3+, Zn2+, Ni2+, Ca2+, Ba2+, Mg2+, NH4+) and anions (CO3 2-, S 2-, SO4 2-, NO3 -, NO2 -, Cl -, Br -, I -).",
+      "chapter_id": "ch_practical_chemistry",
+      "topic_path": [
+        "chemistry",
+        "Practical Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "practical_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Cation and Anion Analysis",
+        "Salt Analysis",
+        "CHE_PRC_SLT"
+      ],
+      "prerequisites": [
+        "chemistry/physical_chemistry/redox_reactions",
+        "chemistry/inorganic_chemistry/d_and_f_block_elements"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 10, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 20: Salt Analysis"
+        }
+      ]
+    },
+    {
+      "stable_key": "chemistry/practical_chemistry/physical_chemistry_experiments",
+      "name": "Physical Chemistry Laboratory Experiments",
+      "subject": "chemistry",
+      "description": "Enthalpy of CuSO4 solution, neutralization enthalpy, lyophilic/lyophobic sol preparation, iodide-H2O2 kinetics.",
+      "chapter_id": "ch_practical_chemistry",
+      "topic_path": [
+        "chemistry",
+        "Practical Chemistry"
+      ],
+      "class_levels": [
+        "class_12"
+      ],
+      "tags": [
+        "chemistry",
+        "practical_chemistry",
+        "class_12",
+        "jee_main_2027"
+      ],
+      "aliases": [
+        "Enthalpy Sols Reaction Kinetics",
+        "CHE_PRC_PHY"
+      ],
+      "prerequisites": [
+        "chemistry/physical_chemistry/chemical_thermodynamics",
+        "chemistry/physical_chemistry/chemical_kinetics"
+      ],
+      "source_refs": [
+        {
+          "source_id": "JEE-MAIN-2027-CHEMISTRY",
+          "locator": "Page 11, UNIT 20",
+          "kind": "OFFICIAL_SYLLABUS",
+          "title": "JEE Main 2027 Chemistry Unit 20: Physical Chemistry Experiments"
+        }
+      ]
     }
   ],
-  "curriculum_id": "jee_class_11_12",
-  "metadata": {
-    "authored_by": "person2",
-    "coverage_target": "jee_full_simulator_parity",
-    "expert_reviewed": false,
-    "review_status": "provisional_simulator_parity",
-    "source_framework": "NCERT Class 11-12 & NTA JEE Syllabus",
-    "verification_note": "Concepts and prerequisite structure match the simulator specification (concepts.csv) aligned with NCERT Class 11-12 topic taxonomy. Formal independent pedagogical expert panel review is pending."
-  },
   "relationships": [
     {
       "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
@@ -2488,8 +3469,230 @@
       "status": "accepted",
       "target_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
       "type": "prerequisite_of"
+    },
+    {
+      "source_key": "mathematics/algebra/sets_relations_and_functions",
+      "target_key": "mathematics/algebra/permutations_and_combinations",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/algebra/sets_relations_and_functions must be mastered before mathematics/algebra/permutations_and_combinations"
+    },
+    {
+      "source_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
+      "target_key": "mathematics/coordinate_geometry/straight_lines",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/coordinate_geometry/coordinate_geometry_conics must be mastered before mathematics/coordinate_geometry/straight_lines"
+    },
+    {
+      "source_key": "mathematics/coordinate_geometry/straight_lines",
+      "target_key": "mathematics/coordinate_geometry/circles",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/coordinate_geometry/straight_lines must be mastered before mathematics/coordinate_geometry/circles"
+    },
+    {
+      "source_key": "mathematics/coordinate_geometry/circles",
+      "target_key": "mathematics/coordinate_geometry/conic_sections_parabola_ellipse_hyperbola",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/coordinate_geometry/circles must be mastered before mathematics/coordinate_geometry/conic_sections_parabola_ellipse_hyperbola"
+    },
+    {
+      "source_key": "mathematics/algebra/sequences_and_series",
+      "target_key": "mathematics/statistics/measures_of_dispersion",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/algebra/sequences_and_series must be mastered before mathematics/statistics/measures_of_dispersion"
+    },
+    {
+      "source_key": "mathematics/trigonometry/trigonometry",
+      "target_key": "mathematics/trigonometry/inverse_trigonometric_functions",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: mathematics/trigonometry/trigonometry must be mastered before mathematics/trigonometry/inverse_trigonometric_functions"
+    },
+    {
+      "source_key": "physics/electromagnetism/electromagnetic_induction",
+      "target_key": "physics/electromagnetism/electromagnetic_waves",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/electromagnetism/electromagnetic_induction must be mastered before physics/electromagnetism/electromagnetic_waves"
+    },
+    {
+      "source_key": "physics/waves/waves",
+      "target_key": "physics/optics/ray_optics_and_optical_instruments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/waves/waves must be mastered before physics/optics/ray_optics_and_optical_instruments"
+    },
+    {
+      "source_key": "physics/optics/ray_optics_and_optical_instruments",
+      "target_key": "physics/optics/wave_optics_interference_diffraction",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/optics/ray_optics_and_optical_instruments must be mastered before physics/optics/wave_optics_interference_diffraction"
+    },
+    {
+      "source_key": "physics/electromagnetism/electromagnetic_waves",
+      "target_key": "physics/modern_physics/dual_nature_of_radiation",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/electromagnetism/electromagnetic_waves must be mastered before physics/modern_physics/dual_nature_of_radiation"
+    },
+    {
+      "source_key": "physics/modern_physics/dual_nature_of_radiation",
+      "target_key": "physics/modern_physics/atoms_and_hydrogen_spectrum",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/modern_physics/dual_nature_of_radiation must be mastered before physics/modern_physics/atoms_and_hydrogen_spectrum"
+    },
+    {
+      "source_key": "physics/modern_physics/atoms_and_hydrogen_spectrum",
+      "target_key": "physics/modern_physics/nuclear_physics",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/modern_physics/atoms_and_hydrogen_spectrum must be mastered before physics/modern_physics/nuclear_physics"
+    },
+    {
+      "source_key": "physics/modern_physics/semiconductors",
+      "target_key": "physics/electronic_devices/logic_gates",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/modern_physics/semiconductors must be mastered before physics/electronic_devices/logic_gates"
+    },
+    {
+      "source_key": "physics/units_and_measurements/dimensional_analysis_and_errors",
+      "target_key": "physics/experimental_skills/vernier_calipers_and_screw_gauge",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/units_and_measurements/dimensional_analysis_and_errors must be mastered before physics/experimental_skills/vernier_calipers_and_screw_gauge"
+    },
+    {
+      "source_key": "physics/mechanics/laws_of_motion",
+      "target_key": "physics/experimental_skills/mechanics_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/mechanics/laws_of_motion must be mastered before physics/experimental_skills/mechanics_experiments"
+    },
+    {
+      "source_key": "physics/properties_of_matter/elasticity",
+      "target_key": "physics/experimental_skills/mechanics_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/properties_of_matter/elasticity must be mastered before physics/experimental_skills/mechanics_experiments"
+    },
+    {
+      "source_key": "physics/properties_of_matter/fluid_mechanics",
+      "target_key": "physics/experimental_skills/fluids_and_thermal_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/properties_of_matter/fluid_mechanics must be mastered before physics/experimental_skills/fluids_and_thermal_experiments"
+    },
+    {
+      "source_key": "physics/thermal_physics/thermal_properties",
+      "target_key": "physics/experimental_skills/fluids_and_thermal_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/thermal_physics/thermal_properties must be mastered before physics/experimental_skills/fluids_and_thermal_experiments"
+    },
+    {
+      "source_key": "physics/electromagnetism/current_electricity",
+      "target_key": "physics/experimental_skills/electrical_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/electromagnetism/current_electricity must be mastered before physics/experimental_skills/electrical_experiments"
+    },
+    {
+      "source_key": "physics/optics/ray_optics_and_optical_instruments",
+      "target_key": "physics/experimental_skills/optics_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/optics/ray_optics_and_optical_instruments must be mastered before physics/experimental_skills/optics_experiments"
+    },
+    {
+      "source_key": "physics/modern_physics/semiconductors",
+      "target_key": "physics/experimental_skills/semiconductor_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: physics/modern_physics/semiconductors must be mastered before physics/experimental_skills/semiconductor_experiments"
+    },
+    {
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "target_key": "chemistry/organic_chemistry/purification_and_characterisation",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/organic_chemistry/organic_chemistry_basics must be mastered before chemistry/organic_chemistry/purification_and_characterisation"
+    },
+    {
+      "source_key": "chemistry/organic_chemistry/amines",
+      "target_key": "chemistry/organic_chemistry/diazonium_salts",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/organic_chemistry/amines must be mastered before chemistry/organic_chemistry/diazonium_salts"
+    },
+    {
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "target_key": "chemistry/practical_chemistry/qualitative_organic_analysis",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/organic_chemistry/organic_chemistry_basics must be mastered before chemistry/practical_chemistry/qualitative_organic_analysis"
+    },
+    {
+      "source_key": "chemistry/inorganic_chemistry/coordination_compounds",
+      "target_key": "chemistry/practical_chemistry/chemical_preparations",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/inorganic_chemistry/coordination_compounds must be mastered before chemistry/practical_chemistry/chemical_preparations"
+    },
+    {
+      "source_key": "chemistry/organic_chemistry/organic_chemistry_basics",
+      "target_key": "chemistry/practical_chemistry/chemical_preparations",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/organic_chemistry/organic_chemistry_basics must be mastered before chemistry/practical_chemistry/chemical_preparations"
+    },
+    {
+      "source_key": "chemistry/physical_chemistry/redox_reactions",
+      "target_key": "chemistry/practical_chemistry/titrimetric_exercises",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/redox_reactions must be mastered before chemistry/practical_chemistry/titrimetric_exercises"
+    },
+    {
+      "source_key": "chemistry/physical_chemistry/solutions",
+      "target_key": "chemistry/practical_chemistry/titrimetric_exercises",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/solutions must be mastered before chemistry/practical_chemistry/titrimetric_exercises"
+    },
+    {
+      "source_key": "chemistry/physical_chemistry/redox_reactions",
+      "target_key": "chemistry/practical_chemistry/qualitative_salt_analysis",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/redox_reactions must be mastered before chemistry/practical_chemistry/qualitative_salt_analysis"
+    },
+    {
+      "source_key": "chemistry/inorganic_chemistry/d_and_f_block_elements",
+      "target_key": "chemistry/practical_chemistry/qualitative_salt_analysis",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/inorganic_chemistry/d_and_f_block_elements must be mastered before chemistry/practical_chemistry/qualitative_salt_analysis"
+    },
+    {
+      "source_key": "chemistry/physical_chemistry/chemical_thermodynamics",
+      "target_key": "chemistry/practical_chemistry/physical_chemistry_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/chemical_thermodynamics must be mastered before chemistry/practical_chemistry/physical_chemistry_experiments"
+    },
+    {
+      "source_key": "chemistry/physical_chemistry/chemical_kinetics",
+      "target_key": "chemistry/practical_chemistry/physical_chemistry_experiments",
+      "type": "prerequisite_of",
+      "status": "accepted",
+      "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/chemical_kinetics must be mastered before chemistry/practical_chemistry/physical_chemistry_experiments"
     }
-  ],
-  "syllabus_version": "2026.jee.v1",
-  "title": "Canonical JEE Curriculum (Physics, Chemistry, Mathematics)"
+  ]
 }
