@@ -107,6 +107,37 @@ class ClassLevel(str, Enum):
         return cls(text)
 
 
+class Examination(str, Enum):
+    """
+    Authoritative examination target.
+    Distinguishes JEE Main from NEET and other examination curricula
+    rather than relying on subject names alone.
+    """
+
+    JEE_MAIN = "jee_main"
+    NEET = "neet"
+    GENERAL = "general"
+
+    @property
+    def display_name(self) -> str:
+        if self == Examination.JEE_MAIN:
+            return "JEE (Main)"
+        if self == Examination.NEET:
+            return "NEET (UG)"
+        return "General"
+
+    @classmethod
+    def coerce(cls, value: Any) -> "Examination":
+        if isinstance(value, cls):
+            return value
+        v = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+        if "jee" in v:
+            return cls.JEE_MAIN
+        if "neet" in v:
+            return cls.NEET
+        return cls.GENERAL
+
+
 class ConceptLifecycleStatus(str, Enum):
     """
     Lifecycle of a canonical concept.
@@ -262,6 +293,19 @@ class CanonicalConcept(BaseModel):
     curriculum_version: str = DEFAULT_SYLLABUS_VERSION
     stable_key: str = ""
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def examination(self) -> Examination:
+        """
+        Examination target for this curriculum graph.
+        Infers from metadata or curriculum_id, defaulting to JEE_MAIN.
+        """
+        exam_val = self.metadata.get("examination") or self.metadata.get("exam")
+        if exam_val:
+            return Examination.coerce(exam_val)
+        if "neet" in self.curriculum_id.lower():
+            return Examination.NEET
+        return Examination.JEE_MAIN
     audit: AuditInfo = Field(default_factory=AuditInfo)
 
     # ---------------------------------------------------------------- factory
@@ -503,6 +547,19 @@ class ConceptRelationship(BaseModel):
     flags: List[str] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+    @property
+    def examination(self) -> Examination:
+        """
+        Examination target for this curriculum graph.
+        Infers from metadata or curriculum_id, defaulting to JEE_MAIN.
+        """
+        exam_val = self.metadata.get("examination") or self.metadata.get("exam")
+        if exam_val:
+            return Examination.coerce(exam_val)
+        if "neet" in self.curriculum_id.lower():
+            return Examination.NEET
+        return Examination.JEE_MAIN
+
     @classmethod
     def create(
         cls,
@@ -640,6 +697,19 @@ class CurriculumGraph(BaseModel):
     relationships: Dict[str, ConceptRelationship] = Field(default_factory=dict)
     id_map: List[IdReference] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    @property
+    def examination(self) -> Examination:
+        """
+        Examination target for this curriculum graph.
+        Infers from metadata or curriculum_id, defaulting to JEE_MAIN.
+        """
+        exam_val = self.metadata.get("examination") or self.metadata.get("exam")
+        if exam_val:
+            return Examination.coerce(exam_val)
+        if "neet" in self.curriculum_id.lower():
+            return Examination.NEET
+        return Examination.JEE_MAIN
 
     # ------------------------------------------------------------- identity
     def resolve_id(self, concept_id: str) -> Optional[str]:

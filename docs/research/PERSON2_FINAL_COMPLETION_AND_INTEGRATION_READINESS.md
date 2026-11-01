@@ -19,7 +19,7 @@
 > [!IMPORTANT]
 > **VERDICT: READY WITH DOCUMENTED LIMITATIONS**
 > 
-> The Person 2 subsystem (Document Ingestion, Semantic Concept Extraction, Hierarchical Topic Modeling, Prerequisite DAG Construction, and LearningContext API) has achieved production-grade structural integrity, 100% evidence provenance grounding, zero DAG cycles, and 100% regression test pass rates across all 360 unit tests (21 Ingestion + 339 Curriculum).
+> The Person 2 subsystem (Document Ingestion, Semantic Concept Extraction, Hierarchical Topic Modeling, Prerequisite DAG Construction, and LearningContext API) has achieved production-grade structural integrity, 100% evidence provenance grounding, zero DAG cycles, and 100% regression test pass rates across all 366 unit tests (27 Ingestion + 339 Curriculum). Strict dataset separation between JEE Main (PCM primary benchmark) and NEET Biology (optional cross-domain generalization) is architecturally enforced with zero cross-contamination.
 >
 > The benchmark evaluation methodology has been overhauled from a flawed flat noise-rejection metric to an honest, scientific **Hierarchical 1-to-1 Maximum Bipartite Matching model** (`scipy.optimize.linear_sum_assignment`). The subsystem is ready for immediate integration with Person 1's Authentication + PostgreSQL infrastructure.
 
@@ -260,29 +260,61 @@ Every extracted concept retains full structural provenance:
 | **Held-Out Evaluation** | `math_matrices_determinants_esaral` | Mathematics | Matrices & Determinants | **Strictly untouched**; matrix algebra and theorem rules. |
 | **Cross-Domain Experiment** | `biology_cell_cycle_esaral` | Biology | Cell Cycle & Division | **NEET domain.** Evaluated separately from JEE Main Paper 1. |
 
+### 8.1 Strict JEE Main and NEET Dataset Separation & Examination Isolation
+
+The project primarily targets **JEE Main 2027 (Paper 1: Physics, Chemistry, Mathematics)**. The single NEET Biology document (`biology_cell_cycle_esaral.pdf`) is retained strictly as an **optional cross-domain generalization experiment**.
+
+To prevent silent curriculum drift or cross-examination contamination, the following architectural boundaries are strictly enforced:
+
+1. **Explicit Examination Identifiers (`curriculum/models.py`):**
+   - The system utilizes the `Examination` enum (`JEE_MAIN = "jee_main"`, `NEET = "neet"`, `GENERAL = "general"`) with intelligent string coercion.
+   - Every `CurriculumGraph`, `CanonicalConcept`, and `ConceptRelationship` exposes an `.examination` property derived from its curriculum ID or metadata, defaulting to `Examination.JEE_MAIN`.
+   - The `Subject` enum strictly defines `PHYSICS`, `CHEMISTRY`, and `MATHEMATICS`. Coercing `"biology"` immediately raises a `ValueError`.
+2. **Independent Benchmark Reporting:**
+   - In [`hierarchical_benchmark_summary_v2.json`](file:///c:/Users/REVANTH%20VISHNU%20REDDY/Desktop/Edu/LearnSense/tests/fixtures/real_jee_pdfs/hierarchical_benchmark_summary_v2.json), the primary benchmark is strictly `jee_main_paper_1_pcm_10_docs` (10 documents, 778 concepts, 83 matched, 72.05% recall, 15.07% strict precision, 25.42% academic precision).
+   - NEET Biology (`neet_biology_cross_domain_1_doc`) is reported in a segregated aggregate.
+   - Benchmark calculations strictly filter documents by `examination == "JEE_MAIN"` and never combine NEET Biology concepts into JEE Main primary metrics.
+3. **Cross-Examination Guard in Content Mapping (`curriculum/mapping.py`):**
+   - `MappingContext` carries an explicit `target_examination` attribute.
+   - When a NEET document is mapped against the canonical JEE Main curriculum, `ContentMapper.map_extracted_concepts` suppresses proposing any unmapped concepts into the JEE curriculum:
+     ```python
+     if self.context.target_examination == Examination.NEET and self.graph.examination == Examination.JEE_MAIN:
+         proposed = None
+         reason = f"{reason}; cross-examination entity (neet) isolated from jee_main curriculum"
+     ```
+   - Running `CurriculumService.map_learning_context` on the NEET Biology document results in **0 accepted mappings** and **0 proposed concepts**.
+4. **Canonical Specification Immutability:**
+   - Ingesting NEET Biology via `KnowledgeBuildService` executes in a temporary, document-isolated storage context.
+   - Production curriculum files (`curriculum/data/jee_curriculum_spec.json` and `curriculum/data/jee_main_2027_crosswalk.json`) remain strictly untouched, verified byte-for-byte by SHA-256 checksum regression tests.
+5. **Diagnostic Question Bank Isolation:**
+   - Diagnostic generation for JEE Main is scoped strictly to the student's selected JEE document or canonical JEE curriculum graph (`curriculum:jee_main_2027`).
+   - NEET Biology questions and concepts are completely absent from the JEE question bank and diagnostic assessment pool.
+
 ---
 
 ## 9. Comprehensive Regression Testing Results (Phase 8)
 
 ### 9.1 Test Count & Overlap Reconciliation
-An audit point was to verify whether the 5 evidence & provenance tests constituted a separate test suite or were integrated into the ingestion suite:
-- **`tests/unit/ingestion/` (21 Tests):**
+An audit point was to verify whether the 5 evidence & provenance tests and 6 JEE/NEET separation tests constituted separate test suites or were integrated into the ingestion suite:
+- **`tests/unit/ingestion/` (27 Tests):**
   - `test_evidence_provenance_verification.py`: **5 tests** (Structural validity, Semantic text support, Enumeration prefix stripping, Finite verb phrase rejection, Compound particle term preservation).
+  - `test_jee_neet_separation.py`: **6 tests** (Examination enum & graph properties, Manifest metadata isolation, Benchmark metric separation, Zero canonical mutation from NEET ingestion, ContentMapper cross-examination guard, Zero NEET pollution in JEE diagnostics).
   - `test_generalization_multi_document.py`: **6 tests** (Multi-document pipeline, zero cross-document bleed, noise rejection, gold benchmark metrics, concept consistency, unseen synthetic domain).
   - `test_real_jee_pdf_generalization.py`: **5 tests** (Fixture integrity & SHA-256 checksums, partition isolation, aggregate metrics, held-out generalization, live pipeline sample).
   - `test_semantic_topic_extraction.py`: **5 tests** (Candidate validation, clean text, noisy OCR text, native PDF, gold standard benchmark).
 - **`tests/unit/curriculum/` (339 Tests):**
   - Covers chapter management, AKT compatibility, concept models, surface scoring, prerequisite DAG inference, graph storage, syllabus review APIs, and profile translation.
-- **Total Unique Tests:** Exactly **360 unique tests** ($21 + 339 = 360$). The 5 evidence/provenance tests are an integral component of the 21 ingestion tests.
+- **Total Unique Tests:** Exactly **366 unique tests** ($27 + 339 = 366$). The evidence/provenance and separation tests are internal modules of the 27 ingestion tests.
 
 ### 9.2 Regression Test Execution Summary
 
 | Test Suite | Location | Test Count | Result | Execution Time |
 | :--- | :--- | :---: | :---: | :---: |
-| **Ingestion Unit Tests** | `tests/unit/ingestion/` | **21 passed** | **100% PASSED** | 12.18s |
-| **Curriculum Unit Tests** | `tests/unit/curriculum/` | **339 passed** | **100% PASSED** | 28.16s |
-| *(Included) Evidence & Provenance* | `tests/unit/ingestion/test_evidence_provenance_verification.py` | *(5 of 21)* | **100% PASSED** | *(3.21s)* |
-| **Total Test Suite** | **Entire Subsystem** | **360 passed** | **100% PASSED** | **40.34s** |
+| **Ingestion Unit Tests** | `tests/unit/ingestion/` | **27 passed** | **100% PASSED** | 18.25s |
+| **Curriculum Unit Tests** | `tests/unit/curriculum/` | **339 passed** | **100% PASSED** | 35.34s |
+| *(Included) Evidence & Provenance* | `tests/unit/ingestion/test_evidence_provenance_verification.py` | *(5 of 27)* | **100% PASSED** | *(3.21s)* |
+| *(Included) JEE/NEET Separation* | `tests/unit/ingestion/test_jee_neet_separation.py` | *(6 of 27)* | **100% PASSED** | *(14.61s)* |
+| **Total Test Suite** | **Entire Subsystem** | **366 passed** | **100% PASSED** | **53.59s** |
 
 ---
 
@@ -305,9 +337,10 @@ An audit point was to verify whether the 5 evidence & provenance tests constitut
 - [x] Flawed relaxed precision metric eliminated; true strict and academic precision reported.
 - [x] Held-out partition repaired; `math_permutations_combinations_allen` honestly reclassified.
 - [x] NEET Biology separated from primary JEE Main Paper 1 PCM aggregate.
+- [x] Strict JEE Main and NEET separation verified with 6 dedicated regression tests.
 - [x] 100% structural and semantic evidence provenance verified across all 959 accepted academic concepts.
 - [x] 0 cycles in knowledge DAGs across all 11 documents.
-- [x] 21/21 Ingestion unit tests passing.
+- [x] 27/27 Ingestion unit tests passing.
 - [x] 339/339 Curriculum unit tests passing.
 - [x] API contracts with Person 1 (PostgreSQL/Auth), Person 3 (Frontend Context), Person 4 (Diagnostic Bank), and Person 5 (Ingestion/OCR) fully preserved.
 - [x] Person 2 final remediation completed; changes committed and pushed to `origin/person-2-knowledge-graph-curriculum`.

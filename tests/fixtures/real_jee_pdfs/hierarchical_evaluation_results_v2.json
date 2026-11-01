@@ -91,7 +91,10 @@
       "Friction",
       "Kinetic Friction",
       "Static Friction"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_work_energy_power_esaral": {
     "doc_id": "physics_work_energy_power_esaral",
@@ -185,7 +188,10 @@
       "kinetic energy",
       "Work-Energy Theorem",
       "net work"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_rotational_motion_esaral": {
     "doc_id": "physics_rotational_motion_esaral",
@@ -279,7 +285,10 @@
       "kinematics for constant angular acceleration",
       "inertia",
       "discrete system"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_electrostatics_allen": {
     "doc_id": "physics_electrostatics_allen",
@@ -370,7 +379,10 @@
       "S LAW",
       "COULOMB'S LAW",
       "charge distribution"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_atomic_structure_esaral": {
     "doc_id": "chemistry_atomic_structure_esaral",
@@ -463,7 +475,10 @@
       "Rutherford's model",
       "Drawbacks of Rutherford's model",
       "spiral motion"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_chemical_bonding_esaral": {
     "doc_id": "chemistry_chemical_bonding_esaral",
@@ -557,7 +572,10 @@
       "covalent bond",
       "covalent compounds",
       "Characteristics of covalent compounds"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_coordination_compounds_esaral": {
     "doc_id": "chemistry_coordination_compounds_esaral",
@@ -647,7 +665,10 @@
       "metal atom",
       "neutral molecules",
       "neutral metal atom"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_limits_continuity_esaral": {
     "doc_id": "math_limits_continuity_esaral",
@@ -734,7 +755,10 @@
       "real number",
       "finite number",
       "Properties of continuous functions"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_matrices_determinants_esaral": {
     "doc_id": "math_matrices_determinants_esaral",
@@ -825,7 +849,10 @@
       "mn numbers in the form",
       "vertical lines",
       "matrix of order"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_permutations_combinations_allen": {
     "doc_id": "math_permutations_combinations_allen",
@@ -913,7 +940,10 @@
       "FACTORIAL",
       "Useful Notation",
       "prime number"
-    ]
+    ],
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "biology_cell_cycle_esaral": {
     "doc_id": "biology_cell_cycle_esaral",
@@ -1007,6 +1037,9 @@
       "single cell",
       "Many cell cycles",
       "organisms and cell"
-    ]
+    ],
+    "examination": "NEET",
+    "target_curriculum": "neet_ug_2027",
+    "is_cross_domain_experiment": true
   }
 }

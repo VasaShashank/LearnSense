@@ -45,6 +45,7 @@ from curriculum.models import (
     ReviewStatus,
     SourceRef,
     Subject,
+    Examination,
 )
 from curriculum.graph import (
     CurriculumGraphError,

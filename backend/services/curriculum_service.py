@@ -48,7 +48,7 @@ from curriculum.mapping import (
     passages_from_learning_context,
     passages_from_structured_document,
 )
-from curriculum.models import ClassLevel, CurriculumGraph, Subject, utc_now_iso
+from curriculum.models import ClassLevel, CurriculumGraph, Examination, Subject, utc_now_iso
 from curriculum.provenance import ProvenanceLedger
 from curriculum.quality import build_structural_quality_report, summarize_for_teacher
 from curriculum.repository import CurriculumRepository
@@ -317,10 +317,20 @@ class CurriculumService:
             for view in context.concepts.values()
         ]
         passages = passages_from_learning_context(context)
+        doc_title_lower = (context.document_title or "").lower()
+        subject_id_lower = subject_id.lower()
+        if "neet" in subject_id_lower or "biology" in subject_id_lower or "neet" in doc_title_lower:
+            target_exam = Examination.NEET
+        elif "jee" in subject_id_lower or "jee" in doc_title_lower:
+            target_exam = Examination.JEE_MAIN
+        else:
+            target_exam = Examination.GENERAL
+
         mapping_context = MappingContext(
             document_id=subject_id,
             subject_hint=infer_subject_hint(context.document_title, subject_id),
             source_kind="learning_context",
+            target_examination=target_exam,
         )
         mapper = ContentMapper(self.get_graph(), mapping_context)
         # Extracted concepts carry their own provenance, so they are mapped as

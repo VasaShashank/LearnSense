@@ -15,7 +15,10 @@
     "page_count": 6,
     "total_extracted_characters": 4806,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_work_energy_power_esaral": {
     "id": "physics_work_energy_power_esaral",
@@ -33,7 +36,10 @@
     "page_count": 5,
     "total_extracted_characters": 4227,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_rotational_motion_esaral": {
     "id": "physics_rotational_motion_esaral",
@@ -51,7 +57,10 @@
     "page_count": 6,
     "total_extracted_characters": 4941,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "physics_electrostatics_allen": {
     "id": "physics_electrostatics_allen",
@@ -69,7 +78,10 @@
     "page_count": 5,
     "total_extracted_characters": 10029,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_atomic_structure_esaral": {
     "id": "chemistry_atomic_structure_esaral",
@@ -87,7 +99,10 @@
     "page_count": 11,
     "total_extracted_characters": 10628,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_chemical_bonding_esaral": {
     "id": "chemistry_chemical_bonding_esaral",
@@ -105,7 +120,10 @@
     "page_count": 16,
     "total_extracted_characters": 14926,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "chemistry_coordination_compounds_esaral": {
     "id": "chemistry_coordination_compounds_esaral",
@@ -123,7 +141,10 @@
     "page_count": 6,
     "total_extracted_characters": 6399,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_limits_continuity_esaral": {
     "id": "math_limits_continuity_esaral",
@@ -141,7 +162,10 @@
     "page_count": 9,
     "total_extracted_characters": 9330,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_matrices_determinants_esaral": {
     "id": "math_matrices_determinants_esaral",
@@ -159,7 +183,10 @@
     "page_count": 7,
     "total_extracted_characters": 7474,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "math_permutations_combinations_allen": {
     "id": "math_permutations_combinations_allen",
@@ -177,7 +204,10 @@
     "page_count": 3,
     "total_extracted_characters": 6835,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "JEE_MAIN",
+    "target_curriculum": "jee_main_2027",
+    "is_cross_domain_experiment": false
   },
   "biology_cell_cycle_esaral": {
     "id": "biology_cell_cycle_esaral",
@@ -195,6 +225,9 @@
     "page_count": 10,
     "total_extracted_characters": 13602,
     "zero_character_pages": 0,
-    "text_layer_type": "Native Digital Vector Text (100% extractable)"
+    "text_layer_type": "Native Digital Vector Text (100% extractable)",
+    "examination": "NEET",
+    "target_curriculum": "neet_ug_2027",
+    "is_cross_domain_experiment": true
   }
 }

@@ -524,7 +524,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Angle of Repose' found verbatim in source text on page 5."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "physics_work_energy_power_esaral": {
       "doc_id": "physics_work_energy_power_esaral",
@@ -957,7 +960,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "physics_rotational_motion_esaral": {
       "doc_id": "physics_rotational_motion_esaral",
@@ -1307,7 +1313,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "physics_electrostatics_allen": {
       "doc_id": "physics_electrostatics_allen",
@@ -1696,7 +1705,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "chemistry_atomic_structure_esaral": {
       "doc_id": "chemistry_atomic_structure_esaral",
@@ -2112,7 +2124,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Planck's Quantum Theory' found verbatim in source text on page 2."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "chemistry_chemical_bonding_esaral": {
       "doc_id": "chemistry_chemical_bonding_esaral",
@@ -2545,7 +2560,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Bond Length' found verbatim in source text on page 2."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "chemistry_coordination_compounds_esaral": {
       "doc_id": "chemistry_coordination_compounds_esaral",
@@ -2921,7 +2939,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Structural Isomerism' found verbatim in source text on page 3."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "math_limits_continuity_esaral": {
       "doc_id": "math_limits_continuity_esaral",
@@ -3254,7 +3275,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Intermediate Value Theorem' found verbatim in source text on page 4."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "math_matrices_determinants_esaral": {
       "doc_id": "math_matrices_determinants_esaral",
@@ -3585,7 +3609,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "math_permutations_combinations_allen": {
       "doc_id": "math_permutations_combinations_allen",
@@ -3894,7 +3921,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
         }
-      ]
+      ],
+      "examination": "JEE_MAIN",
+      "target_curriculum": "jee_main_2027",
+      "is_cross_domain_experiment": false
     },
     "biology_cell_cycle_esaral": {
       "doc_id": "biology_cell_cycle_esaral",
@@ -4326,7 +4356,10 @@
           "annotation_confidence": 1.0,
           "annotation_notes": "Canonical concept name 'Centromere Splitting' found verbatim in source text on page 4."
         }
-      ]
+      ],
+      "examination": "NEET",
+      "target_curriculum": "neet_ug_2027",
+      "is_cross_domain_experiment": true
     }
   }
 }

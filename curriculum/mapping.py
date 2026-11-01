@@ -69,6 +69,7 @@ from curriculum.models import (
     ClassLevel,
     ConceptLifecycleStatus,
     CurriculumGraph,
+    Examination,
     SourceRef,
     Subject,
     utc_now_iso,
@@ -164,6 +165,7 @@ class MappingContext(BaseModel):
     class_levels: List[ClassLevel] = Field(default_factory=list)
     chapter_id: Optional[str] = None
     source_kind: str = "structured_document"
+    target_examination: Optional[Examination] = None
 
 
 class ConceptMatch(BaseModel):
@@ -802,18 +804,32 @@ class ContentMapper:
             status, reason = self.decide(matches)
             proposed = None
             if status == MappingStatus.UNMAPPED:
-                subject = self.context.subject_hint or Subject.PHYSICS
-                proposed = ProposedConcept.build(
-                    name=item.name,
-                    subject=subject,
-                    description=item.description,
-                    chapter_id=self.context.chapter_id,
-                    class_levels=self.context.class_levels,
-                    aliases=item.aliases,
-                    source_refs=item.source_refs,
-                    extracted_type=item.extracted_type,
-                )
-                reason = f"{reason}; proposing a new canonical concept for review"
+                # Cross-examination guard: If target examination is NEET and canonical graph is JEE Main,
+                # strictly prevent proposing NEET concepts into the JEE Main curriculum.
+                if (
+                    self.context.target_examination == Examination.NEET
+                    and self.graph.examination == Examination.JEE_MAIN
+                ) or (
+                    self.context.target_examination
+                    and self.context.target_examination != Examination.GENERAL
+                    and self.graph.examination != Examination.GENERAL
+                    and self.context.target_examination != self.graph.examination
+                ):
+                    proposed = None
+                    reason = f"{reason}; cross-examination entity ({getattr(self.context.target_examination, 'value', self.context.target_examination)}) isolated from {self.graph.examination.value} curriculum"
+                else:
+                    subject = self.context.subject_hint or Subject.PHYSICS
+                    proposed = ProposedConcept.build(
+                        name=item.name,
+                        subject=subject,
+                        description=item.description,
+                        chapter_id=self.context.chapter_id,
+                        class_levels=self.context.class_levels,
+                        aliases=item.aliases,
+                        source_refs=item.source_refs,
+                        extracted_type=item.extracted_type,
+                    )
+                    reason = f"{reason}; proposing a new canonical concept for review"
             candidates.append(
                 MappingCandidate(
                     item_id=item.item_id,
