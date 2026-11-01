@@ -180,7 +180,13 @@ def _conflict(exc: Exception) -> HTTPException:
 @router.get("/status")
 def curriculum_status(service: CurriculumService = Depends(get_service)) -> Dict[str, Any]:
     """Graph summary: counts, validity, fingerprint, pending review count."""
-    return service.status()
+    st = service.status()
+    meta = service.get_graph().metadata or {}
+    st["published_version"] = meta.get("published_version")
+    st["published_at"] = meta.get("published_at")
+    st["published_by"] = meta.get("published_by")
+    st["release_notes"] = meta.get("release_notes")
+    return st
 
 
 @router.get("")

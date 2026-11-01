@@ -16,6 +16,8 @@ import { LearningSession } from './components/session/LearningSession';
 import { FinalAssessment } from './components/session/FinalAssessment';
 import { ContextualTutor } from './components/tutor/ContextualTutor';
 import { SourceLibrary } from './components/sources/SourceLibrary';
+import { CurriculumDashboard } from './components/curriculum/CurriculumDashboard';
+
 import { CommandPalette } from './components/palette/CommandPalette';
 import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
@@ -573,6 +575,14 @@ export default function App() {
         {activeView === 'TEACHER' && (currentPersona.role === 'TEACHER' || currentPersona.role === 'ADMIN') && (
           <TeacherDashboard
             currentUserId={currentPersona.id}
+            currentPersona={currentPersona}
+            onNavigateToAtlas={() => setActiveView('ATLAS')}
+          />
+        )}
+
+        {/* Curriculum Review & Governance Dashboard (Teacher & Admin) */}
+        {activeView === 'CURRICULUM' && (
+          <CurriculumDashboard
             currentPersona={currentPersona}
             onNavigateToAtlas={() => setActiveView('ATLAS')}
           />

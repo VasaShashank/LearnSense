@@ -498,6 +498,171 @@ export interface PageEvidenceResponse {
   raw_text: string;
 }
 
+
+export interface CurriculumStatusResponse {
+  curriculum_id: string;
+  syllabus_version: string;
+  has_curriculum: boolean;
+  concept_count: number;
+  relationship_count: number;
+  is_valid: boolean;
+  error_count: number;
+  warning_count: number;
+  fingerprint: string;
+  versions: number;
+  pending_review: number;
+  published_version?: string | null;
+  published_at?: string | null;
+  published_by?: string | null;
+  release_notes?: string | null;
+}
+
+export interface CanonicalConceptRecord {
+  concept_id: string;
+  name: string;
+  description: string;
+  subject: string;
+  chapter_id: string;
+  topic_path: string[];
+  class_levels: string[];
+  tags: string[];
+  status: 'active' | 'deprecated';
+  review_status: string;
+  aliases: string[];
+  prerequisite_concept_ids: string[];
+  source_refs: Array<{
+    source_id: string;
+    locator?: string;
+    excerpt_hash?: string | null;
+  }>;
+  curriculum_id: string;
+  curriculum_version: string;
+  stable_key: string;
+  prerequisite_count: number;
+  source_ref_count: number;
+  audit?: {
+    created_at?: string;
+    updated_at?: string;
+    created_by?: string;
+    updated_by?: string;
+    revision?: number;
+  };
+}
+
+export interface ListConceptsResponse {
+  curriculum_id: string;
+  has_curriculum: boolean;
+  total?: number;
+  limit: number;
+  offset: number;
+  concepts: CanonicalConceptRecord[];
+}
+
+export interface UpdateConceptMetadataPayload {
+  name?: string;
+  description?: string;
+  aliases?: string[];
+  tags?: string[];
+  chapter_id?: string;
+  reviewer_id: string;
+  note: string;
+}
+
+export interface CanonicalRelationshipRecord {
+  relationship_id: string;
+  source: string;
+  type: string;
+  target: string;
+  status: 'accepted' | 'candidate' | 'rejected';
+  evidence_level: string;
+  confidence: number;
+  rationale?: string;
+  source_refs?: any[];
+  metadata?: Record<string, any>;
+}
+
+export interface ListRelationshipsResponse {
+  count: number;
+  relationships: CanonicalRelationshipRecord[];
+}
+
+export interface CurriculumValidationIssue {
+  severity: string;
+  rule_id: string;
+  message: string;
+  entity_type?: string;
+  entity_id?: string;
+}
+
+export interface CurriculumValidationResponse {
+  is_valid: boolean;
+  error_count: number;
+  warning_count: number;
+  issues: CurriculumValidationIssue[];
+  stats?: {
+    concept_count: number;
+    active_concept_count: number;
+    deprecated_concept_count: number;
+    relationship_count: number;
+    accepted_relationship_count: number;
+    prerequisite_edge_count: number;
+    accepted_prerequisite_edge_count: number;
+    concept_with_evidence_count: number;
+    id_map_size: number;
+  };
+}
+
+export interface CurriculumPublishPayload {
+  reviewer_id: string;
+  release_notes: string;
+}
+
+export interface CurriculumPublishResponse {
+  status: string;
+  version_id: string;
+  curriculum_id: string;
+  syllabus_version: string;
+  checksum: string;
+  concept_count: number;
+  relationship_count: number;
+  published_at: string;
+  published_by: string;
+}
+
+export interface CurriculumVersionRecord {
+  version_id: string;
+  curriculum_id: string;
+  syllabus_version: string;
+  content_checksum: string;
+  concept_count: number;
+  relationship_count: number;
+  created_at: string;
+  created_by: string;
+  parent_version_id?: string | null;
+  note?: string;
+  deprecated_concept_ids?: string[];
+}
+
+export interface ListVersionsResponse {
+  count: number;
+  versions: CurriculumVersionRecord[];
+}
+
+export interface RollbackVersionPayload {
+  reviewer_id: string;
+  note: string;
+}
+
+export interface RollbackVersionResponse {
+  status: string;
+  curriculum_id: string;
+  reverted_to_version: string;
+  reverted_by: string;
+  reverted_at: string;
+  concept_count: number;
+  relationship_count: number;
+}
+
 export const ApiClient = {
   getSubjects: (): Promise<Subject[]> => fetchJson('/subjects'),
 
@@ -1212,6 +1377,82 @@ export const ApiClient = {
     email: string;
   }>> =>
     fetchJson('/auth/personas'),
+
+  getCurriculumStatus: (): Promise<CurriculumStatusResponse> =>
+    fetchJson('/curriculum/status'),
+
+  listCurriculumConcepts: (params?: {
+    subject?: string;
+    class_level?: string;
+    chapter_id?: string;
+    status?: string;
+    q?: string;
+    include_deprecated?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<ListConceptsResponse> => {
+    const qs = new URLSearchParams();
+    if (params?.subject) qs.append('subject', params.subject);
+    if (params?.class_level) qs.append('class_level', params.class_level);
+    if (params?.chapter_id) qs.append('chapter_id', params.chapter_id);
+    if (params?.status) qs.append('status', params.status);
+    if (params?.q) qs.append('q', params.q);
+    if (params?.include_deprecated !== undefined) qs.append('include_deprecated', String(params.include_deprecated));
+    if (params?.limit !== undefined) qs.append('limit', String(params.limit));
+    if (params?.offset !== undefined) qs.append('offset', String(params.offset));
+    const query = qs.toString() ? ('?' + qs.toString()) : '';
+    return fetchJson('/curriculum/concepts' + query);
+  },
+
+  updateConceptMetadata: (
+    conceptId: string,
+    payload: UpdateConceptMetadataPayload
+  ): Promise<CanonicalConceptRecord> =>
+    fetchJson('/curriculum/concepts/' + encodeURIComponent(conceptId), {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  listCurriculumRelationships: (params?: {
+    relationship_type?: string;
+    status?: string;
+  }): Promise<ListRelationshipsResponse> => {
+    const qs = new URLSearchParams();
+    if (params?.relationship_type) qs.append('relationship_type', params.relationship_type);
+    if (params?.status) qs.append('status', params.status);
+    const query = qs.toString() ? ('?' + qs.toString()) : '';
+    return fetchJson('/curriculum/relationships' + query);
+  },
+
+  updateRelationshipStatus: (
+    relationshipId: string,
+    payload: { status: string; reviewer_id: string; note?: string; excerpt?: string }
+  ): Promise<any> =>
+    fetchJson('/curriculum/review/relationships/' + encodeURIComponent(relationshipId) + '/status', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  validateCurriculumGraph: (): Promise<CurriculumValidationResponse> =>
+    fetchJson('/curriculum/validate', { method: 'POST' }),
+
+  publishCurriculum: (payload: CurriculumPublishPayload): Promise<CurriculumPublishResponse> =>
+    fetchJson('/curriculum/publish', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  listCurriculumVersions: (): Promise<ListVersionsResponse> =>
+    fetchJson('/curriculum/versions'),
+
+  rollbackCurriculumVersion: (
+    versionId: string,
+    payload: RollbackVersionPayload
+  ): Promise<RollbackVersionResponse> =>
+    fetchJson('/curriculum/versions/' + encodeURIComponent(versionId) + '/rollback', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 

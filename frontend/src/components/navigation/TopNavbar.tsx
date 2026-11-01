@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Users,
   BarChart3,
+  ShieldCheck,
 } from 'lucide-react';
 
 export type AppView =
@@ -23,6 +24,7 @@ export type AppView =
   | 'SOURCES'      // Shared source library
   | 'MARKETPLACE'  // Student peer discovery
   | 'TEACHER'      // Teacher home (optimizer + insights)
+  | 'CURRICULUM'   // Teacher / Admin curriculum review and governance
   | 'INSTITUTION'  // B2B admin home
   | 'CLASS_KT';    // B2B: class-level KT drill-down
 
@@ -64,6 +66,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     if (currentPersona.role === 'TEACHER') {
       return [
         { id: 'TEACHER' as const, label: 'Teaching Optimizer', icon: Sparkles },
+        { id: 'CURRICULUM' as const, label: 'Curriculum Review', icon: ShieldCheck },
         { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
         { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
       ];
@@ -74,6 +77,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       { id: 'INSTITUTION' as const, label: 'Institution', icon: Building2 },
       { id: 'CLASS_KT' as const, label: 'Class Knowledge', icon: BarChart3 },
       { id: 'TEACHER' as const, label: 'Teaching Optimizer', icon: Sparkles },
+      { id: 'CURRICULUM' as const, label: 'Curriculum Review', icon: ShieldCheck },
       { id: 'ATLAS' as const, label: 'Knowledge Atlas', icon: Orbit },
       { id: 'SOURCES' as const, label: 'Sources', icon: BookOpen },
     ];

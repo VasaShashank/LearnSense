@@ -24,7 +24,8 @@ import {
 import { ApiClient } from '../../api/client';
 import { getConceptDisplayName } from '../../utils/conceptName';
 import type { Persona } from '../common/LoginPersonaModal';
-import { ConceptReviewWorkspace } from './ConceptReviewWorkspace';
+import { CurriculumDashboard } from '../curriculum/CurriculumDashboard';
+
 
 export interface IndividualStudentMastery {
   learner_id: string;
@@ -1796,9 +1797,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
       {/* ━━━━━ TAB 5: CONCEPT VERIFICATION & CURRICULUM REVIEW (PERSON 2) ━━━━━ */}
       {activeTab === 'CURRICULUM_REVIEW' && (
-        <ConceptReviewWorkspace
-          reviewerId={currentPersona?.name || currentUserId || 'teacher'}
-          initialDocumentId={classes.find((c) => c.class_id === selectedClassId)?.subject_id}
+        <CurriculumDashboard
+          currentPersona={currentPersona}
           onNavigateToAtlas={onNavigateToAtlas}
         />
       )}
