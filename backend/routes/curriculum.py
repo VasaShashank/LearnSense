@@ -742,3 +742,81 @@ def get_page_evidence(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
+
+
+class UpdateConceptMetadataRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    aliases: Optional[List[str]] = None
+    tags: Optional[List[str]] = None
+    chapter_id: Optional[str] = None
+    reviewer_id: str = "teacher"
+    note: str = ""
+
+
+class PublishCurriculumRequest(BaseModel):
+    reviewer_id: str = "curriculum_lead"
+    release_notes: str = ""
+
+
+class RollbackCurriculumRequest(BaseModel):
+    reviewer_id: str = "curriculum_lead"
+    note: str = ""
+
+
+@router.put("/concepts/{concept_id}")
+def update_concept_metadata(
+    concept_id: str,
+    payload: UpdateConceptMetadataRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Update concept name, description, aliases, tags, or chapter mapping."""
+    try:
+        return service.update_concept_metadata(
+            concept_id=concept_id,
+            name=payload.name,
+            description=payload.description,
+            aliases=payload.aliases,
+            tags=payload.tags,
+            chapter_id=payload.chapter_id,
+            reviewer_id=payload.reviewer_id,
+            note=payload.note,
+        )
+    except CurriculumNotFoundError as exc:
+        raise _not_found(exc)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post("/publish")
+def publish_curriculum(
+    payload: PublishCurriculumRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Validate graph invariants and publish current curriculum as an immutable approved release."""
+    try:
+        return service.publish_curriculum(
+            reviewer_id=payload.reviewer_id,
+            release_notes=payload.release_notes,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post("/versions/{version_id}/rollback")
+def rollback_curriculum(
+    version_id: str,
+    payload: RollbackCurriculumRequest,
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    """Rollback live curriculum graph to a previously saved version snapshot."""
+    try:
+        return service.rollback_curriculum(
+            version_id=version_id,
+            reviewer_id=payload.reviewer_id,
+            note=payload.note,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))

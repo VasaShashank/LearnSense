@@ -111,6 +111,28 @@ class CurriculumVersioning:
     def load(self, version_id: str) -> Optional[CurriculumSnapshot]:
         return self.repository.load_snapshot(version_id)
 
+    def rollback(
+        self,
+        version_id: str,
+        reverted_by: str = "curriculum_pipeline",
+        note: str = "",
+    ) -> CurriculumGraph:
+        """
+        Revert the live curriculum graph to the exact state saved in version snapshot.
+        """
+        snapshot = self.load(version_id)
+        if snapshot is None:
+            raise KeyError(f"Unknown curriculum version: {version_id}")
+        restored = snapshot.graph.model_copy(deep=True)
+        restored.metadata["last_rollback"] = {
+            "reverted_to_version": version_id,
+            "reverted_at": utc_now_iso(),
+            "reverted_by": reverted_by,
+            "note": note,
+        }
+        self.repository.save_graph(restored)
+        return restored
+
     def resolve_at(self, concept_id: str, version_id: str) -> Optional[CanonicalConcept]:
         """
         Resolve a concept reference *as it was* in a stored version.

@@ -117,7 +117,7 @@ class LearningService:
             bank = builder.build_bank_for_chapter(
                 ctx,
                 chapter_id="ch_all",
-                target_count=max(1, len(target_ids)),
+                target_count=max(20, len(target_ids) * 4),
                 retriever=retriever,
                 existing=existing,
                 # Generate for the concepts this caller asked about. Without this the

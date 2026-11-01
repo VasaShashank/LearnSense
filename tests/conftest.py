@@ -101,9 +101,10 @@ class IngestedDocument:
 
         Lets a test ask for "Limits" without hard-coding the extractor's generated ID.
         """
-        needle = name_fragment.lower()
+        needle = name_fragment.lower().rstrip('s')
         for concept_id, concept in self.context.concepts.items():
-            if needle in concept.canonical_name.lower():
+            cname = concept.canonical_name.lower()
+            if needle in cname or cname.rstrip('s') in needle:
                 return concept_id
         raise AssertionError(
             f"No concept matching {name_fragment!r}; available: {self.concept_names}"

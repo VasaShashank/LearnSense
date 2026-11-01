@@ -97,6 +97,7 @@ class LearnerService:
         # No concept seeding: the context is loaded from the uploaded document, and
         # concept_ids here come from that same document's graph.
         learning_context = self.knowledge_service.get_learning_context(subject_id)
+        graph = self.knowledge_service.get_subject_graph(subject_id) or {}
 
         # Synchronize learning context prerequisites with graph's cycle-safe resolved prerequisites
         resolved_prereqs = []
@@ -182,6 +183,7 @@ class LearnerService:
         from storage.repositories import QuestionBankRepository
 
         learning_context = self.knowledge_service.get_learning_context(subject_id)
+        graph = self.knowledge_service.get_subject_graph(subject_id) or {}
 
         # Synchronize learning context prerequisites with graph's cycle-safe resolved prerequisites
         resolved_prereqs = []

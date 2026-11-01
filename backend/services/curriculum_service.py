@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union, Union
 
 from phase3.errors import KnowledgeNotFoundError
 from storage.repositories import LearningContextRepository
@@ -76,11 +76,13 @@ class CurriculumService:
         doc_storage: Optional[DocumentStorage] = None,
         context_repo: Optional[LearningContextRepository] = None,
         curriculum_id: Optional[str] = None,
+        crosswalk_path: Optional[Union[str, Path]] = None,
     ):
         self.repository = repository or CurriculumRepository()
         self.doc_storage = doc_storage or DocumentStorage()
         self.context_repo = context_repo or LearningContextRepository()
         self.curriculum_id = curriculum_id or self._first_curriculum_id()
+        self.crosswalk_path = Path(crosswalk_path) if crosswalk_path else None
         self._graph: Optional[CurriculumGraph] = None
         self._review_service: Optional[CurriculumReviewService] = None
 
@@ -735,6 +737,112 @@ class CurriculumService:
         self._persist()
         return self._concept_payload(concept)
 
+    def update_concept_metadata(
+        self,
+        concept_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        aliases: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        chapter_id: Optional[str] = None,
+        reviewer_id: str = "teacher",
+        note: str = "",
+    ) -> Dict[str, Any]:
+        """Update concept metadata (name, description, aliases, tags, chapter) with audit note."""
+        graph = self.get_graph()
+        concept = graph.get_concept(concept_id)
+        if concept is None:
+            raise CurriculumNotFoundError(f"Concept '{concept_id}' not found")
+
+        changes: Dict[str, Any] = {}
+        if name is not None and name != concept.name:
+            changes["name"] = {"old": concept.name, "new": name}
+            concept.name = name
+        if description is not None and description != concept.description:
+            changes["description"] = {"old": concept.description, "new": description}
+            concept.description = description
+        if aliases is not None:
+            changes["aliases"] = {"old": concept.aliases, "new": aliases}
+            concept.aliases = list(aliases)
+        if tags is not None:
+            changes["tags"] = {"old": concept.tags, "new": tags}
+            concept.tags = list(tags)
+        if chapter_id is not None and chapter_id != concept.chapter_id:
+            changes["chapter_id"] = {"old": concept.chapter_id, "new": chapter_id}
+            concept.chapter_id = chapter_id
+
+        if changes:
+            concept.audit.touch(reviewer_id)
+            concept.metadata.setdefault("review_notes", []).append({
+                "action": "update_metadata",
+                "changes": changes,
+                "reviewer_id": reviewer_id,
+                "note": note,
+                "timestamp": utc_now_iso(),
+            })
+            self._persist()
+
+        return self._concept_payload(concept)
+
+    def publish_curriculum(
+        self,
+        reviewer_id: str = "curriculum_lead",
+        release_notes: str = "",
+    ) -> Dict[str, Any]:
+        """Validate and publish current curriculum graph as an immutable approved release."""
+        graph = self.get_graph()
+        report = self.validate_graph()
+        if not report.is_valid:
+            errors = [i.message for i in report.issues if getattr(i.severity, "value", str(i.severity)) == "error"]
+            raise ValueError(f"Cannot publish invalid curriculum: {'; '.join(errors)}")
+
+        versioning = CurriculumVersioning(self.repository)
+        snapshot = versioning.snapshot(
+            graph,
+            created_by=reviewer_id,
+            note=release_notes,
+        )
+        versioning.commit(snapshot)
+
+        # Update live graph metadata
+        graph.metadata["published_version"] = snapshot.version.version_id
+        graph.metadata["published_at"] = utc_now_iso()
+        graph.metadata["published_by"] = reviewer_id
+        graph.metadata["release_notes"] = release_notes
+        self.repository.save_graph(graph)
+
+        return {
+            "status": "published",
+            "version_id": snapshot.version.version_id,
+            "curriculum_id": graph.curriculum_id,
+            "syllabus_version": graph.syllabus_version,
+            "checksum": snapshot.version.content_checksum,
+            "concept_count": snapshot.version.concept_count,
+            "relationship_count": snapshot.version.relationship_count,
+            "published_at": graph.metadata["published_at"],
+            "published_by": reviewer_id,
+        }
+
+    def rollback_curriculum(
+        self,
+        version_id: str,
+        reviewer_id: str = "curriculum_lead",
+        note: str = "",
+    ) -> Dict[str, Any]:
+        """Rollback live curriculum graph to a previously saved version snapshot."""
+        versioning = CurriculumVersioning(self.repository)
+        restored_graph = versioning.rollback(version_id, reverted_by=reviewer_id, note=note)
+        self._graph = restored_graph
+        return {
+            "status": "rolled_back",
+            "curriculum_id": restored_graph.curriculum_id,
+            "reverted_to_version": version_id,
+            "reverted_by": reviewer_id,
+            "reverted_at": restored_graph.metadata.get("last_rollback", {}).get("reverted_at"),
+            "concept_count": len(restored_graph.concepts),
+            "relationship_count": len(restored_graph.relationships),
+        }
+
     # ---------------------------------------------------- syllabus mapping
     def list_syllabus_items(
         self,
@@ -742,7 +850,7 @@ class CurriculumService:
         status: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """List official JEE Main 2027 syllabus items and their canonical crosswalk mappings."""
-        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        crosswalk_path = self.crosswalk_path or Path("curriculum/data/jee_main_2027_crosswalk.json")
         if not crosswalk_path.exists():
             return []
         import json
@@ -758,7 +866,7 @@ class CurriculumService:
 
     def syllabus_coverage_summary(self) -> Dict[str, Any]:
         """Summary metrics of JEE Main 2027 syllabus coverage."""
-        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        crosswalk_path = self.crosswalk_path or Path("curriculum/data/jee_main_2027_crosswalk.json")
         if not crosswalk_path.exists():
             return {"has_crosswalk": False}
         import json
@@ -780,7 +888,7 @@ class CurriculumService:
         review_notes: str = "",
     ) -> Dict[str, Any]:
         """Teacher review decision on a syllabus mapping."""
-        crosswalk_path = Path("curriculum/data/jee_main_2027_crosswalk.json")
+        crosswalk_path = self.crosswalk_path or Path("curriculum/data/jee_main_2027_crosswalk.json")
         if not crosswalk_path.exists():
             raise CurriculumNotFoundError("Crosswalk file not found")
         import json
