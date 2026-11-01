@@ -1,0 +1,49 @@
+
+==================== physics_laws_of_motion_esaral ====================
+Unmatched Gold Count: 7
+  [ABSENT FROM SOURCE TEXT] 'Linear Momentum' (Present: [], Missing: ['linear', 'momentum'])
+  [ABSENT FROM SOURCE TEXT] 'Impulse' (Present: [], Missing: ['impulse'])
+  [ABSENT FROM SOURCE TEXT] 'Centripetal Acceleration' (Present: ['centripetal', 'acceleration'], Missing: [])
+  [ABSENT FROM SOURCE TEXT] 'Banking of Roads' (Present: [], Missing: ['banking', 'roads'])
+  [ABSENT FROM SOURCE TEXT] 'Free Body Diagram' (Present: ['body'], Missing: ['free', 'diagram'])
+  [ABSENT FROM SOURCE TEXT] 'Normal Reaction' (Present: ['normal'], Missing: ['reaction'])
+  [ABSENT FROM SOURCE TEXT] 'Tension' (Present: [], Missing: ['tension'])
+
+==================== chemistry_atomic_structure_esaral ====================
+Unmatched Gold Count: 7
+  [ABSENT FROM SOURCE TEXT] 'Bohr Model of Atom' (Present: ['bohr', 'model', 'atom'], Missing: [])
+  [ABSENT FROM SOURCE TEXT] 'Radius of Bohr Orbit' (Present: ['radius', 'bohr', 'orbit'], Missing: [])
+  [PRESENT IN SOURCE TEXT] 'Velocity of Electron': ... ? ?     (iii) Calculation of velocity of electron    2 / 1 2 2 , 2 ? ? ? ? ? ? ...
+  [ABSENT FROM SOURCE TEXT] 'Lyman Series' (Present: ['series'], Missing: ['lyman'])
+  [ABSENT FROM SOURCE TEXT] 'de Broglie Relationship' (Present: ['de', 'broglie', 'relationship'], Missing: [])
+  [ABSENT FROM SOURCE TEXT] 'Shapes of Atomic Orbitals' (Present: ['atomic', 'orbitals'], Missing: ['shapes'])
+  [ABSENT FROM SOURCE TEXT] 'Radial and Angular Nodes' (Present: ['angular'], Missing: ['radial', 'nodes'])
+
+==================== chemistry_coordination_compounds_esaral ====================
+Unmatched Gold Count: 7
+  [ABSENT FROM SOURCE TEXT] 'Oxidation State' (Present: ['oxidation'], Missing: ['state'])
+  [ABSENT FROM SOURCE TEXT] 'Werner's Coordination Theory' (Present: ['coordination', 'theory'], Missing: ["werner's"])
+  [ABSENT FROM SOURCE TEXT] 'Inner and Outer Orbital Complexes' (Present: ['complexes'], Missing: ['inner', 'outer', 'orbital'])
+  [ABSENT FROM SOURCE TEXT] 'Magnetic Moment of Complexes' (Present: ['complexes'], Missing: ['magnetic', 'moment'])
+  [ABSENT FROM SOURCE TEXT] 'Crystal Field Theory' (Present: ['crystal', 'theory'], Missing: ['field'])
+  [ABSENT FROM SOURCE TEXT] 'Crystal Field Splitting' (Present: ['crystal'], Missing: ['field', 'splitting'])
+  [ABSENT FROM SOURCE TEXT] 'Spectrochemical Series' (Present: [], Missing: ['spectrochemical', 'series'])
+
+==================== chemistry_chemical_bonding_esaral ====================
+Unmatched Gold Count: 4
+  [ABSENT FROM SOURCE TEXT] 'Octet Rule' (Present: ['rule'], Missing: ['octet'])
+  [ABSENT FROM SOURCE TEXT] 'VSEPR Theory' (Present: ['vsepr', 'theory'], Missing: [])
+  [ABSENT FROM SOURCE TEXT] 'Pi Bond' (Present: ['pi', 'bond'], Missing: [])
+  [ABSENT FROM SOURCE TEXT] 'Bond Order' (Present: ['bond', 'order'], Missing: [])
+
+==================== math_permutations_combinations_allen ====================
+Unmatched Gold Count: 2
+  [PRESENT IN SOURCE TEXT] 'Division into Groups': ...rent prime factors in N.  6.  DIVISION INTO GROUPS AND DISTRIBUTION :    (a) (i)...
+  [ABSENT FROM SOURCE TEXT] 'Distribution of Objects' (Present: ['distribution', 'objects'], Missing: [])
+
+==================== biology_cell_cycle_esaral ====================
+Unmatched Gold Count: 4
+  [PRESENT IN SOURCE TEXT] 'G1 Phase': ...: G1, S, and G2 phases.    1. G1 Phase or Gap1:   ? This is the time...
+  [PRESENT IN SOURCE TEXT] 'G2 Phase': ...tiplies in the cytoplasm.  3. G2 Phase or Gap2 phase:   ? It occurs ...
+  [ABSENT FROM SOURCE TEXT] 'G0 Phase' (Present: ['g0', 'phase'], Missing: [])
+  [PRESENT IN SOURCE TEXT] 'Crossing Over': ... pursued by recombination or  crossing over between non-sister chromatids...

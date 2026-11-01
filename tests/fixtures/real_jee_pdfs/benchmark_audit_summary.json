@@ -1,0 +1,2596 @@
+{
+  "metadata": {
+    "audit_title": "LearnSense Real-World JEE Educational PDF Benchmark Integrity and Recall Audit",
+    "audit_date": "2026-11-01",
+    "git_branch": "person-2-knowledge-graph-curriculum",
+    "total_documents_audited": 11,
+    "primary_domain": "JEE Main Paper 1 (Physics, Chemistry, Mathematics)",
+    "cross_domain_experiment": "NEET Biology (Cell Cycle and Cell Division)",
+    "auditor_role": "Independent Benchmark Integrity & Evaluation QA"
+  },
+  "methodological_findings": {
+    "finding_1_relaxed_precision_distortion": {
+      "issue": "Reported precision (99.75%) used a relaxed noise-rejection metric rather than true precision against gold standards.",
+      "formula_used_in_benchmark": "valid_concept_count = sum(1 for c in concepts if is_gold or (c.name not in gold_noise and len(c.name) >= 3))",
+      "impact": "Masked non-academic phrase extractions and measured noise rejection rather than precision against curriculum targets."
+    },
+    "finding_2_asymmetric_substring_matching": {
+      "issue": "Evaluation metric used asymmetric substring matching ('norm_ext in norm_gold') without 1-to-1 bipartite constraints.",
+      "impact": "Single generic candidate words (e.g., 'Friction', 'Matrix') matched up to 8-14 separate specific gold concepts, artificially inflating reported recall."
+    },
+    "finding_3_gold_standard_syllabus_drift": {
+      "issue": "Gold annotations were constructed from broad JEE syllabus outlines rather than verbatim content of the short revision notes PDFs.",
+      "impact": "16 out of 38 apparent false negatives (42.1%) literally do not exist in the source documents. True reachable text-present recall is 92.51% (PCM) vs reported 78.56%."
+    },
+    "finding_4_evidence_grounding_integrity": {
+      "issue": "Audited provenance coordinates and character excerpts for all 974 concepts across all 11 documents.",
+      "structural_validity": "100.0% (974/974) valid block_ids and span coordinates",
+      "semantic_support": "100.0% (974/974) verbatim text containment at designated span coordinates"
+    },
+    "finding_5_held_out_leakage_and_domain_separation": {
+      "issue": "Single-word additions ('permutation', 'combination', 'factorial') after observing held-out failures created evaluation leakage.",
+      "resolution": "Isolated held-out partition and separated Biology cross-domain from primary JEE Main Paper 1 aggregate."
+    }
+  },
+  "aggregates": {
+    "jee_main_paper_1_pcm_10_docs": {
+      "document_count": 10,
+      "total_extracted_concepts": 791,
+      "total_gold_assessable": 170,
+      "total_gold_matched": 133,
+      "total_text_absent_gold": 16,
+      "macro_reported_precision": 99.73,
+      "macro_strict_precision": 37.27,
+      "macro_reported_recall": 78.56,
+      "macro_adjusted_recall": 86.0,
+      "macro_reported_f1": 87.32,
+      "macro_strict_f1": 48.64,
+      "macro_adjusted_f1": 50.34,
+      "macro_noise_rejection_rate": 80.0,
+      "macro_duplicate_rate": 0.32,
+      "macro_structural_grounding": 100.0,
+      "macro_semantic_grounding": 100.0
+    },
+    "neet_biology_cross_domain_1_doc": {
+      "document_count": 1,
+      "total_extracted_concepts": 183,
+      "total_gold_assessable": 21,
+      "total_gold_matched": 17,
+      "total_text_absent_gold": 1,
+      "macro_reported_precision": 100.0,
+      "macro_strict_precision": 18.03,
+      "macro_reported_recall": 80.95,
+      "macro_adjusted_recall": 85.0,
+      "macro_reported_f1": 89.47,
+      "macro_strict_f1": 29.49,
+      "macro_adjusted_f1": 29.75,
+      "macro_noise_rejection_rate": 75.0,
+      "macro_duplicate_rate": 0.0,
+      "macro_structural_grounding": 100.0,
+      "macro_semantic_grounding": 100.0
+    },
+    "combined_all_11_docs": {
+      "document_count": 11,
+      "total_extracted_concepts": 974,
+      "total_gold_assessable": 191,
+      "total_gold_matched": 150,
+      "total_text_absent_gold": 17,
+      "macro_reported_precision": 99.75,
+      "macro_strict_precision": 35.52,
+      "macro_reported_recall": 78.78,
+      "macro_adjusted_recall": 85.91,
+      "macro_reported_f1": 87.52,
+      "macro_strict_f1": 46.9,
+      "macro_adjusted_f1": 48.47,
+      "macro_noise_rejection_rate": 79.55,
+      "macro_duplicate_rate": 0.29,
+      "macro_structural_grounding": 100.0,
+      "macro_semantic_grounding": 100.0
+    }
+  },
+  "documents": {
+    "physics_laws_of_motion_esaral": {
+      "metadata": {
+        "doc_id": "physics_laws_of_motion_esaral",
+        "filename": "physics_laws_of_motion_esaral.pdf",
+        "subject": "Physics",
+        "chapter": "Laws of Motion",
+        "publisher": "eSaral",
+        "partition": "Development/Regression",
+        "pages": 6,
+        "extracted_characters": 4806
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 17,
+        "total_supporting_gold": 7,
+        "text_absent_gold_count": 5,
+        "text_absent_gold_concepts": [
+          "Linear Momentum",
+          "Impulse",
+          "Banking of Roads",
+          "Free Body Diagram",
+          "Tension"
+        ],
+        "text_present_gold_count": 12,
+        "assessable_gold_list": [
+          "First Law of Motion",
+          "Second Law of Motion",
+          "Third Law of Motion",
+          "Linear Momentum",
+          "Impulse",
+          "Static Friction",
+          "Kinetic Friction",
+          "Rolling Friction",
+          "Laws of Friction",
+          "Angle of Friction",
+          "Angle of Repose",
+          "Centripetal Force",
+          "Centripetal Acceleration",
+          "Banking of Roads",
+          "Free Body Diagram",
+          "Normal Reaction",
+          "Tension"
+        ],
+        "supporting_gold_list": [
+          "Inertia",
+          "Equilibrium of Concurrent Forces",
+          "Limiting Friction",
+          "Coefficient of Static Friction",
+          "Coefficient of Kinetic Friction",
+          "Frame of Reference",
+          "Pseudo Force"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 22,
+        "grounded_concepts_count": 22,
+        "topics_formed_count": 12,
+        "sample_extracted_concepts": [
+          "Newton's Laws of Motion",
+          "Newton's First Law of Motion",
+          "net force",
+          "Newton's Second Law of Motion",
+          "inertial mass",
+          "mass",
+          "Newton's Third Law of Motion",
+          "Friction",
+          "Kinetic Friction",
+          "Static Friction"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 10,
+        "reported_unmatched_gold": [
+          "Linear Momentum",
+          "Impulse",
+          "Centripetal Acceleration",
+          "Banking of Roads",
+          "Free Body Diagram",
+          "Normal Reaction",
+          "Tension"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "Friction": [
+            "Static Friction",
+            "Kinetic Friction",
+            "Rolling Friction",
+            "Laws of Friction",
+            "Angle of Friction",
+            "Limiting Friction",
+            "Coefficient of Static Friction",
+            "Coefficient of Kinetic Friction"
+          ],
+          "Kinetic Friction": [
+            "Kinetic Friction",
+            "Coefficient of Kinetic Friction"
+          ],
+          "Static Friction": [
+            "Static Friction",
+            "Coefficient of Static Friction"
+          ],
+          "Coefficient of Kinetic Friction": [
+            "Kinetic Friction",
+            "Coefficient of Kinetic Friction"
+          ],
+          "Limiting Friction": [
+            "Static Friction",
+            "Limiting Friction"
+          ],
+          "coefficient of friction": [
+            "Coefficient of Static Friction",
+            "Coefficient of Kinetic Friction"
+          ],
+          "Angle of Repose": [
+            "Angle of Friction",
+            "Angle of Repose"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Static Friction": [
+            "Friction",
+            "Static Friction",
+            "Limiting Friction"
+          ],
+          "Kinetic Friction": [
+            "Friction",
+            "Kinetic Friction",
+            "Coefficient of Kinetic Friction"
+          ],
+          "Angle of Friction": [
+            "Friction",
+            "Angle of Repose"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Linear Momentum",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Syllabus term omitted from 6-page summary; PDF only covers Newton's laws and friction."
+          },
+          {
+            "gold": "Impulse",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Term omitted from 6-page summary notes."
+          },
+          {
+            "gold": "Centripetal Acceleration",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Net Acceleration' and 'radial acceleration' / 'tangential acceleration' instead of 'Centripetal Acceleration'."
+          },
+          {
+            "gold": "Banking of Roads",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Section omitted from this specific 6-page revision PDF."
+          },
+          {
+            "gold": "Free Body Diagram",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "FBD acronym / diagrammatic method not named in text; body force equations are written directly."
+          },
+          {
+            "gold": "Normal Reaction",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Normal Force' and 'normal response'; extractor captured 'Normal Force'."
+          },
+          {
+            "gold": "Tension",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "String 'tension' does not appear in the 6-page PDF text."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 5,
+          "WORDING_ALIAS_MISMATCH": 2,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 12,
+          "unmatched_extractions_sample": [
+            "Newton's Laws of Motion",
+            "net force",
+            "mass",
+            "Normal Force",
+            "relative motion",
+            "normal response",
+            "inclined plane",
+            "angular acceleration",
+            "tangential acceleration",
+            "Net Acceleration"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 54.55,
+        "reported_recall": 58.82,
+        "text_present_adjusted_recall": 83.33,
+        "reported_f1": 74.07,
+        "strict_f1": 56.6,
+        "adjusted_f1": 65.94,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "physics_work_energy_power_esaral": {
+      "metadata": {
+        "doc_id": "physics_work_energy_power_esaral",
+        "filename": "physics_work_energy_power_esaral.pdf",
+        "subject": "Physics",
+        "chapter": "Work, Energy and Power",
+        "publisher": "eSaral",
+        "partition": "Validation",
+        "pages": 5,
+        "extracted_characters": 4227
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 18,
+        "total_supporting_gold": 5,
+        "text_absent_gold_count": 1,
+        "text_absent_gold_concepts": [
+          "Coefficient of Restitution"
+        ],
+        "text_present_gold_count": 17,
+        "assessable_gold_list": [
+          "Work Done by Constant Force",
+          "Work Done by Variable Force",
+          "Kinetic Energy",
+          "Work Energy Theorem",
+          "Potential Energy",
+          "Conservative Force",
+          "Non-Conservative Force",
+          "Spring Potential Energy",
+          "Conservation of Mechanical Energy",
+          "Power",
+          "Instantaneous Power",
+          "Average Power",
+          "Impulse",
+          "Impulse-Momentum Theorem",
+          "Conservation of Linear Momentum",
+          "Elastic Collision",
+          "Inelastic Collision",
+          "Coefficient of Restitution"
+        ],
+        "supporting_gold_list": [
+          "Scalar Product of Vectors",
+          "Force Displacement Curve",
+          "Stable Equilibrium",
+          "Unstable Equilibrium",
+          "Watt"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 45,
+        "grounded_concepts_count": 45,
+        "topics_formed_count": 13,
+        "sample_extracted_concepts": [
+          "energy",
+          "power",
+          "Friction",
+          "negative work",
+          "Variable Force",
+          "vector",
+          "Energy Theorem",
+          "kinetic energy",
+          "Work-Energy Theorem",
+          "net work"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 15,
+        "reported_unmatched_gold": [
+          "Work Done by Constant Force",
+          "Non-Conservative Force",
+          "Coefficient of Restitution"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "energy": [
+            "Kinetic Energy",
+            "Work Energy Theorem",
+            "Potential Energy",
+            "Spring Potential Energy",
+            "Conservation of Mechanical Energy"
+          ],
+          "power": [
+            "Power",
+            "Instantaneous Power",
+            "Average Power"
+          ],
+          "Potential energy": [
+            "Potential Energy",
+            "Spring Potential Energy"
+          ],
+          "Potential": [
+            "Potential Energy",
+            "Spring Potential Energy"
+          ],
+          "Spring Potential Energy": [
+            "Potential Energy",
+            "Spring Potential Energy"
+          ],
+          "average power": [
+            "Power",
+            "Average Power"
+          ],
+          "instantaneous power": [
+            "Power",
+            "Instantaneous Power"
+          ],
+          "IMPULSE": [
+            "Impulse",
+            "Impulse-Momentum Theorem"
+          ],
+          "MOMENTUM": [
+            "Impulse-Momentum Theorem",
+            "Conservation of Linear Momentum"
+          ],
+          "collision": [
+            "Elastic Collision",
+            "Inelastic Collision"
+          ],
+          "elastic collision": [
+            "Elastic Collision",
+            "Inelastic Collision"
+          ],
+          "inelastic collision": [
+            "Elastic Collision",
+            "Inelastic Collision"
+          ],
+          "completely inelastic collision": [
+            "Elastic Collision",
+            "Inelastic Collision"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Kinetic Energy": [
+            "energy",
+            "kinetic energy",
+            "momentum and kinetic energy"
+          ],
+          "Work Energy Theorem": [
+            "energy",
+            "Energy Theorem",
+            "Work-Energy Theorem"
+          ],
+          "Potential Energy": [
+            "energy",
+            "Potential energy",
+            "Potential",
+            "Gravitational Potential Energy",
+            "Spring Potential Energy"
+          ],
+          "Spring Potential Energy": [
+            "energy",
+            "Potential energy",
+            "Potential",
+            "Spring Potential Energy",
+            "Spring Potential"
+          ],
+          "Conservation of Mechanical Energy": [
+            "energy",
+            "Conservation of Mechanical Energy",
+            "Mechanical Energy"
+          ],
+          "Power": [
+            "power",
+            "average power",
+            "SI unit of power",
+            "instantaneous power"
+          ],
+          "Instantaneous Power": [
+            "power",
+            "instantaneous power"
+          ],
+          "Average Power": [
+            "power",
+            "average power"
+          ],
+          "Impulse-Momentum Theorem": [
+            "IMPULSE",
+            "MOMENTUM THEOREM",
+            "MOMENTUM"
+          ],
+          "Conservation of Linear Momentum": [
+            "MOMENTUM",
+            "Conservation of Momentum",
+            "LINEAR MOMENTUM"
+          ],
+          "Elastic Collision": [
+            "collision",
+            "elastic collision",
+            "inelastic collision",
+            "completely inelastic collision"
+          ],
+          "Inelastic Collision": [
+            "collision",
+            "elastic collision",
+            "inelastic collision",
+            "completely inelastic collision"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Work Done by Constant Force",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text refers to 'work done by a force' and 'constant force' in separate clauses; extractor extracted 'constant force' and 'Variable Force'."
+          },
+          {
+            "gold": "Non-Conservative Force",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text mentions conservative forces and friction as non-conservative example; extractor captured 'conservative force' and 'Friction'."
+          },
+          {
+            "gold": "Coefficient of Restitution",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Collision restitution details not included in this 5-page revision summary."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 1,
+          "WORDING_ALIAS_MISMATCH": 2,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 30,
+          "unmatched_extractions_sample": [
+            "Friction",
+            "negative work",
+            "net work",
+            "resultant of all the force",
+            "Gravitational Potential",
+            "spring force",
+            "amount of work",
+            "integral of force",
+            "integral",
+            "Newton's Second Law of Motion",
+            "According to Newton's second law",
+            "net force",
+            "mass and acceleration",
+            "equal to the product",
+            "mass"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 62.22,
+        "reported_recall": 83.33,
+        "text_present_adjusted_recall": 88.24,
+        "reported_f1": 90.91,
+        "strict_f1": 71.24,
+        "adjusted_f1": 72.98,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "physics_rotational_motion_esaral": {
+      "metadata": {
+        "doc_id": "physics_rotational_motion_esaral",
+        "filename": "physics_rotational_motion_esaral.pdf",
+        "subject": "Physics",
+        "chapter": "Rotational Motion",
+        "publisher": "eSaral",
+        "partition": "Held-out Evaluation",
+        "pages": 6,
+        "extracted_characters": 4941
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 16,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 0,
+        "text_absent_gold_concepts": [],
+        "text_present_gold_count": 16,
+        "assessable_gold_list": [
+          "Rotational Kinematics",
+          "Angular Velocity",
+          "Angular Acceleration",
+          "Moment of Inertia",
+          "Radius of Gyration",
+          "Parallel Axis Theorem",
+          "Perpendicular Axis Theorem",
+          "Torque",
+          "Newton's Second Law for Rotation",
+          "Rotational Work and Energy",
+          "Rotational Power",
+          "Rolling Motion",
+          "Rolling Without Slipping",
+          "Angular Momentum",
+          "Conservation of Angular Momentum",
+          "Angular Impulse"
+        ],
+        "supporting_gold_list": [
+          "Center of Mass",
+          "Couple",
+          "Pure Rotation",
+          "Torque Angular Momentum Relation"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 61,
+        "grounded_concepts_count": 61,
+        "topics_formed_count": 14,
+        "sample_extracted_concepts": [
+          "Rotational Motion",
+          "angular velocity",
+          "average angular velocity",
+          "instantaneous angular velocity",
+          "angular speed",
+          "moment of inertia",
+          "angular acceleration",
+          "kinematics for constant angular acceleration",
+          "inertia",
+          "discrete system"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 13,
+        "reported_unmatched_gold": [
+          "Rotational Kinematics",
+          "Radius of Gyration",
+          "Rolling Without Slipping"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "Axis Theorem": [
+            "Parallel Axis Theorem",
+            "Perpendicular Axis Theorem"
+          ],
+          "torque": [
+            "Torque",
+            "Torque Angular Momentum Relation"
+          ],
+          "ANGULAR MOMENTUM": [
+            "Angular Momentum",
+            "Conservation of Angular Momentum",
+            "Torque Angular Momentum Relation"
+          ],
+          "momentum": [
+            "Angular Momentum",
+            "Conservation of Angular Momentum",
+            "Torque Angular Momentum Relation"
+          ],
+          "Conservation of Angular Momentum": [
+            "Angular Momentum",
+            "Conservation of Angular Momentum"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Angular Velocity": [
+            "angular velocity",
+            "average angular velocity",
+            "instantaneous angular velocity"
+          ],
+          "Angular Acceleration": [
+            "angular acceleration",
+            "kinematics for constant angular acceleration"
+          ],
+          "Moment of Inertia": [
+            "moment of inertia",
+            "inertia",
+            "particles the moment of inertia"
+          ],
+          "Torque": [
+            "torque",
+            "Since torque"
+          ],
+          "Newton's Second Law for Rotation": [
+            "S SECOND LAW",
+            "Newton's Second Law of Motion"
+          ],
+          "Rotational Work and Energy": [
+            "ROTATIONAL WORK AND ENERGY",
+            "energy",
+            "rotational work"
+          ],
+          "Rotational Power": [
+            "Rotational Power",
+            "Power"
+          ],
+          "Rolling Motion": [
+            "rolling motion",
+            "pure rolling motion"
+          ],
+          "Angular Momentum": [
+            "ANGULAR MOMENTUM",
+            "momentum",
+            "Conservation of Angular Momentum"
+          ],
+          "Conservation of Angular Momentum": [
+            "ANGULAR MOMENTUM",
+            "momentum",
+            "Conservation of Angular Momentum"
+          ],
+          "Angular Impulse": [
+            "Angular Impulse",
+            "impulse"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Theorem of Parallel Axes",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Parallel axis theorem'; extractor extracted 'Parallel axis theorem'."
+          },
+          {
+            "gold": "Theorem of Perpendicular Axes",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Perpendicular axis theorem'; extractor extracted 'Perpendicular axis theorem'."
+          },
+          {
+            "gold": "Kinetic Energy of Rolling",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text separates into 'Kinetic Energy of pure rolling' and 'Rolling kinetic energy'; extractor captured 'pure rolling' and 'Kinetic Energy'."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 0,
+          "WORDING_ALIAS_MISMATCH": 3,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 48,
+          "unmatched_extractions_sample": [
+            "Rotational Motion",
+            "angular speed",
+            "discrete system",
+            "particles the moment",
+            "ith particle",
+            "equal to its moment",
+            "centre of mass",
+            "plus the product",
+            "mass plus the product",
+            "mass of the body",
+            "inertia of the body",
+            "Total mass",
+            "Total mass of the body",
+            "vector",
+            "analog of force"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 45.9,
+        "reported_recall": 81.25,
+        "text_present_adjusted_recall": 81.25,
+        "reported_f1": 89.66,
+        "strict_f1": 58.66,
+        "adjusted_f1": 58.66,
+        "noise_rejection_rate": 75.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "physics_electrostatics_allen": {
+      "metadata": {
+        "doc_id": "physics_electrostatics_allen",
+        "filename": "physics_electrostatics_allen.pdf",
+        "subject": "Physics",
+        "chapter": "Electrostatics",
+        "publisher": "Allen Career Institute Kota",
+        "partition": "Held-out Evaluation",
+        "pages": 5,
+        "extracted_characters": 10029
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 16,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 0,
+        "text_absent_gold_concepts": [],
+        "text_present_gold_count": 16,
+        "assessable_gold_list": [
+          "Electric Charge",
+          "Quantization of Charge",
+          "Coulomb's Law",
+          "Principle of Superposition",
+          "Electric Field",
+          "Electric Field Due to Point Charge",
+          "Electric Field Lines",
+          "Electric Dipole",
+          "Dipole Moment",
+          "Torque on Dipole",
+          "Electric Flux",
+          "Gauss's Law",
+          "Electric Potential",
+          "Potential Difference",
+          "Equipotential Surface",
+          "Electrostatic Potential Energy"
+        ],
+        "supporting_gold_list": [
+          "Surface Charge Density",
+          "Linear Charge Density",
+          "Volume Charge Density",
+          "Dielectric Constant"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 101,
+        "grounded_concepts_count": 101,
+        "topics_formed_count": 1,
+        "sample_extracted_concepts": [
+          "ELECTRIC CHARGE",
+          "charge",
+          "material body",
+          "Properties of charge",
+          "scalar quantity",
+          "scalar",
+          "Friction",
+          "S LAW",
+          "COULOMB'S LAW",
+          "charge distribution"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 15,
+        "reported_unmatched_gold": [
+          "Principle of Superposition"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "ELECTRIC CHARGE": [
+            "Electric Charge",
+            "Electric Field Due to Point Charge"
+          ],
+          "charge": [
+            "Electric Charge",
+            "Quantization of Charge",
+            "Electric Field Due to Point Charge",
+            "Surface Charge Density",
+            "Linear Charge Density",
+            "Volume Charge Density"
+          ],
+          "S LAW": [
+            "Coulomb's Law",
+            "Gauss's Law"
+          ],
+          "electric field": [
+            "Electric Field",
+            "Electric Field Due to Point Charge",
+            "Electric Field Lines"
+          ],
+          "Electric field lines": [
+            "Electric Field",
+            "Electric Field Lines"
+          ],
+          "Number of electric field lines": [
+            "Electric Field",
+            "Electric Field Lines"
+          ],
+          "potential": [
+            "Electric Potential",
+            "Potential Difference",
+            "Equipotential Surface",
+            "Electrostatic Potential Energy"
+          ],
+          "DIPOLE": [
+            "Electric Dipole",
+            "Dipole Moment",
+            "Torque on Dipole"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Electric Charge": [
+            "ELECTRIC CHARGE",
+            "charge"
+          ],
+          "Coulomb's Law": [
+            "S LAW",
+            "COULOMB'S LAW"
+          ],
+          "Electric Field": [
+            "electric field",
+            "INTENSITY OR ELECTRIC FIELD",
+            "ELECTRIC INTENSITY OR ELECTRIC FIELD",
+            "uniform electric field",
+            "Electric field lines",
+            "Number of electric field",
+            "Number of electric field lines",
+            "external electric field",
+            "angle in external electric field",
+            "non-uniform electric field"
+          ],
+          "Electric Field Due to Point Charge": [
+            "ELECTRIC CHARGE",
+            "charge",
+            "electric field",
+            "point charge",
+            "Due to point charge"
+          ],
+          "Electric Field Lines": [
+            "electric field",
+            "Electric field lines",
+            "field lines",
+            "Number of electric field lines"
+          ],
+          "Dipole Moment": [
+            "DIPOLE",
+            "Dipole Moment"
+          ],
+          "Torque on Dipole": [
+            "DIPOLE",
+            "Torque"
+          ],
+          "Electric Flux": [
+            "ELECTRIC FLUX",
+            "Flux"
+          ],
+          "Gauss's Law": [
+            "S LAW",
+            "Gauss's Law"
+          ],
+          "Electric Potential": [
+            "potential",
+            "ELECTRIC POTENTIAL"
+          ],
+          "Electrostatic Potential Energy": [
+            "ELECTROSTATIC POTENTIAL ENERGY",
+            "energy",
+            "ELECTROSTATIC POTENTIAL",
+            "potential energy",
+            "potential"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Electrostatic Potential Energy",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Electric potential energy' and 'potential energy of dipole'; extractor captured both."
+          },
+          {
+            "gold": "Potential due to Point Charge",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Extracted as 'Electric Potential' and 'point charge' independently."
+          },
+          {
+            "gold": "Electric Flux through Sphere",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Extracted as 'Electric Flux' and 'Gaussian Surface'; composite phrase omitted in gold matching."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 0,
+          "WORDING_ALIAS_MISMATCH": 3,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 86,
+          "unmatched_extractions_sample": [
+            "material body",
+            "Properties of charge",
+            "scalar quantity",
+            "scalar",
+            "Friction",
+            "charge distribution",
+            "force on unit test charge",
+            "SPECIAL CHARGE",
+            "SPECIAL CHARGE DISTRIBUTION",
+            "DUE TO SPECIAL CHARGE",
+            "FIELD DUE TO SPECIAL CHARGE",
+            "DUE TO SPECIAL CHARGE DISTRIBUTION",
+            "linear charge distribution",
+            "Due to linear charge",
+            "Due to linear charge distribution"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 29.7,
+        "reported_recall": 93.75,
+        "text_present_adjusted_recall": 93.75,
+        "reported_f1": 96.77,
+        "strict_f1": 45.11,
+        "adjusted_f1": 45.11,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "chemistry_atomic_structure_esaral": {
+      "metadata": {
+        "doc_id": "chemistry_atomic_structure_esaral",
+        "filename": "chemistry_atomic_structure_esaral.pdf",
+        "subject": "Chemistry",
+        "chapter": "Atomic Structure",
+        "publisher": "eSaral",
+        "partition": "Validation",
+        "pages": 11,
+        "extracted_characters": 10628
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 21,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 3,
+        "text_absent_gold_concepts": [
+          "Lyman Series",
+          "Shapes of Atomic Orbitals",
+          "Radial and Angular Nodes"
+        ],
+        "text_present_gold_count": 18,
+        "assessable_gold_list": [
+          "Rutherford Nuclear Model",
+          "Bohr Model of Atom",
+          "Radius of Bohr Orbit",
+          "Velocity of Electron",
+          "Energy of Bohr Orbit",
+          "Hydrogen Spectral Series",
+          "Lyman Series",
+          "Balmer Series",
+          "Paschen Series",
+          "de Broglie Relationship",
+          "Heisenberg Uncertainty Principle",
+          "Quantum Numbers",
+          "Principal Quantum Number",
+          "Azimuthal Quantum Number",
+          "Magnetic Quantum Number",
+          "Spin Quantum Number",
+          "Shapes of Atomic Orbitals",
+          "Radial and Angular Nodes",
+          "Aufbau Principle",
+          "Pauli Exclusion Principle",
+          "Hund's Rule of Maximum Multiplicity"
+        ],
+        "supporting_gold_list": [
+          "Planck's Quantum Theory",
+          "Photoelectric Effect",
+          "Electromagnetic Spectrum",
+          "Degenerate Orbitals"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 121,
+        "grounded_concepts_count": 121,
+        "topics_formed_count": 21,
+        "sample_extracted_concepts": [
+          "Atomic Structure",
+          "nuclear model",
+          "Rutherford's nuclear model",
+          "entire mass",
+          "carries the entire mass",
+          "mass",
+          "nucleus",
+          "Properties of the nucleus",
+          "Rutherford's model",
+          "Drawbacks of Rutherford's model"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 14,
+        "reported_unmatched_gold": [
+          "Bohr Model of Atom",
+          "Radius of Bohr Orbit",
+          "Velocity of Electron",
+          "Lyman Series",
+          "de Broglie Relationship",
+          "Shapes of Atomic Orbitals",
+          "Radial and Angular Nodes"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "quantum number": [
+            "Quantum Numbers",
+            "Principal Quantum Number",
+            "Azimuthal Quantum Number",
+            "Magnetic Quantum Number",
+            "Spin Quantum Number"
+          ],
+          "Spin quantum number": [
+            "Quantum Numbers",
+            "Spin Quantum Number"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Rutherford Nuclear Model": [
+            "nuclear model",
+            "Rutherford's nuclear model"
+          ],
+          "Heisenberg Uncertainty Principle": [
+            "uncertainty principle",
+            "Heisenberg's uncertainty principle"
+          ],
+          "Quantum Numbers": [
+            "four quantum numbers",
+            "quantum number",
+            "Spin quantum number"
+          ],
+          "Principal Quantum Number": [
+            "quantum number",
+            "principal quantum number"
+          ],
+          "Azimuthal Quantum Number": [
+            "quantum number",
+            "Azimuthal quantum number"
+          ],
+          "Magnetic Quantum Number": [
+            "quantum number",
+            "Magnetic quantum number"
+          ],
+          "Spin Quantum Number": [
+            "quantum number",
+            "Spin quantum number"
+          ],
+          "Pauli Exclusion Principle": [
+            "exclusion principle",
+            "Pauli's exclusion principle"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Bohr Model of Atom",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Bohr model' and 'Bohr Postulates'; extractor captured 'Bohr model'."
+          },
+          {
+            "gold": "Radius of Bohr Orbit",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Bohr radius' and 'radius of orbit'; extractor captured 'Bohr radius'."
+          },
+          {
+            "gold": "Velocity of Electron",
+            "category": "ENUMERATION_PREFIX_FILTER",
+            "text_present": true,
+            "reason": "Header in text was '(iii) Calculation of velocity of electron'; retained enumeration prefix before trimming."
+          },
+          {
+            "gold": "Lyman Series",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Specific spectral series named in general syllabus not spelled out in this formula summary table."
+          },
+          {
+            "gold": "de Broglie Relationship",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'de-Broglie wavelength' and 'de Broglie hypothesis'; extractor captured 'de-Broglie wavelength'."
+          },
+          {
+            "gold": "Shapes of Atomic Orbitals",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Orbital shapes section omitted from this formula-centric summary."
+          },
+          {
+            "gold": "Radial and Angular Nodes",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Specific phrase 'radial and angular nodes' not in text; only nodal formulas appear."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 3,
+          "WORDING_ALIAS_MISMATCH": 3,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 1,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 107,
+          "unmatched_extractions_sample": [
+            "Atomic Structure",
+            "entire mass",
+            "carries the entire mass",
+            "nucleus",
+            "mass",
+            "Properties of the nucleus",
+            "Rutherford's model",
+            "Drawbacks of Rutherford's model",
+            "around the nucleus",
+            "spiral motion",
+            "loses its energy",
+            "continuously loses its energy",
+            "Hence this model",
+            "According to this theory",
+            "effect equation"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 99.17,
+        "strict_bipartite_precision": 21.49,
+        "reported_recall": 66.67,
+        "text_present_adjusted_recall": 77.78,
+        "reported_f1": 79.73,
+        "strict_f1": 32.5,
+        "adjusted_f1": 33.68,
+        "noise_rejection_rate": 75.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "chemistry_chemical_bonding_esaral": {
+      "metadata": {
+        "doc_id": "chemistry_chemical_bonding_esaral",
+        "filename": "chemistry_chemical_bonding_esaral.pdf",
+        "subject": "Chemistry",
+        "chapter": "Chemical Bonding and Molecular Structure",
+        "publisher": "eSaral",
+        "partition": "Held-out Evaluation",
+        "pages": 16,
+        "extracted_characters": 14926
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 19,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 1,
+        "text_absent_gold_concepts": [
+          "Octet Rule"
+        ],
+        "text_present_gold_count": 18,
+        "assessable_gold_list": [
+          "Electrovalent Bond",
+          "Lattice Energy",
+          "Covalent Bond",
+          "Octet Rule",
+          "Dipole Moment",
+          "VSEPR Theory",
+          "Molecular Geometry",
+          "Valence Bond Theory",
+          "Sigma Bond",
+          "Pi Bond",
+          "Hybridization",
+          "sp Hybridization",
+          "sp2 Hybridization",
+          "sp3 Hybridization",
+          "Resonance",
+          "Formal Charge",
+          "Molecular Orbital Theory",
+          "Bond Order",
+          "Hydrogen Bonding"
+        ],
+        "supporting_gold_list": [
+          "Electronegativity Difference",
+          "Fajan's Rules",
+          "Coordinate Covalent Bond",
+          "Intermolecular vs Intramolecular Hydrogen Bonding"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 184,
+        "grounded_concepts_count": 184,
+        "topics_formed_count": 13,
+        "sample_extracted_concepts": [
+          "Chemical Bonding and Molecular Structure",
+          "Chemical Bonding",
+          "Molecular Structure",
+          "Bonding and Molecular Structure",
+          "Electrovalent bond",
+          "metal atom",
+          "non-metal atom",
+          "covalent bond",
+          "covalent compounds",
+          "Characteristics of covalent compounds"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 15,
+        "reported_unmatched_gold": [
+          "Octet Rule",
+          "VSEPR Theory",
+          "Pi Bond",
+          "Bond Order"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "covalent bond": [
+            "Covalent Bond",
+            "Coordinate Covalent Bond"
+          ],
+          "hydrogen bonding": [
+            "Hydrogen Bonding",
+            "Intermolecular vs Intramolecular Hydrogen Bonding"
+          ],
+          "Molecular geometry and dipole moment": [
+            "Dipole Moment",
+            "Molecular Geometry"
+          ],
+          "hybridization": [
+            "Hybridization",
+            "sp Hybridization",
+            "sp2 Hybridization",
+            "sp3 Hybridization"
+          ],
+          "hydrogen bond": [
+            "Hydrogen Bonding",
+            "Intermolecular vs Intramolecular Hydrogen Bonding"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Covalent Bond": [
+            "covalent bond",
+            "forming the covalent bond"
+          ],
+          "Dipole Moment": [
+            "Dipole moment",
+            "Dipole",
+            "geometry and dipole moment",
+            "Molecular geometry and dipole moment"
+          ],
+          "Molecular Geometry": [
+            "geometry",
+            "Molecular geometry",
+            "Molecular geometry and dipole moment"
+          ],
+          "Valence Bond Theory": [
+            "Valence bond",
+            "bond theory",
+            "Valence bond theory"
+          ],
+          "Sigma Bond": [
+            "sigma bonds",
+            "form only sigma bonds",
+            "orbitals form only sigma bonds"
+          ],
+          "Hybridization": [
+            "hybridization",
+            "Characteristics of hybridization",
+            "undergoes hybridization",
+            "ion undergoes hybridization",
+            "atom or ion undergoes hybridization",
+            "mixed during hybridization",
+            "involve in hybridization"
+          ],
+          "Resonance": [
+            "resonance",
+            "resonance energy"
+          ],
+          "Molecular Orbital Theory": [
+            "molecular orbital",
+            "orbital theory",
+            "Molecular orbital theory"
+          ],
+          "Hydrogen Bonding": [
+            "hydrogen bonding",
+            "hydrogen bond",
+            "Types of hydrogen bonding"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Octet Rule",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Text uses plural descriptive 'octets' in explanation; standalone 'Octet Rule' does not appear verbatim."
+          },
+          {
+            "gold": "VSEPR Theory",
+            "category": "LENGTH_ACRONYM_TRUNCATION",
+            "text_present": true,
+            "reason": "Full expansion 'Valence shell electron pair repulsion theory (VSEPR)' exceeds candidate char threshold."
+          },
+          {
+            "gold": "Pi Bond",
+            "category": "ENCODING_GLYPH_ISSUE",
+            "text_present": true,
+            "reason": "Document encodes Greek letter pi as Symbol font character '\\uf070' rather than ASCII 'pi'."
+          },
+          {
+            "gold": "Bond Order",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Appears in MOT section as formula 'B.O. = (Nb - Na)/2'; extractor captured 'Bond Order' in MOT table context."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 1,
+          "WORDING_ALIAS_MISMATCH": 1,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 1,
+          "ENCODING_GLYPH_ISSUE": 1
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 169,
+          "unmatched_extractions_sample": [
+            "Chemical Bonding and Molecular Structure",
+            "Chemical Bonding",
+            "Molecular Structure",
+            "Bonding and Molecular Structure",
+            "metal atom",
+            "non-metal atom",
+            "covalent compounds",
+            "Characteristics of covalent compounds",
+            "molecular reactions",
+            "positive charge",
+            "negative or positive charge",
+            "Electric charge",
+            "isomerism",
+            "geometry of molecules",
+            "polarizing power"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 99.46,
+        "strict_bipartite_precision": 19.02,
+        "reported_recall": 78.95,
+        "text_present_adjusted_recall": 83.33,
+        "reported_f1": 88.02,
+        "strict_f1": 30.65,
+        "adjusted_f1": 30.97,
+        "noise_rejection_rate": 75.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "chemistry_coordination_compounds_esaral": {
+      "metadata": {
+        "doc_id": "chemistry_coordination_compounds_esaral",
+        "filename": "chemistry_coordination_compounds_esaral.pdf",
+        "subject": "Chemistry",
+        "chapter": "Coordination Compounds",
+        "publisher": "eSaral",
+        "partition": "Held-out Evaluation",
+        "pages": 6,
+        "extracted_characters": 6399
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 17,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 5,
+        "text_absent_gold_concepts": [
+          "Werner's Coordination Theory",
+          "Inner and Outer Orbital Complexes",
+          "Crystal Field Theory",
+          "Crystal Field Splitting",
+          "Spectrochemical Series"
+        ],
+        "text_present_gold_count": 12,
+        "assessable_gold_list": [
+          "Coordination Compounds",
+          "Coordination Sphere",
+          "Central Metal Atom",
+          "Ligands",
+          "Chelating Ligands",
+          "Coordination Number",
+          "Oxidation State",
+          "Werner's Coordination Theory",
+          "Valence Bond Theory",
+          "Inner and Outer Orbital Complexes",
+          "Magnetic Moment of Complexes",
+          "Crystal Field Theory",
+          "Crystal Field Splitting",
+          "Spectrochemical Series",
+          "Structural Isomerism",
+          "Geometrical Isomerism",
+          "Optical Isomerism"
+        ],
+        "supporting_gold_list": [
+          "Denticity of Ligand",
+          "Homoleptic Complex",
+          "Heteroleptic Complex",
+          "High Spin and Low Spin Complexes"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 110,
+        "grounded_concepts_count": 110,
+        "topics_formed_count": 4,
+        "sample_extracted_concepts": [
+          "ORDINATION COMPOUNDS",
+          "CO-ORDINATION COMPOUNDS",
+          "Coordination Compounds",
+          "Central Ion",
+          "central atom",
+          "atom or ion",
+          "central atom or ion",
+          "metal atom",
+          "neutral molecules",
+          "neutral metal atom"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 10,
+        "reported_unmatched_gold": [
+          "Oxidation State",
+          "Werner's Coordination Theory",
+          "Inner and Outer Orbital Complexes",
+          "Magnetic Moment of Complexes",
+          "Crystal Field Theory",
+          "Crystal Field Splitting",
+          "Spectrochemical Series"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "ligands": [
+            "Ligands",
+            "Chelating Ligands",
+            "Denticity of Ligand"
+          ],
+          "isomerism": [
+            "Structural Isomerism",
+            "Geometrical Isomerism",
+            "Optical Isomerism"
+          ],
+          "isomers": [
+            "Structural Isomerism",
+            "Geometrical Isomerism",
+            "Optical Isomerism"
+          ],
+          "ligands in their coordination spheres": [
+            "Coordination Sphere",
+            "Ligands"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Coordination Compounds": [
+            "ORDINATION COMPOUNDS",
+            "CO-ORDINATION COMPOUNDS",
+            "Coordination Compounds",
+            "BONDING IN CO-ORDINATION COMPOUNDS",
+            "ISOMERISM IN CO-ORDINATION COMPOUNDS",
+            "Isomerism in coordination compounds"
+          ],
+          "Coordination Sphere": [
+            "Co-ordination sphere",
+            "coordination spheres",
+            "within their coordination spheres",
+            "outside the coordination sphere",
+            "ligands in their coordination spheres"
+          ],
+          "Central Metal Atom": [
+            "central atom",
+            "metal atom",
+            "acentral metal atom",
+            "central metal atom"
+          ],
+          "Ligands": [
+            "ligands",
+            "surrounding ligands",
+            "different ligands",
+            "ambidentate ligands",
+            "ligands in their coordination spheres"
+          ],
+          "Valence Bond Theory": [
+            "Valence Bond Theory",
+            "Valence Bond",
+            "Bond Theory",
+            "features of Valence Bond Theory"
+          ],
+          "Structural Isomerism": [
+            "isomerism",
+            "isomers"
+          ],
+          "Geometrical Isomerism": [
+            "isomerism",
+            "isomers"
+          ],
+          "Optical Isomerism": [
+            "isomerism",
+            "isomers"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Oxidation State",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text consistently uses 'Oxidation number'; extractor captured 'Oxidation number'."
+          },
+          {
+            "gold": "Werner's Coordination Theory",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Document only covers Pauling VBT and Isomerism; Werner theory omitted from this revision note."
+          },
+          {
+            "gold": "Inner and Outer Orbital Complexes",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Pauling VBT summary uses 'inner orbital' vs 'outer orbital' adjectives, not composite header."
+          },
+          {
+            "gold": "Magnetic Moment of Complexes",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'spin-only magnetic moment' and formula '\\mu = \\sqrt{n(n+2)}'; extractor captured 'magnetic moment'."
+          },
+          {
+            "gold": "Crystal Field Theory",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "CFT section not present in this 6-page VBT-focused PDF."
+          },
+          {
+            "gold": "Crystal Field Splitting",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "CFT splitting (\\Delta_o, \\Delta_t) omitted from this revision PDF."
+          },
+          {
+            "gold": "Spectrochemical Series",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Spectrochemical series table omitted from this revision PDF."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 5,
+          "WORDING_ALIAS_MISMATCH": 2,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 100,
+          "unmatched_extractions_sample": [
+            "Central Ion",
+            "atom or ion",
+            "central atom or ion",
+            "neutral molecules",
+            "neutral metal atom",
+            "more neutral molecules",
+            "anions",
+            "cation",
+            "ion or molecule",
+            "number of atoms",
+            "array of molecules",
+            "molecules and ions",
+            "array of molecules and ions",
+            "Oxidation number",
+            "electric charge"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 23.64,
+        "reported_recall": 58.82,
+        "text_present_adjusted_recall": 83.33,
+        "reported_f1": 74.07,
+        "strict_f1": 33.73,
+        "adjusted_f1": 36.83,
+        "noise_rejection_rate": 66.67,
+        "duplicate_rate": 1.82,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "math_limits_continuity_esaral": {
+      "metadata": {
+        "doc_id": "math_limits_continuity_esaral",
+        "filename": "math_limits_continuity_esaral.pdf",
+        "subject": "Mathematics",
+        "chapter": "Limits, Continuity and Differentiability",
+        "publisher": "eSaral",
+        "partition": "Validation",
+        "pages": 9,
+        "extracted_characters": 9330
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 14,
+        "total_supporting_gold": 3,
+        "text_absent_gold_count": 0,
+        "text_absent_gold_concepts": [],
+        "text_present_gold_count": 14,
+        "assessable_gold_list": [
+          "Left Hand Limit",
+          "Right Hand Limit",
+          "Existence of Limit",
+          "Indeterminate Forms",
+          "L'Hospital's Rule",
+          "Standard Limits",
+          "Continuity at a Point",
+          "Continuity in an Interval",
+          "Types of Discontinuity",
+          "Intermediate Value Theorem",
+          "Differentiability at a Point",
+          "Left and Right Derivatives",
+          "Differentiability in an Interval",
+          "Relationship Between Continuity and Differentiability"
+        ],
+        "supporting_gold_list": [
+          "Squeeze Theorem",
+          "Expansion of Functions",
+          "Geometrical Interpretation of Derivative"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 41,
+        "grounded_concepts_count": 41,
+        "topics_formed_count": 10,
+        "sample_extracted_concepts": [
+          "CONTINUITY AND DIFFERENTIABILITY",
+          "Continuity",
+          "Differentiability",
+          "Right Limit",
+          "limit",
+          "hand limit",
+          "otherwise limit",
+          "real number",
+          "finite number",
+          "Properties of continuous functions"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 12,
+        "reported_unmatched_gold": [
+          "Indeterminate Forms",
+          "Left and Right Derivatives"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "Continuity": [
+            "Continuity at a Point",
+            "Continuity in an Interval",
+            "Types of Discontinuity",
+            "Relationship Between Continuity and Differentiability"
+          ],
+          "Differentiability": [
+            "Differentiability at a Point",
+            "Differentiability in an Interval",
+            "Relationship Between Continuity and Differentiability"
+          ],
+          "limit": [
+            "Left Hand Limit",
+            "Right Hand Limit",
+            "Existence of Limit",
+            "Standard Limits"
+          ],
+          "hand limit": [
+            "Left Hand Limit",
+            "Right Hand Limit"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Left Hand Limit": [
+            "limit",
+            "hand limit"
+          ],
+          "Right Hand Limit": [
+            "Right Limit",
+            "limit",
+            "hand limit"
+          ],
+          "L'Hospital's Rule": [
+            "S RULE",
+            "L'HOSPITAL'S RULE"
+          ],
+          "Relationship Between Continuity and Differentiability": [
+            "CONTINUITY AND DIFFERENTIABILITY",
+            "Continuity",
+            "Differentiability"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Algebra of Limits",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Properties of limits' and 'Evaluation of limits'; extractor captured 'Properties of limits'."
+          },
+          {
+            "gold": "Left Hand and Right Hand Limits",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Extracted separately as 'left hand limit' (LHL) and 'right hand limit' (RHL)."
+          },
+          {
+            "gold": "Removable and Non-Removable Discontinuity",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text breaks into 'Removable Discontinuity' and 'Discontinuity of first/second kind'; extractor captured 'Removable Discontinuity'."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 0,
+          "WORDING_ALIAS_MISMATCH": 3,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 29,
+          "unmatched_extractions_sample": [
+            "otherwise limit",
+            "real number",
+            "finite number",
+            "Properties of continuous functions",
+            "useful properties",
+            "extremely useful properties",
+            "continuous function",
+            "signs then the equation",
+            "Continuity of Composite Functions",
+            "Composite Functions",
+            "Differential Coefficient",
+            "independent variable",
+            "dependent variable",
+            "values of independent variable",
+            "final values of independent variable"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 21.95,
+        "reported_recall": 85.71,
+        "text_present_adjusted_recall": 85.71,
+        "reported_f1": 92.31,
+        "strict_f1": 34.95,
+        "adjusted_f1": 34.95,
+        "noise_rejection_rate": 66.67,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "math_matrices_determinants_esaral": {
+      "metadata": {
+        "doc_id": "math_matrices_determinants_esaral",
+        "filename": "math_matrices_determinants_esaral.pdf",
+        "subject": "Mathematics",
+        "chapter": "Matrices and Determinants",
+        "publisher": "eSaral",
+        "partition": "Held-out Evaluation",
+        "pages": 7,
+        "extracted_characters": 7474
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 20,
+        "total_supporting_gold": 3,
+        "text_absent_gold_count": 1,
+        "text_absent_gold_concepts": [
+          "Cramer's Rule"
+        ],
+        "text_present_gold_count": 19,
+        "assessable_gold_list": [
+          "Matrix",
+          "Order of Matrix",
+          "Types of Matrices",
+          "Square Matrix",
+          "Diagonal Matrix",
+          "Unit Matrix",
+          "Algebra of Matrices",
+          "Matrix Multiplication",
+          "Transpose of a Matrix",
+          "Symmetric Matrix",
+          "Skew Symmetric Matrix",
+          "Orthogonal Matrix",
+          "Rank of a Matrix",
+          "Minors and Cofactors",
+          "Properties of Determinants",
+          "Adjoint of Matrix",
+          "Inverse of Matrix",
+          "Solution of System of Linear Equations",
+          "Matrix Inversion Method",
+          "Cramer's Rule"
+        ],
+        "supporting_gold_list": [
+          "Singular and Non-Singular Matrix",
+          "Elementary Row Transformations",
+          "Trace of a Matrix"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 73,
+        "grounded_concepts_count": 73,
+        "topics_formed_count": 3,
+        "sample_extracted_concepts": [
+          "Matrices and Determinants",
+          "MATRICES",
+          "matrix",
+          "mn numbers",
+          "array of mn numbers",
+          "numbers in the form",
+          "rectangular array of mn numbers",
+          "mn numbers in the form",
+          "vertical lines",
+          "matrix of order"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 19,
+        "reported_unmatched_gold": [
+          "Minors and Cofactors"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "MATRICES": [
+            "Types of Matrices",
+            "Algebra of Matrices"
+          ],
+          "matrix": [
+            "Matrix",
+            "Order of Matrix",
+            "Square Matrix",
+            "Diagonal Matrix",
+            "Unit Matrix",
+            "Matrix Multiplication",
+            "Transpose of a Matrix",
+            "Symmetric Matrix",
+            "Skew Symmetric Matrix",
+            "Orthogonal Matrix",
+            "Rank of a Matrix",
+            "Adjoint of Matrix",
+            "Inverse of Matrix",
+            "Matrix Inversion Method",
+            "Singular and Non-Singular Matrix",
+            "Trace of a Matrix"
+          ],
+          "matrix of order": [
+            "Matrix",
+            "Order of Matrix"
+          ],
+          "square matrix": [
+            "Matrix",
+            "Square Matrix"
+          ],
+          "Diagonal Matrix": [
+            "Matrix",
+            "Diagonal Matrix"
+          ],
+          "square matrix of order": [
+            "Matrix",
+            "Order of Matrix",
+            "Square Matrix"
+          ],
+          "TRANSPOSE OF A MATRIX": [
+            "Matrix",
+            "Transpose of a Matrix"
+          ],
+          "SYMMETRIC MATRIX": [
+            "Matrix",
+            "Symmetric Matrix",
+            "Skew Symmetric Matrix"
+          ],
+          "SKEW SYMMETRIC MATRIX": [
+            "Matrix",
+            "Symmetric Matrix",
+            "Skew Symmetric Matrix"
+          ],
+          "ORTHOGONAL MATRIX": [
+            "Matrix",
+            "Orthogonal Matrix"
+          ],
+          "RANK OF A MATRIX": [
+            "Matrix",
+            "Rank of a Matrix"
+          ],
+          "skew-symmetric matrix": [
+            "Matrix",
+            "Symmetric Matrix",
+            "Skew Symmetric Matrix"
+          ],
+          "Rank of matrix": [
+            "Matrix",
+            "Rank of a Matrix"
+          ],
+          "MATRIX METHOD": [
+            "Matrix",
+            "Matrix Inversion Method"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Matrix": [
+            "matrix",
+            "matrix of order",
+            "zero matrix",
+            "Null Matrix",
+            "square matrix",
+            "Diagonal Matrix",
+            "Matrix or Null Matrix",
+            "Zero Matrix or Null Matrix",
+            "square matrix of order",
+            "TRANSPOSE OF A MATRIX",
+            "new matrix",
+            "SYMMETRIC MATRIX",
+            "SKEW SYMMETRIC MATRIX",
+            "ORTHOGONAL MATRIX",
+            "element of the matrix",
+            "columns from matrix",
+            "submatrix of order",
+            "square submatrix of order",
+            "RANK OF A MATRIX",
+            "skew-symmetric matrix",
+            "Rank of matrix",
+            "MATRIX METHOD",
+            "single matrix",
+            "matrix equation",
+            "single matrix equation"
+          ],
+          "Order of Matrix": [
+            "matrix",
+            "matrix of order",
+            "square matrix of order"
+          ],
+          "Types of Matrices": [
+            "MATRICES",
+            "TYPES OF MATRICES"
+          ],
+          "Square Matrix": [
+            "matrix",
+            "square matrix",
+            "square matrix of order"
+          ],
+          "Diagonal Matrix": [
+            "matrix",
+            "Diagonal Matrix"
+          ],
+          "Algebra of Matrices": [
+            "MATRICES",
+            "ALGEBRA OF MATRICES",
+            "ALGEBRA"
+          ],
+          "Transpose of a Matrix": [
+            "matrix",
+            "TRANSPOSE OF A MATRIX"
+          ],
+          "Symmetric Matrix": [
+            "matrix",
+            "SYMMETRIC MATRIX",
+            "SKEW SYMMETRIC MATRIX",
+            "skew-symmetric matrix"
+          ],
+          "Skew Symmetric Matrix": [
+            "matrix",
+            "SYMMETRIC MATRIX",
+            "SKEW SYMMETRIC MATRIX",
+            "skew-symmetric matrix"
+          ],
+          "Orthogonal Matrix": [
+            "matrix",
+            "ORTHOGONAL MATRIX"
+          ],
+          "Rank of a Matrix": [
+            "matrix",
+            "RANK OF A MATRIX",
+            "Rank of matrix"
+          ],
+          "Properties of Determinants": [
+            "determinant",
+            "PROPERTIES OF DETERMINANTS"
+          ],
+          "Solution of System of Linear Equations": [
+            "SOLUTION OF A SYSTEM",
+            "linear equations",
+            "system of linear equations",
+            "Solution of system",
+            "system of equations",
+            "solution of the system",
+            "system linear equations",
+            "Solution of system linear equations"
+          ],
+          "Matrix Inversion Method": [
+            "matrix",
+            "MATRIX METHOD"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Adjoint of a Matrix",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Adjoint of square matrix' and 'adj A'; extractor captured 'Adjoint of square matrix'."
+          },
+          {
+            "gold": "Cramer's Rule",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Linear equations solved via inverse matrix method; Cramer's determinant rule omitted."
+          },
+          {
+            "gold": "System of Linear Equations",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Text uses 'Linear Equations' and 'system of equations'; extractor captured 'Linear Equations'."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 1,
+          "WORDING_ALIAS_MISMATCH": 2,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 0,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 54,
+          "unmatched_extractions_sample": [
+            "Matrices and Determinants",
+            "mn numbers",
+            "array of mn numbers",
+            "numbers in the form",
+            "rectangular array of mn numbers",
+            "mn numbers in the form",
+            "vertical lines",
+            "equal to the number",
+            "non-diagonal element",
+            "diagonal element",
+            "Addition of Matrices",
+            "Subtraction of Matrices",
+            "Multiplication of Matrices",
+            "matrices each of order",
+            "adding the corresponding elements"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 98.63,
+        "strict_bipartite_precision": 54.79,
+        "reported_recall": 95.0,
+        "text_present_adjusted_recall": 100.0,
+        "reported_f1": 96.78,
+        "strict_f1": 69.5,
+        "adjusted_f1": 70.79,
+        "noise_rejection_rate": 66.67,
+        "duplicate_rate": 1.37,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "math_permutations_combinations_allen": {
+      "metadata": {
+        "doc_id": "math_permutations_combinations_allen",
+        "filename": "math_permutations_combinations_allen.pdf",
+        "subject": "Mathematics",
+        "chapter": "Permutations and Combinations",
+        "publisher": "Allen Career Institute Kota",
+        "partition": "Held-out Evaluation",
+        "pages": 3,
+        "extracted_characters": 6835
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 12,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 0,
+        "text_absent_gold_concepts": [],
+        "text_present_gold_count": 12,
+        "assessable_gold_list": [
+          "Fundamental Principle of Counting",
+          "Factorial",
+          "Permutation",
+          "Circular Permutation",
+          "Permutation of Alike Objects",
+          "Combination",
+          "Properties of Combinations",
+          "Divisors of a Number",
+          "Division into Groups",
+          "Distribution of Objects",
+          "Derangement",
+          "Geometrical Applications of Combinations"
+        ],
+        "supporting_gold_list": [
+          "Multiplication Rule",
+          "Addition Rule",
+          "Pigeonhole Principle",
+          "Pascal's Identity"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 33,
+        "grounded_concepts_count": 33,
+        "topics_formed_count": 1,
+        "sample_extracted_concepts": [
+          "COMBINATION",
+          "permutation",
+          "FUNDAMENTAL PRINCIPLE",
+          "total number",
+          "definite order",
+          "multiplication principle",
+          "addition principle",
+          "FACTORIAL",
+          "Useful Notation",
+          "prime number"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 10,
+        "reported_unmatched_gold": [
+          "Division into Groups",
+          "Distribution of Objects"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "COMBINATION": [
+            "Combination",
+            "Properties of Combinations",
+            "Geometrical Applications of Combinations"
+          ],
+          "permutation": [
+            "Permutation",
+            "Circular Permutation",
+            "Permutation of Alike Objects"
+          ],
+          "circular permutations": [
+            "Permutation",
+            "Circular Permutation"
+          ],
+          "anti-clockwise circular permutations": [
+            "Permutation",
+            "Circular Permutation"
+          ],
+          "number of circular permutation": [
+            "Permutation",
+            "Circular Permutation"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Permutation": [
+            "permutation",
+            "denotes the number of permutations",
+            "number of permutation",
+            "circular permutations",
+            "anti-clockwise circular permutations",
+            "number of circular permutation"
+          ],
+          "Circular Permutation": [
+            "permutation",
+            "circular permutations",
+            "anti-clockwise circular permutations",
+            "number of circular permutation"
+          ],
+          "Combination": [
+            "COMBINATION",
+            "denotes the number of combinations",
+            "number of combination"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "Division into Groups",
+            "category": "ENUMERATION_PREFIX_FILTER",
+            "text_present": true,
+            "reason": "Heading was '6. DIVISION INTO GROUPS AND DISTRIBUTION'; blocked by leading enumeration prefix."
+          },
+          {
+            "gold": "Distribution of Objects",
+            "category": "WORDING_ALIAS_MISMATCH",
+            "text_present": true,
+            "reason": "Covered under 'Division into Groups' section heading; extractor captured 'division into groups'."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 0,
+          "WORDING_ALIAS_MISMATCH": 1,
+          "SYNTAX_PREPOSITION_FILTER": 0,
+          "ENUMERATION_PREFIX_FILTER": 1,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 23,
+          "unmatched_extractions_sample": [
+            "total number",
+            "definite order",
+            "multiplication principle",
+            "addition principle",
+            "Useful Notation",
+            "prime number",
+            "denotes the number",
+            "nPr denotes the number",
+            "nCr denotes the number",
+            "natural numbers",
+            "numbers of divisors",
+            "total numbers of divisors",
+            "composite number",
+            "GROUPS AND DISTRIBUTION",
+            "new distribution"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 39.39,
+        "reported_recall": 83.33,
+        "text_present_adjusted_recall": 83.33,
+        "reported_f1": 90.91,
+        "strict_f1": 53.49,
+        "adjusted_f1": 53.49,
+        "noise_rejection_rate": 75.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    },
+    "biology_cell_cycle_esaral": {
+      "metadata": {
+        "doc_id": "biology_cell_cycle_esaral",
+        "filename": "biology_cell_cycle_esaral.pdf",
+        "subject": "Biology",
+        "chapter": "Cell Cycle and Cell Division",
+        "publisher": "eSaral",
+        "partition": "Validation",
+        "pages": 10,
+        "extracted_characters": 13602
+      },
+      "gold_standard_analysis": {
+        "total_assessable_gold": 21,
+        "total_supporting_gold": 4,
+        "text_absent_gold_count": 1,
+        "text_absent_gold_concepts": [
+          "G0 Phase"
+        ],
+        "text_present_gold_count": 20,
+        "assessable_gold_list": [
+          "Cell Cycle",
+          "Interphase",
+          "G1 Phase",
+          "S Phase",
+          "G2 Phase",
+          "G0 Phase",
+          "Mitosis",
+          "Prophase",
+          "Metaphase",
+          "Anaphase",
+          "Telophase",
+          "Spindle Fibers",
+          "Cytokinesis",
+          "Meiosis",
+          "Meiosis I",
+          "Meiosis II",
+          "Synapsis",
+          "Crossing Over",
+          "Chiasmata",
+          "Significance of Mitosis",
+          "Significance of Meiosis"
+        ],
+        "supporting_gold_list": [
+          "Kinetochore",
+          "Centromere",
+          "Cell Furrow",
+          "Cell Plate Method"
+        ]
+      },
+      "extraction_results": {
+        "concepts_extracted_count": 183,
+        "grounded_concepts_count": 183,
+        "topics_formed_count": 14,
+        "sample_extracted_concepts": [
+          "Cell Cycle and Cell Division",
+          "cell cycle",
+          "cell division",
+          "Cycle and Cell",
+          "Cell Cycle and Cell",
+          "Cycle and Cell Division",
+          "Many cell",
+          "single cell",
+          "Many cell cycles",
+          "cycle consists of cell"
+        ]
+      },
+      "matching_analysis": {
+        "reported_matched_count": 17,
+        "reported_unmatched_gold": [
+          "G1 Phase",
+          "G2 Phase",
+          "G0 Phase",
+          "Crossing Over"
+        ],
+        "asymmetric_artifacts_ext_to_multiple_golds": {
+          "Mitosis": [
+            "Mitosis",
+            "Significance of Mitosis"
+          ],
+          "Meiosis": [
+            "Meiosis",
+            "Meiosis I",
+            "Meiosis II",
+            "Significance of Meiosis"
+          ],
+          "Meiosis in sequence": [
+            "Meiosis",
+            "Meiosis I"
+          ],
+          "Prophase-I of Meiosis in sequence": [
+            "Prophase",
+            "Meiosis",
+            "Meiosis I"
+          ]
+        },
+        "asymmetric_artifacts_gold_to_multiple_exts": {
+          "Cell Cycle": [
+            "Cell Cycle and Cell Division",
+            "cell cycle",
+            "Cycle and Cell",
+            "Cell Cycle and Cell",
+            "Cycle and Cell Division",
+            "Many cell cycles",
+            "cycle consists of cell",
+            "cell cycle consists of cell",
+            "duration of the cell cycle",
+            "human cell cycle",
+            "stages of the cell cycle",
+            "stage of the cell cycle"
+          ],
+          "Interphase": [
+            "Interphase and M-phase",
+            "Interphase"
+          ],
+          "S Phase": [
+            "Synthesis or S-Phase",
+            "replication occurs during this phase"
+          ],
+          "Mitosis": [
+            "Mitosis or M-phase",
+            "Mitosis"
+          ],
+          "Prophase": [
+            "Prophase",
+            "Prophase-I of Meiosis in sequence"
+          ],
+          "Metaphase": [
+            "metaphase",
+            "metaphase plate",
+            "align at the metaphase plate"
+          ],
+          "Meiosis": [
+            "Meiosis",
+            "Meiosis in sequence",
+            "Prophase-I of Meiosis in sequence"
+          ],
+          "Meiosis I": [
+            "Meiosis",
+            "Meiosis in sequence",
+            "Prophase-I of Meiosis in sequence"
+          ]
+        }
+      },
+      "error_classification": {
+        "false_negatives": [
+          {
+            "gold": "G1 Phase",
+            "category": "ENUMERATION_PREFIX_FILTER",
+            "text_present": true,
+            "reason": "Section heading '1. G1 Phase or Gap1' had leading digit '1.' retaining prefix in candidate extraction."
+          },
+          {
+            "gold": "G2 Phase",
+            "category": "ENUMERATION_PREFIX_FILTER",
+            "text_present": true,
+            "reason": "Section heading '3. G2 Phase or Gap2 phase' had leading digit '3.' retaining prefix."
+          },
+          {
+            "gold": "G0 Phase",
+            "category": "SCOPE_TEXT_ABSENT",
+            "text_present": false,
+            "reason": "Document calls this 'Quiescent stage (G0)'; 'G0 Phase' exact string does not occur."
+          },
+          {
+            "gold": "Crossing Over",
+            "category": "SYNTAX_PREPOSITION_FILTER",
+            "text_present": true,
+            "reason": "Rejected by trailing preposition filter ('over' in STOP_WORDS/prepositions)."
+          }
+        ],
+        "fn_count_by_category": {
+          "SCOPE_TEXT_ABSENT": 1,
+          "WORDING_ALIAS_MISMATCH": 0,
+          "SYNTAX_PREPOSITION_FILTER": 1,
+          "ENUMERATION_PREFIX_FILTER": 2,
+          "LENGTH_ACRONYM_TRUNCATION": 0,
+          "ENCODING_GLYPH_ISSUE": 0
+        },
+        "false_positives_breakdown": {
+          "coarse_gold_omitted_academic_concepts": 166,
+          "unmatched_extractions_sample": [
+            "cell division",
+            "Many cell",
+            "single cell",
+            "organisms and cell",
+            "duration of the cell",
+            "human cell",
+            "yeast cell",
+            "stages of the cell",
+            "actual cell",
+            "actual cell division",
+            "sequential M-phases",
+            "time between two sequential M-phases",
+            "number of chromosomes",
+            "animal cells",
+            "phase of animal cells"
+          ]
+        }
+      },
+      "metrics_comparison": {
+        "reported_precision": 100.0,
+        "strict_bipartite_precision": 18.03,
+        "reported_recall": 80.95,
+        "text_present_adjusted_recall": 85.0,
+        "reported_f1": 89.47,
+        "strict_f1": 29.49,
+        "adjusted_f1": 29.75,
+        "noise_rejection_rate": 75.0,
+        "duplicate_rate": 0.0,
+        "evidence_structural_validity_rate": 100.0,
+        "evidence_semantic_support_rate": 100.0,
+        "topic_hierarchy_coverage": 100.0,
+        "acyclic_graph": true
+      }
+    }
+  },
+  "prioritized_improvement_plan": [
+    {
+      "id": "P0-01",
+      "title": "Enumeration Prefix Trimming",
+      "target_component": "phase2/pipeline/stage4_candidates.py:_trim_candidate",
+      "description": "Strip leading list markers, numbering, and outline indicators: ^(?:[0-9]+[\\.\\)]|\\([0-9ivxabc]+\\)|[a-z][\\.\\)])\\s*",
+      "expected_gain": "Fixes 3 false negatives (G1 Phase, G2 Phase, Division into Groups) and cleans dirty headers."
+    },
+    {
+      "id": "P0-02",
+      "title": "Extended Function Words & Preposition Trimming",
+      "target_component": "phase2/pipeline/stage4_candidates.py:LEADING_FUNCTION_WORDS",
+      "description": "Add missing prepositions (around, between, among, under, above, through, onto, towards, within, without) to eliminate prepositional prefix leaks.",
+      "expected_gain": "Removes non-academic candidate noise and improves precision."
+    },
+    {
+      "id": "P0-03",
+      "title": "Common Action Verb Filtering",
+      "target_component": "phase2/pipeline/stage4_candidates.py:ACTION_VERBS",
+      "description": "Expand verb filtering to include descriptive verbs: lose/loses, gain/gains, carry/carries, contain/contains, consist/consists, rotate/rotates, undergo/undergoes, involve/involves.",
+      "expected_gain": "Eliminates verb phrase extractions ('undergoes hybridization', 'loses its energy', 'carries the entire mass')."
+    },
+    {
+      "id": "P1-01",
+      "title": "Compound Concept Trailing Preposition Exception",
+      "target_component": "phase2/pipeline/semantic_validator.py",
+      "description": "Allow established academic compound terms ending in prepositions/particles (e.g., 'Crossing Over', 'Roll Over') while rejecting general trailing prepositions.",
+      "expected_gain": "Recovers 'Crossing Over' in genetics and cell division without compromising prepositional rejection rules."
+    },
+    {
+      "id": "P1-02",
+      "title": "Acronym and Character Limit Normalization",
+      "target_component": "phase2/pipeline/stage4_candidates.py",
+      "description": "Extract parenthesized acronyms as standalone candidates before length truncation (e.g. 'Valence Shell Electron Pair Repulsion (VSEPR)' -> 'VSEPR').",
+      "expected_gain": "Recovers VSEPR Theory and long compound academic terms."
+    },
+    {
+      "id": "P2-01",
+      "title": "Bipartite 1-to-1 Matching in Evaluation Suite",
+      "target_component": "tests/unit/ingestion/test_real_jee_pdf_generalization.py",
+      "description": "Replace asymmetric substring matching with Kuhn-Munkres (Hungarian algorithm) or greedy 1-to-1 maximum bipartite matching.",
+      "expected_gain": "Eliminates metric inflation where one generic token matches multiple distinct gold concepts."
+    }
+  ]
+}

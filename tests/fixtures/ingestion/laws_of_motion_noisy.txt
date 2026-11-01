@@ -1,0 +1,187 @@
+1 
+NEWTON’S LAWS 
+Newton’s First Law 
+When there is no net force on an object 
+An object at rest remains at rest, and 
+An object in motion continues to move with a velocity 
+that is constant in magnitude and direction. 
+Newton’s Second Law 
+Newton’s second law states the relation between the net  
+force and the inertial mass. 
+F 
+= ma 
+Note that the direction of acceleration is in the direction of  
+the net force. 
+In terms of components 
+Fx= max 
+Fy= may 
+Fz= maz 
+LAWS OF MOTION 
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes 
+ 
+2 
+Newton’s Third Law 
+  
+If the object exerts a force F on a second, then the second  
+object exerts an equal but oppositely force F on the first. 
+  
+Forces exists in pairs. 
+  
+(a) the force exerted by earth on the sun is equal and opposite to the force exerted  
+by the sun on the earth. Fearth = Fsun. 
+  
+(b) The force exerted by the man on the ground is equal and opposite to the force  
+acting on the man by the ground. Fman = Fground. 
+S  
+Fsun  
+Fearth  
+(a)  
+Fground  
+Fman  
+  
+FRICTION 
+Whenever the surface of a body slides over that of another, each  
+body exerts a force of friction on the other, parallel to the  
+surfaces. The force of friction on each body is in a direction  
+opposite to its motion relative to the other body. 
+It is a self-adjusting force, it can adjust its magnitude to any  
+value between zero and the limiting (maximum) value i.e. 
+0  f  fmax 
+  
+Friction force is of two types 
+  
+1. Static frictions ‘fs’ 
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes 
+ 
+3 
+2. Kinetic friction ‘fk’ 
+Static Friction 
+  
+The static friction between two contact surfaces is given by fs  
+<  
+s N, where N is the normal force between the contact surfaces and  
+s is a constant is called the coefficient of  
+Static friction’. 
+  
+ Kinetic Friction ( 
+k) 
+  
+It acts on the two contact surfaces only when there is relative  
+slipiry or relative motion between two contact surfaces. 
+  
+ fk =  
+kN 
+  
+where N is the normal force between the contact surfaces and  
+k is a constant called ‘coefficient of kinetic friction’ 
+  
+LAWS OF FRICTION 
+The limiting (or maximum) force of friction is proportional to  
+the normal force that keeps the two surfaces in contact with each  
+other, and is independent of the area of contact between the two  
+surfaces. Mathematically, 
+fmax= µN   
+  
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes 
+ 
+4 
+PROPERTIES OF FRICTION 
+  
+1. If the body is at rest, then the static friction force fs is  
+parallel to the surface and the external force F, are equal in  
+magnitude and F is direct opposite to F. So, if external  
+force F increases then fs increases. 
+2. The maximum value of static friction is given by  
+   
+fs(max) = µsN 
+  
+Where, µs = static   
+The coefficient of friction and N is the magnitude of the  
+normal response. If the external force is greater than F,  
+(max) 
+fs 
+ the body slides on the surface. 
+3. If the body starts moving along the surface, the magnitude  
+of the constant force decreases to a constant value fk   
+  
+fk = µkN   
+  
+Where, µk is the coefficient of kinetic friction. 
+  
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes 
+ 
+5 
+ANGLE OF REPOSE 
+Suppose a body is placed on an  
+inclined surface whose angle of  
+inclination  varies between 0 to  
+/2. The coefficient of friction  
+between the body and the surface is  
+µs. then at a particular value of  =  
+ the block just starts to move. This  
+value of  = is called the angle of  
+repose.  
+Mathematically, if the block is just  
+about to move, then mg sin  = f  
+When  
+ = , mg sin =fmax  
+or  
+mg sin  = µsN = µsmg cos 
+  
+or  
+tan = µs  
+Thus  
+ = tan1µs  
+  
+mg cos   
+  
+f  
+N  
+mg sin   
+  
+A block of mass m is placed on an  
+incline whose inclination may be  
+varied between 0 to /2. When  =   
+the friction force is maximum and  
+block just starts sliding  
+  
+The angle of friction is that minimum angle of inclination of the  
+inclined plane at which a body placed at rest on the inclined  
+plane is about to slide down.  
+  
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes 
+ 
+6 
+CENTRIPETAL FORCE 
+A particle moving in a circular path with speed v has a  
+centripetal (or radial) acceleration   
+  
+ar = v^2 / r = ^2 r 
+  
+If there is angular acceleration, the speed of the particle changes  
+and thus we can find the tangential acceleration   
+  
+at= r  = dv / dt 
+  
+The net acceleration is:   
+  
+a = ar + at 
+  
+The magnitude of acceleration is given by   
+  
+a = sqrt(ar^2 + at^2) 
+  
+JEE | NEET | Class 8 - 10 Download eSaral App 
+www.esaral.com 
+JEE Main Physics Revision Notes
+

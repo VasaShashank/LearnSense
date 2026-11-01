@@ -1,0 +1,14 @@
+ROTATIONAL DYNAMICS CLASS NOTES
+
+Good morning students, please pay attention and remember to submit your homework by Friday.
+Today we are going to look at rotational motion and some related physics things.
+
+Torque is defined as the rotational analogue of force, given by the cross product of position vector and force vector: tau = r x F.
+As you know from last week, the rate of change of...
+Wait, let's write down the next concept clearly.
+Moment of Inertia is the rotational mass of a rigid body, defined as the sum of mass times squared distance from the axis of rotation: I = \sum m_i r_i^2.
+Also note that the thing we talked about earlier...
+Angular Momentum is the rotational counterpart of linear momentum, given by L = r x p = I omega.
+The Principle of Conservation of Angular Momentum states that if the net external torque acting on a system is zero, total angular momentum remains constant.
+Remember this formula because it appears often in tests!
+

@@ -1,0 +1,112 @@
+{
+  "physics_laws_of_motion_esaral": {
+    "doc_id": "physics_laws_of_motion_esaral",
+    "total_concepts": 22,
+    "has_evidence_ref_count": 22,
+    "structural_valid_count": 22,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 22,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "physics_work_energy_power_esaral": {
+    "doc_id": "physics_work_energy_power_esaral",
+    "total_concepts": 45,
+    "has_evidence_ref_count": 45,
+    "structural_valid_count": 45,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 45,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "physics_rotational_motion_esaral": {
+    "doc_id": "physics_rotational_motion_esaral",
+    "total_concepts": 61,
+    "has_evidence_ref_count": 61,
+    "structural_valid_count": 61,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 61,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "physics_electrostatics_allen": {
+    "doc_id": "physics_electrostatics_allen",
+    "total_concepts": 101,
+    "has_evidence_ref_count": 101,
+    "structural_valid_count": 101,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 101,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "chemistry_atomic_structure_esaral": {
+    "doc_id": "chemistry_atomic_structure_esaral",
+    "total_concepts": 121,
+    "has_evidence_ref_count": 121,
+    "structural_valid_count": 121,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 121,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "chemistry_chemical_bonding_esaral": {
+    "doc_id": "chemistry_chemical_bonding_esaral",
+    "total_concepts": 184,
+    "has_evidence_ref_count": 184,
+    "structural_valid_count": 184,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 184,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "chemistry_coordination_compounds_esaral": {
+    "doc_id": "chemistry_coordination_compounds_esaral",
+    "total_concepts": 110,
+    "has_evidence_ref_count": 110,
+    "structural_valid_count": 110,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 110,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "math_limits_continuity_esaral": {
+    "doc_id": "math_limits_continuity_esaral",
+    "total_concepts": 41,
+    "has_evidence_ref_count": 41,
+    "structural_valid_count": 41,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 41,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "math_matrices_determinants_esaral": {
+    "doc_id": "math_matrices_determinants_esaral",
+    "total_concepts": 73,
+    "has_evidence_ref_count": 73,
+    "structural_valid_count": 73,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 73,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "math_permutations_combinations_allen": {
+    "doc_id": "math_permutations_combinations_allen",
+    "total_concepts": 33,
+    "has_evidence_ref_count": 33,
+    "structural_valid_count": 33,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 33,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  },
+  "biology_cell_cycle_esaral": {
+    "doc_id": "biology_cell_cycle_esaral",
+    "total_concepts": 183,
+    "has_evidence_ref_count": 183,
+    "structural_valid_count": 183,
+    "structural_validity_rate": 100.0,
+    "semantic_support_count": 183,
+    "semantic_support_rate": 100.0,
+    "sample_semantic_failures": []
+  }
+}

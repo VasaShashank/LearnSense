@@ -4,7 +4,10 @@ Generates meaningful pedagogical topics, core concepts, and directed prerequisit
 from structured documents using the central LLM adapter, with a robust deterministic fallback.
 """
 
+import hashlib
+import json
 import logging
+import os
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -42,6 +45,30 @@ class SemanticTopicExtractor:
 
     def __init__(self, llm_adapter: Optional[Any] = None):
         self.llm_adapter = llm_adapter
+
+    @staticmethod
+    def _load_canonical_prerequisites() -> List[Tuple[str, str]]:
+        """Dynamically loads canonical prerequisite pairs from the canonical curriculum spec."""
+        for path in [
+            "curriculum/data/jee_curriculum_spec.json",
+            "LearnSense/curriculum/data/jee_curriculum_spec.json",
+            os.path.join(os.path.dirname(__file__), "..", "..", "curriculum", "data", "jee_curriculum_spec.json"),
+        ]:
+            if os.path.exists(path):
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        spec = json.load(f)
+                    concept_map = {c["stable_key"]: c["name"] for c in spec.get("concepts", [])}
+                    rules = []
+                    for c in spec.get("concepts", []):
+                        tgt = c["name"].lower()
+                        for p_key in c.get("prerequisites", []):
+                            src = concept_map.get(p_key, p_key).lower()
+                            rules.append((src, tgt))
+                    return rules
+                except Exception:
+                    pass
+        return []
 
     def _get_adapter(self) -> Any:
         if self.llm_adapter is not None:
@@ -385,38 +412,155 @@ Document Text:
                 if len(filtered_concepts) >= 12:
                     break
 
-        # 2. Derive Topics from Outline or Sections
+        # 2. Derive Topics from Outline or Curriculum Domains
         outline = getattr(doc, "outline", []) or []
         topics: List[Dict[str, Any]] = []
 
-        if outline:
-            for idx, sec in enumerate(outline, start=1):
-                topics.append({
-                    "topic_id": sec.section_id or f"topic_{idx}",
-                    "title": sec.title or f"Section {idx}",
-                    "concept_ids": [],
-                })
+        block_to_sec: Dict[str, str] = {}
+        sec_title_map: Dict[str, str] = {}
+        for sec in outline:
+            sec_title_map[sec.section_id] = sec.title
+
+        for p in getattr(doc, "pages", []) or []:
+            for b in getattr(p, "blocks", []) or []:
+                if getattr(b, "section_id", None):
+                    block_to_sec[b.block_id] = b.section_id
+
+        ev_to_block: Dict[str, str] = {e.evidence_id: e.block_id for e in base_evidence}
+
+        if len(outline) >= 2:
+            sec_concepts: Dict[str, List[str]] = {sec.section_id: [] for sec in outline}
+            for c in filtered_concepts:
+                assigned_sec = None
+                for ev_id in c.evidence_ids:
+                    b_id = ev_to_block.get(ev_id)
+                    if b_id in block_to_sec:
+                        assigned_sec = block_to_sec[b_id]
+                        break
+                if assigned_sec and assigned_sec in sec_concepts:
+                    sec_concepts[assigned_sec].append(c.concept_id)
+                else:
+                    sec_concepts[outline[0].section_id].append(c.concept_id)
+
+            for sec in outline:
+                if sec_concepts[sec.section_id]:
+                    topics.append({
+                        "topic_id": sec.section_id,
+                        "title": sec.title,
+                        "concept_ids": sec_concepts[sec.section_id],
+                    })
 
         if not topics:
-            # Fallback to 1-3 default topics based on document title
-            doc_title = getattr(getattr(doc, "metadata", None), "title", None)
-            if hasattr(doc_title, "value"):
-                doc_title = doc_title.value
-            title_str = str(doc_title or doc.document_id.replace("_", " ").title())
-            topics = [
-                {"topic_id": "topic_foundations", "title": f"{title_str} - Core Foundations", "concept_ids": []},
-                {"topic_id": "topic_applied", "title": f"{title_str} - Advanced & Applied", "concept_ids": []},
+            # Dynamically derive topics from document headings and sections
+            # Determine heading extraction strategy: if markdown Level-2 ("## ") headings exist,
+            # they are the canonical chapter modules/topics.
+            all_first_lines = [
+                (b.content.text or "").strip().splitlines()[0]
+                for page in getattr(doc, "pages", []) or []
+                for b in getattr(page, "blocks", []) or []
+                if getattr(b, "content", None) and (b.content.text or "").strip()
             ]
+            has_h2_md = any(l.startswith("## ") and len(l[3:].strip()) >= 3 for l in all_first_lines)
+            has_h1_md = any(l.startswith("# ") and not l.startswith("## ") and len(l[2:].strip()) >= 3 for l in all_first_lines)
 
-        # Distribute concepts into topics
-        c_count = len(filtered_concepts)
-        t_count = len(topics)
-        for i, c in enumerate(filtered_concepts):
-            t_idx = min(int((i / max(1, c_count)) * t_count), t_count - 1)
-            topics[t_idx]["concept_ids"].append(c.concept_id)
+            heading_blocks: List[Tuple[str, str, int]] = []  # (block_id, heading_text, page_index)
+            for page in getattr(doc, "pages", []) or []:
+                p_idx = getattr(page, "page_index", 0)
+                for b in getattr(page, "blocks", []) or []:
+                    b_role = getattr(b, "role", "") or ""
+                    b_type = getattr(b, "type", "") or ""
+                    txt = (b.content.text or "").strip() if getattr(b, "content", None) else ""
+                    if not txt:
+                        continue
+                    first_line = txt.splitlines()[0].strip()
+                    is_noisy = any(noise in txt.lower() for noise in ["download", "esaral", "notes", "page", "revision", "class 8", "jee | neet", "app"])
+                    if is_noisy:
+                        continue
 
-        # Pruning empty topics
-        topics = [t for t in topics if t["concept_ids"]]
+                    extracted_title = None
+                    if has_h2_md:
+                        if first_line.startswith("## ") and len(first_line[3:].strip()) >= 3:
+                            extracted_title = first_line[3:].strip()
+                    elif has_h1_md:
+                        if first_line.startswith("# ") and len(first_line[2:].strip()) >= 3:
+                            extracted_title = first_line[2:].strip()
+                    else:
+                        is_md = first_line.startswith(("#", "##", "###")) and len(first_line.lstrip("# ").strip()) >= 3
+                        is_heading_role = "heading" in b_role.lower() or b_type == "heading"
+                        is_all_caps = len(txt) >= 4 and txt.isupper() and "\n" not in txt
+                        is_short_title = len(txt.splitlines()) == 1 and 3 <= len(txt) <= 60 and not txt.endswith((".", ",", ";", ":"))
+                        if is_md:
+                            extracted_title = first_line.lstrip("# ").strip()
+                        elif is_heading_role or is_all_caps or is_short_title:
+                            extracted_title = txt.title()
+
+                    if extracted_title:
+                        heading_blocks.append((b.block_id, extracted_title, p_idx))
+
+            if len(heading_blocks) >= 2:
+                seen_titles: Dict[str, Dict[str, Any]] = {}
+                for idx, (b_id, h_title, p_idx) in enumerate(heading_blocks, 1):
+                    t_key = h_title.lower().strip()
+                    # Subsume subheadings where the existing topic name is a complete substring
+                    # e.g. "Laws of Friction" and "Properties of Friction" subsumed under "Friction"
+                    matched_existing = None
+                    for existing_key in seen_titles:
+                        if existing_key in t_key or t_key in existing_key:
+                            matched_existing = existing_key
+                            break
+                    if not matched_existing and len(seen_titles) < 5:
+                        t_obj = {"topic_id": f"topic_{len(seen_titles) + 1}", "title": h_title, "concept_ids": []}
+                        seen_titles[t_key] = t_obj
+
+                # Assign concepts to closest matching or sequential heading
+                topic_list = list(seen_titles.values())
+                for c in filtered_concepts:
+                    assigned = False
+                    c_name_low = c.canonical_name.lower()
+                    for t_obj in topic_list:
+                        t_words = [w for w in t_obj["title"].lower().split() if len(w) > 3]
+                        if any(w in c_name_low for w in t_words):
+                            t_obj["concept_ids"].append(c.concept_id)
+                            assigned = True
+                            break
+                    if not assigned and topic_list:
+                        # Distribute based on hash to preserve balance
+                        target_t = topic_list[int(hashlib.md5(c.concept_id.encode('utf-8')).hexdigest(), 16) % len(topic_list)]
+                        target_t["concept_ids"].append(c.concept_id)
+
+                topics = [t for t in topic_list if t["concept_ids"]]
+
+            # If still no topics derived, dynamically query canonical curriculum or synthesize from title
+            if not topics:
+                doc_title = getattr(getattr(doc, "metadata", None), "title", None)
+                if hasattr(doc_title, "value"):
+                    base_title = str(doc_title.value)
+                elif isinstance(doc_title, dict):
+                    base_title = str(doc_title.get("value") or "")
+                else:
+                    base_title = str(doc_title or "")
+                base_title = base_title.strip() or "Core Curriculum"
+
+                if len(filtered_concepts) <= 6:
+                    topics = [{
+                        "topic_id": "topic_1",
+                        "title": f"{base_title} Foundations",
+                        "concept_ids": [c.concept_id for c in filtered_concepts],
+                    }]
+                else:
+                    mid = len(filtered_concepts) // 2
+                    topics = [
+                        {
+                            "topic_id": "topic_1",
+                            "title": f"{base_title} - Foundations",
+                            "concept_ids": [c.concept_id for c in filtered_concepts[:mid]],
+                        },
+                        {
+                            "topic_id": "topic_2",
+                            "title": f"{base_title} - Advanced Concepts",
+                            "concept_ids": [c.concept_id for c in filtered_concepts[mid:]],
+                        },
+                    ]
 
         # 3. Build Curriculum Progression Directed Edges
         relationships: List[Relationship] = []
@@ -429,6 +573,98 @@ Document Text:
                 if not has_directed_path(adj, rel.target, rel.source):
                     relationships.append(rel)
                     adj.setdefault(rel.source, set()).add(rel.target)
+
+        # Dynamic curriculum prerequisite rules across all canonical subjects
+        canonical_prereqs = self._load_canonical_prerequisites()
+
+        def _find_concept(pattern: str) -> Optional[Concept]:
+            p_low = pattern.lower()
+            for c in filtered_concepts:
+                c_low = c.canonical_name.lower()
+                if p_low == c_low or (len(p_low) > 4 and (p_low in c_low or c_low in p_low)):
+                    return c
+                for a in getattr(c, "aliases", []) or []:
+                    a_txt = getattr(a, "text", str(a)).lower()
+                    if p_low == a_txt or (len(p_low) > 4 and (p_low in a_txt or a_txt in p_low)):
+                        return c
+            return None
+
+        for src_pat, tgt_pat in canonical_prereqs:
+            src_c = _find_concept(src_pat)
+            tgt_c = _find_concept(tgt_pat)
+            if src_c and tgt_c and src_c.concept_id != tgt_c.concept_id:
+                s_id = src_c.concept_id
+                t_id = tgt_c.concept_id
+                if not has_directed_path(adj, t_id, s_id):
+                    rel_id = generate_relationship_id(doc.document_id, s_id, RelationshipTypeEnum.PREREQUISITE_OF.value, t_id)
+                    if not any(r.relationship_id == rel_id for r in relationships):
+                        rel = Relationship(
+                            relationship_id=rel_id,
+                            source=s_id,
+                            type=RelationshipTypeEnum.PREREQUISITE_OF,
+                            target=t_id,
+                            status=RelationshipStatusEnum.ACCEPTED,
+                            evidence_level=EvidenceLevelEnum.STRONG_INFERRED,
+                            confidence=ConfidenceBreakdown(value=0.92, components={"curriculum_prerequisite": 0.95, "dag_validated": 1.0}),
+                            evidence_ids=src_c.evidence_ids[:1] + tgt_c.evidence_ids[:1],
+                        )
+                        relationships.append(rel)
+                        adj.setdefault(s_id, set()).add(t_id)
+
+        # Grounded definitional cross-reference prerequisite inference:
+        # If concept A is explicitly referenced in the definition/evidence of concept B, A is foundational to B.
+        ev_by_id = {e.evidence_id: (e.excerpt or "").lower() for e in (base_evidence or [])}
+        for c_b in filtered_concepts:
+            desc_b = (getattr(c_b, "description", "") or "").lower()
+            excerpts_b = " ".join([ev_by_id.get(eid, "") for eid in c_b.evidence_ids])
+            combined_b = f"{desc_b} {excerpts_b}"
+
+            for c_a in filtered_concepts:
+                if c_a.concept_id == c_b.concept_id:
+                    continue
+                name_a = c_a.canonical_name.lower().strip()
+                if len(name_a) >= 4 and name_a in combined_b:
+                    s_id = c_a.concept_id
+                    t_id = c_b.concept_id
+                    if not has_directed_path(adj, t_id, s_id):
+                        rel_id = generate_relationship_id(doc.document_id, s_id, RelationshipTypeEnum.PREREQUISITE_OF.value, t_id)
+                        if not any(r.relationship_id == rel_id for r in relationships):
+                            rel = Relationship(
+                                relationship_id=rel_id,
+                                source=s_id,
+                                type=RelationshipTypeEnum.PREREQUISITE_OF,
+                                target=t_id,
+                                status=RelationshipStatusEnum.ACCEPTED,
+                                evidence_level=EvidenceLevelEnum.STRONG_INFERRED,
+                                confidence=ConfidenceBreakdown(value=0.90, components={"definitional_grounding": 0.95, "dag_validated": 1.0}),
+                                evidence_ids=c_a.evidence_ids[:1] + c_b.evidence_ids[:1],
+                            )
+                            relationships.append(rel)
+                            adj.setdefault(s_id, set()).add(t_id)
+
+        # Ordinal progression within similar conceptual series (e.g. First Law -> Second Law -> Third Law)
+        first_c = _find_concept("first law") or _find_concept("1st law")
+        second_c = _find_concept("second law") or _find_concept("2nd law")
+        third_c = _find_concept("third law") or _find_concept("3rd law")
+        for s_node, t_node in [(first_c, second_c), (second_c, third_c)]:
+            if s_node and t_node and s_node.concept_id != t_node.concept_id:
+                s_id = s_node.concept_id
+                t_id = t_node.concept_id
+                if not has_directed_path(adj, t_id, s_id):
+                    rel_id = generate_relationship_id(doc.document_id, s_id, RelationshipTypeEnum.PREREQUISITE_OF.value, t_id)
+                    if not any(r.relationship_id == rel_id for r in relationships):
+                        rel = Relationship(
+                            relationship_id=rel_id,
+                            source=s_id,
+                            type=RelationshipTypeEnum.PREREQUISITE_OF,
+                            target=t_id,
+                            status=RelationshipStatusEnum.ACCEPTED,
+                            evidence_level=EvidenceLevelEnum.STRONG_INFERRED,
+                            confidence=ConfidenceBreakdown(value=0.95, components={"ordinal_progression": 0.98, "dag_validated": 1.0}),
+                            evidence_ids=s_node.evidence_ids[:1] + t_node.evidence_ids[:1],
+                        )
+                        relationships.append(rel)
+                        adj.setdefault(s_id, set()).add(t_id)
 
         # _ensure_graph_connectivity was removed: fabricating PREREQUISITE_OF
         # edges between consecutive concepts is ungrounded.

@@ -1,0 +1,20 @@
+CELL BIOLOGY AND CELLULAR STRUCTURE
+
+CELL THEORY AND CELL CLASSIFICATION
+The Cell Theory states that all living organisms are composed of one or more cells, and all cells arise from pre-existing cells through cell division.
+Prokaryotic cells are primitive cellular structures that lack a membrane-enclosed nucleus and membrane-bound organelles.
+Eukaryotic cells are advanced cellular structures characterized by a distinct membrane-bound nucleus and specialized cytoplasmic organelles.
+
+PLASMA MEMBRANE AND CYTOPLASMIC ORGANELLES
+The Plasma Membrane is a selectively permeable biological barrier described by the Fluid Mosaic Model, consisting of a phospholipid bilayer with embedded transport proteins.
+The Endoplasmic Reticulum is a continuous network of membranous tubules; rough endoplasmic reticulum contains bound ribosomes for protein synthesis, whereas smooth endoplasmic reticulum synthesizes lipids.
+The Golgi Apparatus consists of flattened cisternae that function in sorting, packaging, and chemical modification of proteins for intracellular delivery or cellular secretion.
+Mitochondria are double-membraned cellular organelles that serve as the biochemical powerhouses of the eukaryotic cell, producing adenosine triphosphate through oxidative phosphorylation.
+Ribosomes are dense non-membrane bound ribonucleoprotein granules that translate messenger RNA into polypeptide chains.
+Lysosomes are acidic membrane-bound digestive vesicles containing hydrolytic enzymes for intracellular catabolism.
+
+THE CELL NUCLEUS AND GENETIC ARCHITECTURE
+The Nucleus is the principal regulatory organelle enclosing eukaryotic genetic material within a double-layered nuclear envelope.
+Chromatin is an organized nucleoprotein complex composed of deoxyribonucleic acid and basic histone proteins that condenses into chromosomes during mitotic cell division.
+The Nucleolus is a dense subnuclear structure responsible for the biogenesis of ribosomal RNA.
+

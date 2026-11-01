@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "documents": {
+    "physics_work_energy_power.txt": {
+      "subject": "physics",
+      "chapter": "Work, Power and Energy",
+      "expected_topics": ["Work Done by a Force", "Kinetic and Potential Energy", "Work-Energy Theorem", "Power and Collisions"],
+      "gold_concepts": [
+        "Work", "Kinetic Energy", "Potential Energy", "Gravitational Potential Energy",
+        "Elastic Potential Energy", "Work-Energy Theorem", "Conservative Force",
+        "Mechanical Energy", "Power", "Elastic Collision", "Inelastic Collision"
+      ],
+      "known_bad_candidates": ["when a constant", "perpendicular", "acts on a body", "calculated by integrating"]
+    },
+    "chemistry_chemical_bonding.txt": {
+      "subject": "chemistry",
+      "chapter": "Chemical Bonding and Molecular Structure",
+      "expected_topics": ["Ionic and Covalent Bonding", "VSEPR Theory", "Hybridization and Molecular Orbital Theory"],
+      "gold_concepts": [
+        "Ionic Bond", "Lattice Enthalpy", "Covalent Bond", "Electronegativity",
+        "VSEPR Theory", "Dipole Moment", "Hybridization", "sp3 Hybridization",
+        "Molecular Orbital Theory", "Bond Order", "Hydrogen Bonding"
+      ],
+      "known_bad_candidates": ["formed by the complete", "mutual sharing", "combining atoms", "decreases in the order"]
+    },
+    "mathematics_coordinate_geometry.txt": {
+      "subject": "mathematics",
+      "chapter": "Coordinate Geometry and Conic Sections",
+      "expected_topics": ["Straight Lines", "Conic Sections"],
+      "gold_concepts": [
+        "Slope of a Line", "Point-Slope Form", "Slope-Intercept Form",
+        "Conic Section", "Parabola", "Ellipse", "Hyperbola", "Tangent", "Eccentricity", "Focus", "Directrix"
+      ],
+      "known_bad_candidates": ["passing through distinct", "perpendicular distance", "strictly less than", "given by"]
+    },
+    "biology_cell_biology.txt": {
+      "subject": "biology",
+      "chapter": "Cell Biology and Cellular Structure",
+      "expected_topics": ["Cell Theory", "Plasma Membrane and Cytoplasmic Organelles", "Cell Nucleus"],
+      "gold_concepts": [
+        "Cell Theory", "Prokaryotic Cells", "Eukaryotic Cells", "Plasma Membrane",
+        "Fluid Mosaic Model", "Endoplasmic Reticulum", "Golgi Apparatus", "Mitochondria",
+        "Ribosomes", "Lysosomes", "Nucleus", "Chromatin", "Nucleolus"
+      ],
+      "known_bad_candidates": ["composed of one or more", "lack a membrane", "known as the", "condenses into"]
+    },
+    "multi_chapter_mechanics_thermo.txt": {
+      "subject": "physics",
+      "chapter": "Mechanics and Thermodynamics",
+      "expected_topics": ["Mechanical Work and Energy", "Laws of Thermodynamics"],
+      "gold_concepts": [
+        "Work", "Kinetic Energy", "Work-Energy Theorem", "Mechanical Energy",
+        "Internal Energy", "Heat", "First Law of Thermodynamics", "Isothermal Process", "Adiabatic Process"
+      ],
+      "known_bad_candidates": ["when force and", "spontaneous transfer", "remains invariant", "absorption of"]
+    },
+    "dense_math_equations_tables.txt": {
+      "subject": "mathematics",
+      "chapter": "Mathematical Analysis and Calculus",
+      "expected_topics": ["Derivatives", "Integral Calculus"],
+      "gold_concepts": [
+        "Derivative", "Chain Rule", "Indefinite Integral", "Fundamental Theorem of Calculus", "Integration by Parts"
+      ],
+      "known_bad_candidates": ["x^n", "cos(x)", "sin(x)", "1/x", "f'(x)", "F'(x) = f(x)"]
+    },
+    "noisy_ocr_thermodynamics.txt": {
+      "subject": "physics",
+      "chapter": "Thermodynamics",
+      "expected_topics": ["Thermal Physics", "Thermodynamics", "Thermal Processes"],
+      "gold_concepts": [
+        "Internal Energy", "Heat", "First Law of Thermodynamics", "Isothermal Process", "Adiabatic Process"
+      ],
+      "known_bad_candidates": ["esaral app", "download free", "www.esaral.com", "Page 1 of", "Revision Notes", "d3lta Q"]
+    },
+    "clean_pedagogical_calculus.txt": {
+      "subject": "mathematics",
+      "chapter": "Limits, Continuity and Differentiability",
+      "expected_topics": ["Limits and Indeterminate Forms", "Continuity", "Differentiability and Mean Value Theorems"],
+      "gold_concepts": [
+        "Limit", "L'Hopital's Rule", "Squeeze Theorem", "Continuity",
+        "Intermediate Value Theorem", "Differentiability", "Rolle's Theorem", "Mean Value Theorem"
+      ],
+      "known_bad_candidates": ["approaches a point", "yields an indeterminate", "bounded between two", "exists and equals"]
+    },
+    "incomplete_ambiguous_notes.txt": {
+      "subject": "physics",
+      "chapter": "Rotational Dynamics",
+      "expected_topics": ["Rotational Dynamics"],
+      "gold_concepts": [
+        "Torque", "Moment of Inertia", "Angular Momentum", "Conservation of Angular Momentum"
+      ],
+      "known_bad_candidates": [
+        "Good morning students", "pay attention", "submit your homework",
+        "physics things", "the rate of change of", "Wait", "the thing we talked about",
+        "Remember this formula", "appears often in tests"
+      ]
+    }
+  }
+}
+

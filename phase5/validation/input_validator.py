@@ -18,7 +18,7 @@ from phase5.observability.validation_events import ValidationEventLogger
 class InputValidator:
     """Validates raw incoming file uploads prior to resource-intensive processing."""
 
-    SUPPORTED_EXTENSIONS = {".pdf", ".pptx", ".docx", ".png", ".jpg", ".jpeg"}
+    SUPPORTED_EXTENSIONS = {".pdf", ".pptx", ".docx", ".png", ".jpg", ".jpeg", ".txt", ".md"}
 
     def __init__(
         self,
@@ -146,6 +146,25 @@ class InputValidator:
                 result.metadata["size_bytes"] = size_bytes
             except Exception as e:
                 result.add_error(f"Failed to parse image file: {str(e)}")
+                result.recoverable = False
+                result.recovery_classification = RecoveryClassification.NON_RECOVERABLE
+                ValidationEventLogger.log_event("input_validation_failed", "INVALID", result.errors[-1])
+                return result
+
+        elif ext in (".txt", ".md"):
+            try:
+                text = content.decode("utf-8", errors="replace")
+                if not text.strip():
+                    result.add_error("Text document is empty.")
+                    result.recoverable = False
+                    result.recovery_classification = RecoveryClassification.NON_RECOVERABLE
+                    ValidationEventLogger.log_event("input_validation_failed", "INVALID", result.errors[-1])
+                    return result
+                page_count = max(1, len(text) // 3000 + 1)
+                result.metadata["page_count"] = page_count
+                result.metadata["size_bytes"] = size_bytes
+            except Exception as e:
+                result.add_error(f"Failed to parse text document: {str(e)}")
                 result.recoverable = False
                 result.recovery_classification = RecoveryClassification.NON_RECOVERABLE
                 ValidationEventLogger.log_event("input_validation_failed", "INVALID", result.errors[-1])

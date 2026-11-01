@@ -9,6 +9,7 @@ import unicodedata
 from typing import Any, Dict, List
 from schemas.document import StructuredDocument, BlockTypeEnum
 from phase2.models import WarningMessage
+from phase2.pipeline.semantic_validator import SemanticConceptValidator
 
 
 class NormalizedDocumentContext:
@@ -48,7 +49,8 @@ class NormalizedDocumentContext:
                 elif role in ("exercises", "answer_keys"):
                     weight = 1.0
 
-                norm_key = self.normalize_text_key(block.content.text)
+                clean_text = SemanticConceptValidator.clean_text_formatting(block.content.text)
+                norm_key = self.normalize_text_key(clean_text)
 
                 self.block_weight_map[block.block_id] = weight
                 self.normalized_keys_map[block.block_id] = norm_key
@@ -59,7 +61,7 @@ class NormalizedDocumentContext:
                     "type": block.type.value if hasattr(block.type, "value") else str(block.type),
                     "role": block.role,
                     "section_id": block.section_id,
-                    "text": block.content.text,
+                    "text": clean_text,
                     "text_raw": block.content.text_raw,
                     "confidence": block.confidence,
                     "language": block.language,
@@ -71,8 +73,8 @@ class NormalizedDocumentContext:
     @staticmethod
     def normalize_text_key(text: str) -> str:
         """Case-folded, Unicode NFKC, punctuation-stripped matching key."""
-        nfkc = unicodedata.normalize("NFKC", text or "")
-        case_folded = nfkc.lower()
+        clean = SemanticConceptValidator.clean_text_formatting(text or "")
+        case_folded = clean.lower()
         cleaned = re.sub(r"[^\w\s]", "", case_folded)
         return " ".join(cleaned.split())
 

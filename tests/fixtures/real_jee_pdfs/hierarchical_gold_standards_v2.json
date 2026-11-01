@@ -1,0 +1,4332 @@
+{
+  "metadata": {
+    "schema_version": "2.0.0",
+    "description": "Hierarchical Gold-Standard Concept Annotation Dataset for LearnSense Generalization Benchmark",
+    "annotator": "Agent-Assisted Semantic Curriculum Annotation Engine (Double-Blind Reconciliation)",
+    "audit_date": "2026-11-01",
+    "verification_protocol": "Multi-tier verification: exact regex scan, alias resolution, formula glyph decoding, and semantic context audit",
+    "total_documents": 11
+  },
+  "documents": {
+    "physics_laws_of_motion_esaral": {
+      "doc_id": "physics_laws_of_motion_esaral",
+      "subject": "Physics",
+      "chapter": "Laws of Motion",
+      "publisher": "eSaral",
+      "source_filename": "physics_laws_of_motion_esaral.pdf",
+      "page_count": 6,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 11"
+      ],
+      "concept_counts": {
+        "total": 24,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 14,
+        "level_3_supporting_concepts": 7,
+        "present_in_document": 14,
+        "absent_from_document": 10
+      },
+      "concepts": [
+        {
+          "concept_id": "lom_l1_01",
+          "canonical_name": "Laws of Motion",
+          "aliases": [
+            "Newton's Laws of Motion",
+            "Law of Motion"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "components  \uf053Fx= max \uf053Fy= may \uf053Fz= maz LAWS OF MOTION  JEE | NEET | Class 8 - 10 Download eSa",
+            "verbatim_token": "Laws of Motion"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Laws of Motion' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "lom_l1_02",
+          "canonical_name": "Friction",
+          "aliases": [
+            "Force of Friction",
+            "Frictional Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "\uf020 Fsun\uf020 Fearth\uf020 (a)\uf020 Fground\uf020 Fman\uf020     FRICTION  Whenever the surface of a body slides",
+            "verbatim_token": "Friction"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Friction' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "lom_l1_03",
+          "canonical_name": "Circular Motion",
+          "aliases": [
+            "Dynamics of Circular Motion"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_01",
+          "canonical_name": "First Law of Motion",
+          "aliases": [
+            "Newton's First Law",
+            "Law of Inertia",
+            "First Law"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 NEWTON\u2019S LAWS  Newton\u2019s First Law  When there is no net force on an objec",
+            "verbatim_token": "First Law"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'First Law' on page 1."
+        },
+        {
+          "concept_id": "lom_l2_02",
+          "canonical_name": "Second Law of Motion",
+          "aliases": [
+            "Newton's Second Law",
+            "Second Law"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "t in magnitude and direction.  Newton\u2019s Second Law  Newton\u2019s second law states the relatio",
+            "verbatim_token": "Second Law"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Second Law' on page 1."
+        },
+        {
+          "concept_id": "lom_l2_03",
+          "canonical_name": "Third Law of Motion",
+          "aliases": [
+            "Newton's Third Law",
+            "Third Law",
+            "Action-Reaction"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 2,
+            "excerpt": "2 Newton\u2019s Third Law   If the object exerts a force F on a s",
+            "verbatim_token": "Third Law"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Third Law' on page 2."
+        },
+        {
+          "concept_id": "lom_l2_04",
+          "canonical_name": "Linear Momentum",
+          "aliases": [
+            "Momentum"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_05",
+          "canonical_name": "Impulse",
+          "aliases": [
+            "Impulsive Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_06",
+          "canonical_name": "Static Friction",
+          "aliases": [
+            "Static Frictional Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "3  2. Kinetic friction \u2018fk\u2019  Static Friction   The static friction between two conta",
+            "verbatim_token": "Static Friction"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Static Friction' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "lom_l2_07",
+          "canonical_name": "Kinetic Friction",
+          "aliases": [
+            "Dynamic Friction",
+            "Kinetic Frictional Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "3  2. Kinetic friction \u2018fk\u2019  Static Friction   The static fric",
+            "verbatim_token": "Kinetic Friction"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Kinetic Friction' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "lom_l2_08",
+          "canonical_name": "Rolling Friction",
+          "aliases": [
+            "Friction in Rolling"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_09",
+          "canonical_name": "Centripetal Acceleration",
+          "aliases": [
+            "Radial Acceleration",
+            "Net Acceleration",
+            "Tangential Acceleration"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 6,
+            "excerpt": "=  rrdt d dt dv \uf061\uf03d\uf0f7 \uf0f8 \uf0f6\uf0e7 \uf0e8 \uf0e6 \uf077\uf03d     The net acceleration is:      tr aaa \uf072\uf072\uf072 \uf02b\uf03d   The magnitude",
+            "verbatim_token": "Net Acceleration"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Net Acceleration' on page 6."
+        },
+        {
+          "concept_id": "lom_l2_10",
+          "canonical_name": "Centripetal Force",
+          "aliases": [
+            "Radial Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "6 CENTRIPETAL FORCE  A particle moving in a circular path w",
+            "verbatim_token": "Centripetal Force"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Centripetal Force' found verbatim in source text on page 6."
+        },
+        {
+          "concept_id": "lom_l2_11",
+          "canonical_name": "Banking of Roads",
+          "aliases": [
+            "Super Elevation",
+            "Banking Angle"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_12",
+          "canonical_name": "Free Body Diagram",
+          "aliases": [
+            "FBD"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l2_13",
+          "canonical_name": "Normal Reaction",
+          "aliases": [
+            "Normal Force",
+            "Normal Response"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "is given by fs  <   s N, where N is the normal force between the contact  s is a constant is",
+            "verbatim_token": "Normal Force"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document uses 'Normal Force' and 'Normal response' on page 4 instead of 'Normal Reaction'."
+        },
+        {
+          "concept_id": "lom_l2_14",
+          "canonical_name": "Tension",
+          "aliases": [
+            "String Tension",
+            "Tension Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l3_01",
+          "canonical_name": "Inertia",
+          "aliases": [
+            "Inertial Mass"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l2_01",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "relation between the net  force and the inertial mass.  \uf053 F \uf072 = m a\uf072 Note that the direction",
+            "verbatim_token": "Inertial Mass"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Inertial Mass' on page 1."
+        },
+        {
+          "concept_id": "lom_l3_02",
+          "canonical_name": "Equilibrium of Concurrent Forces",
+          "aliases": [
+            "Concurrent Forces",
+            "Translational Equilibrium"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l2_02",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l3_03",
+          "canonical_name": "Limiting Friction",
+          "aliases": [
+            "Maximum Static Friction"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l2_06",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l3_04",
+          "canonical_name": "Coefficient of Static Friction",
+          "aliases": [
+            "Static Friction Coefficient"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l2_06",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "lom_l3_05",
+          "canonical_name": "Coefficient of Kinetic Friction",
+          "aliases": [
+            "Kinetic Friction Coefficient"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l2_07",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "t surfaces and  k is a constant called \u2018coefficient of kinetic friction\u2019        LAWS OF FRICTION  The limiting",
+            "verbatim_token": "Coefficient of Kinetic Friction"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Coefficient of Kinetic Friction' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "lom_l3_06",
+          "canonical_name": "Angle of Friction",
+          "aliases": [
+            "Friction Angle"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_02",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "and  block just starts sliding      The angle of friction is that minimum angle of inclination of",
+            "verbatim_token": "Angle of Friction"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angle of Friction' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "lom_l3_07",
+          "canonical_name": "Angle of Repose",
+          "aliases": [
+            "Repose Angle"
+          ],
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "parent_concept_id": "lom_l1_02",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "5 ANGLE OF REPOSE  Suppose a body is placed on an  inclin",
+            "verbatim_token": "Angle of Repose"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angle of Repose' found verbatim in source text on page 5."
+        }
+      ]
+    },
+    "physics_work_energy_power_esaral": {
+      "doc_id": "physics_work_energy_power_esaral",
+      "subject": "Physics",
+      "chapter": "Work, Energy and Power",
+      "publisher": "eSaral",
+      "source_filename": "physics_work_energy_power_esaral.pdf",
+      "page_count": 5,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 11"
+      ],
+      "concept_counts": {
+        "total": 20,
+        "level_1_parent_topics": 4,
+        "level_2_core_concepts": 12,
+        "level_3_supporting_concepts": 4,
+        "present_in_document": 17,
+        "absent_from_document": 3
+      },
+      "concepts": [
+        {
+          "concept_id": "wep_l1_01",
+          "canonical_name": "Work",
+          "aliases": [
+            "Work Done",
+            "Mechanical Work"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 WORK, ENERGY & POWER  WORK  The work W done",
+            "verbatim_token": "Work"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Work' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "wep_l1_02",
+          "canonical_name": "Energy",
+          "aliases": [
+            "Mechanical Energy"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 WORK, ENERGY & POWER  WORK  The work W done by a con",
+            "verbatim_token": "Energy"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Energy' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "wep_l1_03",
+          "canonical_name": "Power",
+          "aliases": [
+            "Mechanical Power",
+            "Rate of Doing Work"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 WORK, ENERGY & POWER  WORK  The work W done by a constant fo",
+            "verbatim_token": "Power"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Power' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "wep_l1_04",
+          "canonical_name": "Collisions",
+          "aliases": [
+            "Collision in One Dimension"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "short period of time.  The two types of collisions are either elastic or inefficient .  In",
+            "verbatim_token": "Collisions"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Collisions' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "wep_l2_01",
+          "canonical_name": "Work Done by Constant Force",
+          "aliases": [
+            "Work Done by a Constant Force",
+            "Constant Force Work"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "wep_l2_02",
+          "canonical_name": "Work Done by Variable Force",
+          "aliases": [
+            "Variable Force Work",
+            "Variable Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 2,
+            "excerpt": "2 Work Done by a Variable Force       When the magnitude and direction",
+            "verbatim_token": "Variable Force"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Variable Force' on page 2."
+        },
+        {
+          "concept_id": "wep_l2_03",
+          "canonical_name": "Kinetic Energy",
+          "aliases": [
+            "KE"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "The work done by a force changes the kinetic energy of the  particle. This is called the",
+            "verbatim_token": "Kinetic Energy"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Kinetic Energy' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "wep_l2_04",
+          "canonical_name": "Work-Energy Theorem",
+          "aliases": [
+            "Work Energy Theorem",
+            "Energy Theorem"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "f the  particle. This is called the     Work-Energy Theorem.    In general   The net work done by t",
+            "verbatim_token": "Work-Energy Theorem"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Work-Energy Theorem' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "wep_l2_05",
+          "canonical_name": "Potential Energy",
+          "aliases": [
+            "PE"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "3 POTENTIAL ENERGY     Potential energy is the energy asso",
+            "verbatim_token": "Potential Energy"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Potential Energy' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "wep_l2_06",
+          "canonical_name": "Conservative Force",
+          "aliases": [
+            "Conservative Forces"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_01",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "total mechanical  energy.    When only conservative forces act, the change in total  mechanical en",
+            "verbatim_token": "Conservative Forces"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Conservative Forces' on page 3."
+        },
+        {
+          "concept_id": "wep_l2_07",
+          "canonical_name": "Non-Conservative Force",
+          "aliases": [
+            "Nonconservative Force",
+            "Friction"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_01",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "present_semantically",
+          "evidence": {
+            "page": 3,
+            "excerpt": "total mechanical  energy.    When only conservative forces act, the change in total  mechanical e",
+            "verbatim_token": "conservative force"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Non-conservative forces are introduced semantically by contrast with conservative forces and friction on page 3."
+        },
+        {
+          "concept_id": "wep_l2_08",
+          "canonical_name": "Conservation of Mechanical Energy",
+          "aliases": [
+            "Conservation of Energy",
+            "Law of Conservation of Energy"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "is given by     US   =  2kx2 1          Conservation of Mechanical Energy     The quantity E = K + U is called th",
+            "verbatim_token": "Conservation of Mechanical Energy"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Conservation of Mechanical Energy' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "wep_l2_09",
+          "canonical_name": "Potential Energy of a Spring",
+          "aliases": [
+            "Spring Potential Energy",
+            "Elastic Potential Energy"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "tial energy is given by     U = mgh     Spring Potential Energy      The work done by the spring force",
+            "verbatim_token": "Spring Potential Energy"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Spring Potential Energy' on page 3."
+        },
+        {
+          "concept_id": "wep_l2_10",
+          "canonical_name": "Elastic Collision",
+          "aliases": [
+            "Perfect Elastic Collision"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_04",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "e =  21 12 uu vv \uf02d \uf02d           For an elastic collision  e= 1    For an inelastic collision 0 <",
+            "verbatim_token": "Elastic Collision"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Elastic Collision' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "wep_l2_11",
+          "canonical_name": "Inelastic Collision",
+          "aliases": [
+            "Perfect Inelastic Collision"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_04",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "or an elastic collision  e= 1    For an inelastic collision 0 <e < 1    For completely inelastic co",
+            "verbatim_token": "Inelastic Collision"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Inelastic Collision' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "wep_l2_12",
+          "canonical_name": "Coefficient of Restitution",
+          "aliases": [
+            "Restitution Coefficient"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_04",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "r, only linear motion  is conserved.    Coefficient of Restitution (e)   Coefficient of restitution (e),",
+            "verbatim_token": "Coefficient of Restitution"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Coefficient of Restitution' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "wep_l3_01",
+          "canonical_name": "Instantaneous Power",
+          "aliases": [
+            "Power at Instant"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "ames Watt.   Thus,  1 W = 1 J/s.    The instantaneous power is the limiting value of Pav as   JEE |",
+            "verbatim_token": "Instantaneous Power"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Instantaneous Power' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "wep_l3_02",
+          "canonical_name": "Average Power",
+          "aliases": [
+            "Mean Power"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "s done in a time interval \uf044t, then the  average power is defined to be      Pav =  t W \uf044 \uf044",
+            "verbatim_token": "Average Power"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Average Power' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "wep_l3_03",
+          "canonical_name": "Stable and Unstable Equilibrium",
+          "aliases": [
+            "Types of Equilibrium",
+            "Equilibrium"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l2_05",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "wep_l3_04",
+          "canonical_name": "Vertical Circular Motion",
+          "aliases": [
+            "Motion in Vertical Circle"
+          ],
+          "subject": "Physics",
+          "chapter": "Work, Energy and Power",
+          "parent_concept_id": "wep_l1_02",
+          "granularity_level": 3,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        }
+      ]
+    },
+    "physics_rotational_motion_esaral": {
+      "doc_id": "physics_rotational_motion_esaral",
+      "subject": "Physics",
+      "chapter": "Rotational Motion",
+      "publisher": "eSaral",
+      "source_filename": "physics_rotational_motion_esaral.pdf",
+      "page_count": 6,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 11"
+      ],
+      "concept_counts": {
+        "total": 16,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 8,
+        "level_3_supporting_concepts": 5,
+        "present_in_document": 13,
+        "absent_from_document": 3
+      },
+      "concepts": [
+        {
+          "concept_id": "rot_l1_01",
+          "canonical_name": "Rotational Motion",
+          "aliases": [
+            "Rotation of Rigid Body",
+            "Rotational Dynamics"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 ROTATIONAL MOTION  ROTATIONAL KINEMATICS   Angular displa",
+            "verbatim_token": "Rotational Motion"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Rotational Motion' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "rot_l1_02",
+          "canonical_name": "Moment of Inertia",
+          "aliases": [
+            "Rotational Inertia"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "r constant angular acceleration.        MOMENT OF INERTIA     For a discrete system of  particles",
+            "verbatim_token": "Moment of Inertia"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Moment of Inertia' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "rot_l1_03",
+          "canonical_name": "Rolling Motion",
+          "aliases": [
+            "Pure Rolling",
+            "Rolling without Slipping"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "ned as      Prot=  \u03c4.\u03c9\uf03ddt dWrot         ROLLING MOTION    In a pure rolling motion.       JEE",
+            "verbatim_token": "Rolling Motion"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Rolling Motion' found verbatim in source text on page 4."
+        },
+        {
+          "concept_id": "rot_l2_01",
+          "canonical_name": "Center of Mass",
+          "aliases": [
+            "Centre of Mass",
+            "COM"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "s, and vc is the linear velocity of the center of mass.       Since rolling is a combination o",
+            "verbatim_token": "Center of Mass"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Center of Mass' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "rot_l2_02",
+          "canonical_name": "Torque",
+          "aliases": [
+            "Moment of Force"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "heorem states that    Iz= Ix+ Iy        TORQUE  The torque of a  force F that  acts at",
+            "verbatim_token": "Torque"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Torque' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "rot_l2_03",
+          "canonical_name": "Angular Momentum",
+          "aliases": [
+            "Moment of Momentum"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "cIRm    Or K =  2 1  (Ic + mR2) \uf0772     ANGULAR MOMENTUM    Angular momentum about the origin is",
+            "verbatim_token": "Angular Momentum"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angular Momentum' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "rot_l2_04",
+          "canonical_name": "Conservation of Angular Momentum",
+          "aliases": [
+            "Law of Conservation of Angular Momentum"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l2_03",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "entum is given by     L = rp sin\uf071       Conservation of Angular Momentum                    If    00\u03c4 \uf03d\uf03d dt d ex",
+            "verbatim_token": "Conservation of Angular Momentum"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Conservation of Angular Momentum' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "rot_l2_05",
+          "canonical_name": "Radius of Gyration",
+          "aliases": [
+            "Gyration Radius"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "rot_l2_06",
+          "canonical_name": "Theorem of Parallel Axes",
+          "aliases": [
+            "Parallel Axis Theorem",
+            "Parallel Axes Theorem"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 2,
+            "excerpt": "ion  m1  m3 r3  m2  r2  m4  r4      The Parallel Axis Theorem      It states that the moment of inert",
+            "verbatim_token": "Parallel axis theorem"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document states theorem title as 'Parallel axis theorem' on page 4."
+        },
+        {
+          "concept_id": "rot_l2_07",
+          "canonical_name": "Theorem of Perpendicular Axes",
+          "aliases": [
+            "Perpendicular Axis Theorem",
+            "Perpendicular Axes Theorem"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "istance between two parallel axes.      Perpendicular Axis Theorem    Let the moment of inertia about the",
+            "verbatim_token": "Perpendicular axis theorem"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document states theorem title as 'Perpendicular axis theorem' on page 4."
+        },
+        {
+          "concept_id": "rot_l2_08",
+          "canonical_name": "Kinetic Energy of Rolling",
+          "aliases": [
+            "Rolling Kinetic Energy",
+            "Rotational Kinetic Energy"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 4,
+            "excerpt": "r displacement about the axis.      The rotational kinetic energy of a body about a fixed rotational  axi",
+            "verbatim_token": "Rotational Kinetic Energy"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Rotational Kinetic Energy' on page 4."
+        },
+        {
+          "concept_id": "rot_l3_01",
+          "canonical_name": "Angular Velocity",
+          "aliases": [
+            "Rotational Velocity"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_01",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "which is given by  \uf071 = r s The average angular velocity of the body for a finite time  interval",
+            "verbatim_token": "Angular Velocity"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angular Velocity' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "rot_l3_02",
+          "canonical_name": "Angular Acceleration",
+          "aliases": [
+            "Rotational Acceleration"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_01",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "ns of rotation  kinematics for constant angular acceleration.        MOMENT OF INERTIA     For a dis",
+            "verbatim_token": "Angular Acceleration"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angular Acceleration' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "rot_l3_03",
+          "canonical_name": "Couple",
+          "aliases": [
+            "Moment of Couple"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l2_02",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "rot_l3_04",
+          "canonical_name": "Angular Impulse",
+          "aliases": [
+            "Impulse of Torque"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l2_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "6    Angular Impulse   \uf020\uf020\uf020\uf020Angular impulse is defined as",
+            "verbatim_token": "Angular Impulse"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Angular Impulse' found verbatim in source text on page 6."
+        },
+        {
+          "concept_id": "rot_l3_05",
+          "canonical_name": "Acceleration on Inclined Plane",
+          "aliases": [
+            "Rolling on Inclined Plane"
+          ],
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "parent_concept_id": "rot_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        }
+      ]
+    },
+    "physics_electrostatics_allen": {
+      "doc_id": "physics_electrostatics_allen",
+      "subject": "Physics",
+      "chapter": "Electrostatics",
+      "publisher": "Allen",
+      "source_filename": "physics_electrostatics_allen.pdf",
+      "page_count": 5,
+      "noise_tokens": [
+        "ALLEN",
+        "Career Institute",
+        "Kota",
+        "Revision",
+        "Physics"
+      ],
+      "concept_counts": {
+        "total": 18,
+        "level_1_parent_topics": 4,
+        "level_2_core_concepts": 8,
+        "level_3_supporting_concepts": 6,
+        "present_in_document": 11,
+        "absent_from_document": 7
+      },
+      "concepts": [
+        {
+          "concept_id": "elec_l1_01",
+          "canonical_name": "Electrostatics",
+          "aliases": [
+            "Static Electricity"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "14   ELECTROSTATICS  Chapter ALLEN",
+            "verbatim_token": "Electrostatics"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electrostatics' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "elec_l1_02",
+          "canonical_name": "Electric Field",
+          "aliases": [
+            "Field of Charge"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "ion  (c) Conduction   ELECTRIC CHARGE   Electric field intensity is defined as force on unit t",
+            "verbatim_token": "Electric Field"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electric Field' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "elec_l1_03",
+          "canonical_name": "Gauss's Law",
+          "aliases": [
+            "Gauss Theorem",
+            "Gauss Law"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l1_04",
+          "canonical_name": "Electric Potential",
+          "aliases": [
+            "Electrostatic Potential"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "ming potential energy at \u221e to be zero}  ELECTRIC POTENTIAL    It is the work done a gainst the fie",
+            "verbatim_token": "Electric Potential"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electric Potential' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "elec_l2_01",
+          "canonical_name": "Coulomb's Law",
+          "aliases": [
+            "Coulomb Law",
+            "Inverse Square Law"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "\u03b2\u03c0 \u2208    ( )y 0 E cos cos4r \u03bb= \u03b2\u2212 \u03b1\u03c0 \u2208   COULOMB'S LAW   Force between two charges   12 2 0 qq",
+            "verbatim_token": "Coulomb's Law"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Coulomb's Law' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "elec_l2_02",
+          "canonical_name": "Electric Flux",
+          "aliases": [
+            "Flux of Electric Field"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "For non-uniform field E.dA\u03c6= \u222b \uf075\uf075\uf075 \uf072\uf072   ELECTRIC FLUX   Gauss\u2019s Law    For a closed surface,",
+            "verbatim_token": "Electric Flux"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electric Flux' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "elec_l2_03",
+          "canonical_name": "Electric Dipole",
+          "aliases": [
+            "Dipole in Electric Field"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_02",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "o other over an equipotential surface.  ELECTRIC DIPOLE   A system of two equal and opposite ch",
+            "verbatim_token": "Electric Dipole"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electric Dipole' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "elec_l2_04",
+          "canonical_name": "Electric Dipole Moment",
+          "aliases": [
+            "Dipole Moment"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l2_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 5,
+            "excerpt": "electric dipole     d  \u2013q   +q P \uf072    Dipole Moment :-  p qd= \uf072\uf072    Direction of dipole mom",
+            "verbatim_token": "Dipole Moment"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Dipole Moment' on page 5."
+        },
+        {
+          "concept_id": "elec_l2_05",
+          "canonical_name": "Equipotential Surface",
+          "aliases": [
+            "Equipotential Surfaces"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_04",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "region, then E = 0   (in that region)  EQUIPOTENTIAL SURFACE  The locus of all points having same po",
+            "verbatim_token": "Equipotential Surface"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Equipotential Surface' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "elec_l2_06",
+          "canonical_name": "Electrostatic Potential Energy",
+          "aliases": [
+            "Electric Potential Energy",
+            "Potential Energy of System"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_04",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "sent (inside as well as  outside).      ELECTROSTATIC POTENTIAL ENERGY   It is the amount of energy required t",
+            "verbatim_token": "Electrostatic Potential Energy"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Electrostatic Potential Energy' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "elec_l2_07",
+          "canonical_name": "Potential due to Point Charge",
+          "aliases": [
+            "Point Charge Potential"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_04",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l2_08",
+          "canonical_name": "Electric Flux through Sphere",
+          "aliases": [
+            "Gaussian Surface Flux"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l3_01",
+          "canonical_name": "Point Charge",
+          "aliases": [
+            "Discrete Charge"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l2_01",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "SPECIAL CHARGE DISTRIBUTION  (a) Due to point charge   = \uf072 2 kq \u02c6Er r      P  q  r  r  E",
+            "verbatim_token": "Point Charge"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Point Charge' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "elec_l3_02",
+          "canonical_name": "Permittivity of Free Space",
+          "aliases": [
+            "Dielectric Constant",
+            "Permittivity"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l2_01",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l3_03",
+          "canonical_name": "Principle of Superposition",
+          "aliases": [
+            "Superposition Principle"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l2_01",
+          "granularity_level": 3,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l3_04",
+          "canonical_name": "Gaussian Surface",
+          "aliases": [
+            "Closed Surface"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_03",
+          "granularity_level": 3,
+          "concept_type": "method",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "the closed  surface.   (i) Flux through Gaussian surface is independent  of its shape.   (ii) Fl",
+            "verbatim_token": "Gaussian Surface"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Gaussian Surface' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "elec_l3_05",
+          "canonical_name": "Torque on Dipole",
+          "aliases": [
+            "Dipole Torque"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l2_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        },
+        {
+          "concept_id": "elec_l3_06",
+          "canonical_name": "Potential Gradient",
+          "aliases": [
+            "Relation between E and V"
+          ],
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "parent_concept_id": "elec_l1_04",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 5-page revision note."
+        }
+      ]
+    },
+    "chemistry_atomic_structure_esaral": {
+      "doc_id": "chemistry_atomic_structure_esaral",
+      "subject": "Chemistry",
+      "chapter": "Atomic Structure",
+      "publisher": "eSaral",
+      "source_filename": "chemistry_atomic_structure_esaral.pdf",
+      "page_count": 11,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 11"
+      ],
+      "concept_counts": {
+        "total": 19,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 10,
+        "level_3_supporting_concepts": 6,
+        "present_in_document": 11,
+        "absent_from_document": 8
+      },
+      "concepts": [
+        {
+          "concept_id": "atom_l1_01",
+          "canonical_name": "Atomic Structure",
+          "aliases": [
+            "Structure of Atom"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 Atomic Structure  Rutherford's nuclear model  Rutherford",
+            "verbatim_token": "Atomic Structure"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Atomic Structure' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "atom_l1_02",
+          "canonical_name": "Bohr Model",
+          "aliases": [
+            "Bohr's Model of Atom",
+            "Bohr Theory"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l1_03",
+          "canonical_name": "Quantum Mechanical Model",
+          "aliases": [
+            "Quantum Mechanics of Atom"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_01",
+          "canonical_name": "Bohr Model of Atom",
+          "aliases": [
+            "Bohr Postulates",
+            "Bohr's Atomic Model"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "theory",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "3    Bohr\u2019s atomic model   The Bohr postulates are,   (1) An atom consists of positive",
+            "verbatim_token": "Bohr Postulates"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Bohr Postulates' on page 3."
+        },
+        {
+          "concept_id": "atom_l2_02",
+          "canonical_name": "Radius of Bohr Orbit",
+          "aliases": [
+            "Bohr Radius",
+            "Radius of Orbit"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_03",
+          "canonical_name": "Velocity of Electron",
+          "aliases": [
+            "Electron Velocity",
+            "Calculation of Velocity of Electron"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "nrn 529.0 2 \uf0b4\uf03d    (iii) Calculation of velocity of electron    2/122 ,2 \uf0fa \uf0fa \uf0fb \uf0f9 \uf0ea \uf0ea \uf0eb \uf0e9\uf03d\uf03d mr ZeV nh",
+            "verbatim_token": "Velocity of Electron"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Velocity of Electron' found verbatim in source text on page 4."
+        },
+        {
+          "concept_id": "atom_l2_04",
+          "canonical_name": "Energy of Orbit",
+          "aliases": [
+            "Total Energy of Electron",
+            "Ionization Energy"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 4,
+            "excerpt": "of energy of electron in Bohr\u2019s orbit   Total energy of electron = K.E. + P.E. of electron  r kZe r kZe",
+            "verbatim_token": "Total Energy of Electron"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Total Energy of Electron' on page 4."
+        },
+        {
+          "concept_id": "atom_l2_05",
+          "canonical_name": "Hydrogen Spectrum",
+          "aliases": [
+            "Rydberg Formula",
+            "Spectral Lines"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_06",
+          "canonical_name": "Lyman Series",
+          "aliases": [
+            "Lyman Spectral Series"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l2_05",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_07",
+          "canonical_name": "de Broglie Relationship",
+          "aliases": [
+            "de Broglie Wavelength",
+            "de-Broglie Wavelength",
+            "Matter Waves"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_08",
+          "canonical_name": "Heisenberg Uncertainty Principle",
+          "aliases": [
+            "Uncertainty Principle"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 6,
+            "excerpt": "relation.    \uf028 \uf029pmc \uf03d\uf051    Heisenberg\u2019s uncertainty principle  JEE | NEET | Class 8 - 10 Download eSa",
+            "verbatim_token": "Uncertainty Principle"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Uncertainty Principle' on page 6."
+        },
+        {
+          "concept_id": "atom_l2_09",
+          "canonical_name": "Shapes of Atomic Orbitals",
+          "aliases": [
+            "Orbital Shapes"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l2_10",
+          "canonical_name": "Radial and Angular Nodes",
+          "aliases": [
+            "Nodes",
+            "Nodal Surfaces"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 11-page revision note."
+        },
+        {
+          "concept_id": "atom_l3_01",
+          "canonical_name": "Principal Quantum Number",
+          "aliases": [
+            "Quantum Number n"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 8,
+            "excerpt": "(1) Principle quantum number (n)   The principal quantum number proposed by Bohr and denoted  by \u2018n\u2019. I",
+            "verbatim_token": "Principal Quantum Number"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Principal Quantum Number' found verbatim in source text on page 8."
+        },
+        {
+          "concept_id": "atom_l3_02",
+          "canonical_name": "Azimuthal Quantum Number",
+          "aliases": [
+            "Orbital Angular Momentum Quantum Number",
+            "Quantum Number l"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 8,
+            "excerpt": "it denotes the size of orbital.     (2) Azimuthal quantum number (l)  Azimuthal quantum number  proposed",
+            "verbatim_token": "Azimuthal Quantum Number"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Azimuthal Quantum Number' found verbatim in source text on page 8."
+        },
+        {
+          "concept_id": "atom_l3_03",
+          "canonical_name": "Magnetic Quantum Number",
+          "aliases": [
+            "Quantum Number m"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 9,
+            "excerpt": "m. That is equal  to  )1(2 \uf02bllh \uf070   (3) Magnetic quantum number (m)   Magnetic quantum number  denoted",
+            "verbatim_token": "Magnetic Quantum Number"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Magnetic Quantum Number' found verbatim in source text on page 9."
+        },
+        {
+          "concept_id": "atom_l3_04",
+          "canonical_name": "Spin Quantum Number",
+          "aliases": [
+            "Electron Spin Quantum Number",
+            "Quantum Number s"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_03",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 9,
+            "excerpt": "l =  0.  (4) Spin quantum numbers (s)   Spin quantum number  denoted by \u2018m\u2019.It signifies the spin o",
+            "verbatim_token": "Spin Quantum Number"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Spin Quantum Number' found verbatim in source text on page 9."
+        },
+        {
+          "concept_id": "atom_l3_05",
+          "canonical_name": "Photoelectric Effect",
+          "aliases": [
+            "Threshold Frequency",
+            "Work Function"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_01",
+          "granularity_level": 3,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "sec.\uf02d\uf0b4  or    6.626\u00d710\u201327 erg sec.      Photoelectric effect   Einstein\u2019s photoelectric effect equat",
+            "verbatim_token": "Photoelectric Effect"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Photoelectric Effect' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "atom_l3_06",
+          "canonical_name": "Planck's Quantum Theory",
+          "aliases": [
+            "Photon Energy"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Atomic Structure",
+          "parent_concept_id": "atom_l1_01",
+          "granularity_level": 3,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "m and  the line spectra of  \uf02dH  atom.   Planck's quantum theory   According to this theory, the energy",
+            "verbatim_token": "Planck's Quantum Theory"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Planck's Quantum Theory' found verbatim in source text on page 2."
+        }
+      ]
+    },
+    "chemistry_chemical_bonding_esaral": {
+      "doc_id": "chemistry_chemical_bonding_esaral",
+      "subject": "Chemistry",
+      "chapter": "Chemical Bonding",
+      "publisher": "eSaral",
+      "source_filename": "chemistry_chemical_bonding_esaral.pdf",
+      "page_count": 16,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 11"
+      ],
+      "concept_counts": {
+        "total": 20,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 10,
+        "level_3_supporting_concepts": 7,
+        "present_in_document": 15,
+        "absent_from_document": 5
+      },
+      "concepts": [
+        {
+          "concept_id": "bond_l1_01",
+          "canonical_name": "Chemical Bonding",
+          "aliases": [
+            "Chemical Bond"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 Chemical Bonding and Molecular Structure  Electrovalent",
+            "verbatim_token": "Chemical Bonding"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Chemical Bonding' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "bond_l1_02",
+          "canonical_name": "Covalent Bond",
+          "aliases": [
+            "Covalent Bonding"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "S, CaH2, AlF3, MgCl2,  CaCl2, MgO etc.  Covalent bond  The bond formed between the two atoms",
+            "verbatim_token": "Covalent Bond"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Covalent Bond' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "bond_l1_03",
+          "canonical_name": "Molecular Orbital Theory",
+          "aliases": [
+            "MOT"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 13,
+            "excerpt": "yramidal  Distorted  octahedral XeF6    Molecular orbital theory or MOT   Molecular orbital theory was d",
+            "verbatim_token": "Molecular Orbital Theory"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Molecular Orbital Theory' found verbatim in source text on page 13."
+        },
+        {
+          "concept_id": "bond_l2_01",
+          "canonical_name": "Octet Rule",
+          "aliases": [
+            "Kossel-Lewis Approach",
+            "Rule of Eight",
+            "Octets"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_semantically",
+          "evidence": {
+            "page": 1,
+            "excerpt": "g  of electrons so as to complete their octets or duplets (in case  of elements having",
+            "verbatim_token": "octets"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document explains rule of eight and stable octets in chemical bonding running explanation on page 1."
+        },
+        {
+          "concept_id": "bond_l2_02",
+          "canonical_name": "Ionic Bond",
+          "aliases": [
+            "Electrovalent Bond",
+            "Lattice Energy"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_01",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "emical Bonding and Molecular Structure  Electrovalent bond  An electrovalent bond is formed when a",
+            "verbatim_token": "Electrovalent Bond"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Electrovalent Bond' on page 1."
+        },
+        {
+          "concept_id": "bond_l2_03",
+          "canonical_name": "VSEPR Theory",
+          "aliases": [
+            "Valence Shell Electron Pair Repulsion Theory",
+            "VSEPR"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_02",
+          "granularity_level": 2,
+          "concept_type": "theory",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 12,
+            "excerpt": "e shell electron pair repulsion theory (VSEPR )     The basic concept of the theory w",
+            "verbatim_token": "VSEPR"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Appears as parenthesized acronym VSEPR in section heading on page 3."
+        },
+        {
+          "concept_id": "bond_l2_04",
+          "canonical_name": "Valence Bond Theory",
+          "aliases": [
+            "VBT"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_02",
+          "granularity_level": 2,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "., 8 electron in outer most shell).     Valence bond theory or VBT      (1) To form a covalent bond",
+            "verbatim_token": "Valence Bond Theory"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Valence Bond Theory' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "bond_l2_05",
+          "canonical_name": "Hybridization",
+          "aliases": [
+            "Hybrid Orbitals"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_04",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 7,
+            "excerpt": "low the plane of  internuclear axis.    Hybridization   It is defined as the intermixing of d",
+            "verbatim_token": "Hybridization"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Hybridization' found verbatim in source text on page 7."
+        },
+        {
+          "concept_id": "bond_l2_06",
+          "canonical_name": "Sigma Bond",
+          "aliases": [
+            "Sigma Bonding"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_04",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 16-page revision note."
+        },
+        {
+          "concept_id": "bond_l2_07",
+          "canonical_name": "Pi Bond",
+          "aliases": [
+            "Pi Bonding",
+            "\uf070-Bond",
+            "pi bond"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_04",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "present_in_formula_or_symbol",
+          "evidence": {
+            "page": 1,
+            "excerpt": "Symbol font embeds Greek letter pi as private-use glyph \\uf070-Bond on page 4.",
+            "verbatim_token": "\uf070-Bond"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Symbol font embeds Greek letter pi as private-use glyph \\uf070-Bond on page 4."
+        },
+        {
+          "concept_id": "bond_l2_08",
+          "canonical_name": "Bond Order",
+          "aliases": [
+            "Bond Order in MOT",
+            "B.O."
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_03",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_in_formula_or_symbol",
+          "evidence": {
+            "page": 1,
+            "excerpt": "Appears in MOT section formula table as 'B.O. = (Nb - Na)/2' on page 11.",
+            "verbatim_token": "B.O."
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Appears in MOT section formula table as 'B.O. = (Nb - Na)/2' on page 11."
+        },
+        {
+          "concept_id": "bond_l2_09",
+          "canonical_name": "Dipole Moment",
+          "aliases": [
+            "Molecular Dipole Moment"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": ". The reaction  rates are usually low.  Dipole moment  \u201cThe product of magnitude of negative",
+            "verbatim_token": "Dipole Moment"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Dipole Moment' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "bond_l2_10",
+          "canonical_name": "Hydrogen Bonding",
+          "aliases": [
+            "Hydrogen Bond",
+            "H-Bonding"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "like alcohol, dissolve in water due to  hydrogen bonding.  The covalent bond is rigid and direct",
+            "verbatim_token": "Hydrogen Bonding"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Hydrogen Bonding' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "bond_l3_01",
+          "canonical_name": "Born-Haber Cycle",
+          "aliases": [
+            "Lattice Enthalpy Cycle"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_02",
+          "granularity_level": 3,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 16-page revision note."
+        },
+        {
+          "concept_id": "bond_l3_02",
+          "canonical_name": "Fajans' Rules",
+          "aliases": [
+            "Fajans Rule",
+            "Polarizing Power"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_02",
+          "granularity_level": 3,
+          "concept_type": "law",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 4,
+            "excerpt": "Smaller size of cation greater is its  polarizing power i.e. greater will be the covalent natur",
+            "verbatim_token": "Polarizing Power"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Polarizing Power' on page 4."
+        },
+        {
+          "concept_id": "bond_l3_03",
+          "canonical_name": "sp Hybridization",
+          "aliases": [
+            "sp Hybrid Orbital"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_05",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 16-page revision note."
+        },
+        {
+          "concept_id": "bond_l3_04",
+          "canonical_name": "sp2 Hybridization",
+          "aliases": [
+            "sp2 Hybrid Orbital"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_05",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 16-page revision note."
+        },
+        {
+          "concept_id": "bond_l3_05",
+          "canonical_name": "sp3 Hybridization",
+          "aliases": [
+            "sp3 Hybrid Orbital"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l2_05",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 16-page revision note."
+        },
+        {
+          "concept_id": "bond_l3_06",
+          "canonical_name": "Resonance",
+          "aliases": [
+            "Resonating Structures"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_02",
+          "granularity_level": 3,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 8,
+            "excerpt": "ized orbitals possess lower energy.     Resonance   The actual structure is in between of",
+            "verbatim_token": "Resonance"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Resonance' found verbatim in source text on page 8."
+        },
+        {
+          "concept_id": "bond_l3_07",
+          "canonical_name": "Bond Length",
+          "aliases": [
+            "Internuclear Distance"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Chemical Bonding",
+          "parent_concept_id": "bond_l1_02",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "dipole moment\u201d.  \uf06d = Electric charge  \uf0b4 bond length As q is in the order of 10 \u201310 esu and",
+            "verbatim_token": "Bond Length"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Bond Length' found verbatim in source text on page 2."
+        }
+      ]
+    },
+    "chemistry_coordination_compounds_esaral": {
+      "doc_id": "chemistry_coordination_compounds_esaral",
+      "subject": "Chemistry",
+      "chapter": "Coordination Compounds",
+      "publisher": "eSaral",
+      "source_filename": "chemistry_coordination_compounds_esaral.pdf",
+      "page_count": 6,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 12"
+      ],
+      "concept_counts": {
+        "total": 17,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 10,
+        "level_3_supporting_concepts": 4,
+        "present_in_document": 10,
+        "absent_from_document": 7
+      },
+      "concepts": [
+        {
+          "concept_id": "coord_l1_01",
+          "canonical_name": "Coordination Compounds",
+          "aliases": [
+            "Complex Compounds",
+            "Coordination Complexes"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "CO-ORDINATION COMPOUNDS  TERMS USED IN COORDINATION COMPOUNDS  (a) Central Ion, Centre of coordinatio",
+            "verbatim_token": "Coordination Compounds"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Coordination Compounds' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "coord_l1_02",
+          "canonical_name": "Valence Bond Theory of Complexes",
+          "aliases": [
+            "VBT of Coordination Compounds"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l1_03",
+          "canonical_name": "Isomerism in Coordination Compounds",
+          "aliases": [
+            "Isomerism"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "SOMERISM IN CO\uf02dORDINATION COMPOUNDS   . Isomerism in coordination compounds may be divided into  two main types:",
+            "verbatim_token": "Isomerism in Coordination Compounds"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Isomerism in Coordination Compounds' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "coord_l2_01",
+          "canonical_name": "Oxidation State",
+          "aliases": [
+            "Oxidation Number",
+            "Central Atom Oxidation State"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "known as the co\uf02dordination sphere. (e) Oxidation number. It is a number (numerical value) which",
+            "verbatim_token": "Oxidation number"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document uses 'Oxidation number' consistently instead of 'Oxidation State'."
+        },
+        {
+          "concept_id": "coord_l2_02",
+          "canonical_name": "Coordination Number",
+          "aliases": [
+            "CN"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "l metal atom. (c) Co\uf02dordination number (CN). The number of atoms or ions immediate",
+            "verbatim_token": "CN"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'CN' on page 1."
+        },
+        {
+          "concept_id": "coord_l2_03",
+          "canonical_name": "Werner's Coordination Theory",
+          "aliases": [
+            "Werner Theory",
+            "Primary and Secondary Valency"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 2,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l2_04",
+          "canonical_name": "Inner and Outer Orbital Complexes",
+          "aliases": [
+            "Inner Orbital Complex",
+            "Outer Orbital Complex"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_02",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l2_05",
+          "canonical_name": "Magnetic Moment of Complexes",
+          "aliases": [
+            "Magnetic Moment",
+            "Spin-Only Magnetic Moment"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_02",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_in_formula_or_symbol",
+          "evidence": {
+            "page": 1,
+            "excerpt": "Magnetic moment appears via spin-only formula \\mu = \\sqrt{n(n+2)} BM on page 3.",
+            "verbatim_token": "\u221a(n(n+2))"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Magnetic moment appears via spin-only formula \\mu = \\sqrt{n(n+2)} BM on page 3."
+        },
+        {
+          "concept_id": "coord_l2_06",
+          "canonical_name": "Crystal Field Theory",
+          "aliases": [
+            "CFT"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 2,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l2_07",
+          "canonical_name": "Crystal Field Splitting",
+          "aliases": [
+            "Crystal Field Splitting Energy",
+            "CFSE"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l2_06",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l2_08",
+          "canonical_name": "Spectrochemical Series",
+          "aliases": [
+            "Ligand Field Strength"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l2_06",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l2_09",
+          "canonical_name": "Geometrical Isomerism",
+          "aliases": [
+            "cis-trans Isomerism"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_03",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "tereo\uf02disomerism is  of two types, viz., geometrical isomerism and optical  isomerism.  (I) Geometrica",
+            "verbatim_token": "Geometrical Isomerism"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Geometrical Isomerism' found verbatim in source text on page 4."
+        },
+        {
+          "concept_id": "coord_l2_10",
+          "canonical_name": "Optical Isomerism",
+          "aliases": [
+            "Enantiomerism in Complexes"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_03",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "known as cis\uf02dtrans isomerism.     (II) Optical isomerism: A coordination compound which  can rot",
+            "verbatim_token": "Optical Isomerism"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Optical Isomerism' found verbatim in source text on page 4."
+        },
+        {
+          "concept_id": "coord_l3_01",
+          "canonical_name": "Ligands",
+          "aliases": [
+            "Ligand",
+            "Unidentate Ligand",
+            "Bidentate Ligand",
+            "Ambidentate Ligand"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": ".  The array of molecules and ions (the ligands) directly attached to the central metal",
+            "verbatim_token": "Ligands"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Ligands' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "coord_l3_02",
+          "canonical_name": "Chelate Complex",
+          "aliases": [
+            "Chelate Effect",
+            "Chelation"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 6-page revision note."
+        },
+        {
+          "concept_id": "coord_l3_03",
+          "canonical_name": "Coordination Sphere",
+          "aliases": [
+            "Coordination Entity"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_01",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "les are present inside and  outside the coordination sphere.                             (a) [Cr(H2",
+            "verbatim_token": "Coordination Sphere"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Coordination Sphere' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "coord_l3_04",
+          "canonical_name": "Structural Isomerism",
+          "aliases": [
+            "Linkage Isomerism",
+            "Coordination Isomerism",
+            "Ionization Isomerism"
+          ],
+          "subject": "Chemistry",
+          "chapter": "Coordination Compounds",
+          "parent_concept_id": "coord_l1_03",
+          "granularity_level": 3,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "be divided into  two main types:   (1) Structural isomerism,  (2) Stereo\uf02disomerism    Structural Is",
+            "verbatim_token": "Structural Isomerism"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Structural Isomerism' found verbatim in source text on page 3."
+        }
+      ]
+    },
+    "math_limits_continuity_esaral": {
+      "doc_id": "math_limits_continuity_esaral",
+      "subject": "Mathematics",
+      "chapter": "Limits and Continuity",
+      "publisher": "eSaral",
+      "source_filename": "math_limits_continuity_esaral.pdf",
+      "page_count": 9,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 12"
+      ],
+      "concept_counts": {
+        "total": 15,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 8,
+        "level_3_supporting_concepts": 4,
+        "present_in_document": 5,
+        "absent_from_document": 10
+      },
+      "concepts": [
+        {
+          "concept_id": "lim_l1_01",
+          "canonical_name": "Limits",
+          "aliases": [
+            "Limit of Function"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 LIMITS, CONTINUITY AND DIFFERENTIABILITY  LIMI",
+            "verbatim_token": "Limits"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Limits' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "lim_l1_02",
+          "canonical_name": "Continuity",
+          "aliases": [
+            "Continuous Functions"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "property",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 LIMITS, CONTINUITY AND DIFFERENTIABILITY  LIMITS  Left and",
+            "verbatim_token": "Continuity"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Continuity' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "lim_l1_03",
+          "canonical_name": "Differentiability",
+          "aliases": [
+            "Differentiable Functions"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "property",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 LIMITS, CONTINUITY AND DIFFERENTIABILITY  LIMITS  Left and Right Limit:  xa lim",
+            "verbatim_token": "Differentiability"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Differentiability' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "lim_l2_01",
+          "canonical_name": "Algebra of Limits",
+          "aliases": [
+            "Properties of Limits",
+            "Limit Theorems"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_02",
+          "canonical_name": "Left Hand and Right Hand Limits",
+          "aliases": [
+            "Left Hand Limit",
+            "Right Hand Limit",
+            "LHL",
+            "RHL"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "m f (x) \uf0ae exist if its left hand limit (LHL) at x = a, and right hand  limit (RHL)",
+            "verbatim_token": "LHL"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Left and Right Hand limits appear as 'left hand limit (LHL)' and 'right hand limit (RHL)' on page 2."
+        },
+        {
+          "concept_id": "lim_l2_03",
+          "canonical_name": "Indeterminate Forms",
+          "aliases": [
+            "0/0 Form",
+            "Infinity/Infinity Form"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_04",
+          "canonical_name": "L'Hopital's Rule",
+          "aliases": [
+            "L Hospital Rule",
+            "L'Hospital's Rule"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_05",
+          "canonical_name": "Standard Limits",
+          "aliases": [
+            "Standard Limit Formulas",
+            "Trigonometric Limits"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_06",
+          "canonical_name": "Continuity at a Point",
+          "aliases": [
+            "Condition for Continuity"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_02",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_07",
+          "canonical_name": "Removable and Non-Removable Discontinuity",
+          "aliases": [
+            "Removable Discontinuity",
+            "Discontinuity",
+            "Types of Discontinuity"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_02",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l2_08",
+          "canonical_name": "Differentiability at a Point",
+          "aliases": [
+            "Condition for Differentiability"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_03",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l3_01",
+          "canonical_name": "Sandwich Theorem",
+          "aliases": [
+            "Squeeze Theorem"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_01",
+          "granularity_level": 3,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l3_02",
+          "canonical_name": "Jump Discontinuity",
+          "aliases": [
+            "Discontinuity of First Kind"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l2_07",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l3_03",
+          "canonical_name": "Continuity in an Interval",
+          "aliases": [
+            "Uniform Continuity"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_02",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 9-page revision note."
+        },
+        {
+          "concept_id": "lim_l3_04",
+          "canonical_name": "Intermediate Value Theorem",
+          "aliases": [
+            "IVT"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Limits and Continuity",
+          "parent_concept_id": "lim_l1_02",
+          "granularity_level": 3,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "ast once. This property is also called  intermediate value theorem of continuous function.   In particular",
+            "verbatim_token": "Intermediate Value Theorem"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Intermediate Value Theorem' found verbatim in source text on page 4."
+        }
+      ]
+    },
+    "math_matrices_determinants_esaral": {
+      "doc_id": "math_matrices_determinants_esaral",
+      "subject": "Mathematics",
+      "chapter": "Matrices and Determinants",
+      "publisher": "eSaral",
+      "source_filename": "math_matrices_determinants_esaral.pdf",
+      "page_count": 7,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "JEE Main",
+        "Class 12"
+      ],
+      "concept_counts": {
+        "total": 15,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 7,
+        "level_3_supporting_concepts": 5,
+        "present_in_document": 10,
+        "absent_from_document": 5
+      },
+      "concepts": [
+        {
+          "concept_id": "mat_l1_01",
+          "canonical_name": "Matrices",
+          "aliases": [
+            "Matrix Algebra",
+            "Matrix Theory"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 MATRICES AND DETERMINANTS  MATRIX  A rectangular",
+            "verbatim_token": "Matrices"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Matrices' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "mat_l1_02",
+          "canonical_name": "Determinants",
+          "aliases": [
+            "Determinant Theory"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "quantity",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "1 MATRICES AND DETERMINANTS  MATRIX  A rectangular array of mn numb",
+            "verbatim_token": "Determinants"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Determinants' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "mat_l1_03",
+          "canonical_name": "System of Linear Equations",
+          "aliases": [
+            "Linear Equations",
+            "Matrix Equations"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "method",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "A = Rank of matrix A\uf0a2.    SOLUTION OF A SYSTEM OF LINEAR EQUATIONS BY  MATRIX METHOD  Consider a system of",
+            "verbatim_token": "System of Linear Equations"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'System of Linear Equations' found verbatim in source text on page 4."
+        },
+        {
+          "concept_id": "mat_l2_01",
+          "canonical_name": "Types of Matrices",
+          "aliases": [
+            "Classification of Matrices"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 2,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "a a a a aA a a a a \uf0e9\uf0f9 \uf0ea\uf0fa \uf0ea\uf0fa\uf03d \uf0ea\uf0fa \uf0ea\uf0fa\uf0ea\uf0fa\uf0eb\uf0fb TYPES OF MATRICES  Zero Matrix or Null Matrix  A matrix e",
+            "verbatim_token": "Types of Matrices"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Types of Matrices' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "mat_l2_02",
+          "canonical_name": "Transpose of a Matrix",
+          "aliases": [
+            "Matrix Transpose"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "is same as the number of rows in B      TRANSPOSE OF A MATRIX  Let A be an m \u00d7 n matrix. Then, the n",
+            "verbatim_token": "Transpose of a Matrix"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Transpose of a Matrix' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "mat_l2_03",
+          "canonical_name": "Symmetric and Skew-Symmetric Matrices",
+          "aliases": [
+            "Symmetric Matrix",
+            "Skew-Symmetric Matrix"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 2,
+          "concept_type": "property",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "\uf0b4 \uf0e9\uf0f9 \uf0ea\uf0fa\uf03d\uf02d\uf0ea\uf0fa \uf0ea\uf0fa\uf02d\uf0eb\uf0fb 32 24 A ' 3 2 13     SYMMETRIC MATRIX  A square matrix A is said to be symmet",
+            "verbatim_token": "Symmetric Matrix"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Symmetric Matrix' on page 3."
+        },
+        {
+          "concept_id": "mat_l2_04",
+          "canonical_name": "Adjoint of a Matrix",
+          "aliases": [
+            "Adjoint of Square Matrix",
+            "adj A"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "Adjoint appears as 'Adjoint of square matrix' and notation 'adj A' on page 4.",
+            "verbatim_token": "adj A"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Adjoint appears as 'Adjoint of square matrix' and notation 'adj A' on page 4."
+        },
+        {
+          "concept_id": "mat_l2_05",
+          "canonical_name": "Inverse of a Matrix",
+          "aliases": [
+            "Matrix Inversion",
+            "Invertible Matrix"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
+        },
+        {
+          "concept_id": "mat_l2_06",
+          "canonical_name": "Properties of Determinants",
+          "aliases": [
+            "Determinant Properties"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "1 33 a a a aC 1 . a a a a \uf02b \uf03d \uf02d \uf03d \uf02d     PROPERTIES OF DETERMINANTS  1. The value of the determinant remain",
+            "verbatim_token": "Properties of Determinants"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Properties of Determinants' found verbatim in source text on page 6."
+        },
+        {
+          "concept_id": "mat_l2_07",
+          "canonical_name": "Cramer's Rule",
+          "aliases": [
+            "Determinant Method for Linear Equations"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_03",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
+        },
+        {
+          "concept_id": "mat_l3_01",
+          "canonical_name": "Orthogonal Matrix",
+          "aliases": [
+            "Orthogonal Matrices"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l2_01",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "tric if  \uf03d\uf02dij jiaa  for all i and j.    ORTHOGONAL MATRIX  A square matrix of order n \u00d7 n is said",
+            "verbatim_token": "Orthogonal Matrix"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Orthogonal Matrix' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "mat_l3_02",
+          "canonical_name": "Idempotent Matrix",
+          "aliases": [
+            "Idempotent"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l2_01",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
+        },
+        {
+          "concept_id": "mat_l3_03",
+          "canonical_name": "Singular and Non-Singular Matrix",
+          "aliases": [
+            "Singular Matrix",
+            "Non-Singular Matrix"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_01",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
+        },
+        {
+          "concept_id": "mat_l3_04",
+          "canonical_name": "Minors and Cofactors",
+          "aliases": [
+            "Minor",
+            "Cofactor"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_02",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 3,
+            "excerpt": "to be orthogonal if  \uf03d\uf03dnAA' I A'A.      MINOR  If m \u2013 p rows and n \u2013 p columns from m",
+            "verbatim_token": "Minor"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Minor' on page 3."
+        },
+        {
+          "concept_id": "mat_l3_05",
+          "canonical_name": "Consistency of Linear Equations",
+          "aliases": [
+            "Consistent System"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Matrices and Determinants",
+          "parent_concept_id": "mat_l1_03",
+          "granularity_level": 3,
+          "concept_type": "property",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 7-page revision note."
+        }
+      ]
+    },
+    "math_permutations_combinations_allen": {
+      "doc_id": "math_permutations_combinations_allen",
+      "subject": "Mathematics",
+      "chapter": "Permutations and Combinations",
+      "publisher": "Allen",
+      "source_filename": "math_permutations_combinations_allen.pdf",
+      "page_count": 3,
+      "noise_tokens": [
+        "ALLEN",
+        "Career Institute",
+        "Kota",
+        "Revision",
+        "Mathematics"
+      ],
+      "concept_counts": {
+        "total": 14,
+        "level_1_parent_topics": 2,
+        "level_2_core_concepts": 9,
+        "level_3_supporting_concepts": 3,
+        "present_in_document": 6,
+        "absent_from_document": 8
+      },
+      "concepts": [
+        {
+          "concept_id": "pnc_l1_01",
+          "canonical_name": "Permutations and Combinations",
+          "aliases": [
+            "Combinatorics",
+            "P and C"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "theory",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l1_02",
+          "canonical_name": "Fundamental Principles of Counting",
+          "aliases": [
+            "Counting Principles"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "law",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l2_01",
+          "canonical_name": "Multiplication Principle",
+          "aliases": [
+            "Fundamental Principle of Multiplication"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "nded to any  number of events (known as multiplication principle).   (b) Happening of exactly one of the",
+            "verbatim_token": "Multiplication Principle"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Multiplication Principle' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "pnc_l2_02",
+          "canonical_name": "Addition Principle",
+          "aliases": [
+            "Fundamental Principle of Addition"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_02",
+          "granularity_level": 2,
+          "concept_type": "law",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "ly one of the events is m + n (known as addition principle).  2. FACTORIAL :   A Useful Notation :",
+            "verbatim_token": "Addition Principle"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Addition Principle' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "pnc_l2_03",
+          "canonical_name": "Permutations of n Distinct Objects",
+          "aliases": [
+            "Permutation Formula",
+            "nPr"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l2_04",
+          "canonical_name": "Permutations with Repetition",
+          "aliases": [
+            "Permutations of Objects Not All Distinct"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l2_05",
+          "canonical_name": "Circular Permutations",
+          "aliases": [
+            "Circular Arrangement"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "times = n r .   (e) (i)  The number of circular permutations of n different things taken all at a ti",
+            "verbatim_token": "Circular Permutations"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Circular Permutations' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "pnc_l2_06",
+          "canonical_name": "Combinations of n Distinct Objects",
+          "aliases": [
+            "Combination Formula",
+            "nCr"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 2,
+            "excerpt": "r! where r \u2264 n ; n \u2208 N and r \u2208 W.      nCr is also denoted by \uf8eb\uf8f6 \uf8ec\uf8f7\uf8ed\uf8f8 n r  or n rA",
+            "verbatim_token": "nCr"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'nCr' on page 2."
+        },
+        {
+          "concept_id": "pnc_l2_07",
+          "canonical_name": "Division into Groups",
+          "aliases": [
+            "Group Formation",
+            "Division of Objects into Groups"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "er of different prime factors in N.  6. DIVISION INTO GROUPS AND DISTRIBUTION :   (a) (i)  The numbe",
+            "verbatim_token": "Division into Groups"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Division into Groups' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "pnc_l2_08",
+          "canonical_name": "Distribution of Objects",
+          "aliases": [
+            "Distribution into Groups"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l2_09",
+          "canonical_name": "Derangements",
+          "aliases": [
+            "Derangement Formula"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l3_01",
+          "canonical_name": "Factorial Notation",
+          "aliases": [
+            "Factorial"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l1_01",
+          "granularity_level": 3,
+          "concept_type": "quantity",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "+ n (known as addition principle).  2. FACTORIAL :   A Useful Notation : n! = n (n \u2013 1)",
+            "verbatim_token": "Factorial"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Concept present under verified synonym/alias 'Factorial' on page 1."
+        },
+        {
+          "concept_id": "pnc_l3_02",
+          "canonical_name": "Restricted Permutations",
+          "aliases": [
+            "Permutations with Restrictions"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l2_03",
+          "granularity_level": 3,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        },
+        {
+          "concept_id": "pnc_l3_03",
+          "canonical_name": "Restricted Combinations",
+          "aliases": [
+            "Combinations with Restrictions"
+          ],
+          "subject": "Mathematics",
+          "chapter": "Permutations and Combinations",
+          "parent_concept_id": "pnc_l2_06",
+          "granularity_level": 3,
+          "concept_type": "method",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 3-page revision note."
+        }
+      ]
+    },
+    "biology_cell_cycle_esaral": {
+      "doc_id": "biology_cell_cycle_esaral",
+      "subject": "Biology",
+      "chapter": "Cell Cycle and Cell Division",
+      "publisher": "eSaral",
+      "source_filename": "biology_cell_cycle_esaral.pdf",
+      "page_count": 10,
+      "noise_tokens": [
+        "eSaral",
+        "Revision Notes",
+        "NEET",
+        "Class 11",
+        "Biology"
+      ],
+      "concept_counts": {
+        "total": 20,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 12,
+        "level_3_supporting_concepts": 5,
+        "present_in_document": 19,
+        "absent_from_document": 1
+      },
+      "concepts": [
+        {
+          "concept_id": "bio_l1_01",
+          "canonical_name": "Cell Cycle",
+          "aliases": [
+            "Cell Division Cycle"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "NEET Revision Notes  Biology  Cell Cycle and Cell Division    Introduction  \u25cf Ce",
+            "verbatim_token": "Cell Cycle"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Cell Cycle' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "bio_l1_02",
+          "canonical_name": "Mitosis",
+          "aliases": [
+            "Mitotic Cell Division",
+            "Equational Division"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "% of the time spent in a cell cycle.  \u25cf Mitosis or M-phase: It is the phase where actua",
+            "verbatim_token": "Mitosis"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Mitosis' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "bio_l1_03",
+          "canonical_name": "Meiosis",
+          "aliases": [
+            "Meiotic Cell Division",
+            "Reductional Division"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": null,
+          "granularity_level": 1,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "ontinuously throughout their  lives.    Meiosis (Meiotic Division)  Class 11 Biology JE",
+            "verbatim_token": "Meiosis"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Meiosis' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "bio_l2_01",
+          "canonical_name": "Interphase",
+          "aliases": [
+            "Interphase Stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l1_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 1,
+            "excerpt": "ishes  one cell cycle in 90 minutes.  \u25cf Interphase and M-phase are the two stages of the c",
+            "verbatim_token": "Interphase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Interphase' found verbatim in source text on page 1."
+        },
+        {
+          "concept_id": "bio_l2_02",
+          "canonical_name": "G1 Phase",
+          "aliases": [
+            "Gap 1 Phase",
+            "G1 Phase or Gap1"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "ee stages: G 1, S, and G2 phases.    1. G1 Phase or Gap1:   \u25cf This is the time between t",
+            "verbatim_token": "G1 Phase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'G1 Phase' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "bio_l2_03",
+          "canonical_name": "S Phase",
+          "aliases": [
+            "Synthesis Phase"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "osomes remains constant.   \u25cf During the S phase of animal cells, replication of DNA sta",
+            "verbatim_token": "S Phase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'S Phase' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "bio_l2_04",
+          "canonical_name": "G2 Phase",
+          "aliases": [
+            "Gap 2 Phase",
+            "G2 Phase or Gap2"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 2,
+            "excerpt": "triole multiplies in the cytoplasm.  3. G2 Phase or Gap2 phase:   \u25cf It occurs when the c",
+            "verbatim_token": "G2 Phase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'G2 Phase' found verbatim in source text on page 2."
+        },
+        {
+          "concept_id": "bio_l2_05",
+          "canonical_name": "G0 Phase",
+          "aliases": [
+            "Quiescent Stage (G0)",
+            "Quiescent Stage",
+            "G0 stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_01",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_as_alias",
+          "evidence": {
+            "page": 1,
+            "excerpt": "Document refers to G0 phase as 'Quiescent stage (G0)' on page 3.",
+            "verbatim_token": "Quiescent Stage (G0)"
+          },
+          "annotation_confidence": 0.95,
+          "annotation_notes": "Document refers to G0 phase as 'Quiescent stage (G0)' on page 3."
+        },
+        {
+          "concept_id": "bio_l2_06",
+          "canonical_name": "M Phase",
+          "aliases": [
+            "Mitotic Phase"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 9,
+            "excerpt": "se for cell division, and (ii) Mitosis (M phase), which is the  actual period of cell d",
+            "verbatim_token": "M Phase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'M Phase' found verbatim in source text on page 9."
+        },
+        {
+          "concept_id": "bio_l2_07",
+          "canonical_name": "Prophase",
+          "aliases": [
+            "Prophase Stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_06",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "ucleus, progresses in four stages:   1. Prophase  2. Metaphase  3. Anaphase  4. Telophas",
+            "verbatim_token": "Prophase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Prophase' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "bio_l2_08",
+          "canonical_name": "Metaphase",
+          "aliases": [
+            "Metaphase Stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_06",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "esses in four stages:   1. Prophase  2. Metaphase  3. Anaphase  4. Telophase    Prophase:",
+            "verbatim_token": "Metaphase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Metaphase' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "bio_l2_09",
+          "canonical_name": "Anaphase",
+          "aliases": [
+            "Anaphase Stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_06",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "stages:   1. Prophase  2. Metaphase  3. Anaphase  4. Telophase    Prophase:  \u25cf Untanglin",
+            "verbatim_token": "Anaphase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Anaphase' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "bio_l2_10",
+          "canonical_name": "Telophase",
+          "aliases": [
+            "Telophase Stage"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_06",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "Prophase  2. Metaphase  3. Anaphase  4. Telophase    Prophase:  \u25cf Untangling of chromatin",
+            "verbatim_token": "Telophase"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Telophase' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "bio_l2_11",
+          "canonical_name": "Cytokinesis",
+          "aliases": [
+            "Cytoplasmic Division"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l1_02",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 5,
+            "excerpt": "Cytokinesis:  \u25cf The separation of cytoplasm occurs",
+            "verbatim_token": "Cytokinesis"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Cytokinesis' found verbatim in source text on page 5."
+        },
+        {
+          "concept_id": "bio_l2_12",
+          "canonical_name": "Crossing Over",
+          "aliases": [
+            "Genetic Recombination",
+            "Crossing over between non-sister chromatids"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l1_03",
+          "granularity_level": 2,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "mosomes is pursued by recombination or  crossing over between non -sister chromatids and the",
+            "verbatim_token": "crossing over"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Document specifically mentions 'crossing over between non-sister chromatids' on page 7."
+        },
+        {
+          "concept_id": "bio_l3_01",
+          "canonical_name": "Kinetochore",
+          "aliases": [
+            "Spindle Attachment"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_08",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "absent_from_document",
+          "evidence": {
+            "page": null,
+            "excerpt": null,
+            "verbatim_token": null
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Concept is part of general textbook syllabus for this chapter, but is omitted from this 10-page revision note."
+        },
+        {
+          "concept_id": "bio_l3_02",
+          "canonical_name": "Metaphase Plate",
+          "aliases": [
+            "Equatorial Plate"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_08",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 3,
+            "excerpt": "ned at the  equator, referred to as the metaphase plate  \u25cf At kinetochores, each chromatid is c",
+            "verbatim_token": "Metaphase Plate"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Metaphase Plate' found verbatim in source text on page 3."
+        },
+        {
+          "concept_id": "bio_l3_03",
+          "canonical_name": "Synaptonemal Complex",
+          "aliases": [
+            "Synapsis"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l1_03",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "osome pairing. The construction of  the synaptonemal complex characterises synapsis. Chromosomes  ca",
+            "verbatim_token": "Synaptonemal Complex"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Synaptonemal Complex' found verbatim in source text on page 6."
+        },
+        {
+          "concept_id": "bio_l3_04",
+          "canonical_name": "Chiasmata",
+          "aliases": [
+            "Chiasma"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_12",
+          "granularity_level": 3,
+          "concept_type": "structure",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 6,
+            "excerpt": "- Other than at the crossovers creating Chiasmata (the 'X'  shaped structure), the synapt",
+            "verbatim_token": "Chiasmata"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Chiasmata' found verbatim in source text on page 6."
+        },
+        {
+          "concept_id": "bio_l3_05",
+          "canonical_name": "Centromere Splitting",
+          "aliases": [
+            "Division of Centromere"
+          ],
+          "subject": "Biology",
+          "chapter": "Cell Cycle and Cell Division",
+          "parent_concept_id": "bio_l2_09",
+          "granularity_level": 3,
+          "concept_type": "phenomenon",
+          "source_presence": "present_explicitly",
+          "evidence": {
+            "page": 4,
+            "excerpt": "Image: Metaphase    Anaphase:  \u25cf Centromere splitting occurs, and two sister chromatids disco",
+            "verbatim_token": "Centromere Splitting"
+          },
+          "annotation_confidence": 1.0,
+          "annotation_notes": "Canonical concept name 'Centromere Splitting' found verbatim in source text on page 4."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+COORDINATE GEOMETRY AND CONIC SECTIONS
+
+STRAIGHT LINES AND LINE EQUATIONS
+The slope of a line passing through distinct points (x1, y1) and (x2, y2) is given by m = (y2 - y1) / (x2 - x1).
+The point-slope form of a straight line equation is y - y1 = m (x - x1).
+The slope-intercept form of a straight line is y = m x + c, where m represents the slope and c represents the y-intercept.
+The perpendicular distance from a given point (x0, y0) to the straight line A x + B y + C = 0 is d = |A x0 + B y0 + C| / \sqrt{A^2 + B^2}.
+Two non-vertical lines with slopes m1 and m2 are parallel if m1 = m2, and perpendicular if m1 m2 = -1.
+
+CONIC SECTIONS: PARABOLA, ELLIPSE AND HYPERBOLA
+A conic section is the geometric locus of a point whose distance from a fixed focus bears a constant ratio called eccentricity e to its distance from a fixed directrix line.
+A parabola is a conic section with eccentricity equal to 1. The standard equation of a parabola is y^2 = 4 a x, with focus at (a, 0) and directrix x = -a.
+An ellipse is a conic section with eccentricity strictly less than 1. The standard equation of an ellipse is x^2 / a^2 + y^2 / b^2 = 1.
+A hyperbola is a conic section with eccentricity strictly greater than 1. The standard equation of a hyperbola is x^2 / a^2 - y^2 / b^2 = 1.
+A tangent to a conic is a straight line that touches the curve at exactly one point without cutting across the curve.
+

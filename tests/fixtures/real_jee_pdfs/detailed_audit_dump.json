@@ -1,0 +1,1231 @@
+{
+  "physics_laws_of_motion_esaral": {
+    "doc_id": "physics_laws_of_motion_esaral",
+    "filename": "physics_laws_of_motion_esaral.pdf",
+    "total_extracted": 22,
+    "total_gold_assessable": 17,
+    "total_gold_supporting": 7,
+    "matched_gold_assessable_count": 10,
+    "unmatched_gold_assessable": [
+      "Linear Momentum",
+      "Impulse",
+      "Centripetal Acceleration",
+      "Banking of Roads",
+      "Free Body Diagram",
+      "Normal Reaction",
+      "Tension"
+    ],
+    "matched_extractions_count": 12,
+    "unmatched_extractions_sample": [
+      "Newton's Laws of Motion",
+      "net force",
+      "mass",
+      "Normal Force",
+      "relative motion",
+      "normal response",
+      "inclined plane",
+      "angular acceleration",
+      "tangential acceleration",
+      "Net Acceleration"
+    ],
+    "strict_precision_against_gold": 54.55,
+    "ext_to_multiple_golds": {
+      "Friction": [
+        "Static Friction",
+        "Kinetic Friction",
+        "Rolling Friction",
+        "Laws of Friction",
+        "Angle of Friction",
+        "Limiting Friction",
+        "Coefficient of Static Friction",
+        "Coefficient of Kinetic Friction"
+      ],
+      "Kinetic Friction": [
+        "Kinetic Friction",
+        "Coefficient of Kinetic Friction"
+      ],
+      "Static Friction": [
+        "Static Friction",
+        "Coefficient of Static Friction"
+      ],
+      "Coefficient of Kinetic Friction": [
+        "Kinetic Friction",
+        "Coefficient of Kinetic Friction"
+      ],
+      "Limiting Friction": [
+        "Static Friction",
+        "Limiting Friction"
+      ],
+      "coefficient of friction": [
+        "Coefficient of Static Friction",
+        "Coefficient of Kinetic Friction"
+      ],
+      "Angle of Repose": [
+        "Angle of Friction",
+        "Angle of Repose"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Static Friction": [
+        "Friction",
+        "Static Friction",
+        "Limiting Friction"
+      ],
+      "Kinetic Friction": [
+        "Friction",
+        "Kinetic Friction",
+        "Coefficient of Kinetic Friction"
+      ],
+      "Angle of Friction": [
+        "Friction",
+        "Angle of Repose"
+      ]
+    }
+  },
+  "physics_work_energy_power_esaral": {
+    "doc_id": "physics_work_energy_power_esaral",
+    "filename": "physics_work_energy_power_esaral.pdf",
+    "total_extracted": 45,
+    "total_gold_assessable": 18,
+    "total_gold_supporting": 5,
+    "matched_gold_assessable_count": 15,
+    "unmatched_gold_assessable": [
+      "Work Done by Constant Force",
+      "Non-Conservative Force",
+      "Coefficient of Restitution"
+    ],
+    "matched_extractions_count": 28,
+    "unmatched_extractions_sample": [
+      "Friction",
+      "negative work",
+      "net work",
+      "resultant of all the force",
+      "Gravitational Potential",
+      "spring force",
+      "amount of work",
+      "integral of force",
+      "integral",
+      "Newton's Second Law of Motion",
+      "According to Newton's second law",
+      "net force",
+      "mass and acceleration",
+      "equal to the product",
+      "mass"
+    ],
+    "strict_precision_against_gold": 62.22,
+    "ext_to_multiple_golds": {
+      "energy": [
+        "Kinetic Energy",
+        "Work Energy Theorem",
+        "Potential Energy",
+        "Spring Potential Energy",
+        "Conservation of Mechanical Energy"
+      ],
+      "power": [
+        "Power",
+        "Instantaneous Power",
+        "Average Power"
+      ],
+      "Potential energy": [
+        "Potential Energy",
+        "Spring Potential Energy"
+      ],
+      "Potential": [
+        "Potential Energy",
+        "Spring Potential Energy"
+      ],
+      "Spring Potential Energy": [
+        "Potential Energy",
+        "Spring Potential Energy"
+      ],
+      "average power": [
+        "Power",
+        "Average Power"
+      ],
+      "instantaneous power": [
+        "Power",
+        "Instantaneous Power"
+      ],
+      "IMPULSE": [
+        "Impulse",
+        "Impulse-Momentum Theorem"
+      ],
+      "MOMENTUM": [
+        "Impulse-Momentum Theorem",
+        "Conservation of Linear Momentum"
+      ],
+      "collision": [
+        "Elastic Collision",
+        "Inelastic Collision"
+      ],
+      "elastic collision": [
+        "Elastic Collision",
+        "Inelastic Collision"
+      ],
+      "inelastic collision": [
+        "Elastic Collision",
+        "Inelastic Collision"
+      ],
+      "completely inelastic collision": [
+        "Elastic Collision",
+        "Inelastic Collision"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Kinetic Energy": [
+        "energy",
+        "kinetic energy",
+        "momentum and kinetic energy"
+      ],
+      "Work Energy Theorem": [
+        "energy",
+        "Energy Theorem",
+        "Work-Energy Theorem"
+      ],
+      "Potential Energy": [
+        "energy",
+        "Potential energy",
+        "Potential",
+        "Gravitational Potential Energy",
+        "Spring Potential Energy"
+      ],
+      "Spring Potential Energy": [
+        "energy",
+        "Potential energy",
+        "Potential",
+        "Spring Potential Energy",
+        "Spring Potential"
+      ],
+      "Conservation of Mechanical Energy": [
+        "energy",
+        "Conservation of Mechanical Energy",
+        "Mechanical Energy"
+      ],
+      "Power": [
+        "power",
+        "average power",
+        "SI unit of power",
+        "instantaneous power"
+      ],
+      "Instantaneous Power": [
+        "power",
+        "instantaneous power"
+      ],
+      "Average Power": [
+        "power",
+        "average power"
+      ],
+      "Impulse-Momentum Theorem": [
+        "IMPULSE",
+        "MOMENTUM THEOREM",
+        "MOMENTUM"
+      ],
+      "Conservation of Linear Momentum": [
+        "MOMENTUM",
+        "Conservation of Momentum",
+        "LINEAR MOMENTUM"
+      ],
+      "Elastic Collision": [
+        "collision",
+        "elastic collision",
+        "inelastic collision",
+        "completely inelastic collision"
+      ],
+      "Inelastic Collision": [
+        "collision",
+        "elastic collision",
+        "inelastic collision",
+        "completely inelastic collision"
+      ]
+    }
+  },
+  "physics_rotational_motion_esaral": {
+    "doc_id": "physics_rotational_motion_esaral",
+    "filename": "physics_rotational_motion_esaral.pdf",
+    "total_extracted": 61,
+    "total_gold_assessable": 16,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 13,
+    "unmatched_gold_assessable": [
+      "Rotational Kinematics",
+      "Radius of Gyration",
+      "Rolling Without Slipping"
+    ],
+    "matched_extractions_count": 28,
+    "unmatched_extractions_sample": [
+      "Rotational Motion",
+      "angular speed",
+      "discrete system",
+      "particles the moment",
+      "ith particle",
+      "equal to its moment",
+      "centre of mass",
+      "plus the product",
+      "mass plus the product",
+      "mass of the body",
+      "inertia of the body",
+      "Total mass",
+      "Total mass of the body",
+      "vector",
+      "analog of force"
+    ],
+    "strict_precision_against_gold": 45.9,
+    "ext_to_multiple_golds": {
+      "Axis Theorem": [
+        "Parallel Axis Theorem",
+        "Perpendicular Axis Theorem"
+      ],
+      "torque": [
+        "Torque",
+        "Torque Angular Momentum Relation"
+      ],
+      "ANGULAR MOMENTUM": [
+        "Angular Momentum",
+        "Conservation of Angular Momentum",
+        "Torque Angular Momentum Relation"
+      ],
+      "momentum": [
+        "Angular Momentum",
+        "Conservation of Angular Momentum",
+        "Torque Angular Momentum Relation"
+      ],
+      "Conservation of Angular Momentum": [
+        "Angular Momentum",
+        "Conservation of Angular Momentum"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Angular Velocity": [
+        "angular velocity",
+        "average angular velocity",
+        "instantaneous angular velocity"
+      ],
+      "Angular Acceleration": [
+        "angular acceleration",
+        "kinematics for constant angular acceleration"
+      ],
+      "Moment of Inertia": [
+        "moment of inertia",
+        "inertia",
+        "particles the moment of inertia"
+      ],
+      "Torque": [
+        "torque",
+        "Since torque"
+      ],
+      "Newton's Second Law for Rotation": [
+        "S SECOND LAW",
+        "Newton's Second Law of Motion"
+      ],
+      "Rotational Work and Energy": [
+        "ROTATIONAL WORK AND ENERGY",
+        "energy",
+        "rotational work"
+      ],
+      "Rotational Power": [
+        "Rotational Power",
+        "Power"
+      ],
+      "Rolling Motion": [
+        "rolling motion",
+        "pure rolling motion"
+      ],
+      "Angular Momentum": [
+        "ANGULAR MOMENTUM",
+        "momentum",
+        "Conservation of Angular Momentum"
+      ],
+      "Conservation of Angular Momentum": [
+        "ANGULAR MOMENTUM",
+        "momentum",
+        "Conservation of Angular Momentum"
+      ],
+      "Angular Impulse": [
+        "Angular Impulse",
+        "impulse"
+      ]
+    }
+  },
+  "physics_electrostatics_allen": {
+    "doc_id": "physics_electrostatics_allen",
+    "filename": "physics_electrostatics_allen.pdf",
+    "total_extracted": 101,
+    "total_gold_assessable": 16,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 15,
+    "unmatched_gold_assessable": [
+      "Principle of Superposition"
+    ],
+    "matched_extractions_count": 30,
+    "unmatched_extractions_sample": [
+      "material body",
+      "Properties of charge",
+      "scalar quantity",
+      "scalar",
+      "Friction",
+      "charge distribution",
+      "force on unit test charge",
+      "SPECIAL CHARGE",
+      "SPECIAL CHARGE DISTRIBUTION",
+      "DUE TO SPECIAL CHARGE",
+      "FIELD DUE TO SPECIAL CHARGE",
+      "DUE TO SPECIAL CHARGE DISTRIBUTION",
+      "linear charge distribution",
+      "Due to linear charge",
+      "Due to linear charge distribution"
+    ],
+    "strict_precision_against_gold": 29.7,
+    "ext_to_multiple_golds": {
+      "ELECTRIC CHARGE": [
+        "Electric Charge",
+        "Electric Field Due to Point Charge"
+      ],
+      "charge": [
+        "Electric Charge",
+        "Quantization of Charge",
+        "Electric Field Due to Point Charge",
+        "Surface Charge Density",
+        "Linear Charge Density",
+        "Volume Charge Density"
+      ],
+      "S LAW": [
+        "Coulomb's Law",
+        "Gauss's Law"
+      ],
+      "electric field": [
+        "Electric Field",
+        "Electric Field Due to Point Charge",
+        "Electric Field Lines"
+      ],
+      "Electric field lines": [
+        "Electric Field",
+        "Electric Field Lines"
+      ],
+      "Number of electric field lines": [
+        "Electric Field",
+        "Electric Field Lines"
+      ],
+      "potential": [
+        "Electric Potential",
+        "Potential Difference",
+        "Equipotential Surface",
+        "Electrostatic Potential Energy"
+      ],
+      "DIPOLE": [
+        "Electric Dipole",
+        "Dipole Moment",
+        "Torque on Dipole"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Electric Charge": [
+        "ELECTRIC CHARGE",
+        "charge"
+      ],
+      "Coulomb's Law": [
+        "S LAW",
+        "COULOMB'S LAW"
+      ],
+      "Electric Field": [
+        "electric field",
+        "INTENSITY OR ELECTRIC FIELD",
+        "ELECTRIC INTENSITY OR ELECTRIC FIELD",
+        "uniform electric field",
+        "Electric field lines",
+        "Number of electric field",
+        "Number of electric field lines",
+        "external electric field",
+        "angle in external electric field",
+        "non-uniform electric field"
+      ],
+      "Electric Field Due to Point Charge": [
+        "ELECTRIC CHARGE",
+        "charge",
+        "electric field",
+        "point charge",
+        "Due to point charge"
+      ],
+      "Electric Field Lines": [
+        "electric field",
+        "Electric field lines",
+        "field lines",
+        "Number of electric field lines"
+      ],
+      "Dipole Moment": [
+        "DIPOLE",
+        "Dipole Moment"
+      ],
+      "Torque on Dipole": [
+        "DIPOLE",
+        "Torque"
+      ],
+      "Electric Flux": [
+        "ELECTRIC FLUX",
+        "Flux"
+      ],
+      "Gauss's Law": [
+        "S LAW",
+        "Gauss's Law"
+      ],
+      "Electric Potential": [
+        "potential",
+        "ELECTRIC POTENTIAL"
+      ],
+      "Electrostatic Potential Energy": [
+        "ELECTROSTATIC POTENTIAL ENERGY",
+        "energy",
+        "ELECTROSTATIC POTENTIAL",
+        "potential energy",
+        "potential"
+      ]
+    }
+  },
+  "chemistry_atomic_structure_esaral": {
+    "doc_id": "chemistry_atomic_structure_esaral",
+    "filename": "chemistry_atomic_structure_esaral.pdf",
+    "total_extracted": 121,
+    "total_gold_assessable": 21,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 14,
+    "unmatched_gold_assessable": [
+      "Bohr Model of Atom",
+      "Radius of Bohr Orbit",
+      "Velocity of Electron",
+      "Lyman Series",
+      "de Broglie Relationship",
+      "Shapes of Atomic Orbitals",
+      "Radial and Angular Nodes"
+    ],
+    "matched_extractions_count": 26,
+    "unmatched_extractions_sample": [
+      "Atomic Structure",
+      "entire mass",
+      "carries the entire mass",
+      "nucleus",
+      "mass",
+      "Properties of the nucleus",
+      "Rutherford's model",
+      "Drawbacks of Rutherford's model",
+      "around the nucleus",
+      "spiral motion",
+      "loses its energy",
+      "continuously loses its energy",
+      "Hence this model",
+      "According to this theory",
+      "effect equation"
+    ],
+    "strict_precision_against_gold": 21.49,
+    "ext_to_multiple_golds": {
+      "quantum number": [
+        "Quantum Numbers",
+        "Principal Quantum Number",
+        "Azimuthal Quantum Number",
+        "Magnetic Quantum Number",
+        "Spin Quantum Number"
+      ],
+      "Spin quantum number": [
+        "Quantum Numbers",
+        "Spin Quantum Number"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Rutherford Nuclear Model": [
+        "nuclear model",
+        "Rutherford's nuclear model"
+      ],
+      "Heisenberg Uncertainty Principle": [
+        "uncertainty principle",
+        "Heisenberg's uncertainty principle"
+      ],
+      "Quantum Numbers": [
+        "four quantum numbers",
+        "quantum number",
+        "Spin quantum number"
+      ],
+      "Principal Quantum Number": [
+        "quantum number",
+        "principal quantum number"
+      ],
+      "Azimuthal Quantum Number": [
+        "quantum number",
+        "Azimuthal quantum number"
+      ],
+      "Magnetic Quantum Number": [
+        "quantum number",
+        "Magnetic quantum number"
+      ],
+      "Spin Quantum Number": [
+        "quantum number",
+        "Spin quantum number"
+      ],
+      "Pauli Exclusion Principle": [
+        "exclusion principle",
+        "Pauli's exclusion principle"
+      ]
+    }
+  },
+  "chemistry_chemical_bonding_esaral": {
+    "doc_id": "chemistry_chemical_bonding_esaral",
+    "filename": "chemistry_chemical_bonding_esaral.pdf",
+    "total_extracted": 184,
+    "total_gold_assessable": 19,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 15,
+    "unmatched_gold_assessable": [
+      "Octet Rule",
+      "VSEPR Theory",
+      "Pi Bond",
+      "Bond Order"
+    ],
+    "matched_extractions_count": 35,
+    "unmatched_extractions_sample": [
+      "Chemical Bonding and Molecular Structure",
+      "Chemical Bonding",
+      "Molecular Structure",
+      "Bonding and Molecular Structure",
+      "metal atom",
+      "non-metal atom",
+      "covalent compounds",
+      "Characteristics of covalent compounds",
+      "molecular reactions",
+      "positive charge",
+      "negative or positive charge",
+      "Electric charge",
+      "isomerism",
+      "geometry of molecules",
+      "polarizing power"
+    ],
+    "strict_precision_against_gold": 19.02,
+    "ext_to_multiple_golds": {
+      "covalent bond": [
+        "Covalent Bond",
+        "Coordinate Covalent Bond"
+      ],
+      "hydrogen bonding": [
+        "Hydrogen Bonding",
+        "Intermolecular vs Intramolecular Hydrogen Bonding"
+      ],
+      "Molecular geometry and dipole moment": [
+        "Dipole Moment",
+        "Molecular Geometry"
+      ],
+      "hybridization": [
+        "Hybridization",
+        "sp Hybridization",
+        "sp2 Hybridization",
+        "sp3 Hybridization"
+      ],
+      "hydrogen bond": [
+        "Hydrogen Bonding",
+        "Intermolecular vs Intramolecular Hydrogen Bonding"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Covalent Bond": [
+        "covalent bond",
+        "forming the covalent bond"
+      ],
+      "Dipole Moment": [
+        "Dipole moment",
+        "Dipole",
+        "geometry and dipole moment",
+        "Molecular geometry and dipole moment"
+      ],
+      "Molecular Geometry": [
+        "geometry",
+        "Molecular geometry",
+        "Molecular geometry and dipole moment"
+      ],
+      "Valence Bond Theory": [
+        "Valence bond",
+        "bond theory",
+        "Valence bond theory"
+      ],
+      "Sigma Bond": [
+        "sigma bonds",
+        "form only sigma bonds",
+        "orbitals form only sigma bonds"
+      ],
+      "Hybridization": [
+        "hybridization",
+        "Characteristics of hybridization",
+        "undergoes hybridization",
+        "ion undergoes hybridization",
+        "atom or ion undergoes hybridization",
+        "mixed during hybridization",
+        "involve in hybridization"
+      ],
+      "Resonance": [
+        "resonance",
+        "resonance energy"
+      ],
+      "Molecular Orbital Theory": [
+        "molecular orbital",
+        "orbital theory",
+        "Molecular orbital theory"
+      ],
+      "Hydrogen Bonding": [
+        "hydrogen bonding",
+        "hydrogen bond",
+        "Types of hydrogen bonding"
+      ]
+    }
+  },
+  "chemistry_coordination_compounds_esaral": {
+    "doc_id": "chemistry_coordination_compounds_esaral",
+    "filename": "chemistry_coordination_compounds_esaral.pdf",
+    "total_extracted": 110,
+    "total_gold_assessable": 17,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 10,
+    "unmatched_gold_assessable": [
+      "Oxidation State",
+      "Werner's Coordination Theory",
+      "Inner and Outer Orbital Complexes",
+      "Magnetic Moment of Complexes",
+      "Crystal Field Theory",
+      "Crystal Field Splitting",
+      "Spectrochemical Series"
+    ],
+    "matched_extractions_count": 26,
+    "unmatched_extractions_sample": [
+      "Central Ion",
+      "atom or ion",
+      "central atom or ion",
+      "neutral molecules",
+      "neutral metal atom",
+      "more neutral molecules",
+      "anions",
+      "cation",
+      "ion or molecule",
+      "number of atoms",
+      "array of molecules",
+      "molecules and ions",
+      "array of molecules and ions",
+      "Oxidation number",
+      "electric charge"
+    ],
+    "strict_precision_against_gold": 23.64,
+    "ext_to_multiple_golds": {
+      "ligands": [
+        "Ligands",
+        "Chelating Ligands",
+        "Denticity of Ligand"
+      ],
+      "isomerism": [
+        "Structural Isomerism",
+        "Geometrical Isomerism",
+        "Optical Isomerism"
+      ],
+      "isomers": [
+        "Structural Isomerism",
+        "Geometrical Isomerism",
+        "Optical Isomerism"
+      ],
+      "ligands in their coordination spheres": [
+        "Coordination Sphere",
+        "Ligands"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Coordination Compounds": [
+        "ORDINATION COMPOUNDS",
+        "CO-ORDINATION COMPOUNDS",
+        "Coordination Compounds",
+        "BONDING IN CO-ORDINATION COMPOUNDS",
+        "ISOMERISM IN CO-ORDINATION COMPOUNDS",
+        "Isomerism in coordination compounds"
+      ],
+      "Coordination Sphere": [
+        "Co-ordination sphere",
+        "coordination spheres",
+        "within their coordination spheres",
+        "outside the coordination sphere",
+        "ligands in their coordination spheres"
+      ],
+      "Central Metal Atom": [
+        "central atom",
+        "metal atom",
+        "acentral metal atom",
+        "central metal atom"
+      ],
+      "Ligands": [
+        "ligands",
+        "surrounding ligands",
+        "different ligands",
+        "ambidentate ligands",
+        "ligands in their coordination spheres"
+      ],
+      "Valence Bond Theory": [
+        "Valence Bond Theory",
+        "Valence Bond",
+        "Bond Theory",
+        "features of Valence Bond Theory"
+      ],
+      "Structural Isomerism": [
+        "isomerism",
+        "isomers"
+      ],
+      "Geometrical Isomerism": [
+        "isomerism",
+        "isomers"
+      ],
+      "Optical Isomerism": [
+        "isomerism",
+        "isomers"
+      ]
+    }
+  },
+  "math_limits_continuity_esaral": {
+    "doc_id": "math_limits_continuity_esaral",
+    "filename": "math_limits_continuity_esaral.pdf",
+    "total_extracted": 41,
+    "total_gold_assessable": 14,
+    "total_gold_supporting": 3,
+    "matched_gold_assessable_count": 12,
+    "unmatched_gold_assessable": [
+      "Indeterminate Forms",
+      "Left and Right Derivatives"
+    ],
+    "matched_extractions_count": 9,
+    "unmatched_extractions_sample": [
+      "otherwise limit",
+      "real number",
+      "finite number",
+      "Properties of continuous functions",
+      "useful properties",
+      "extremely useful properties",
+      "continuous function",
+      "signs then the equation",
+      "Continuity of Composite Functions",
+      "Composite Functions",
+      "Differential Coefficient",
+      "independent variable",
+      "dependent variable",
+      "values of independent variable",
+      "final values of independent variable"
+    ],
+    "strict_precision_against_gold": 21.95,
+    "ext_to_multiple_golds": {
+      "Continuity": [
+        "Continuity at a Point",
+        "Continuity in an Interval",
+        "Types of Discontinuity",
+        "Relationship Between Continuity and Differentiability"
+      ],
+      "Differentiability": [
+        "Differentiability at a Point",
+        "Differentiability in an Interval",
+        "Relationship Between Continuity and Differentiability"
+      ],
+      "limit": [
+        "Left Hand Limit",
+        "Right Hand Limit",
+        "Existence of Limit",
+        "Standard Limits"
+      ],
+      "hand limit": [
+        "Left Hand Limit",
+        "Right Hand Limit"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Left Hand Limit": [
+        "limit",
+        "hand limit"
+      ],
+      "Right Hand Limit": [
+        "Right Limit",
+        "limit",
+        "hand limit"
+      ],
+      "L'Hospital's Rule": [
+        "S RULE",
+        "L'HOSPITAL'S RULE"
+      ],
+      "Relationship Between Continuity and Differentiability": [
+        "CONTINUITY AND DIFFERENTIABILITY",
+        "Continuity",
+        "Differentiability"
+      ]
+    }
+  },
+  "math_matrices_determinants_esaral": {
+    "doc_id": "math_matrices_determinants_esaral",
+    "filename": "math_matrices_determinants_esaral.pdf",
+    "total_extracted": 73,
+    "total_gold_assessable": 20,
+    "total_gold_supporting": 3,
+    "matched_gold_assessable_count": 19,
+    "unmatched_gold_assessable": [
+      "Minors and Cofactors"
+    ],
+    "matched_extractions_count": 40,
+    "unmatched_extractions_sample": [
+      "Matrices and Determinants",
+      "mn numbers",
+      "array of mn numbers",
+      "numbers in the form",
+      "rectangular array of mn numbers",
+      "mn numbers in the form",
+      "vertical lines",
+      "equal to the number",
+      "non-diagonal element",
+      "diagonal element",
+      "Addition of Matrices",
+      "Subtraction of Matrices",
+      "Multiplication of Matrices",
+      "matrices each of order",
+      "adding the corresponding elements"
+    ],
+    "strict_precision_against_gold": 54.79,
+    "ext_to_multiple_golds": {
+      "MATRICES": [
+        "Types of Matrices",
+        "Algebra of Matrices"
+      ],
+      "matrix": [
+        "Matrix",
+        "Order of Matrix",
+        "Square Matrix",
+        "Diagonal Matrix",
+        "Unit Matrix",
+        "Matrix Multiplication",
+        "Transpose of a Matrix",
+        "Symmetric Matrix",
+        "Skew Symmetric Matrix",
+        "Orthogonal Matrix",
+        "Rank of a Matrix",
+        "Adjoint of Matrix",
+        "Inverse of Matrix",
+        "Matrix Inversion Method",
+        "Singular and Non-Singular Matrix",
+        "Trace of a Matrix"
+      ],
+      "matrix of order": [
+        "Matrix",
+        "Order of Matrix"
+      ],
+      "square matrix": [
+        "Matrix",
+        "Square Matrix"
+      ],
+      "Diagonal Matrix": [
+        "Matrix",
+        "Diagonal Matrix"
+      ],
+      "square matrix of order": [
+        "Matrix",
+        "Order of Matrix",
+        "Square Matrix"
+      ],
+      "TRANSPOSE OF A MATRIX": [
+        "Matrix",
+        "Transpose of a Matrix"
+      ],
+      "SYMMETRIC MATRIX": [
+        "Matrix",
+        "Symmetric Matrix",
+        "Skew Symmetric Matrix"
+      ],
+      "SKEW SYMMETRIC MATRIX": [
+        "Matrix",
+        "Symmetric Matrix",
+        "Skew Symmetric Matrix"
+      ],
+      "ORTHOGONAL MATRIX": [
+        "Matrix",
+        "Orthogonal Matrix"
+      ],
+      "RANK OF A MATRIX": [
+        "Matrix",
+        "Rank of a Matrix"
+      ],
+      "skew-symmetric matrix": [
+        "Matrix",
+        "Symmetric Matrix",
+        "Skew Symmetric Matrix"
+      ],
+      "Rank of matrix": [
+        "Matrix",
+        "Rank of a Matrix"
+      ],
+      "MATRIX METHOD": [
+        "Matrix",
+        "Matrix Inversion Method"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Matrix": [
+        "matrix",
+        "matrix of order",
+        "zero matrix",
+        "Null Matrix",
+        "square matrix",
+        "Diagonal Matrix",
+        "Matrix or Null Matrix",
+        "Zero Matrix or Null Matrix",
+        "square matrix of order",
+        "TRANSPOSE OF A MATRIX",
+        "new matrix",
+        "SYMMETRIC MATRIX",
+        "SKEW SYMMETRIC MATRIX",
+        "ORTHOGONAL MATRIX",
+        "element of the matrix",
+        "columns from matrix",
+        "submatrix of order",
+        "square submatrix of order",
+        "RANK OF A MATRIX",
+        "skew-symmetric matrix",
+        "Rank of matrix",
+        "MATRIX METHOD",
+        "single matrix",
+        "matrix equation",
+        "single matrix equation"
+      ],
+      "Order of Matrix": [
+        "matrix",
+        "matrix of order",
+        "square matrix of order"
+      ],
+      "Types of Matrices": [
+        "MATRICES",
+        "TYPES OF MATRICES"
+      ],
+      "Square Matrix": [
+        "matrix",
+        "square matrix",
+        "square matrix of order"
+      ],
+      "Diagonal Matrix": [
+        "matrix",
+        "Diagonal Matrix"
+      ],
+      "Algebra of Matrices": [
+        "MATRICES",
+        "ALGEBRA OF MATRICES",
+        "ALGEBRA"
+      ],
+      "Transpose of a Matrix": [
+        "matrix",
+        "TRANSPOSE OF A MATRIX"
+      ],
+      "Symmetric Matrix": [
+        "matrix",
+        "SYMMETRIC MATRIX",
+        "SKEW SYMMETRIC MATRIX",
+        "skew-symmetric matrix"
+      ],
+      "Skew Symmetric Matrix": [
+        "matrix",
+        "SYMMETRIC MATRIX",
+        "SKEW SYMMETRIC MATRIX",
+        "skew-symmetric matrix"
+      ],
+      "Orthogonal Matrix": [
+        "matrix",
+        "ORTHOGONAL MATRIX"
+      ],
+      "Rank of a Matrix": [
+        "matrix",
+        "RANK OF A MATRIX",
+        "Rank of matrix"
+      ],
+      "Properties of Determinants": [
+        "determinant",
+        "PROPERTIES OF DETERMINANTS"
+      ],
+      "Solution of System of Linear Equations": [
+        "SOLUTION OF A SYSTEM",
+        "linear equations",
+        "system of linear equations",
+        "Solution of system",
+        "system of equations",
+        "solution of the system",
+        "system linear equations",
+        "Solution of system linear equations"
+      ],
+      "Matrix Inversion Method": [
+        "matrix",
+        "MATRIX METHOD"
+      ]
+    }
+  },
+  "math_permutations_combinations_allen": {
+    "doc_id": "math_permutations_combinations_allen",
+    "filename": "math_permutations_combinations_allen.pdf",
+    "total_extracted": 33,
+    "total_gold_assessable": 12,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 10,
+    "unmatched_gold_assessable": [
+      "Division into Groups",
+      "Distribution of Objects"
+    ],
+    "matched_extractions_count": 13,
+    "unmatched_extractions_sample": [
+      "total number",
+      "definite order",
+      "multiplication principle",
+      "addition principle",
+      "Useful Notation",
+      "prime number",
+      "denotes the number",
+      "nPr denotes the number",
+      "nCr denotes the number",
+      "natural numbers",
+      "numbers of divisors",
+      "total numbers of divisors",
+      "composite number",
+      "GROUPS AND DISTRIBUTION",
+      "new distribution"
+    ],
+    "strict_precision_against_gold": 39.39,
+    "ext_to_multiple_golds": {
+      "COMBINATION": [
+        "Combination",
+        "Properties of Combinations",
+        "Geometrical Applications of Combinations"
+      ],
+      "permutation": [
+        "Permutation",
+        "Circular Permutation",
+        "Permutation of Alike Objects"
+      ],
+      "circular permutations": [
+        "Permutation",
+        "Circular Permutation"
+      ],
+      "anti-clockwise circular permutations": [
+        "Permutation",
+        "Circular Permutation"
+      ],
+      "number of circular permutation": [
+        "Permutation",
+        "Circular Permutation"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Permutation": [
+        "permutation",
+        "denotes the number of permutations",
+        "number of permutation",
+        "circular permutations",
+        "anti-clockwise circular permutations",
+        "number of circular permutation"
+      ],
+      "Circular Permutation": [
+        "permutation",
+        "circular permutations",
+        "anti-clockwise circular permutations",
+        "number of circular permutation"
+      ],
+      "Combination": [
+        "COMBINATION",
+        "denotes the number of combinations",
+        "number of combination"
+      ]
+    }
+  },
+  "biology_cell_cycle_esaral": {
+    "doc_id": "biology_cell_cycle_esaral",
+    "filename": "biology_cell_cycle_esaral.pdf",
+    "total_extracted": 183,
+    "total_gold_assessable": 21,
+    "total_gold_supporting": 4,
+    "matched_gold_assessable_count": 17,
+    "unmatched_gold_assessable": [
+      "G1 Phase",
+      "G2 Phase",
+      "G0 Phase",
+      "Crossing Over"
+    ],
+    "matched_extractions_count": 33,
+    "unmatched_extractions_sample": [
+      "cell division",
+      "Many cell",
+      "single cell",
+      "organisms and cell",
+      "duration of the cell",
+      "human cell",
+      "yeast cell",
+      "stages of the cell",
+      "actual cell",
+      "actual cell division",
+      "sequential M-phases",
+      "time between two sequential M-phases",
+      "number of chromosomes",
+      "animal cells",
+      "phase of animal cells"
+    ],
+    "strict_precision_against_gold": 18.03,
+    "ext_to_multiple_golds": {
+      "Mitosis": [
+        "Mitosis",
+        "Significance of Mitosis"
+      ],
+      "Meiosis": [
+        "Meiosis",
+        "Meiosis I",
+        "Meiosis II",
+        "Significance of Meiosis"
+      ],
+      "Meiosis in sequence": [
+        "Meiosis",
+        "Meiosis I"
+      ],
+      "Prophase-I of Meiosis in sequence": [
+        "Prophase",
+        "Meiosis",
+        "Meiosis I"
+      ]
+    },
+    "gold_to_multiple_exts": {
+      "Cell Cycle": [
+        "Cell Cycle and Cell Division",
+        "cell cycle",
+        "Cycle and Cell",
+        "Cell Cycle and Cell",
+        "Cycle and Cell Division",
+        "Many cell cycles",
+        "cycle consists of cell",
+        "cell cycle consists of cell",
+        "duration of the cell cycle",
+        "human cell cycle",
+        "stages of the cell cycle",
+        "stage of the cell cycle"
+      ],
+      "Interphase": [
+        "Interphase and M-phase",
+        "Interphase"
+      ],
+      "S Phase": [
+        "Synthesis or S-Phase",
+        "replication occurs during this phase"
+      ],
+      "Mitosis": [
+        "Mitosis or M-phase",
+        "Mitosis"
+      ],
+      "Prophase": [
+        "Prophase",
+        "Prophase-I of Meiosis in sequence"
+      ],
+      "Metaphase": [
+        "metaphase",
+        "metaphase plate",
+        "align at the metaphase plate"
+      ],
+      "Meiosis": [
+        "Meiosis",
+        "Meiosis in sequence",
+        "Prophase-I of Meiosis in sequence"
+      ],
+      "Meiosis I": [
+        "Meiosis",
+        "Meiosis in sequence",
+        "Prophase-I of Meiosis in sequence"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1097 @@
+{
+  "metadata": {
+    "benchmark_title": "LearnSense Hierarchical Real-World PDF Evaluation Benchmark v2",
+    "benchmark_version": "2.0.0",
+    "evaluation_protocol": "1-to-1 Maximum Bipartite Matching with Hierarchical Granularity Adjudication",
+    "date": "2026-11-01",
+    "total_documents": 11,
+    "primary_domain": "JEE Main Paper 1 (Physics, Chemistry, Mathematics)",
+    "cross_domain_experiment": "NEET Biology (Cell Cycle and Cell Division)"
+  },
+  "aggregates": {
+    "jee_main_paper_1_pcm_10_docs": {
+      "document_count": 10,
+      "total_extracted_concepts": 778,
+      "total_present_gold_concepts": 112,
+      "total_matched_bipartite_1_to_1": 83,
+      "macro_metrics": {
+        "strict_gold_precision": 15.07,
+        "text_present_recall": 72.05,
+        "hierarchical_f1": 23.03,
+        "academic_concept_precision": 25.42,
+        "level_1_parent_topic_recall": 85.0,
+        "level_2_core_concept_recall": 59.93,
+        "level_3_supporting_concept_recall": 80.83,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.33,
+        "structural_evidence_validity": 100.0,
+        "semantic_evidence_support": 100.0
+      },
+      "micro_metrics": {
+        "micro_strict_precision": 10.67,
+        "micro_text_present_recall": 74.11,
+        "micro_hierarchical_f1": 18.65
+      }
+    },
+    "neet_biology_cross_domain_1_doc": {
+      "document_count": 1,
+      "total_extracted_concepts": 181,
+      "total_present_gold_concepts": 19,
+      "total_matched_bipartite_1_to_1": 13,
+      "macro_metrics": {
+        "strict_gold_precision": 7.18,
+        "text_present_recall": 68.42,
+        "hierarchical_f1": 13.0,
+        "academic_concept_precision": 14.36,
+        "level_1_parent_topic_recall": 100.0,
+        "level_2_core_concept_recall": 58.33,
+        "level_3_supporting_concept_recall": 75.0,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.0,
+        "structural_evidence_validity": 100.0,
+        "semantic_evidence_support": 100.0
+      },
+      "micro_metrics": {
+        "micro_strict_precision": 7.18,
+        "micro_text_present_recall": 68.42,
+        "micro_hierarchical_f1": 13.0
+      }
+    },
+    "combined_all_11_docs": {
+      "document_count": 11,
+      "total_extracted_concepts": 959,
+      "total_present_gold_concepts": 131,
+      "total_matched_bipartite_1_to_1": 96,
+      "macro_metrics": {
+        "strict_gold_precision": 14.35,
+        "text_present_recall": 71.72,
+        "hierarchical_f1": 22.12,
+        "academic_concept_precision": 24.41,
+        "level_1_parent_topic_recall": 86.36,
+        "level_2_core_concept_recall": 59.78,
+        "level_3_supporting_concept_recall": 80.3,
+        "noise_rejection_rate": 100.0,
+        "duplicate_rate": 0.3,
+        "structural_evidence_validity": 100.0,
+        "semantic_evidence_support": 100.0
+      },
+      "micro_metrics": {
+        "micro_strict_precision": 10.01,
+        "micro_text_present_recall": 73.28,
+        "micro_hierarchical_f1": 17.61
+      }
+    }
+  },
+  "documents": {
+    "physics_laws_of_motion_esaral": {
+      "doc_id": "physics_laws_of_motion_esaral",
+      "filename": "physics_laws_of_motion_esaral.pdf",
+      "subject": "Physics",
+      "chapter": "Laws of Motion",
+      "publisher": "eSaral",
+      "partition": "Development/Regression",
+      "duration_seconds": 6.38,
+      "physical_page_count": 6,
+      "concepts_extracted_count": 22,
+      "topics_formed_count": 12,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 24,
+        "present_in_document": 14,
+        "absent_from_document": 10,
+        "level_1_parent_topics": 2,
+        "level_2_core_concepts": 8,
+        "level_3_supporting_concepts": 4
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 9.09,
+          "recall": 100.0,
+          "f1": 16.67,
+          "exact": 1,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 5,
+          "precision": 22.73,
+          "recall": 62.5,
+          "f1": 33.33,
+          "exact": 3,
+          "alias": 2,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 3,
+          "precision": 13.64,
+          "recall": 75.0,
+          "f1": 23.08,
+          "exact": 2,
+          "alias": 1,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 10,
+          "strict_gold_precision": 45.45,
+          "text_present_recall": 71.43,
+          "hierarchical_f1": 55.56,
+          "exact_matches": 6,
+          "alias_matches": 4,
+          "semantic_matches": 0,
+          "parent_child_aligned": 5,
+          "parent_child_alignment_rate": 22.73,
+          "academic_concept_precision": 68.18
+        }
+      },
+      "matched_concepts_sample": [
+        "Newton's Laws of Motion -> Laws of Motion (alias, L1)",
+        "inertial mass -> Inertia (alias, L3)",
+        "Friction -> Friction (exact, L1)",
+        "Kinetic Friction -> Kinetic Friction (exact, L2)",
+        "Static Friction -> Static Friction (exact, L2)",
+        "Normal Force -> Normal Reaction (alias, L2)",
+        "Coefficient of Kinetic Friction -> Coefficient of Kinetic Friction (exact, L3)",
+        "Angle of Repose -> Angle of Repose (exact, L3)",
+        "Centripetal Force -> Centripetal Force (exact, L2)",
+        "tangential acceleration -> Centripetal Acceleration (alias, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "Newton's Laws of Motion",
+        "Newton's First Law of Motion",
+        "net force",
+        "Newton's Second Law of Motion",
+        "inertial mass",
+        "mass",
+        "Newton's Third Law of Motion",
+        "Friction",
+        "Kinetic Friction",
+        "Static Friction"
+      ]
+    },
+    "physics_work_energy_power_esaral": {
+      "doc_id": "physics_work_energy_power_esaral",
+      "filename": "physics_work_energy_power_esaral.pdf",
+      "subject": "Physics",
+      "chapter": "Work, Energy and Power",
+      "publisher": "eSaral",
+      "partition": "Validation",
+      "duration_seconds": 3.96,
+      "physical_page_count": 5,
+      "concepts_extracted_count": 45,
+      "topics_formed_count": 13,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 20,
+        "present_in_document": 17,
+        "absent_from_document": 3,
+        "level_1_parent_topics": 4,
+        "level_2_core_concepts": 11,
+        "level_3_supporting_concepts": 2
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 4.44,
+          "recall": 50.0,
+          "f1": 8.16,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 10,
+          "precision": 22.22,
+          "recall": 90.91,
+          "f1": 35.71,
+          "exact": 6,
+          "alias": 4,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 2,
+          "precision": 4.44,
+          "recall": 100.0,
+          "f1": 8.51,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 14,
+          "strict_gold_precision": 31.11,
+          "text_present_recall": 82.35,
+          "hierarchical_f1": 45.16,
+          "exact_matches": 10,
+          "alias_matches": 4,
+          "semantic_matches": 0,
+          "parent_child_aligned": 9,
+          "parent_child_alignment_rate": 20.0,
+          "academic_concept_precision": 51.11
+        }
+      },
+      "matched_concepts_sample": [
+        "energy -> Energy (exact, L1)",
+        "power -> Power (exact, L1)",
+        "Friction -> Non-Conservative Force (alias, L2)",
+        "Variable Force -> Work Done by Variable Force (alias, L2)",
+        "kinetic energy -> Kinetic Energy (exact, L2)",
+        "Work-Energy Theorem -> Work-Energy Theorem (exact, L2)",
+        "Potential energy -> Potential Energy (exact, L2)",
+        "Spring Potential Energy -> Potential Energy of a Spring (alias, L2)",
+        "Conservation of Mechanical Energy -> Conservation of Mechanical Energy (exact, L2)",
+        "conservative forces -> Conservative Force (alias, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "energy",
+        "power",
+        "Friction",
+        "negative work",
+        "Variable Force",
+        "vector",
+        "Energy Theorem",
+        "kinetic energy",
+        "Work-Energy Theorem",
+        "net work"
+      ]
+    },
+    "physics_rotational_motion_esaral": {
+      "doc_id": "physics_rotational_motion_esaral",
+      "filename": "physics_rotational_motion_esaral.pdf",
+      "subject": "Physics",
+      "chapter": "Rotational Motion",
+      "publisher": "eSaral",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 5.22,
+      "physical_page_count": 6,
+      "concepts_extracted_count": 61,
+      "topics_formed_count": 14,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 16,
+        "present_in_document": 13,
+        "absent_from_document": 3,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 7,
+        "level_3_supporting_concepts": 3
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 3,
+          "precision": 4.92,
+          "recall": 100.0,
+          "f1": 9.38,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 5,
+          "precision": 8.2,
+          "recall": 71.43,
+          "f1": 14.71,
+          "exact": 4,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 3,
+          "precision": 4.92,
+          "recall": 100.0,
+          "f1": 9.38,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 11,
+          "strict_gold_precision": 18.03,
+          "text_present_recall": 84.62,
+          "hierarchical_f1": 29.73,
+          "exact_matches": 10,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 9,
+          "parent_child_alignment_rate": 14.75,
+          "academic_concept_precision": 32.79
+        }
+      },
+      "matched_concepts_sample": [
+        "Rotational Motion -> Rotational Motion (exact, L1)",
+        "angular velocity -> Angular Velocity (exact, L3)",
+        "moment of inertia -> Moment of Inertia (exact, L1)",
+        "angular acceleration -> Angular Acceleration (exact, L3)",
+        "torque -> Torque (exact, L2)",
+        "rotational kinetic energy -> Kinetic Energy of Rolling (alias, L2)",
+        "rolling motion -> Rolling Motion (exact, L1)",
+        "center of mass -> Center of Mass (exact, L2)",
+        "ANGULAR MOMENTUM -> Angular Momentum (exact, L2)",
+        "Conservation of Angular Momentum -> Conservation of Angular Momentum (exact, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "Rotational Motion",
+        "angular velocity",
+        "average angular velocity",
+        "instantaneous angular velocity",
+        "angular speed",
+        "moment of inertia",
+        "angular acceleration",
+        "kinematics for constant angular acceleration",
+        "inertia",
+        "discrete system"
+      ]
+    },
+    "physics_electrostatics_allen": {
+      "doc_id": "physics_electrostatics_allen",
+      "filename": "physics_electrostatics_allen.pdf",
+      "subject": "Physics",
+      "chapter": "Electrostatics",
+      "publisher": "Allen Career Institute Kota",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 9.79,
+      "physical_page_count": 5,
+      "concepts_extracted_count": 101,
+      "topics_formed_count": 1,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 18,
+        "present_in_document": 11,
+        "absent_from_document": 7,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 6,
+        "level_3_supporting_concepts": 2
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 1.98,
+          "recall": 66.67,
+          "f1": 3.85,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 4,
+          "precision": 3.96,
+          "recall": 66.67,
+          "f1": 7.48,
+          "exact": 3,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 1,
+          "precision": 0.99,
+          "recall": 50.0,
+          "f1": 1.94,
+          "exact": 1,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 7,
+          "strict_gold_precision": 6.93,
+          "text_present_recall": 63.64,
+          "hierarchical_f1": 12.5,
+          "exact_matches": 6,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 11,
+          "parent_child_alignment_rate": 10.89,
+          "academic_concept_precision": 17.82
+        }
+      },
+      "matched_concepts_sample": [
+        "COULOMB'S LAW -> Coulomb's Law (exact, L2)",
+        "electric field -> Electric Field (exact, L1)",
+        "point charge -> Point Charge (exact, L3)",
+        "ELECTRIC FLUX -> Electric Flux (exact, L2)",
+        "ELECTROSTATIC POTENTIAL ENERGY -> Electrostatic Potential Energy (exact, L2)",
+        "ELECTRIC POTENTIAL -> Electric Potential (exact, L1)",
+        "Dipole Moment -> Electric Dipole Moment (alias, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "ELECTRIC CHARGE",
+        "charge",
+        "material body",
+        "Properties of charge",
+        "scalar quantity",
+        "scalar",
+        "Friction",
+        "S LAW",
+        "COULOMB'S LAW",
+        "charge distribution"
+      ]
+    },
+    "chemistry_atomic_structure_esaral": {
+      "doc_id": "chemistry_atomic_structure_esaral",
+      "filename": "chemistry_atomic_structure_esaral.pdf",
+      "subject": "Chemistry",
+      "chapter": "Atomic Structure",
+      "publisher": "eSaral",
+      "partition": "Validation",
+      "duration_seconds": 10.15,
+      "physical_page_count": 11,
+      "concepts_extracted_count": 115,
+      "topics_formed_count": 21,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 19,
+        "present_in_document": 11,
+        "absent_from_document": 8,
+        "level_1_parent_topics": 1,
+        "level_2_core_concepts": 4,
+        "level_3_supporting_concepts": 6
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 1,
+          "precision": 0.87,
+          "recall": 100.0,
+          "f1": 1.72,
+          "exact": 1,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 2,
+          "precision": 1.74,
+          "recall": 50.0,
+          "f1": 3.36,
+          "exact": 0,
+          "alias": 2,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 6,
+          "precision": 5.22,
+          "recall": 100.0,
+          "f1": 9.92,
+          "exact": 5,
+          "alias": 1,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 9,
+          "strict_gold_precision": 7.83,
+          "text_present_recall": 81.82,
+          "hierarchical_f1": 14.29,
+          "exact_matches": 6,
+          "alias_matches": 3,
+          "semantic_matches": 0,
+          "parent_child_aligned": 3,
+          "parent_child_alignment_rate": 2.61,
+          "academic_concept_precision": 10.43
+        }
+      },
+      "matched_concepts_sample": [
+        "Atomic Structure -> Atomic Structure (exact, L1)",
+        "Planck's quantum theory -> Planck's Quantum Theory (exact, L3)",
+        "threshold frequency -> Photoelectric Effect (alias, L3)",
+        "Bohr's atomic model -> Bohr Model of Atom (alias, L2)",
+        "uncertainty principle -> Heisenberg Uncertainty Principle (alias, L2)",
+        "principal quantum number -> Principal Quantum Number (exact, L3)",
+        "Azimuthal quantum number -> Azimuthal Quantum Number (exact, L3)",
+        "Magnetic quantum number -> Magnetic Quantum Number (exact, L3)",
+        "Spin quantum number -> Spin Quantum Number (exact, L3)"
+      ],
+      "sample_extracted_concepts": [
+        "Atomic Structure",
+        "nuclear model",
+        "Rutherford's nuclear model",
+        "entire mass",
+        "mass",
+        "nucleus",
+        "Properties of the nucleus",
+        "Rutherford's model",
+        "Drawbacks of Rutherford's model",
+        "spiral motion"
+      ]
+    },
+    "chemistry_chemical_bonding_esaral": {
+      "doc_id": "chemistry_chemical_bonding_esaral",
+      "filename": "chemistry_chemical_bonding_esaral.pdf",
+      "subject": "Chemistry",
+      "chapter": "Chemical Bonding and Molecular Structure",
+      "publisher": "eSaral",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 13.95,
+      "physical_page_count": 16,
+      "concepts_extracted_count": 182,
+      "topics_formed_count": 13,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 20,
+        "present_in_document": 15,
+        "absent_from_document": 5,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 9,
+        "level_3_supporting_concepts": 3
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 3,
+          "precision": 1.65,
+          "recall": 100.0,
+          "f1": 3.24,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 7,
+          "precision": 3.85,
+          "recall": 77.78,
+          "f1": 7.33,
+          "exact": 5,
+          "alias": 2,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 2,
+          "precision": 1.1,
+          "recall": 66.67,
+          "f1": 2.16,
+          "exact": 1,
+          "alias": 1,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 12,
+          "strict_gold_precision": 6.59,
+          "text_present_recall": 80.0,
+          "hierarchical_f1": 12.18,
+          "exact_matches": 9,
+          "alias_matches": 3,
+          "semantic_matches": 0,
+          "parent_child_aligned": 9,
+          "parent_child_alignment_rate": 4.95,
+          "academic_concept_precision": 11.54
+        }
+      },
+      "matched_concepts_sample": [
+        "Chemical Bonding -> Chemical Bonding (exact, L1)",
+        "Electrovalent bond -> Ionic Bond (alias, L2)",
+        "covalent bond -> Covalent Bond (exact, L1)",
+        "hydrogen bonding -> Hydrogen Bonding (exact, L2)",
+        "Dipole moment -> Dipole Moment (exact, L2)",
+        "Fajan's rule -> Fajans' Rules (alias, L3)",
+        "Valence bond theory -> Valence Bond Theory (exact, L2)",
+        "hybridization -> Hybridization (exact, L2)",
+        "pi bond -> Pi Bond (exact, L2)",
+        "resonance -> Resonance (exact, L3)"
+      ],
+      "sample_extracted_concepts": [
+        "Chemical Bonding and Molecular Structure",
+        "Chemical Bonding",
+        "Molecular Structure",
+        "Bonding and Molecular Structure",
+        "Electrovalent bond",
+        "metal atom",
+        "non-metal atom",
+        "covalent bond",
+        "covalent compounds",
+        "Characteristics of covalent compounds"
+      ]
+    },
+    "chemistry_coordination_compounds_esaral": {
+      "doc_id": "chemistry_coordination_compounds_esaral",
+      "filename": "chemistry_coordination_compounds_esaral.pdf",
+      "subject": "Chemistry",
+      "chapter": "Coordination Compounds",
+      "publisher": "eSaral",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 4.69,
+      "physical_page_count": 6,
+      "concepts_extracted_count": 105,
+      "topics_formed_count": 4,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 1.9,
+      "gold_counts": {
+        "total_annotated": 17,
+        "present_in_document": 10,
+        "absent_from_document": 7,
+        "level_1_parent_topics": 2,
+        "level_2_core_concepts": 5,
+        "level_3_supporting_concepts": 3
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 1.9,
+          "recall": 100.0,
+          "f1": 3.74,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 2,
+          "precision": 1.9,
+          "recall": 40.0,
+          "f1": 3.64,
+          "exact": 1,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 2,
+          "precision": 1.9,
+          "recall": 66.67,
+          "f1": 3.7,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 6,
+          "strict_gold_precision": 5.71,
+          "text_present_recall": 60.0,
+          "hierarchical_f1": 10.43,
+          "exact_matches": 5,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 8,
+          "parent_child_alignment_rate": 7.62,
+          "academic_concept_precision": 13.33
+        }
+      },
+      "matched_concepts_sample": [
+        "CO-ORDINATION COMPOUNDS -> Coordination Compounds (exact, L1)",
+        "Co-ordination number -> Coordination Number (exact, L2)",
+        "Co-ordination sphere -> Coordination Sphere (exact, L3)",
+        "ligands -> Ligands (exact, L3)",
+        "Oxidation number -> Oxidation State (alias, L2)",
+        "ISOMERISM IN CO-ORDINATION COMPOUNDS -> Isomerism in Coordination Compounds (exact, L1)"
+      ],
+      "sample_extracted_concepts": [
+        "ORDINATION COMPOUNDS",
+        "CO-ORDINATION COMPOUNDS",
+        "Coordination Compounds",
+        "Central Ion",
+        "central atom",
+        "atom or ion",
+        "central atom or ion",
+        "metal atom",
+        "neutral molecules",
+        "neutral metal atom"
+      ]
+    },
+    "math_limits_continuity_esaral": {
+      "doc_id": "math_limits_continuity_esaral",
+      "filename": "math_limits_continuity_esaral.pdf",
+      "subject": "Mathematics",
+      "chapter": "Limits, Continuity and Differentiability",
+      "publisher": "eSaral",
+      "partition": "Validation",
+      "duration_seconds": 9.05,
+      "physical_page_count": 9,
+      "concepts_extracted_count": 41,
+      "topics_formed_count": 10,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 15,
+        "present_in_document": 5,
+        "absent_from_document": 10,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 1,
+        "level_3_supporting_concepts": 1
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 4.88,
+          "recall": 66.67,
+          "f1": 9.09,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "exact": 0,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 1,
+          "precision": 2.44,
+          "recall": 100.0,
+          "f1": 4.76,
+          "exact": 1,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 3,
+          "strict_gold_precision": 7.32,
+          "text_present_recall": 60.0,
+          "hierarchical_f1": 13.04,
+          "exact_matches": 3,
+          "alias_matches": 0,
+          "semantic_matches": 0,
+          "parent_child_aligned": 3,
+          "parent_child_alignment_rate": 7.32,
+          "academic_concept_precision": 14.63
+        }
+      },
+      "matched_concepts_sample": [
+        "Continuity -> Continuity (exact, L1)",
+        "Differentiability -> Differentiability (exact, L1)",
+        "intermediate value theorem -> Intermediate Value Theorem (exact, L3)"
+      ],
+      "sample_extracted_concepts": [
+        "CONTINUITY AND DIFFERENTIABILITY",
+        "Continuity",
+        "Differentiability",
+        "Right Limit",
+        "limit",
+        "hand limit",
+        "otherwise limit",
+        "real number",
+        "finite number",
+        "Properties of continuous functions"
+      ]
+    },
+    "math_matrices_determinants_esaral": {
+      "doc_id": "math_matrices_determinants_esaral",
+      "filename": "math_matrices_determinants_esaral.pdf",
+      "subject": "Mathematics",
+      "chapter": "Matrices and Determinants",
+      "publisher": "eSaral",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 6.3,
+      "physical_page_count": 7,
+      "concepts_extracted_count": 73,
+      "topics_formed_count": 3,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 1.37,
+      "gold_counts": {
+        "total_annotated": 15,
+        "present_in_document": 10,
+        "absent_from_document": 5,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 5,
+        "level_3_supporting_concepts": 2
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 2,
+          "precision": 2.74,
+          "recall": 66.67,
+          "f1": 5.26,
+          "exact": 2,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 4,
+          "precision": 5.48,
+          "recall": 80.0,
+          "f1": 10.26,
+          "exact": 3,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 1,
+          "precision": 1.37,
+          "recall": 50.0,
+          "f1": 2.67,
+          "exact": 1,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 7,
+          "strict_gold_precision": 9.59,
+          "text_present_recall": 70.0,
+          "hierarchical_f1": 16.87,
+          "exact_matches": 6,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 7,
+          "parent_child_alignment_rate": 9.59,
+          "academic_concept_precision": 19.18
+        }
+      },
+      "matched_concepts_sample": [
+        "MATRICES -> Matrices (exact, L1)",
+        "TYPES OF MATRICES -> Types of Matrices (exact, L2)",
+        "TRANSPOSE OF A MATRIX -> Transpose of a Matrix (exact, L2)",
+        "SYMMETRIC MATRIX -> Symmetric and Skew-Symmetric Matrices (alias, L2)",
+        "ORTHOGONAL MATRIX -> Orthogonal Matrix (exact, L3)",
+        "system of linear equations -> System of Linear Equations (exact, L1)",
+        "PROPERTIES OF DETERMINANTS -> Properties of Determinants (exact, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "Matrices and Determinants",
+        "MATRICES",
+        "matrix",
+        "mn numbers",
+        "array of mn numbers",
+        "numbers in the form",
+        "rectangular array of mn numbers",
+        "mn numbers in the form",
+        "vertical lines",
+        "matrix of order"
+      ]
+    },
+    "math_permutations_combinations_allen": {
+      "doc_id": "math_permutations_combinations_allen",
+      "filename": "math_permutations_combinations_allen.pdf",
+      "subject": "Mathematics",
+      "chapter": "Permutations and Combinations",
+      "publisher": "Allen Career Institute Kota",
+      "partition": "Held-out Evaluation",
+      "duration_seconds": 2.05,
+      "physical_page_count": 3,
+      "concepts_extracted_count": 33,
+      "topics_formed_count": 1,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 14,
+        "present_in_document": 6,
+        "absent_from_document": 8,
+        "level_1_parent_topics": 0,
+        "level_2_core_concepts": 5,
+        "level_3_supporting_concepts": 1
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 0,
+          "precision": 0.0,
+          "recall": 100.0,
+          "f1": 0.0,
+          "exact": 0,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 3,
+          "precision": 9.09,
+          "recall": 60.0,
+          "f1": 15.79,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 1,
+          "precision": 3.03,
+          "recall": 100.0,
+          "f1": 5.88,
+          "exact": 0,
+          "alias": 1,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 4,
+          "strict_gold_precision": 12.12,
+          "text_present_recall": 66.67,
+          "hierarchical_f1": 20.51,
+          "exact_matches": 3,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 1,
+          "parent_child_alignment_rate": 3.03,
+          "academic_concept_precision": 15.15
+        }
+      },
+      "matched_concepts_sample": [
+        "multiplication principle -> Multiplication Principle (exact, L2)",
+        "addition principle -> Addition Principle (exact, L2)",
+        "FACTORIAL -> Factorial Notation (alias, L3)",
+        "circular permutations -> Circular Permutations (exact, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "COMBINATION",
+        "permutation",
+        "FUNDAMENTAL PRINCIPLE",
+        "total number",
+        "definite order",
+        "multiplication principle",
+        "addition principle",
+        "FACTORIAL",
+        "Useful Notation",
+        "prime number"
+      ]
+    },
+    "biology_cell_cycle_esaral": {
+      "doc_id": "biology_cell_cycle_esaral",
+      "filename": "biology_cell_cycle_esaral.pdf",
+      "subject": "Biology",
+      "chapter": "Cell Cycle and Cell Division",
+      "publisher": "eSaral",
+      "partition": "Validation",
+      "duration_seconds": 9.03,
+      "physical_page_count": 10,
+      "concepts_extracted_count": 181,
+      "topics_formed_count": 14,
+      "grounding": {
+        "structural_validity_rate": 100.0,
+        "semantic_support_rate": 100.0
+      },
+      "noise_rejection": {
+        "noise_rejection_rate": 100.0,
+        "leaked_noise_tokens": []
+      },
+      "duplicate_rate": 0.0,
+      "gold_counts": {
+        "total_annotated": 20,
+        "present_in_document": 19,
+        "absent_from_document": 1,
+        "level_1_parent_topics": 3,
+        "level_2_core_concepts": 12,
+        "level_3_supporting_concepts": 4
+      },
+      "hierarchical_matches": {
+        "level_1": {
+          "matched": 3,
+          "precision": 1.66,
+          "recall": 100.0,
+          "f1": 3.26,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "level_2": {
+          "matched": 7,
+          "precision": 3.87,
+          "recall": 58.33,
+          "f1": 7.25,
+          "exact": 6,
+          "alias": 1,
+          "semantic": 0
+        },
+        "level_3": {
+          "matched": 3,
+          "precision": 1.66,
+          "recall": 75.0,
+          "f1": 3.24,
+          "exact": 3,
+          "alias": 0,
+          "semantic": 0
+        },
+        "overall_hierarchical": {
+          "total_matched_1_to_1": 13,
+          "strict_gold_precision": 7.18,
+          "text_present_recall": 68.42,
+          "hierarchical_f1": 13.0,
+          "exact_matches": 12,
+          "alias_matches": 1,
+          "semantic_matches": 0,
+          "parent_child_aligned": 13,
+          "parent_child_alignment_rate": 7.18,
+          "academic_concept_precision": 14.36
+        }
+      },
+      "matched_concepts_sample": [
+        "cell cycle -> Cell Cycle (exact, L1)",
+        "Interphase -> Interphase (exact, L2)",
+        "Mitosis -> Mitosis (exact, L1)",
+        "Mitotic Phase -> M Phase (alias, L2)",
+        "anaphase -> Anaphase (exact, L2)",
+        "Prophase -> Prophase (exact, L2)",
+        "Telophase -> Telophase (exact, L2)",
+        "metaphase -> Metaphase (exact, L2)",
+        "metaphase plate -> Metaphase Plate (exact, L3)",
+        "Cytokinesis -> Cytokinesis (exact, L2)"
+      ],
+      "sample_extracted_concepts": [
+        "Cell Cycle and Cell Division",
+        "cell cycle",
+        "cell division",
+        "Cycle and Cell",
+        "Cell Cycle and Cell",
+        "Cycle and Cell Division",
+        "Many cell",
+        "single cell",
+        "Many cell cycles",
+        "organisms and cell"
+      ]
+    }
+  }
+}

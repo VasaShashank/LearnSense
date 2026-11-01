@@ -1,0 +1,495 @@
+{
+  "physics_laws_of_motion_esaral": {
+    "id": "physics_laws_of_motion_esaral",
+    "subject": "Physics",
+    "chapter": "Laws of Motion",
+    "publisher": "eSaral",
+    "partition": "Development/Regression",
+    "major_topics": [
+      "Newton's Laws of Motion",
+      "Friction",
+      "Circular Motion"
+    ],
+    "assessable_concepts": [
+      "First Law of Motion",
+      "Second Law of Motion",
+      "Third Law of Motion",
+      "Linear Momentum",
+      "Impulse",
+      "Static Friction",
+      "Kinetic Friction",
+      "Rolling Friction",
+      "Laws of Friction",
+      "Angle of Friction",
+      "Angle of Repose",
+      "Centripetal Force",
+      "Centripetal Acceleration",
+      "Banking of Roads",
+      "Free Body Diagram",
+      "Normal Reaction",
+      "Tension"
+    ],
+    "supporting_concepts": [
+      "Inertia",
+      "Equilibrium of Concurrent Forces",
+      "Limiting Friction",
+      "Coefficient of Static Friction",
+      "Coefficient of Kinetic Friction",
+      "Frame of Reference",
+      "Pseudo Force"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "JEE Main",
+      "Revision Notes",
+      "eSaral",
+      "Page",
+      "Free PDF Download"
+    ]
+  },
+  "physics_work_energy_power_esaral": {
+    "id": "physics_work_energy_power_esaral",
+    "subject": "Physics",
+    "chapter": "Work, Energy and Power",
+    "publisher": "eSaral",
+    "partition": "Validation",
+    "major_topics": [
+      "Work",
+      "Energy",
+      "Power",
+      "Collisions and Momentum"
+    ],
+    "assessable_concepts": [
+      "Work Done by Constant Force",
+      "Work Done by Variable Force",
+      "Kinetic Energy",
+      "Work Energy Theorem",
+      "Potential Energy",
+      "Conservative Force",
+      "Non-Conservative Force",
+      "Spring Potential Energy",
+      "Conservation of Mechanical Energy",
+      "Power",
+      "Instantaneous Power",
+      "Average Power",
+      "Impulse",
+      "Impulse-Momentum Theorem",
+      "Conservation of Linear Momentum",
+      "Elastic Collision",
+      "Inelastic Collision",
+      "Coefficient of Restitution"
+    ],
+    "supporting_concepts": [
+      "Scalar Product of Vectors",
+      "Force Displacement Curve",
+      "Stable Equilibrium",
+      "Unstable Equilibrium",
+      "Watt"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "JEE Main Physics Revision Notes",
+      "eSaral",
+      "Download PDF"
+    ]
+  },
+  "physics_rotational_motion_esaral": {
+    "id": "physics_rotational_motion_esaral",
+    "subject": "Physics",
+    "chapter": "Rotational Motion",
+    "publisher": "eSaral",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Rotational Kinematics",
+      "Moment of Inertia",
+      "Torque and Rotational Dynamics",
+      "Rolling Motion",
+      "Angular Momentum"
+    ],
+    "assessable_concepts": [
+      "Rotational Kinematics",
+      "Angular Velocity",
+      "Angular Acceleration",
+      "Moment of Inertia",
+      "Radius of Gyration",
+      "Parallel Axis Theorem",
+      "Perpendicular Axis Theorem",
+      "Torque",
+      "Newton's Second Law for Rotation",
+      "Rotational Work and Energy",
+      "Rotational Power",
+      "Rolling Motion",
+      "Rolling Without Slipping",
+      "Angular Momentum",
+      "Conservation of Angular Momentum",
+      "Angular Impulse"
+    ],
+    "supporting_concepts": [
+      "Center of Mass",
+      "Couple",
+      "Pure Rotation",
+      "Torque Angular Momentum Relation"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "Rotational Motion Revision Notes",
+      "eSaral",
+      "Page"
+    ]
+  },
+  "physics_electrostatics_allen": {
+    "id": "physics_electrostatics_allen",
+    "subject": "Physics",
+    "chapter": "Electrostatics",
+    "publisher": "Allen Career Institute Kota",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Electric Charge and Field",
+      "Electric Field Lines",
+      "Electric Potential and Potential Energy",
+      "Equipotential Surfaces"
+    ],
+    "assessable_concepts": [
+      "Electric Charge",
+      "Quantization of Charge",
+      "Coulomb's Law",
+      "Principle of Superposition",
+      "Electric Field",
+      "Electric Field Due to Point Charge",
+      "Electric Field Lines",
+      "Electric Dipole",
+      "Dipole Moment",
+      "Torque on Dipole",
+      "Electric Flux",
+      "Gauss's Law",
+      "Electric Potential",
+      "Potential Difference",
+      "Equipotential Surface",
+      "Electrostatic Potential Energy"
+    ],
+    "supporting_concepts": [
+      "Surface Charge Density",
+      "Linear Charge Density",
+      "Volume Charge Density",
+      "Dielectric Constant"
+    ],
+    "noise_tokens": [
+      "ALLEN",
+      "Chapter",
+      "CLASS 12",
+      "HANDBOOKS",
+      "PHYSICS"
+    ]
+  },
+  "chemistry_atomic_structure_esaral": {
+    "id": "chemistry_atomic_structure_esaral",
+    "subject": "Chemistry",
+    "chapter": "Atomic Structure",
+    "publisher": "eSaral",
+    "partition": "Validation",
+    "major_topics": [
+      "Atomic Models",
+      "Bohr's Model and Hydrogen Spectrum",
+      "Quantum Mechanical Model",
+      "Quantum Numbers and Electronic Configuration"
+    ],
+    "assessable_concepts": [
+      "Rutherford Nuclear Model",
+      "Bohr Model of Atom",
+      "Radius of Bohr Orbit",
+      "Velocity of Electron",
+      "Energy of Bohr Orbit",
+      "Hydrogen Spectral Series",
+      "Lyman Series",
+      "Balmer Series",
+      "Paschen Series",
+      "de Broglie Relationship",
+      "Heisenberg Uncertainty Principle",
+      "Quantum Numbers",
+      "Principal Quantum Number",
+      "Azimuthal Quantum Number",
+      "Magnetic Quantum Number",
+      "Spin Quantum Number",
+      "Shapes of Atomic Orbitals",
+      "Radial and Angular Nodes",
+      "Aufbau Principle",
+      "Pauli Exclusion Principle",
+      "Hund's Rule of Maximum Multiplicity"
+    ],
+    "supporting_concepts": [
+      "Planck's Quantum Theory",
+      "Photoelectric Effect",
+      "Electromagnetic Spectrum",
+      "Degenerate Orbitals"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "JEE Main Chemistry",
+      "Atomic Structure",
+      "Revision Notes"
+    ]
+  },
+  "chemistry_chemical_bonding_esaral": {
+    "id": "chemistry_chemical_bonding_esaral",
+    "subject": "Chemistry",
+    "chapter": "Chemical Bonding and Molecular Structure",
+    "publisher": "eSaral",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Chemical Bonds Overview",
+      "VSEPR Theory",
+      "Valence Bond Theory and Hybridization",
+      "Molecular Orbital Theory",
+      "Hydrogen Bonding"
+    ],
+    "assessable_concepts": [
+      "Electrovalent Bond",
+      "Lattice Energy",
+      "Covalent Bond",
+      "Octet Rule",
+      "Dipole Moment",
+      "VSEPR Theory",
+      "Molecular Geometry",
+      "Valence Bond Theory",
+      "Sigma Bond",
+      "Pi Bond",
+      "Hybridization",
+      "sp Hybridization",
+      "sp2 Hybridization",
+      "sp3 Hybridization",
+      "Resonance",
+      "Formal Charge",
+      "Molecular Orbital Theory",
+      "Bond Order",
+      "Hydrogen Bonding"
+    ],
+    "supporting_concepts": [
+      "Electronegativity Difference",
+      "Fajan's Rules",
+      "Coordinate Covalent Bond",
+      "Intermolecular vs Intramolecular Hydrogen Bonding"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "Chemical Bonding and Molecular Structure",
+      "eSaral",
+      "Free PDF"
+    ]
+  },
+  "chemistry_coordination_compounds_esaral": {
+    "id": "chemistry_coordination_compounds_esaral",
+    "subject": "Chemistry",
+    "chapter": "Coordination Compounds",
+    "publisher": "eSaral",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Coordination Chemistry Terminology",
+      "Werner's Theory",
+      "Valence Bond Theory in Complexes",
+      "Crystal Field Theory",
+      "Isomerism in Coordination Compounds"
+    ],
+    "assessable_concepts": [
+      "Coordination Compounds",
+      "Coordination Sphere",
+      "Central Metal Atom",
+      "Ligands",
+      "Chelating Ligands",
+      "Coordination Number",
+      "Oxidation State",
+      "Werner's Coordination Theory",
+      "Valence Bond Theory",
+      "Inner and Outer Orbital Complexes",
+      "Magnetic Moment of Complexes",
+      "Crystal Field Theory",
+      "Crystal Field Splitting",
+      "Spectrochemical Series",
+      "Structural Isomerism",
+      "Geometrical Isomerism",
+      "Optical Isomerism"
+    ],
+    "supporting_concepts": [
+      "Denticity of Ligand",
+      "Homoleptic Complex",
+      "Heteroleptic Complex",
+      "High Spin and Low Spin Complexes"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "CO-ORDINATION COMPOUNDS",
+      "eSaral"
+    ]
+  },
+  "math_limits_continuity_esaral": {
+    "id": "math_limits_continuity_esaral",
+    "subject": "Mathematics",
+    "chapter": "Limits, Continuity and Differentiability",
+    "publisher": "eSaral",
+    "partition": "Validation",
+    "major_topics": [
+      "Limits",
+      "Continuity",
+      "Differentiability"
+    ],
+    "assessable_concepts": [
+      "Left Hand Limit",
+      "Right Hand Limit",
+      "Existence of Limit",
+      "Indeterminate Forms",
+      "L'Hospital's Rule",
+      "Standard Limits",
+      "Continuity at a Point",
+      "Continuity in an Interval",
+      "Types of Discontinuity",
+      "Intermediate Value Theorem",
+      "Differentiability at a Point",
+      "Left and Right Derivatives",
+      "Differentiability in an Interval",
+      "Relationship Between Continuity and Differentiability"
+    ],
+    "supporting_concepts": [
+      "Squeeze Theorem",
+      "Expansion of Functions",
+      "Geometrical Interpretation of Derivative"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "LIMITS, CONTINUITY AND DIFFERENTIABILITY",
+      "eSaral"
+    ]
+  },
+  "math_matrices_determinants_esaral": {
+    "id": "math_matrices_determinants_esaral",
+    "subject": "Mathematics",
+    "chapter": "Matrices and Determinants",
+    "publisher": "eSaral",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Matrix Theory and Operations",
+      "Special Matrix Types",
+      "Determinants and Properties",
+      "Adjoint and Inverse of Matrix",
+      "System of Linear Equations"
+    ],
+    "assessable_concepts": [
+      "Matrix",
+      "Order of Matrix",
+      "Types of Matrices",
+      "Square Matrix",
+      "Diagonal Matrix",
+      "Unit Matrix",
+      "Algebra of Matrices",
+      "Matrix Multiplication",
+      "Transpose of a Matrix",
+      "Symmetric Matrix",
+      "Skew Symmetric Matrix",
+      "Orthogonal Matrix",
+      "Rank of a Matrix",
+      "Minors and Cofactors",
+      "Properties of Determinants",
+      "Adjoint of Matrix",
+      "Inverse of Matrix",
+      "Solution of System of Linear Equations",
+      "Matrix Inversion Method",
+      "Cramer's Rule"
+    ],
+    "supporting_concepts": [
+      "Singular and Non-Singular Matrix",
+      "Elementary Row Transformations",
+      "Trace of a Matrix"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "MATRICES AND DETERMINANTS",
+      "eSaral"
+    ]
+  },
+  "math_permutations_combinations_allen": {
+    "id": "math_permutations_combinations_allen",
+    "subject": "Mathematics",
+    "chapter": "Permutations and Combinations",
+    "publisher": "Allen Career Institute Kota",
+    "partition": "Held-out Evaluation",
+    "major_topics": [
+      "Counting Principles",
+      "Permutations",
+      "Combinations",
+      "Group Division and Derangements"
+    ],
+    "assessable_concepts": [
+      "Fundamental Principle of Counting",
+      "Factorial",
+      "Permutation",
+      "Circular Permutation",
+      "Permutation of Alike Objects",
+      "Combination",
+      "Properties of Combinations",
+      "Divisors of a Number",
+      "Division into Groups",
+      "Distribution of Objects",
+      "Derangement",
+      "Geometrical Applications of Combinations"
+    ],
+    "supporting_concepts": [
+      "Multiplication Rule",
+      "Addition Rule",
+      "Pigeonhole Principle",
+      "Pascal's Identity"
+    ],
+    "noise_tokens": [
+      "ALLEN",
+      "Chapter",
+      "CLASS 11",
+      "PERMUTATION & COMBINATION"
+    ]
+  },
+  "biology_cell_cycle_esaral": {
+    "id": "biology_cell_cycle_esaral",
+    "subject": "Biology",
+    "chapter": "Cell Cycle and Cell Division",
+    "publisher": "eSaral",
+    "partition": "Validation",
+    "major_topics": [
+      "Cell Cycle Overview",
+      "Interphase",
+      "Mitosis (M Phase)",
+      "Meiosis",
+      "Significance of Cell Division"
+    ],
+    "assessable_concepts": [
+      "Cell Cycle",
+      "Interphase",
+      "G1 Phase",
+      "S Phase",
+      "G2 Phase",
+      "G0 Phase",
+      "Mitosis",
+      "Prophase",
+      "Metaphase",
+      "Anaphase",
+      "Telophase",
+      "Spindle Fibers",
+      "Cytokinesis",
+      "Meiosis",
+      "Meiosis I",
+      "Meiosis II",
+      "Synapsis",
+      "Crossing Over",
+      "Chiasmata",
+      "Significance of Mitosis",
+      "Significance of Meiosis"
+    ],
+    "supporting_concepts": [
+      "Kinetochore",
+      "Centromere",
+      "Cell Furrow",
+      "Cell Plate Method"
+    ],
+    "noise_tokens": [
+      "www.esaral.com",
+      "NEET Revision Notes",
+      "Class 11 Biology",
+      "Cell Cycle and Cell Division"
+    ]
+  }
+}

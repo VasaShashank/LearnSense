@@ -102,6 +102,7 @@ def run_stage5_entity_resolution(
     concepts: List[Concept] = []
     merge_records: List[MergeRecord] = list(semantic_merge_records)
 
+    from phase2.pipeline.semantic_validator import SemanticConceptValidator
     for norm_key, mentions in clusters.items():
         can_name = canonical_names[norm_key]
         c_id = generate_concept_id(norm_doc.doc_id, can_name)
@@ -159,22 +160,35 @@ def run_stage5_entity_resolution(
             ev_ids.append(ev_id)
             ev_ids = list(dict.fromkeys(ev_ids))
 
-        concept = Concept(
-            concept_id=c_id,
-            canonical_name=can_name,
-            aliases=[Alias(text=m.surface_form) for m in mentions if m.surface_form != can_name],
-            type=ConceptTypeEnum.CONCEPT,
-            scope=ScopeEnum.EDUCATIONAL,
-            status=ConceptStatusEnum.ACTIVE,
-            mention_ids=mention_ids,
-            confidence=ConfidenceBreakdown(
-                value=0.95,
-                components={"extraction": 0.95, "resolution": 0.98}
-            ),
-            evidence_ids=ev_ids,
-            description=matched_def["definition"] if matched_def else "",
-        )
-        concepts.append(concept)
+        existing = next((c for c in concepts if c.concept_id == c_id), None)
+        if existing:
+            existing.mention_ids = list(dict.fromkeys(existing.mention_ids + mention_ids))
+            existing.evidence_ids = list(dict.fromkeys(existing.evidence_ids + ev_ids))
+            new_aliases = [Alias(text=m.surface_form) for m in mentions if m.surface_form != existing.canonical_name]
+            existing_alias_texts = {a.text for a in existing.aliases}
+            for a in new_aliases:
+                if a.text not in existing_alias_texts:
+                    existing.aliases.append(a)
+                    existing_alias_texts.add(a.text)
+            if not existing.description and matched_def:
+                existing.description = matched_def["definition"]
+        else:
+            concept = Concept(
+                concept_id=c_id,
+                canonical_name=can_name,
+                aliases=[Alias(text=m.surface_form) for m in mentions if m.surface_form != can_name],
+                type=ConceptTypeEnum.CONCEPT,
+                scope=ScopeEnum.EDUCATIONAL,
+                status=ConceptStatusEnum.ACTIVE,
+                mention_ids=mention_ids,
+                confidence=ConfidenceBreakdown(
+                    value=0.95,
+                    components={"extraction": 0.95, "resolution": 0.98}
+                ),
+                evidence_ids=ev_ids,
+                description=matched_def["definition"] if matched_def else "",
+            )
+            concepts.append(concept)
 
         if len(mentions) > 1:
             m_rec = MergeRecord(
@@ -186,5 +200,12 @@ def run_stage5_entity_resolution(
                 outcome="merged"
             )
             merge_records.append(m_rec)
+
+    # Ensure canonical acronym expansions take precedence for concept names
+    acronym_expansions = {norm_doc.normalize_text_key(v): v for v in candidates.acronyms.values()}
+    for c in concepts:
+        n_k = norm_doc.normalize_text_key(c.canonical_name)
+        if n_k in acronym_expansions:
+            c.canonical_name = acronym_expansions[n_k]
 
     return concepts, merge_records

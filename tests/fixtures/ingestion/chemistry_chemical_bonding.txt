@@ -1,0 +1,21 @@
+CHEMICAL BONDING AND MOLECULAR STRUCTURE
+
+IONIC AND COVALENT BONDING
+An ionic bond is an electrostatic attractive force that holds oppositely charged ions together, formed by the complete transfer of one or more electrons from an electropositive atom to an electronegative atom.
+Lattice Enthalpy is the energy required to completely separate one mole of a solid ionic compound into its gaseous constituent ions.
+A covalent bond is formed by the mutual sharing of one or more electron pairs between two atoms to achieve a stable octet configuration.
+Electronegativity is the relative tendency of an atom in a molecule to attract shared electron pairs towards itself.
+
+VSEPR THEORY AND MOLECULAR GEOMETRY
+Valence Shell Electron Pair Repulsion theory or VSEPR theory states that the shape of a molecule depends on the total number of electron pairs in the valence shell of the central atom.
+The repulsive interaction of electron pairs decreases in the order: lone pair - lone pair > lone pair - bond pair > bond pair - bond pair.
+Dipole Moment is a vector quantity defined as the product of the magnitude of electric charge and the distance separating the positive and negative centers: \mu = q \times d.
+
+HYBRIDIZATION AND MOLECULAR ORBITAL THEORY
+Hybridization is the quantum phenomenon of mixing atomic orbitals of equivalent energy to produce a set of new equivalent hybrid orbitals.
+In sp3 hybridization, one s orbital and three p orbitals mix to produce four equivalent sp3 hybrid orbitals directed towards the four corners of a regular tetrahedron with bond angles of 109.5 degrees.
+Molecular Orbital Theory describes the electronic structure of molecules using molecular orbitals formed by linear combination of atomic orbitals.
+A bonding molecular orbital possesses lower energy than the parent atomic orbitals, whereas an antibonding molecular orbital possesses higher energy.
+Bond Order is defined as half the difference between the number of bonding electrons and antibonding electrons.
+Hydrogen Bonding is a dipole-dipole attractive force between a hydrogen atom bonded to a highly electronegative atom and another electronegative atom with a lone pair.
+

@@ -1,0 +1,28 @@
+MATHEMATICAL ANALYSIS AND CALCULUS FORMULAS
+
+FUNDAMENTAL OPERATORS AND DERIVATIVES
+The Derivative of a real single-variable function represents the instantaneous rate of change of the output with respect to the input:
+f'(x) = \lim_{h \to 0} \frac{f(x + h) - f(x)}{h}
+
+Common Differentiation Rules:
+Function | First Derivative
+c | 0
+x^n | n * x^{n-1}
+sin(x) | cos(x)
+cos(x) | -sin(x)
+e^x | e^x
+ln(x) | 1/x
+
+The Chain Rule states that the derivative of a composite function f(g(x)) is the product of outer and inner derivatives:
+\frac{d}{dx}[f(g(x))] = f'(g(x)) * g'(x)
+
+INTEGRAL CALCULUS AND ACCUMULATION
+The Indefinite Integral represents the continuous family of antiderivative functions:
+\int f(x) dx = F(x) + C, where F'(x) = f(x)
+
+The Fundamental Theorem of Calculus connects differentiation and definite integration:
+\int_a^b f(x) dx = F(b) - F(a)
+
+Integration by Parts is derived from the product rule of differential calculus:
+\int u dv = u v - \int v du
+

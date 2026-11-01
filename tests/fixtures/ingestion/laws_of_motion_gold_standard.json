@@ -1,0 +1,280 @@
+{
+  "document_id": "laws_of_motion_gold_standard",
+  "document_title": "Laws of Motion Revision Notes",
+  "subject": "physics",
+  "chapter": "Laws of Motion",
+  "topics": [
+    {
+      "topic_id": "topic_newtons_laws",
+      "title": "Newton's Laws of Motion",
+      "concept_ids": [
+        "c_newtons_first_law",
+        "c_newtons_second_law",
+        "c_newtons_third_law",
+        "c_inertial_mass",
+        "c_net_force"
+      ]
+    },
+    {
+      "topic_id": "topic_friction",
+      "title": "Friction and Resistive Forces",
+      "concept_ids": [
+        "c_friction",
+        "c_static_friction",
+        "c_kinetic_friction",
+        "c_limiting_friction",
+        "c_normal_force",
+        "c_coeff_static_friction",
+        "c_coeff_kinetic_friction",
+        "c_laws_of_friction",
+        "c_properties_of_friction",
+        "c_angle_of_repose",
+        "c_angle_of_friction"
+      ]
+    },
+    {
+      "topic_id": "topic_circular_motion",
+      "title": "Circular Motion Dynamics",
+      "concept_ids": [
+        "c_centripetal_force",
+        "c_centripetal_acceleration",
+        "c_tangential_acceleration",
+        "c_net_acceleration",
+        "c_angular_acceleration",
+        "c_angular_velocity"
+      ]
+    }
+  ],
+  "gold_concepts": [
+    {
+      "concept_id": "c_newtons_first_law",
+      "canonical_name": "Newton's First Law",
+      "aliases": ["Newton's First Law of Motion", "First Law of Motion", "Law of Inertia", "First Law"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "An object at rest remains at rest and an object in motion continues with constant velocity when no net force acts on it."
+    },
+    {
+      "concept_id": "c_newtons_second_law",
+      "canonical_name": "Newton's Second Law",
+      "aliases": ["Newton's Second Law of Motion", "Second Law of Motion", "Second Law"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "The net force on an object equals its inertial mass times acceleration (F = ma)."
+    },
+    {
+      "concept_id": "c_newtons_third_law",
+      "canonical_name": "Newton's Third Law",
+      "aliases": ["Newton's Third Law of Motion", "Third Law of Motion", "Third Law"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "For every action force exerted on a body, there is an equal and opposite reaction force on the other body."
+    },
+    {
+      "concept_id": "c_inertial_mass",
+      "canonical_name": "Inertial Mass",
+      "aliases": ["Mass"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "The property of a body that resists change in its state of motion."
+    },
+    {
+      "concept_id": "c_net_force",
+      "canonical_name": "Net Force",
+      "aliases": ["Resultant Force", "Total Force"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "The vector sum of all external forces acting on an object."
+    },
+    {
+      "concept_id": "c_friction",
+      "canonical_name": "Friction",
+      "aliases": ["Frictional Force", "Force of Friction"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Resistive contact force acting parallel to surfaces in contact opposing relative motion."
+    },
+    {
+      "concept_id": "c_static_friction",
+      "canonical_name": "Static Friction",
+      "aliases": ["Static Frictional Force", "Static Friction Force"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Frictional force that prevents relative motion between two contact surfaces at rest."
+    },
+    {
+      "concept_id": "c_kinetic_friction",
+      "canonical_name": "Kinetic Friction",
+      "aliases": ["Kinetic Frictional Force", "Dynamic Friction"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Frictional force acting between surfaces in relative sliding motion."
+    },
+    {
+      "concept_id": "c_limiting_friction",
+      "canonical_name": "Limiting Friction",
+      "aliases": ["Maximum Static Friction", "Limiting Force of Friction"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "The maximum possible value of static friction just before sliding begins."
+    },
+    {
+      "concept_id": "c_normal_force",
+      "canonical_name": "Normal Force",
+      "aliases": ["Normal Reaction", "Normal Response"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "The perpendicular contact reaction force exerted by a surface on a body."
+    },
+    {
+      "concept_id": "c_coeff_static_friction",
+      "canonical_name": "Coefficient of Static Friction",
+      "aliases": ["Static Coefficient of Friction", "mu_s"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Dimensionless ratio relating maximum static friction to the normal reaction force."
+    },
+    {
+      "concept_id": "c_coeff_kinetic_friction",
+      "canonical_name": "Coefficient of Kinetic Friction",
+      "aliases": ["Kinetic Coefficient of Friction", "mu_k"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Dimensionless ratio relating kinetic friction to the normal reaction force."
+    },
+    {
+      "concept_id": "c_laws_of_friction",
+      "canonical_name": "Laws of Friction",
+      "aliases": ["Friction Laws"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "Empirical laws stating friction proportionality to normal reaction and independence from contact area."
+    },
+    {
+      "concept_id": "c_properties_of_friction",
+      "canonical_name": "Properties of Friction",
+      "aliases": [],
+      "type": "subtopic",
+      "topic_id": "topic_friction",
+      "description": "Characteristics describing how static friction self-adjusts and transitions to kinetic friction."
+    },
+    {
+      "concept_id": "c_angle_of_repose",
+      "canonical_name": "Angle of Repose",
+      "aliases": ["Critical Angle of Incline"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "The minimum inclination angle of an inclined plane at which a resting body begins to slide."
+    },
+    {
+      "concept_id": "c_angle_of_friction",
+      "canonical_name": "Angle of Friction",
+      "aliases": [],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "The angle whose tangent equals the coefficient of static friction (tan phi = mu_s)."
+    },
+    {
+      "concept_id": "c_centripetal_force",
+      "canonical_name": "Centripetal Force",
+      "aliases": ["Radial Force"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "Net inward radial force required to keep an object moving in a circular path."
+    },
+    {
+      "concept_id": "c_centripetal_acceleration",
+      "canonical_name": "Centripetal Acceleration",
+      "aliases": ["Radial Acceleration"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "Radial acceleration directed toward the center of curvature (a_c = v^2 / r = omega^2 * r)."
+    },
+    {
+      "concept_id": "c_tangential_acceleration",
+      "canonical_name": "Tangential Acceleration",
+      "aliases": [],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "Acceleration component along the tangent resulting from changes in particle speed (a_t = r * alpha)."
+    },
+    {
+      "concept_id": "c_net_acceleration",
+      "canonical_name": "Net Acceleration",
+      "aliases": ["Net Acceleration in Circular Motion", "Total Acceleration"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "The vector sum of centripetal and tangential accelerations."
+    },
+    {
+      "concept_id": "c_angular_acceleration",
+      "canonical_name": "Angular Acceleration",
+      "aliases": ["alpha"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "The time rate of change of angular velocity."
+    },
+    {
+      "concept_id": "c_angular_velocity",
+      "canonical_name": "Angular Velocity",
+      "aliases": ["omega"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "The rate of change of angular displacement (v = omega * r)."
+    },
+    {
+      "concept_id": "c_newtons_laws_of_motion",
+      "canonical_name": "Newton's Laws of Motion",
+      "aliases": ["Newton's Laws", "Laws of Motion"],
+      "type": "concept",
+      "topic_id": "topic_newtons_laws",
+      "description": "The overarching physical framework governing the motion of bodies under forces."
+    },
+    {
+      "concept_id": "c_circular_motion",
+      "canonical_name": "Circular Motion",
+      "aliases": ["Circular Motion Dynamics", "Non-uniform Circular Motion"],
+      "type": "concept",
+      "topic_id": "topic_circular_motion",
+      "description": "Motion of an object along the circumference of a circle or rotation along a circular path."
+    },
+    {
+      "concept_id": "c_relative_motion",
+      "canonical_name": "Relative Motion",
+      "aliases": ["Relative Velocity", "Slipiry or relative motion"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "The continuous change of position of a body relative to another reference body."
+    },
+    {
+      "concept_id": "c_inclined_plane",
+      "canonical_name": "Inclined Plane",
+      "aliases": ["Incline", "Ramp"],
+      "type": "concept",
+      "topic_id": "topic_friction",
+      "description": "A flat supporting surface tilted at an angle, with one end higher than the other."
+    }
+  ],
+  "known_bad_candidates": {
+    "LAWS": "GENERIC_WORD",
+    "First Law": "CONSOLIDATE_TO_NEWTONS_FIRST_LAW",
+    "net force": "VALID_CONCEPT",
+    "object exerts": "ACTION_VERB_PHRASE",
+    "Fman": "DIAGRAM_VARIABLE",
+    "contact surfaces": "NON_CONCEPTUAL_DESCRIPTIVE",
+    "coefficient of kinetic": "REPAIR_TO_COEFF_KINETIC_FRICTION",
+    "mg sin": "EQUATION_FRAGMENT",
+    "FORCE": "GENERIC_WORD",
+    "MOTION": "GENERIC_WORD",
+    "Second Law": "CONSOLIDATE_TO_NEWTONS_SECOND_LAW",
+    "force exerted": "ACTION_VERB_PHRASE",
+    "Fground": "DIAGRAM_VARIABLE",
+    "ANGLE": "GENERIC_WORD",
+    "equal and opposite": "ADJECTIVAL_PHRASE",
+    "body slides": "ACTION_VERB_PHRASE",
+    "s is a constant": "SENTENCE_FRAGMENT",
+    "maximum value": "NON_CONCEPTUAL_DESCRIPTIVE",
+    "REPOSE": "GENERIC_WORD",
+    "angle of inclination": "NON_CONCEPTUAL_DESCRIPTIVE"
+  }
+}

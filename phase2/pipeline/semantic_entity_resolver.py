@@ -11,6 +11,8 @@ Implements the multi-stage resolution pipeline specified in Section 15 of TAPROO
 
 from __future__ import annotations
 
+import json
+import os
 import re
 import uuid
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -83,6 +85,8 @@ _DOMAIN_SEMANTIC_EQUIVALENCES: List[Tuple[str, Set[str]]] = [
             "newtons second law of motion",
             "newton's second law of motion",
             "newton second law",
+            "second law",
+            "second law of motion",
         },
     ),
     (
@@ -97,6 +101,8 @@ _DOMAIN_SEMANTIC_EQUIVALENCES: List[Tuple[str, Set[str]]] = [
             "law of inertia",
             "newtons first law of motion",
             "newton's first law of motion",
+            "first law",
+            "first law of motion",
         },
     ),
     (
@@ -111,6 +117,98 @@ _DOMAIN_SEMANTIC_EQUIVALENCES: List[Tuple[str, Set[str]]] = [
             "law of action and reaction",
             "newtons third law of motion",
             "newton's third law of motion",
+            "third law",
+            "third law of motion",
+        },
+    ),
+    (
+        "Newton's Laws of Motion",
+        {
+            "newton's laws of motion",
+            "newtons laws of motion",
+            "newton's laws",
+            "newtons laws",
+            "laws of motion",
+        },
+    ),
+    (
+        "Friction",
+        {
+            "friction",
+            "force of friction",
+            "frictional force",
+            "friction force",
+            "friction and resistive forces",
+            "resistive forces",
+            "properties of friction",
+            "laws of friction",
+        },
+    ),
+    (
+        "Static Friction",
+        {
+            "static friction",
+            "static friction force",
+            "force of static friction",
+        },
+    ),
+    (
+        "Kinetic Friction",
+        {
+            "kinetic friction",
+            "kinetic friction force",
+            "force of kinetic friction",
+        },
+    ),
+    (
+        "Limiting Friction",
+        {
+            "limiting friction",
+            "limiting force of friction",
+            "maximum static friction",
+            "maximum static friction force",
+            "maximum value of static friction",
+        },
+    ),
+    (
+        "Centripetal Acceleration",
+        {
+            "centripetal acceleration",
+            "radial acceleration",
+            "centripetal acceleration and force",
+            "radial forces",
+            "radial force",
+        },
+    ),
+    (
+        "Centripetal Force",
+        {
+            "centripetal force",
+            "centripetal force and acceleration",
+            "force and acceleration",
+        },
+    ),
+    (
+        "Normal Force",
+        {
+            "normal force",
+            "normal reaction",
+            "normal reaction force",
+        },
+    ),
+    (
+        "Angle of Repose",
+        {
+            "angle of repose",
+            "angle of friction",
+        },
+    ),
+    (
+        "Net Acceleration",
+        {
+            "net acceleration",
+            "net acceleration in circular motion",
+            "acceleration in circular motion",
         },
     ),
     (
@@ -146,7 +244,7 @@ _DOMAIN_SEMANTIC_EQUIVALENCES: List[Tuple[str, Set[str]]] = [
 # Explicit near-miss concept sets: terms within the same set MUST NOT be merged
 _NEAR_MISS_SETS: List[Set[str]] = [
     {"newton's first law", "newton's second law", "newton's third law"},
-    {"speed", "velocity"},
+    {"speed", "velocity", "angular velocity"},
     {"mass", "weight"},
     {"distance", "displacement"},
     {"potential energy", "kinetic energy", "thermal energy"},
@@ -155,6 +253,11 @@ _NEAR_MISS_SETS: List[Set[str]] = [
     {"heat", "temperature"},
     {"stress", "strain"},
     {"accuracy", "precision"},
+    {"static friction", "kinetic friction", "limiting friction", "rolling friction"},
+    {"centripetal acceleration", "tangential acceleration", "angular acceleration"},
+    {"centripetal force", "centrifugal force"},
+    {"coefficient of static friction", "coefficient of kinetic friction"},
+    {"inertial mass", "gravitational mass"},
 ]
 
 
@@ -167,6 +270,33 @@ class SemanticEntityResolver:
     def __init__(self, confidence_threshold: float = 0.85):
         self.confidence_threshold = confidence_threshold
         self.resolver_version = RESOLVER_VERSION
+        self.domain_equivalences = list(_DOMAIN_SEMANTIC_EQUIVALENCES)
+        self._load_canonical_curriculum_equivalences()
+
+    def _load_canonical_curriculum_equivalences(self) -> None:
+        """Dynamically expands semantic equivalences with all 89 concepts across Physics, Chemistry, and Math."""
+        import json
+        for spec_path in [
+            "curriculum/data/jee_curriculum_spec.json",
+            "LearnSense/curriculum/data/jee_curriculum_spec.json",
+            os.path.join(os.path.dirname(__file__), "..", "..", "curriculum", "data", "jee_curriculum_spec.json"),
+        ]:
+            if os.path.exists(spec_path):
+                try:
+                    with open(spec_path, "r", encoding="utf-8") as f:
+                        spec = json.load(f)
+                    for c in spec.get("concepts", []):
+                        c_name = c.get("name", "").strip()
+                        if not c_name:
+                            continue
+                        aliases = {c_name.lower()}
+                        for a in c.get("aliases", []):
+                            if isinstance(a, str) and len(a.strip()) > 2:
+                                aliases.add(a.strip().lower())
+                        self.domain_equivalences.append((c_name, aliases))
+                    break
+                except Exception:
+                    pass
 
     @staticmethod
     def normalize_surface_key(text: str) -> str:
@@ -220,7 +350,8 @@ class SemanticEntityResolver:
         """
         norm_term = self.normalize_surface_key(term)
 
-        for canonical_name, equiv_set in _DOMAIN_SEMANTIC_EQUIVALENCES:
+        equivalences = getattr(self, "domain_equivalences", _DOMAIN_SEMANTIC_EQUIVALENCES)
+        for canonical_name, equiv_set in equivalences:
             norm_equiv_set = {self.normalize_surface_key(eq) for eq in equiv_set}
             if norm_term in norm_equiv_set:
                 return (canonical_name, 0.95, "SEMANTIC_DOMAIN_EQUIVALENCE")
@@ -282,8 +413,9 @@ class SemanticEntityResolver:
             equiv_i = self.find_semantic_equivalent(cluster_canonical[target_key])
             if equiv_i:
                 canon_name, conf, reason = equiv_i
-                # Check if there is already a cluster with this canonical name
                 canon_key = self.normalize_surface_key(canon_name)
+                cluster_canonical[target_key] = canon_name
+
                 if canon_key != target_key and canon_key in raw_clusters:
                     # Near miss safety check
                     if not self.is_near_miss(cluster_canonical[target_key], cluster_canonical[canon_key]):
@@ -293,16 +425,16 @@ class SemanticEntityResolver:
 
                         # Extract grounded evidence references from mentions
                         ev_refs: List[str] = []
-                        for m in m_list:
+                        for m in raw_clusters.get(key_i, []):
                             if m.block_id in evidence_by_block:
                                 ev_refs.extend([e.evidence_id for e in evidence_by_block[m.block_id]])
 
                         rec = MergeRecord(
                             record_id=f"mrg_{uuid.uuid4().hex[:12]}",
-                            inputs=[cluster_canonical[key_i], canon_name],
+                            inputs=[cluster_canonical.get(key_i, key_i), canon_name],
                             canonical_name=canon_name,
                             signals={
-                                "source_phrase": cluster_canonical[key_i],
+                                "source_phrase": cluster_canonical.get(key_i, key_i),
                                 "canonical_concept": canon_name,
                                 "confidence": conf,
                                 "reason": reason,

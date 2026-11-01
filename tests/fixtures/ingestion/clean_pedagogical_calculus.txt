@@ -1,0 +1,19 @@
+LIMITS, CONTINUITY AND DIFFERENTIABILITY
+
+LIMITS AND INDETERMINATE FORMS
+The Limit of a real-valued function f(x) as x approaches a point c describes the behavior of f(x) arbitrarily near c.
+L'Hopital's Rule states that if the limit of a quotient of two differentiable functions yields an indeterminate form of type 0/0 or infinity/infinity, the limit equals the limit of the quotient of their derivatives:
+\lim_{x \to c} \frac{f(x)}{g(x)} = \lim_{x \to c} \frac{f'(x)}{g'(x)}
+The Squeeze Theorem establishes that if a function is bounded between two functions having the same limit at c, then f(x) must converge to that identical limit.
+
+CONTINUITY AND INTERMEDIATE VALUE PROPERTY
+A real function f(x) exhibits Continuity at a point c in its domain if the limit of f(x) as x approaches c exists and equals f(c).
+A function is continuous on an interval if it is continuous at every interior and boundary point.
+The Intermediate Value Theorem asserts that a continuous function on a closed interval [a, b] attains every intermediate value between f(a) and f(b).
+
+DIFFERENTIABILITY AND MEAN VALUE THEOREMS
+A function has Differentiability at c if the two-sided limit of the difference quotient exists.
+Rolle's Theorem states that if f is continuous on [a, b], differentiable on (a, b), and f(a) = f(b), then there exists at least one point c in (a, b) where f'(c) = 0.
+The Mean Value Theorem states that under the same conditions without requiring f(a) = f(b), there exists a point c where the instantaneous rate of change equals the average rate of change:
+f'(c) = \frac{f(b) - f(a)}{b - a}
+

@@ -1,0 +1,30 @@
+THERMODYN4MICS REVISION N0TES
+JEE | NEET | esaral app download free notes www.esaral.com
+Page 1 of 4 -- Revision Notes
+
+1NTRODUCT1ON T0 THERMAL PHYS1CS
+Intern4l Energy is defined as the t0tal microscopic energ-
+y of molecules in a therm0dynamic system.
+Heat is the spontaneous tr4nsfer of ther-
+mal energy between systems at diff3rent temperatures.
+
+FIRST L4W OF THERMODYN4MICS
+The First Law of Thermodynamics st4tes that heat supplied to a
+system is equal to the increase in internal energy plus work done:
+d3lta Q = d3lta U + W
+It is essentially the law of c0nservation of energy applied to
+thermal and mechanical systems.
+
+THERMAL PR0CESSES
+An Isothermal Process is a therm0dynamic process carried out
+at c0nstant temperature.
+For an ideal gas undergoing an isothermal expansion, internal
+energy remains c0nstant.
+An Adiabatic Process is a process in which n0 heat enters or leaves
+the therm0dynamic system: Q = 0.
+Work done during an adiabatic process results in a direct ch4nge
+in internal energy.
+
+JEE | NEET | esaral app download free notes www.esaral.com
+Page 2 of 4 -- Revision Notes
+

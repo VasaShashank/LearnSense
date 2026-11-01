@@ -1,0 +1,27 @@
+WORK, ENERGY AND POWER
+
+WORK DONE BY A FORCE
+Work is defined as the scalar product of force and displacement. When a constant force F acts on a body and produces a displacement d, the work done is given by W = F . d = F d cos theta, where theta is the angle between the force and displacement vectors.
+When the displacement is perpendicular to the force, the work done is zero.
+Work done by a variable force is calculated by integrating the force over displacement: W = \int F dx.
+The SI unit of work is Joule.
+
+KINETIC AND POTENTIAL ENERGY
+Kinetic Energy is the energy possessed by a body by virtue of its state of motion. For a body of mass m moving with speed v, kinetic energy is K = 1/2 m v^2.
+Potential Energy is the energy possessed by a body by virtue of its position or configuration in a force field.
+Gravitational Potential Energy of a body of mass m at a height h above the Earth's surface is given by U = m g h.
+Elastic Potential Energy stored in a stretched or compressed spring with spring constant k is given by U = 1/2 k x^2.
+
+WORK-ENERGY THEOREM AND CONSERVATION OF ENERGY
+The Work-Energy Theorem states that the work done by all the forces acting on a particle equals the change in its kinetic energy: W_net = \Delta K = K_final - K_initial.
+A conservative force is a force for which the work done in moving a particle between two points is independent of the path taken.
+For conservative forces, the total mechanical energy of the system is conserved: E = K + U = constant.
+A non-conservative force like friction dissipates mechanical energy into thermal energy.
+
+POWER AND COLLISIONS
+Power is defined as the time rate at which work is done or energy is transferred.
+Average power is total work divided by total time, and instantaneous power is given by P = F . v.
+The SI unit of power is Watt.
+An elastic collision is a collision in which both total linear momentum and total kinetic energy are conserved.
+An inelastic collision is a collision in which linear momentum is conserved but kinetic energy is not conserved.
+

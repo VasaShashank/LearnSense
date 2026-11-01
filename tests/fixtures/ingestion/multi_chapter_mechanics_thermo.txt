@@ -1,0 +1,15 @@
+INTEGRATED PHYSICS: MECHANICS AND THERMODYNAMICS
+
+CHAPTER 1: MECHANICAL WORK AND CONSERVATION OF ENERGY
+Work is defined as the dot product of force and displacement vectors. When force and displacement are aligned, work is positive.
+Kinetic Energy is the mechanical energy of motion given by K = 1/2 m v^2.
+The Work-Energy Theorem demonstrates that net external work performed on a physical system equals the variation in its kinetic energy.
+For conservative forces, the total mechanical energy remains invariant throughout the motion: E = K + U = constant.
+
+CHAPTER 2: LAWS OF THERMODYNAMICS AND THERMAL PROCESSES
+Internal Energy is the microscopic total energy of molecular kinetic motion and intermolecular potential interactions within a thermodynamic system.
+Heat is the spontaneous transfer of thermal energy between systems driven by a temperature gradient.
+The First Law of Thermodynamics is the law of conservation of thermal energy, stating that heat absorbed by a system equals the increase in internal energy plus work done: \Delta Q = \Delta U + W.
+An isothermal process is a thermodynamic transformation occurring at constant temperature, where \Delta U = 0 and Q = W.
+An adiabatic process is a thermodynamic transformation in which no heat exchange occurs with the external surroundings: Q = 0 and W = -\Delta U.
+

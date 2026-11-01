@@ -71,7 +71,14 @@ class LayoutAnalyzer:
 
         size_ratio = avg_font_size / max(body_font_size, 1.0)
 
-        if size_ratio >= 1.15 or is_bold or (has_numbering and len(text) < 100):
+        # Precise heading criteria: headings are concise titles, not full paragraphs or multi-sentence text
+        is_concise = len(text) <= 120 and len(text.split()) <= 15 and text.count(". ") < 2
+        is_all_caps_title = text.isupper() and 3 <= len(text) <= 80 and len(text.split()) <= 10 and not text.endswith((".", ",", ";"))
+        is_numbered_title = has_numbering and len(text) <= 100 and not text.endswith((".", ",", ";"))
+        is_large_font = size_ratio >= 1.15 and is_concise
+        is_bold_title = is_bold and is_concise and not text.endswith((".", ",", ";"))
+
+        if is_large_font or is_bold_title or is_numbered_title or is_all_caps_title:
             block.type = BlockTypeEnum.HEADING
             # Role stores heading level tag (e.g. "heading_l1", "heading_l2", "heading_l3")
             if size_ratio >= 1.6 or (size_ratio >= 1.3 and is_bold):

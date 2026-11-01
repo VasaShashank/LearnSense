@@ -1,0 +1,91 @@
+# Laws of Motion
+
+## Newton's Laws of Motion
+
+### Newton's First Law
+When there is no net force acting on an object:
+- An object at rest remains at rest.
+- An object in motion continues to move with a velocity that is constant in magnitude and direction.
+This principle is also known as the Law of Inertia, describing the property of inertial mass.
+
+### Newton's Second Law
+Newton's second law states the relation between the net force and the inertial mass.
+The net force on an object equals the product of its mass and its acceleration:
+F = m * a
+Note that the direction of acceleration is always in the direction of the net force.
+In terms of Cartesian components:
+Fx = m * ax
+Fy = m * ay
+Fz = m * az
+
+### Newton's Third Law
+If an object exerts a force F on a second object, then the second object exerts an equal but opposite force -F on the first object.
+Forces always exist in action-reaction pairs:
+- The force exerted by the Earth on the Sun is equal and opposite to the force exerted by the Sun on the Earth: F_earth = -F_sun.
+- The force exerted by a person on the ground is equal and opposite to the normal force acting on the person by the ground.
+
+## Friction and Resistive Forces
+
+### Friction
+Whenever the surface of a body slides over that of another, each body exerts a force of friction on the other, parallel to the surfaces.
+The force of friction on each body is in a direction opposite to its relative motion.
+Friction is a self-adjusting force: it can adjust its magnitude to any value between zero and the limiting maximum value:
+0 <= f <= f_max
+
+Frictional force is categorized into two distinct types:
+1. Static Friction
+2. Kinetic Friction
+
+### Static Friction
+The static friction between two contact surfaces prevents relative motion and is given by:
+f_s <= mu_s * N
+where N is the normal force between the contact surfaces and mu_s is a constant called the coefficient of static friction.
+
+### Kinetic Friction
+Kinetic friction acts between two contact surfaces only when there is relative sliding motion between them:
+f_k = mu_k * N
+where N is the normal force between the contact surfaces and mu_k is a constant called the coefficient of kinetic friction.
+
+### Laws of Friction
+The limiting friction (or maximum static friction force) is directly proportional to the normal force that keeps the two surfaces in contact with each other, and is independent of the apparent area of contact between the two surfaces.
+Mathematically:
+f_max = mu * N
+
+### Properties of Friction
+1. If the body is at rest, the static friction force f_s is parallel to the surface and equal in magnitude to the applied external force F.
+2. The maximum value of static friction (limiting friction) is given by:
+f_s(max) = mu_s * N
+where mu_s is the coefficient of static friction and N is the normal reaction. If the applied external force exceeds f_s(max), the body slides along the surface.
+3. If the body starts moving along the surface, the magnitude of the friction force decreases to a constant value called kinetic friction:
+f_k = mu_k * N
+where mu_k is the coefficient of kinetic friction.
+
+### Angle of Repose
+Suppose a body is placed on an inclined plane whose angle of inclination theta is varied between 0 and pi/2.
+The coefficient of static friction between the body and the surface is mu_s.
+At a critical inclination angle theta = phi, the block is on the verge of sliding down the inclined plane. This critical angle phi is called the angle of repose (or angle of friction).
+Mathematically, at the verge of sliding:
+mg * sin(phi) = f_max = mu_s * N = mu_s * mg * cos(phi)
+tan(phi) = mu_s
+phi = arctan(mu_s)
+The angle of friction is the minimum angle of inclination of an inclined plane at which a body placed on it begins to slide down under gravity.
+
+## Circular Motion Dynamics
+
+### Centripetal Force and Acceleration
+A particle moving in a circular path with linear speed v and radius r experiences a centripetal acceleration (also called radial acceleration) directed toward the center of the circle:
+a_r = v^2 / r = omega^2 * r
+where omega is the angular velocity of the particle.
+
+### Tangential Acceleration
+If there is angular acceleration alpha, the linear speed of the particle changes along the tangent to the circle, producing tangential acceleration:
+a_t = dv / dt = r * alpha
+
+### Net Acceleration in Circular Motion
+The net acceleration of a particle in non-uniform circular motion is the vector sum of its radial acceleration and its tangential acceleration:
+a_net = a_r + a_t
+The magnitude of the net acceleration is given by:
+a = sqrt(a_r^2 + a_t^2)
+The centripetal force required to maintain circular motion is provided by radial forces:
+F_c = m * a_r = m * v^2 / r
+

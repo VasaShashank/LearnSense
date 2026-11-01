@@ -20,6 +20,12 @@ from phase2.models import (
 )
 from phase2.pipeline.stage1_normalize import NormalizedDocumentContext
 from phase2.pipeline.stage2_context import DocumentContext
+from phase2.pipeline.semantic_validator import (
+    SemanticConceptValidator,
+    ConceptValidationOutcome,
+    _SUBSTANTIVE_HEAD_NOUNS,
+    _LEGITIMATE_SINGLE_WORD_CONCEPTS,
+)
 from phase2.models import EducationalUnit
 from phase2.utils.id_generator import (
     generate_mention_id,
@@ -151,6 +157,8 @@ LEADING_FUNCTION_WORDS = {
     "two", "three", "what", "which", "who", "whom", "whose", "when", "where",
     "why", "how", "if", "then", "than", "as", "at", "by", "for", "from", "in",
     "into", "of", "on", "or", "so", "to", "we", "you", "they", "he", "she", "it",
+    "around", "between", "among", "under", "above", "through", "onto", "towards",
+    "with", "within", "without",
     "note", "see", "figure", "table", "exercise", "example", "summary", "overview",
     "introduction", "conclusion", "definition", "theorem", "lemma", "proof",
     "chapter", "section", "part", "unit", "lesson", "topic", "step", "rule",
@@ -163,6 +171,8 @@ TRAILING_FUNCTION_WORDS = {"the", "a", "an", "of", "and", "or", "to", "in", "for
 
 def _trim_candidate(term: str) -> str:
     """Strip leading determiners/interrogatives and dangling function words."""
+    # Strip outline numbering / enumeration prefixes (e.g. "1. G1 Phase", "(iii) Velocity of Electron")
+    term = re.sub(r'^(?:[0-9]+[\.\)]|\([0-9ivxabc]+\)|[a-z][\.\)])\s*', '', term.strip(), flags=re.IGNORECASE)
     words = term.split()
     while words and words[0].lower() in LEADING_FUNCTION_WORDS:
         words = words[1:]
@@ -222,6 +232,17 @@ ACTION_VERBS = {
     "generates", "generate", "generating", "generated",
     "analyzes", "analyze", "analyzing", "analyzed",
     "calculates", "calculate", "calculating", "calculated",
+    "lose", "loses", "losing", "lost",
+    "gain", "gains", "gaining", "gained",
+    "carry", "carries", "carrying", "carried",
+    "contain", "contains", "containing", "contained",
+    "consist", "consists", "consisting", "consisted",
+    "rotate", "rotates", "rotating", "rotated",
+    "emit", "emits", "emitting", "emitted",
+    "absorb", "absorbs", "absorbing", "absorbed",
+    "occupy", "occupies", "occupying", "occupied",
+    "undergo", "undergoes", "undergoing", "undergone",
+    "involve", "involves", "involving", "involved",
     "evaluates", "evaluate", "evaluating", "evaluated",
     "identifies", "identify", "identifying", "identified",
     "illustrates", "illustrate", "illustrating", "illustrated",
@@ -362,7 +383,7 @@ def _is_isolated_verb_or_non_noun(term: str) -> bool:
     if words[0] in ACTION_VERBS or words[0] in LEADING_FUNCTION_WORDS:
         return True
     # Last word is an action verb or trailing function word
-    if words[-1] in ACTION_VERBS or words[-1] in TRAILING_FUNCTION_WORDS or words[-1] in {"upon", "to", "for", "in", "with", "using"}:
+    if (words[-1] in ACTION_VERBS and words[-1] not in _SUBSTANTIVE_HEAD_NOUNS) or words[-1] in TRAILING_FUNCTION_WORDS or words[-1] in {"upon", "to", "for", "in", "with", "using"}:
         return True
     # Any token is a relative pronoun, clause marker, or contraction
     if any(w in CLAUSE_AND_FRAGMENT_WORDS for w in words):
@@ -546,11 +567,14 @@ def extract_candidates(
 
     # Regex patterns for definitions, acronyms, formulas
     def_pattern = re.compile(
-        r"([A-Za-z0-9\s'-]{2,40})\s+(is defined as|refers to|is called|is known as|can be defined as|is described as|means|is an? [A-Za-z\s-]{2,35} (?:that|which|by which|used to|designed to|for))\s+([^.\n]+)",
+        r"([A-Za-z0-9\s'-]{2,40})\s+(is defined as|refers to|is called|is known as|can be defined as|is described as|means|is (?:an?|the) [A-Za-z\s-]{2,35} (?:that|which|by which|used to|designed to|for|between|where|defined as|of))\s+([^.\n]+)",
         re.IGNORECASE,
     )
+    copula_def_pattern = re.compile(
+        r"(?:^|[.\n]\s*)(?:In\s+[a-z0-9\s-]{2,20},\s+)?([A-Z][A-Za-z0-9\s'-]{2,35})\s+(?:is|are)\s+(?:an?|the)\s+([A-Za-z][^.\n]{10,})",
+    )
     colon_def_pattern = re.compile(r"(?:^|\n)\s*([A-Za-z0-9\s'-]{2,35}):\s+([A-Z][^\n]{10,})")
-    acronym_pattern = re.compile(r"([A-Z][A-Za-z0-9\s'-]{2,40})\s*\(([A-Z]{2,6})\)")
+    acronym_pattern = re.compile(r"([A-Za-z0-9\s'-]{2,70})\s*\(([A-Za-z0-9]{2,8})\)")
     formula_pattern = re.compile(r"([A-Za-z_]+)\s*=\s*([A-Za-z0-9\s\+\-\*\/\^\(\)]+)")
 
     # --- Document-level scan -------------------------------------------------
@@ -655,7 +679,7 @@ def extract_candidates(
     # Precompute unigram and n-gram frequencies in one O(N) linear pass:
     prose_tokens = [tok for tok in re.findall(r"\b[a-z0-9'-]+\b", lowercase_corpus)]
     ngram_counts: Counter = Counter(prose_tokens)
-    for n in (2, 3):
+    for n in (2, 3, 4, 5):
         for i in range(len(prose_tokens) - n + 1):
             w0 = prose_tokens[i]
             w_last = prose_tokens[i + n - 1]
@@ -678,34 +702,66 @@ def extract_candidates(
         for match in acronym_pattern.finditer(text):
             full_term, acr = match.group(1).strip(), match.group(2).strip()
             res.acronyms[acr] = full_term
+            trimmed_full = _trim_candidate(full_term)
+            if trimmed_full and len(trimmed_full) >= 3:
+                words.append(trimmed_full)
+            if acr and len(acr) >= 2:
+                words.append(acr)
+                if "theory" in full_term.lower():
+                    words.append(f"{acr} Theory")
 
         # 2. Harvest Definitions
         for def_match in def_pattern.finditer(text):
-            term = _trim_candidate(def_match.group(1).strip())
+            group1 = _trim_candidate(def_match.group(1).strip())
             copula = def_match.group(2).strip()
             rest = def_match.group(3).strip()
-            if copula.lower().startswith("is ") and not copula.lower().startswith(("is defined", "is called", "is known", "is described")):
-                definition_text = f"{copula[3:].strip()} {rest}"
+            if copula.lower() in ("is called", "is known as", "is referred to as"):
+                candidate_term = _trim_candidate(rest.split(".")[0].split(",")[0].split("(")[0].strip())
+                definition_text = group1
             else:
-                definition_text = rest
-            if term and len(term) >= 3 and term.lower() not in STOPWORDS:
-                res.harvested_definitions.append({
-                    "term": term,
-                    "definition": definition_text,
-                    "block_id": blk_id,
-                    "unit_id": unit_id
-                })
+                candidate_term = group1
+                if copula.lower().startswith("is ") and not copula.lower().startswith(("is defined", "is described")):
+                    definition_text = f"{copula[3:].strip()} {rest}"
+                else:
+                    definition_text = rest
+            if candidate_term and len(candidate_term) >= 3 and candidate_term.lower() not in STOPWORDS and not _is_single_common_word(candidate_term):
+                is_val, outcome, final_t, _ = SemanticConceptValidator.validate_candidate(candidate_term)
+                if is_val:
+                    clean_term = final_t if outcome in (ConceptValidationOutcome.VALID_CONCEPT, ConceptValidationOutcome.REPAIRED_CONCEPT) else candidate_term
+                    res.harvested_definitions.append({
+                        "term": clean_term,
+                        "definition": definition_text,
+                        "block_id": blk_id,
+                        "unit_id": unit_id
+                    })
 
         for c_match in colon_def_pattern.finditer(text):
             term = _trim_candidate(c_match.group(1).strip())
             definition_text = c_match.group(2).strip()
             if term and len(term) >= 3 and term.lower() not in STOPWORDS and not _is_single_common_word(term):
-                res.harvested_definitions.append({
-                    "term": term,
-                    "definition": definition_text,
-                    "block_id": blk_id,
-                    "unit_id": unit_id
-                })
+                is_val, outcome, final_t, _ = SemanticConceptValidator.validate_candidate(term)
+                if is_val:
+                    clean_term = final_t if outcome in (ConceptValidationOutcome.VALID_CONCEPT, ConceptValidationOutcome.REPAIRED_CONCEPT) else term
+                    res.harvested_definitions.append({
+                        "term": clean_term,
+                        "definition": definition_text,
+                        "block_id": blk_id,
+                        "unit_id": unit_id
+                    })
+
+        for c_match in copula_def_pattern.finditer(text):
+            candidate_term = _trim_candidate(c_match.group(1).strip())
+            definition_text = c_match.group(2).strip()
+            if candidate_term and len(candidate_term) >= 3 and candidate_term.lower() not in STOPWORDS and not _is_single_common_word(candidate_term):
+                is_val, outcome, final_t, _ = SemanticConceptValidator.validate_candidate(candidate_term)
+                if is_val:
+                    clean_term = final_t if outcome in (ConceptValidationOutcome.VALID_CONCEPT, ConceptValidationOutcome.REPAIRED_CONCEPT) else candidate_term
+                    res.harvested_definitions.append({
+                        "term": clean_term,
+                        "definition": definition_text,
+                        "block_id": blk_id,
+                        "unit_id": unit_id
+                    })
 
         # 3. Explicit Learning Objectives -> Skills
         if unit and unit.unit_type == "learning_objective" or "able to" in text.lower():
@@ -765,31 +821,61 @@ def extract_candidates(
                 continue
             line_standalone.add(s.lower())
         harvested_def_terms = {d["term"].lower() for d in res.harvested_definitions}
-        words: List[str] = list(re.findall(r"\b[A-Z][a-z0-9]+(?:\s+[A-Z][a-z0-9]+)*\b", text))
-        # Acronyms & uppercase tokens
-        words.extend(re.findall(r"\b[A-Z]{2,6}\b", text))
-        # Markdown bold concepts
+        # 1. Title-cased academic phrases (horizontal whitespace only, no crossing lines)
+        words: List[str] = list(re.findall(r"\b[A-Z][A-Za-z0-9]*(?:'[a-z]+)?(?:[^\S\r\n]+(?:of|in|and|the|for)[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?|[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?){1,4}\b", text))
+        # 2. Multi-word all-caps headings as complete phrases (e.g. "ANGLE OF REPOSE", "LAWS OF MOTION")
+        words.extend(re.findall(r"\b[A-Z]{2,}(?:[^\S\r\n]+[A-Z]{2,})+\b", text))
+        # 3. Valid acronyms and uppercase tokens
+        for acr in re.findall(r"\b[A-Z]{2,6}\b", text):
+            if SemanticConceptValidator.validate_candidate(acr)[0]:
+                words.append(acr)
+        # 4. Markdown bold concepts
         words.extend(re.findall(r"\*\*([A-Za-z0-9\s'-]{3,40})\*\*", text))
-        # Terms defined in this block
+        # 5. Terms defined in this block & harvested acronym expansions
         for d in res.harvested_definitions:
             if d.get("block_id") == blk_id:
                 words.append(d["term"])
-        # Multi-word domain concepts in prose (e.g. "binary search", "neural network", "dynamic programming")
-        tokens = [tok for tok in re.findall(r"\b[A-Za-z][A-Za-z0-9'-]+\b", text)]
-        for n in (2, 3):
-            for i in range(len(tokens) - n + 1):
-                w0 = tokens[i].lower()
-                w_last = tokens[i + n - 1].lower()
-                if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
-                    phrase = " ".join(tokens[i : i + n])
-                    comp_lower = phrase.lower()
-                    if comp_lower in harvested_def_terms or ngram_counts.get(comp_lower, 0) >= MIN_TERM_OCCURRENCES:
-                        words.append(phrase)
+        for exp in res.acronyms.values():
+            words.append(exp)
+        # 6. Clause/sentence-bounded multi-word domain concepts in prose
+        segments = re.split(r'[\r\n]+|[.?!:;]+|,\s+(?=[A-Za-z])', text)
+        for seg in segments:
+            seg = seg.strip()
+            if not seg:
+                continue
+            seg_tokens = [tok for tok in re.findall(r"\b[A-Za-z][A-Za-z0-9'-]+\b", seg)]
+            for n in (2, 3, 4, 5):
+                for i in range(len(seg_tokens) - n + 1):
+                    w0 = seg_tokens[i].lower()
+                    w_last = seg_tokens[i + n - 1].lower()
+                    if w0 not in _EDGE_STOPWORDS and w_last not in _EDGE_STOPWORDS:
+                        phrase = " ".join(seg_tokens[i : i + n])
+                        comp_lower = phrase.lower()
+                        is_val, outcome, _, _ = SemanticConceptValidator.validate_candidate(phrase)
+                        if is_val:
+                            if comp_lower in harvested_def_terms or ngram_counts.get(comp_lower, 0) >= 1:
+                                words.append(phrase)
+
+                # 7. Single-word legitimate STEM concepts (e.g. Mitochondria, Eccentricity, Torque, Enthalpy)
+        for tok in set(re.findall(r"\b[A-Za-z][A-Za-z0-9'-]{3,}\b", text)):
+            tok_low = tok.lower()
+            if tok_low in _LEGITIMATE_SINGLE_WORD_CONCEPTS:
+                is_val, outcome, _, _ = SemanticConceptValidator.validate_candidate(tok)
+                if is_val:
+                    words.append(tok)
 
         for w in dict.fromkeys(words):
             term = _trim_candidate(w.strip())
             if not term:
                 continue
+            if term.lower() in harvested_def_terms or any(term.lower() == acr_exp.lower() for acr_exp in res.acronyms.values()):
+                is_valid = True
+                final_term = term
+                outcome = ConceptValidationOutcome.VALID_CONCEPT
+            else:
+                is_valid, outcome, final_term, alias_target = SemanticConceptValidator.validate_candidate(term)
+                if not is_valid:
+                    continue
             if term.lower() in STOPWORDS or len(term) < 3:
                 continue
             if _is_single_common_word(term):
@@ -802,18 +888,20 @@ def extract_candidates(
                 continue
             if _is_person_name(term, person_name_keys):
                 continue
-            # Single lowercase words require explicit declaration or definition
+            # Single lowercase words require explicit declaration or definition or STEM legitimacy
             if " " not in term and term.islower() and term.lower() not in harvested_def_terms:
-                continue
+                if not SemanticConceptValidator.validate_candidate(term)[0]:
+                    continue
 
             # Accept when the document declares the term (heading block, a
             # standalone line, or an explicit definition sentence). Otherwise require recurrence
-            # in PROSE: an inline capitalized phrase seen once is incidental, not a topic.
+            # in PROSE: an inline capitalized phrase seen once is incidental, unless it is a verified academic concept.
             declared = (
                 is_heading
                 or term.lower() in line_standalone
                 or term.lower() in harvested_def_terms
                 or any(term.lower() in dt or dt in term.lower() for dt in harvested_def_terms)
+                or outcome in (ConceptValidationOutcome.VALID_CONCEPT, ConceptValidationOutcome.REPAIRED_CONCEPT, ConceptValidationOutcome.ALIAS_VARIANT)
             )
             if not declared:
                 # A word appearing only in the document title / short furniture
@@ -838,16 +926,29 @@ def extract_candidates(
                     continue
             else:
                 end = start + len(term)
+
+            surface_label = final_term if outcome == ConceptValidationOutcome.REPAIRED_CONCEPT else term
+
             m_id = generate_mention_id(norm_doc.doc_id, blk_id, start, end)
             mention = ConceptMention(
                 mention_id=m_id,
                 concept_id="",  # Resolved in Stage 5
                 block_id=blk_id,
                 span=TextSpan(start=start, end=end),
-                surface_form=term,
+                surface_form=surface_label,
                 unit_id=unit_id,
                 confidence=block["confidence"]
             )
             res.mentions.append(mention)
+
+    # Post-filtering pass: ensure all emitted mentions meet SemanticConceptValidator criteria
+    filtered_mentions = []
+    for m in res.mentions:
+        m_val, m_out, m_final, _ = SemanticConceptValidator.validate_candidate(m.surface_form)
+        if m_val:
+            if m_out == ConceptValidationOutcome.REPAIRED_CONCEPT:
+                m.surface_form = m_final
+            filtered_mentions.append(m)
+    res.mentions = filtered_mentions
 
     return res
