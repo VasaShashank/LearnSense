@@ -341,6 +341,100 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 const fetchJson = <T,>(endpoint: string, options?: RequestInit): Promise<T> =>
   request<T>(endpoint, options);
 
+
+export interface ConceptReviewItem {
+  concept_id: string;
+  canonical_name: string;
+  original_text: string;
+  page_number: number;
+  pages: number[];
+  evidence_excerpt: string;
+  block_id: string;
+  span?: { start_offset: number; end_offset: number };
+  current_canonical_mapping?: {
+    canonical_concept_id: string;
+    canonical_name: string;
+    status: string;
+    confidence: number;
+    parent_topic?: string | null;
+    aliases: string[];
+  } | null;
+  alternative_canonical_candidates: Array<{
+    canonical_concept_id: string;
+    canonical_name: string;
+    parent_topic?: string;
+    aliases: string[];
+    similarity: number;
+  }>;
+  hierarchical_level: string;
+  parent_topic_id: string;
+  duplicate_candidates: Array<{ concept_id: string; name: string }>;
+  review_status: 'pending_review' | 'accepted' | 'rejected' | 'duplicate' | 'needs_canonical_mapping' | 'needs_evidence_review' | 'approved_for_curriculum';
+  review_notes?: string;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+}
+
+export interface DocumentReviewResponse {
+  document_id: string;
+  document_title: string;
+  source_filename?: string;
+  subject: string;
+  chapter: string;
+  examination: string;
+  target_curriculum: string;
+  total_concepts: number;
+  status_counts: Record<string, number>;
+  concepts: ConceptReviewItem[];
+  topics: Array<{
+    topic_id: string;
+    name: string;
+    level: number;
+    parent_id?: string | null;
+    concept_ids: string[];
+  }>;
+  prerequisites: Array<{
+    source_concept_id: string;
+    source_name: string;
+    target_concept_id: string;
+    target_name: string;
+    confidence: number;
+    status: 'accepted' | 'rejected' | 'candidate';
+    reviewer_id?: string | null;
+    reviewed_at?: string | null;
+  }>;
+  audit_history_count: number;
+}
+
+export interface ReviewAuditLogEntry {
+  entry_id: string;
+  document_id: string;
+  concept_id: string;
+  action: string;
+  reviewer_id: string;
+  timestamp: string;
+  previous_status: string;
+  new_status: string;
+  previous_name?: string | null;
+  new_name?: string | null;
+  reason: string;
+  notes: string;
+  metadata?: Record<string, any>;
+}
+
+export interface PageEvidenceResponse {
+  document_id: string;
+  page_number: number;
+  total_pages: number;
+  blocks: Array<{
+    block_id: string;
+    block_type: string;
+    text: string;
+    section_title?: string;
+  }>;
+  raw_text: string;
+}
+
 export const ApiClient = {
   getSubjects: (): Promise<Subject[]> => fetchJson('/subjects'),
 
@@ -970,6 +1064,68 @@ export const ApiClient = {
   /**
    * Get preconfigured personas for switching between Student, Teacher, and B2B Admin modes.
    */
+
+  /**
+   * Concept Verification & Curriculum Review (Person 2)
+   */
+  getDocumentReviewItems: (documentId: string): Promise<DocumentReviewResponse> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/review-items'),
+
+  applyConceptReviewDecision: (
+    documentId: string,
+    payload: {
+      concept_id: string;
+      decision: string;
+      reviewer_id: string;
+      reason?: string;
+      new_name?: string;
+      duplicate_of_concept_id?: string;
+      target_canonical_id?: string;
+      new_hierarchical_level?: string;
+      new_parent_topic_id?: string;
+      status?: string;
+    }
+  ): Promise<any> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/review/decision', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  applyPrerequisiteReviewDecision: (
+    documentId: string,
+    payload: {
+      source_concept_id: string;
+      target_concept_id: string;
+      action: 'approve' | 'reject' | 'add' | 'remove';
+      reviewer_id: string;
+      reason?: string;
+    }
+  ): Promise<any> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/review/prerequisite', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  approveBatchConcepts: (
+    documentId: string,
+    payload: { reviewer_id: string; reason?: string }
+  ): Promise<any> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/review/approve-batch', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  getDocumentReviewAuditHistory: (
+    documentId: string
+  ): Promise<{ document_id: string; count: number; entries: ReviewAuditLogEntry[] }> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/review/audit-history'),
+
+  getDocumentPageEvidence: (
+    documentId: string,
+    pageNumber: number
+  ): Promise<PageEvidenceResponse> =>
+    fetchJson('/curriculum/documents/' + encodeURIComponent(documentId) + '/pages/' + pageNumber + '/evidence'),
+
   getPersonas: (): Promise<Array<{
     id: string;
     name: string;

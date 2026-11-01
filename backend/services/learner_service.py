@@ -98,6 +98,21 @@ class LearnerService:
         # concept_ids here come from that same document's graph.
         learning_context = self.knowledge_service.get_learning_context(subject_id)
 
+        # Synchronize learning context prerequisites with graph's cycle-safe resolved prerequisites
+        resolved_prereqs = []
+        for c in graph.get("concepts", []):
+            for p_id in c.get("prerequisites", []):
+                from phase3.knowledge.phase2_adapter import PrerequisiteLink
+                resolved_prereqs.append(
+                    PrerequisiteLink(
+                        source_concept_id=p_id,
+                        target_concept_id=c["concept_id"],
+                        confidence=0.90,
+                    )
+                )
+        if resolved_prereqs:
+            learning_context.prerequisites = resolved_prereqs
+
         gaps = self.adapter.gap_detector.detect_gaps(learning_context, learner_state, concept_ids)
         prioritized_gaps = self.adapter.gap_prioritizer.prioritize_gaps(gaps)
         path = self.adapter.path_generator.generate_path(learning_context, learner_state, concept_ids)
@@ -167,6 +182,21 @@ class LearnerService:
         from storage.repositories import QuestionBankRepository
 
         learning_context = self.knowledge_service.get_learning_context(subject_id)
+
+        # Synchronize learning context prerequisites with graph's cycle-safe resolved prerequisites
+        resolved_prereqs = []
+        for c in graph.get("concepts", []):
+            for p_id in c.get("prerequisites", []):
+                from phase3.knowledge.phase2_adapter import PrerequisiteLink
+                resolved_prereqs.append(
+                    PrerequisiteLink(
+                        source_concept_id=p_id,
+                        target_concept_id=c["concept_id"],
+                        confidence=0.90,
+                    )
+                )
+        if resolved_prereqs:
+            learning_context.prerequisites = resolved_prereqs
         if not learning_context or not learning_context.concepts:
             raise KnowledgeNotFoundError(
                 f"Learning context not found for subject '{subject_id}'",

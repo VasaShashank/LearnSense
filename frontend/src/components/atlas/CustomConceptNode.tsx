@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { ConceptNode } from '../../api/client';
-import { Check, Compass, Bookmark, MessageSquare } from 'lucide-react';
+import { Check, Compass, Bookmark, MessageSquare, Route } from 'lucide-react';
 
 export interface ConceptNodeData extends ConceptNode, Record<string, unknown> {
   isCore?: boolean;
@@ -19,6 +19,8 @@ export interface ConceptNodeData extends ConceptNode, Record<string, unknown> {
   isPrerequisiteOfSelected?: boolean;
   isDependentOfSelected?: boolean;
   isDimmed?: boolean;
+  learningStep?: number;
+  isLearningPathActive?: boolean;
   topicName?: string;
   zoomLevel: number;
   onSelect: (concept: ConceptNode) => void;
@@ -46,6 +48,8 @@ export const CustomConceptNode = memo(({ data }: { data: ConceptNodeData }) => {
     topicName,
     bloom_level,
     prerequisites = [],
+    learningStep,
+    isLearningPathActive,
     onSelect,
   } = data;
 
@@ -398,8 +402,17 @@ export const CustomConceptNode = memo(({ data }: { data: ConceptNodeData }) => {
             {name}
           </span>
 
+          {/* Learning Path Step Badge */}
+          {isLearningPathActive && learningStep !== undefined && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider mt-0.5">
+              <Route className="w-2.5 h-2.5 text-cyan-400" />
+              <span>Step {learningStep}</span>
+              {isTarget && <span className="text-amber-300 ml-1 font-bold">★ Up Next</span>}
+            </span>
+          )}
+
           {/* "Recommended next" label under concept title */}
-          {isRecommendedNext && (
+          {!isLearningPathActive && isRecommendedNext && (
             <span className="inline-flex items-center gap-1 text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider mt-0.5">
               <Compass className="w-2.5 h-2.5 text-cyan-400" />
               <span>Recommended next</span>

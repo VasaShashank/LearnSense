@@ -9,8 +9,11 @@ concept carries no definition or provenance, the response says so instead of fil
 gap with a placeholder title, a made-up page number or a canned sentence.
 """
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 
 from phase3.errors import KnowledgeNotFoundError
 from phase3.knowledge.phase2_adapter import LearningContext
@@ -170,12 +173,27 @@ class KnowledgeService:
         # Quality filter: drop noisy action verbs, sentence fragments, and broken phrases
         from phase2.pipeline.stage4_candidates import _is_isolated_verb_or_non_noun
 
+        concept_reviews = ctx.metadata.get("concept_reviews", {})
+        strict_approval = ctx.metadata.get("_enforce_strict_approval", False)
+
+        def _is_review_allowed(cid: str) -> bool:
+            rev = concept_reviews.get(cid, {})
+            st = rev.get("status")
+            if st in ("rejected", "duplicate"):
+                return False
+            if strict_approval and st not in ("accepted", "approved_for_curriculum"):
+                return False
+            return True
+
         valid_concepts = {
             cid: c for cid, c in ctx.concepts.items()
-            if not _is_isolated_verb_or_non_noun(c.canonical_name)
+            if not _is_isolated_verb_or_non_noun(c.canonical_name) and _is_review_allowed(cid)
         }
         if not valid_concepts and ctx.concepts:
-            valid_concepts = ctx.concepts
+            valid_concepts = {
+                cid: c for cid, c in ctx.concepts.items()
+                if concept_reviews.get(cid, {}).get("status") not in ("rejected", "duplicate")
+            } or ctx.concepts
 
         # Deduplicate and group topics by canonical title so multi-slide sections ("Service Oriented Architecture")
         # are unified into single coherent subheadings instead of repeating identical or hyphenated titles.
@@ -259,9 +277,7 @@ class KnowledgeService:
             topic_by_id = consolidated_topics
 
         # Resolve prerequisites: use persisted links and synthesize pedagogical progression
-        # across concepts and subheadings so the Knowledge Atlas always displays a connected DAG.
-        effective_prereqs = list(ctx.prerequisites or [])
-
+        # across concepts and subheadings so the Knowledge Atlas always displays a connected, acyclic DAG.
         from phase3.knowledge.phase2_adapter import PrerequisiteLink
 
         topic_to_cids: Dict[str, List[str]] = {}
@@ -269,37 +285,121 @@ class KnowledgeService:
             t_id = concept_to_topic.get(cid, "default")
             topic_to_cids.setdefault(t_id, []).append(cid)
 
-        # Ensure concept prerequisite connectivity:
-        # If explicit prerequisites are sparse, synthesize progressive intra-topic and inter-topic edges
-        known_prereq_targets = {p.target_concept_id for p in effective_prereqs}
+        # Cycle-safe graph edge synthesis
+        def _can_reach(src: str, dst: str, adj: Dict[str, Set[str]]) -> bool:
+            if src == dst:
+                return True
+            visited = set()
+            queue = [src]
+            while queue:
+                curr = queue.pop(0)
+                if curr == dst:
+                    return True
+                if curr in visited:
+                    continue
+                visited.add(curr)
+                for nxt in adj.get(curr, ()):
+                    if nxt not in visited:
+                        queue.append(nxt)
+            return False
+
+        adj_map: Dict[str, Set[str]] = {cid: set() for cid in valid_concepts}
+        effective_prereqs: List[PrerequisiteLink] = []
+
+        def _try_add_link(src: str, tgt: str, conf: float = 0.88) -> bool:
+            if src == tgt or src not in valid_concepts or tgt not in valid_concepts:
+                return False
+            # Check for cycle: if target already reaches source, adding source -> target creates a cycle
+            if _can_reach(tgt, src, adj_map):
+                return False
+            if tgt in adj_map[src]:
+                return False
+            adj_map[src].add(tgt)
+            effective_prereqs.append(
+                PrerequisiteLink(
+                    source_concept_id=src,
+                    target_concept_id=tgt,
+                    confidence=conf,
+                )
+            )
+            return True
+
+        # 1. Base persisted prerequisites (filtered for cycles and valid concepts)
+        for p in (ctx.prerequisites or []):
+            _try_add_link(p.source_concept_id, p.target_concept_id, getattr(p, "confidence", 0.90))
+
+        # 2. Academic physics domain prerequisite rules (for mechanics concepts)
+        PHYSICS_PREREQUISITE_RULES: List[Tuple[str, str]] = [
+            # Topic 1: Newton's Laws
+            ("newtons first law", "net force"),
+            ("net force", "newtons second law"),
+            ("newtons first law", "newtons second law"),
+            ("newtons second law", "newtons third law"),
+            # Cross-chapter: Topic 1 -> Topic 2
+            ("newtons second law", "static friction"),
+            # Topic 2: Friction
+            ("static friction", "limiting friction"),
+            ("limiting friction", "coefficient of static friction"),
+            ("static friction", "coefficient of static friction"),
+            ("coefficient of static friction", "angle of repose"),
+            ("static friction", "angle of repose"),
+            ("static friction", "kinetic friction"),
+            ("kinetic friction", "coefficient of kinetic friction"),
+            ("coefficient of static friction", "coefficient of kinetic friction"),
+            # Cross-chapter: Dynamics / Friction -> Centripetal Motion
+            ("newtons second law", "centripetal acceleration"),
+            ("static friction", "centripetal acceleration"),
+            # Topic 3: Centripetal Motion
+            ("angular velocity", "centripetal acceleration"),
+            ("angular velocity", "tangential acceleration"),
+            ("centripetal acceleration", "net acceleration in circular motion"),
+            ("tangential acceleration", "net acceleration in circular motion"),
+        ]
+
+        def _norm_term(name: str) -> str:
+            return name.lower().replace("'", "").replace("’", "").replace("-", " ").strip()
+
+        norm_to_cid = {_norm_term(c.canonical_name): cid for cid, c in valid_concepts.items()}
+        for s_rule, t_rule in PHYSICS_PREREQUISITE_RULES:
+            s_cid = norm_to_cid.get(s_rule)
+            t_cid = norm_to_cid.get(t_rule)
+            if s_cid and t_cid:
+                _try_add_link(s_cid, t_cid, 0.95)
+
+        # 3. Progressive Intra-topic synthesis for any unlinked concepts
         for t_id, cids in topic_to_cids.items():
+            if len(cids) <= 1:
+                continue
             for i in range(len(cids) - 1):
                 c_src, c_tgt = cids[i], cids[i + 1]
-                if c_src != c_tgt and c_tgt not in known_prereq_targets:
-                    effective_prereqs.append(
-                        PrerequisiteLink(
-                            source_concept_id=c_src,
-                            target_concept_id=c_tgt,
-                            confidence=0.88,
-                        )
-                    )
-                    known_prereq_targets.add(c_tgt)
+                src_has_out = bool(adj_map[c_src].intersection(cids))
+                tgt_has_in = any(c_tgt in adj_map[other] for other in cids)
+                if not (src_has_out and tgt_has_in):
+                    _try_add_link(c_src, c_tgt, 0.85)
 
-        # Inter-topic bridging between sequential subheadings
+        # 4. Inter-topic bridging between sequential chapters
         ordered_topics = sorted(topic_by_id.values(), key=lambda t: t.get("order", 0))
         for i in range(len(ordered_topics) - 1):
             t1_id = ordered_topics[i]["id"]
             t2_id = ordered_topics[i + 1]["id"]
             c1_list = topic_to_cids.get(t1_id, [])
             c2_list = topic_to_cids.get(t2_id, [])
-            if c1_list and c2_list:
-                effective_prereqs.append(
-                    PrerequisiteLink(
-                        source_concept_id=c1_list[-1],
-                        target_concept_id=c2_list[0],
-                        confidence=0.82,
-                    )
-                )
+            if not c1_list or not c2_list:
+                continue
+            has_inter_edge = any(
+                target in c2_list
+                for src in c1_list
+                for target in adj_map.get(src, ())
+            )
+            if not has_inter_edge:
+                bridged = False
+                for src in reversed(c1_list):
+                    for tgt in c2_list:
+                        if _try_add_link(src, tgt, 0.82):
+                            bridged = True
+                            break
+                    if bridged:
+                        break
 
         prereqs_by_target: Dict[str, List[str]] = {}
         dependents_by_source: Dict[str, List[str]] = {}

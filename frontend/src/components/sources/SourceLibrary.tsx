@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import type { SourceDocument } from '../../api/client';
 import { ApiClient } from '../../api/client';
-import { FileText, Upload, CheckCircle2, AlertTriangle, RefreshCw, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { FileText, Upload, CheckCircle2, AlertTriangle, RefreshCw, ArrowRight, BookOpen, Sparkles, ShieldCheck } from 'lucide-react';
 
 export interface SourceLibraryProps {
   sources: SourceDocument[];
   onReloadSources: () => void;
   onSelectSubject?: (subjectId: string, isNewUpload?: boolean) => void;
+  onReviewDocument?: (documentId: string) => void;
 }
 
 export const SourceLibrary: React.FC<SourceLibraryProps> = ({
   sources,
   onReloadSources,
   onSelectSubject,
+  onReviewDocument,
 }) => {
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadResult, setUploadResult] = useState<{
@@ -200,6 +202,17 @@ export const SourceLibrary: React.FC<SourceLibraryProps> = ({
 
                 <div className="flex items-center gap-3 self-end sm:self-center">
                   {statusBadge}
+
+                  {onReviewDocument && (
+                    <button
+                      onClick={() => onReviewDocument(src.document_id)}
+                      className="py-2 px-3.5 rounded-xl bg-space-900 hover:bg-space-800 text-cyan-300 border border-cyan-400/30 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                      title="Verify and review extracted concepts before canonical curriculum entry"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Review Concepts</span>
+                    </button>
+                  )}
 
                   {onSelectSubject && (
                     <button

@@ -72,9 +72,34 @@ class LearningService:
     ) -> QuestionBank:
         """
         Return a question bank whose every question is grounded in the uploaded document.
+        Excludes rejected or duplicate concepts from review gating.
         """
         ctx = self.knowledge_service.get_learning_context(subject_id)
-        target_ids = list(concept_ids or ctx.concepts.keys())
+        concept_reviews = ctx.metadata.get("concept_reviews", {})
+        strict_approval = ctx.metadata.get("_enforce_strict_approval", False)
+
+        def _is_allowed(cid: str) -> bool:
+            rev = concept_reviews.get(cid, {})
+            st = rev.get("status")
+            if st in ("rejected", "duplicate"):
+                return False
+            if strict_approval and st not in ("accepted", "approved_for_curriculum"):
+                return False
+            return True
+
+        allowed_cids = {cid for cid in ctx.concepts.keys() if _is_allowed(cid)}
+        if not allowed_cids:
+            allowed_cids = {
+                cid for cid in ctx.concepts.keys()
+                if concept_reviews.get(cid, {}).get("status") not in ("rejected", "duplicate")
+            } or set(ctx.concepts.keys())
+
+        if concept_ids:
+            target_ids = [cid for cid in concept_ids if cid in allowed_cids]
+            if not target_ids:
+                target_ids = list(allowed_cids)
+        else:
+            target_ids = list(allowed_cids)
 
         builder = QuestionBankBuilder()
         retriever = self._retriever_for(subject_id)
@@ -149,9 +174,28 @@ class LearningService:
         """
         ctx = self.knowledge_service.get_learning_context(subject_id)
         if ctx and ctx.concepts:
-            authoritative_concepts = list(ctx.concepts.keys())
-            # Enforce server authority: prune any foreign/stale concept IDs from client drafts/caches
-            selections = {cid: val for cid, val in selections.items() if cid in ctx.concepts}
+            concept_reviews = ctx.metadata.get("concept_reviews", {})
+            strict_approval = ctx.metadata.get("_enforce_strict_approval", False)
+
+            def _is_allowed(cid: str) -> bool:
+                rev = concept_reviews.get(cid, {})
+                status = rev.get("status")
+                if status in ("rejected", "duplicate"):
+                    return False
+                if strict_approval and status not in ("accepted", "approved_for_curriculum"):
+                    return False
+                return True
+
+            allowed_cids = {cid for cid in ctx.concepts.keys() if _is_allowed(cid)}
+            if not allowed_cids:
+                allowed_cids = {
+                    cid for cid in ctx.concepts.keys()
+                    if concept_reviews.get(cid, {}).get("status") not in ("rejected", "duplicate")
+                }
+            authoritative_concepts = [cid for cid in ctx.concepts.keys() if cid in allowed_cids] or list(ctx.concepts.keys())
+
+            # Enforce server authority: prune any foreign/stale/rejected concept IDs from client drafts/caches
+            selections = {cid: val for cid, val in selections.items() if cid in authoritative_concepts}
             # Ensure all authoritative concepts have a self-assessment status
             for cid in authoritative_concepts:
                 if cid not in selections:

@@ -10,7 +10,7 @@ import {
 } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { KnowledgeGraphData, ConceptNode, TopicTerritory, LearningTarget } from '../../api/client';
+import type { KnowledgeGraphData, ConceptNode, TopicTerritory, LearningTarget, LearningPathNode } from '../../api/client';
 import { CustomConceptNode } from './CustomConceptNode';
 import type { ConceptNodeData } from './CustomConceptNode';
 import { SubheadingNode } from './SubheadingNode';
@@ -56,6 +56,7 @@ export interface LearningAtlasProps {
   graphData: KnowledgeGraphData;
   activeTargetId?: string;
   nextTarget?: LearningTarget | null;
+  learningPathNodes?: LearningPathNode[];
   selectedTopicId?: string;
   selectedConceptId?: string;
   onSelectTopic?: (topic: TopicTerritory | null) => void;
@@ -186,6 +187,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   graphData,
   activeTargetId,
   nextTarget,
+  learningPathNodes = [],
   selectedTopicId,
   selectedConceptId,
   onSelectTopic,
@@ -398,6 +400,78 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
       activePathConceptIds: pathSet,
     };
   }, [conceptLookupMap, selectedConceptId, selectedConcept, activeTargetId, pathFilter]);
+
+  // ── Ordered Learning Path Sequence ──
+  const orderedLearningPathIds = useMemo<string[]>(() => {
+    if (learningPathNodes && learningPathNodes.length > 0) {
+      return learningPathNodes.map((n) => n.concept_id);
+    }
+    const concepts = graphData?.concepts || [];
+    if (concepts.length === 0) return [];
+
+    const conceptIds = concepts.map((c) => c.concept_id);
+    const inDegree: Record<string, number> = {};
+    const adj: Record<string, string[]> = {};
+    conceptIds.forEach((id) => {
+      inDegree[id] = 0;
+      adj[id] = [];
+    });
+
+    concepts.forEach((c) => {
+      (c.prerequisites || []).forEach((pId) => {
+        if (adj[pId]) {
+          adj[pId].push(c.concept_id);
+          inDegree[c.concept_id] = (inDegree[c.concept_id] || 0) + 1;
+        }
+      });
+    });
+
+    const topicOrderMap = new Map<string, number>();
+    (graphData?.topics || []).forEach((t, idx) => {
+      topicOrderMap.set(t.id, t.order ?? idx);
+    });
+
+    const ready: string[] = conceptIds.filter((id) => inDegree[id] === 0);
+    const sortReady = (arr: string[]) => {
+      arr.sort((a, b) => {
+        const cA = conceptLookupMap.get(a);
+        const cB = conceptLookupMap.get(b);
+        const tA = cA?.topic_id ? (topicOrderMap.get(cA.topic_id) ?? 999) : 999;
+        const tB = cB?.topic_id ? (topicOrderMap.get(cB.topic_id) ?? 999) : 999;
+        return tA - tB;
+      });
+    };
+    sortReady(ready);
+
+    const result: string[] = [];
+    while (ready.length > 0) {
+      const curr = ready.shift()!;
+      result.push(curr);
+      for (const nxt of adj[curr] || []) {
+        inDegree[nxt]--;
+        if (inDegree[nxt] === 0) {
+          ready.push(nxt);
+          sortReady(ready);
+        }
+      }
+    }
+
+    if (result.length < conceptIds.length) {
+      conceptIds.forEach((id) => {
+        if (!result.includes(id)) result.push(id);
+      });
+    }
+
+    return result;
+  }, [learningPathNodes, graphData, conceptLookupMap]);
+
+  const learningPathStepMap = useMemo(() => {
+    const map = new Map<string, number>();
+    orderedLearningPathIds.forEach((id, idx) => {
+      map.set(id, idx + 1);
+    });
+    return map;
+  }, [orderedLearningPathIds]);
 
   // ─────────────────────────────────────────────────────────────
   // 1. COLLISION-FREE RADIAL CONSTELLATION NODE GENERATION
@@ -618,8 +692,6 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           isDimmed = !highlightedChain.conceptIds.includes(concept.concept_id);
         } else if (selectedConceptId) {
           isDimmed = !isSelected && !isPrereq && !isDep && !activePathConceptIds.has(concept.concept_id);
-        } else if (pathFilter === 'LEARNING_PATH' && activeTargetId) {
-          isDimmed = !activePathConceptIds.has(concept.concept_id);
         }
 
         return {
@@ -643,6 +715,8 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
             isDimmed,
             isXRay: isXRayMode,
             topicName: topic.name,
+            learningStep: learningPathStepMap.get(concept.concept_id),
+            isLearningPathActive: pathFilter === 'LEARNING_PATH',
             zoomLevel: 3,
             onSelect: (c: ConceptNode) => {
               onSelectConceptRef.current(c);
@@ -674,6 +748,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
     impactedConceptIds,
     isXRayMode,
     pathFilter,
+    learningPathStepMap,
     showBookmarksOnly,
     highlightedChain,
     annotations,
@@ -702,8 +777,14 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
     const visibleNodeIds = new Set(initialNodes.map((n) => n.id));
     const posMap = nodePositionMap;
 
-    const addEdge = (src: string, tgt: string, edgeType: 'prerequisite' | 'related' | 'part_of' = 'prerequisite') => {
-      const edgeKey = `${src}->${tgt}`;
+    const isLearningPathFilter = pathFilter === 'LEARNING_PATH';
+
+    const addEdge = (
+      src: string,
+      tgt: string,
+      edgeType: 'prerequisite' | 'related' | 'part_of' | 'learning_step' = 'prerequisite'
+    ) => {
+      const edgeKey = `${src}->${tgt}:${edgeType}`;
       if (seenEdges.has(edgeKey) || src === tgt) return;
       if (!visibleNodeIds.has(src) || !visibleNodeIds.has(tgt)) return;
       seenEdges.add(edgeKey);
@@ -720,14 +801,21 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
       const isDirectPrereqEdge = selectedConceptId === tgt && prereqIdsOfSelected.has(src);
       const isDirectDepEdge = selectedConceptId === src && dependentIdsOfSelected.has(tgt);
       const isOnActivePrereqPath = activePathConceptIds.has(src) && activePathConceptIds.has(tgt);
+      const isLearningStepEdge = edgeType === 'learning_step';
 
+      // Filtering semantics:
+      // In PREREQUISITES mode, show all structural prerequisite relationships
       if (pathFilter === 'PREREQUISITES' && edgeType !== 'prerequisite') return;
-      if (pathFilter === 'LEARNING_PATH' && !isOnActivePrereqPath) return;
+
+      // In LEARNING_PATH mode, show prerequisite edges and sequential learning progression edges.
+      // Filter out internal cluster part_of edges to keep focus on the progression sequence.
+      if (pathFilter === 'LEARNING_PATH' && edgeType === 'part_of') return;
 
       const isHighlightPath =
         isDirectPrereqEdge ||
         isDirectDepEdge ||
-        (isOnActivePrereqPath && Boolean(selectedConceptId || activeTargetId));
+        (isOnActivePrereqPath && Boolean(selectedConceptId || activeTargetId)) ||
+        (isLearningPathFilter && isLearningStepEdge);
 
       const hasSelection = Boolean(selectedConceptId) || Boolean(highlightedChain);
       const isDimmed = hasSelection && !isHighlightPath && !isChainEdge;
@@ -764,13 +852,23 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
         strokeColor = '#10B981';
         strokeWidth = 3.2;
         animated = true;
+      } else if (isLearningStepEdge) {
+        strokeColor = isDimmed ? 'rgba(0, 240, 255, 0.3)' : '#00F0FF';
+        strokeWidth = isDimmed ? 1.8 : 3.2;
+        strokeDasharray = '8 4';
+        animated = true;
       } else if (isHighlightPath) {
         strokeColor = isDirectDepEdge ? '#38BDF8' : '#00F0FF';
         strokeWidth = 3.2;
         animated = true;
       } else if (edgeType === 'prerequisite') {
-        strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.2)' : 'rgba(6, 182, 212, 0.55)';
-        strokeWidth = isDimmed ? 0.9 : 1.6;
+        if (isLearningPathFilter) {
+          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.25)' : 'rgba(56, 189, 248, 0.7)';
+          strokeWidth = isDimmed ? 1.0 : 2.0;
+        } else {
+          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.2)' : 'rgba(6, 182, 212, 0.55)';
+          strokeWidth = isDimmed ? 0.9 : 1.6;
+        }
       } else if (edgeType === 'part_of') {
         strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.15)' : 'rgba(148, 163, 184, 0.3)';
         strokeWidth = 1.2;
@@ -781,7 +879,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
       }
 
       edgesRes.push({
-        id: `e-${src}-${tgt}`,
+        id: `e-${src}-${tgt}-${edgeType}`,
         source: src,
         target: tgt,
         sourceHandle,
@@ -796,16 +894,18 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
             ? 'drop-shadow(0 0 10px rgba(16,185,129,0.85))'
             : isHighlightPath
             ? 'drop-shadow(0 0 10px rgba(0,240,255,0.85))'
+            : isLearningStepEdge
+            ? 'drop-shadow(0 0 8px rgba(0,240,255,0.75))'
             : undefined,
           transition: 'all 0.3s ease',
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: strokeColor,
-          width: isChainEdge || isHighlightPath ? 18 : 13,
-          height: isChainEdge || isHighlightPath ? 18 : 13,
+          width: isChainEdge || isHighlightPath || isLearningStepEdge ? 18 : 13,
+          height: isChainEdge || isHighlightPath || isLearningStepEdge ? 18 : 13,
         },
-        zIndex: isChainEdge ? 30 : isHighlightPath ? 25 : 1,
+        zIndex: isChainEdge ? 30 : isHighlightPath ? 25 : isLearningStepEdge ? 20 : 1,
       });
     };
 
@@ -858,6 +958,15 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           });
         }
       });
+
+      // In LEARNING_PATH mode: generate sequential trajectory step edges between ordered learning path nodes
+      if (pathFilter === 'LEARNING_PATH' && orderedLearningPathIds.length > 1) {
+        for (let i = 0; i < orderedLearningPathIds.length - 1; i++) {
+          const sId = orderedLearningPathIds[i];
+          const tId = orderedLearningPathIds[i + 1];
+          addEdge(sId, tId, 'learning_step');
+        }
+      }
     }
 
     return edgesRes;
@@ -877,6 +986,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
     dependentIdsOfSelected,
     impactedConceptIds,
     nodePositionMap,
+    orderedLearningPathIds,
   ]);
 
   // Controlled mode: ReactFlow receives nodes/edges directly from useMemo.

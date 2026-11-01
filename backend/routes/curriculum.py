@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from backend.services.concept_review_service import ConceptReviewWorkflowService
 from backend.services.curriculum_service import CurriculumNotFoundError, CurriculumService
 from curriculum.graph import PrerequisiteCycleError
 from curriculum.review import ReviewConflictError
@@ -126,12 +127,43 @@ class ReviewSyllabusMappingRequest(BaseModel):
     review_notes: str = ""
 
 
+class ConceptReviewDecisionRequest(BaseModel):
+    concept_id: str = Field(..., min_length=1)
+    decision: str = Field(..., min_length=1)
+    reviewer_id: str = Field(..., min_length=1)
+    reason: str = ""
+    new_name: Optional[str] = None
+    duplicate_of_concept_id: Optional[str] = None
+    target_canonical_id: Optional[str] = None
+    new_hierarchical_level: Optional[str] = None
+    new_parent_topic_id: Optional[str] = None
+    status: Optional[str] = None
+
+
+class PrerequisiteReviewRequest(BaseModel):
+    source_concept_id: str = Field(..., min_length=1)
+    target_concept_id: str = Field(..., min_length=1)
+    action: str = Field(..., pattern="^(approve|reject|add|remove)$")
+    reviewer_id: str = Field(..., min_length=1)
+    reason: str = ""
+
+
+class BatchApproveRequest(BaseModel):
+    reviewer_id: str = Field(..., min_length=1)
+    reason: str = ""
+
+
 # ------------------------------------------------------------------- dependencies
 
 
 def get_service() -> CurriculumService:
     """Construct a service per request so state changes are visible immediately."""
     return CurriculumService()
+
+
+def get_concept_review_service() -> ConceptReviewWorkflowService:
+    """Construct a concept review service per request."""
+    return ConceptReviewWorkflowService()
 
 
 def _not_found(exc: Exception) -> HTTPException:
@@ -590,4 +622,123 @@ def review_syllabus_mapping(
         )
     except CurriculumNotFoundError as exc:
         raise _not_found(exc)
+
+
+# ------------------------------------------------- document concept verification
+
+
+@router.get("/documents/{document_id}/review-items")
+def get_document_review_items(
+    document_id: str,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """
+    Returns full concept review list, evidence, canonical suggestions,
+    hierarchy tiers, and prerequisite links for an uploaded document.
+    """
+    try:
+        return service.get_document_review_items(document_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.post("/documents/{document_id}/review/decision")
+def apply_concept_decision(
+    document_id: str,
+    payload: ConceptReviewDecisionRequest,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """
+    Applies a human review decision (accept, reject, edit name, mark duplicate,
+    request new canonical, flag) to an extracted concept.
+    """
+    try:
+        return service.apply_concept_decision(
+            document_id=document_id,
+            concept_id=payload.concept_id,
+            decision=payload.decision,
+            reviewer_id=payload.reviewer_id,
+            reason=payload.reason,
+            new_name=payload.new_name,
+            duplicate_of_concept_id=payload.duplicate_of_concept_id,
+            target_canonical_id=payload.target_canonical_id,
+            new_hierarchical_level=payload.new_hierarchical_level,
+            new_parent_topic_id=payload.new_parent_topic_id,
+            status=payload.status,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except ReviewConflictError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.post("/documents/{document_id}/review/prerequisite")
+def apply_prerequisite_decision(
+    document_id: str,
+    payload: PrerequisiteReviewRequest,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """
+    Approves, rejects, adds, or removes a prerequisite relationship with DAG acyclicity enforcement.
+    """
+    try:
+        return service.apply_prerequisite_decision(
+            document_id=document_id,
+            source_concept_id=payload.source_concept_id,
+            target_concept_id=payload.target_concept_id,
+            action=payload.action,
+            reviewer_id=payload.reviewer_id,
+            reason=payload.reason,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except (ReviewConflictError, PrerequisiteCycleError) as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+@router.post("/documents/{document_id}/review/approve-batch")
+def approve_all_verified(
+    document_id: str,
+    payload: BatchApproveRequest,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """
+    Batch promotes all verified/accepted concepts to 'approved_for_curriculum',
+    making them available for student diagnostics.
+    """
+    try:
+        return service.approve_all_verified(
+            document_id=document_id,
+            reviewer_id=payload.reviewer_id,
+            reason=payload.reason,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.get("/documents/{document_id}/review/audit-history")
+def get_audit_history(
+    document_id: str,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """Returns the immutable chronological review audit trail for a document."""
+    try:
+        history = service.get_audit_history(document_id)
+        return {"document_id": document_id, "count": len(history), "entries": history}
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.get("/documents/{document_id}/pages/{page_number}/evidence")
+def get_page_evidence(
+    document_id: str,
+    page_number: int,
+    service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
+) -> Dict[str, Any]:
+    """Returns page layout blocks and raw text for visual reviewer verification."""
+    try:
+        return service.get_page_evidence(document_id=document_id, page_number=page_number)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
 

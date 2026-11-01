@@ -453,6 +453,7 @@ export default function App() {
                 <div className="lg:col-span-3">
                   <LearningAtlas
                     graphData={graphData}
+                    learningPathNodes={pathNodes}
                     activeTargetId={nextTarget?.concept_id}
                     nextTarget={nextTarget}
                     learnerId={learnerId}
@@ -534,6 +535,9 @@ export default function App() {
           <SourceLibrary
             sources={sources}
             onReloadSources={reloadSubjectsAndSources}
+            onReviewDocument={(_docId) => {
+              setActiveView('TEACHER');
+            }}
             onSelectSubject={async (subjectId, isNewUpload = false) => {
               try {
                 const subs = await ApiClient.getSubjects();

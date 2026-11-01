@@ -24,6 +24,7 @@ import {
 import { ApiClient } from '../../api/client';
 import { getConceptDisplayName } from '../../utils/conceptName';
 import type { Persona } from '../common/LoginPersonaModal';
+import { ConceptReviewWorkspace } from './ConceptReviewWorkspace';
 
 export interface IndividualStudentMastery {
   learner_id: string;
@@ -281,7 +282,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [studentFilter, setStudentFilter] = useState<'ALL' | 'STRUGGLING' | 'DEVELOPING' | 'MASTERED'>('ALL');
 
   // Active Tab inside Teacher Hub
-  const [activeTab, setActiveTab] = useState<'INSIGHTS' | 'STUDENTS' | 'OPTIMIZER' | 'EVALUATION'>('INSIGHTS');
+  const [activeTab, setActiveTab] = useState<'INSIGHTS' | 'STUDENTS' | 'OPTIMIZER' | 'EVALUATION' | 'CURRICULUM_REVIEW'>('INSIGHTS');
 
   // Cohort Creation Modal State
   const [showCreateCohortModal, setShowCreateCohortModal] = useState<boolean>(false);
@@ -974,6 +975,21 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </span>
           </button>
         )}
+
+        <button
+          onClick={() => setActiveTab('CURRICULUM_REVIEW')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+            activeTab === 'CURRICULUM_REVIEW'
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30'
+              : 'text-universe-slate hover:text-white hover:bg-white/[0.03]'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 text-cyan-400" />
+          <span>Concept Verification & Review</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-400/30 text-[10px] font-mono text-cyan-300">
+            Person 2
+          </span>
+        </button>
       </div>
 
       {/* ━━━━━ TAB 1: STUDENT LEARNING INSIGHTS ━━━━━ */}
@@ -1776,6 +1792,15 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </span>
           </div>
         </div>
+      )}
+
+      {/* ━━━━━ TAB 5: CONCEPT VERIFICATION & CURRICULUM REVIEW (PERSON 2) ━━━━━ */}
+      {activeTab === 'CURRICULUM_REVIEW' && (
+        <ConceptReviewWorkspace
+          reviewerId={currentPersona?.name || currentUserId || 'teacher'}
+          initialDocumentId={classes.find((c) => c.class_id === selectedClassId)?.subject_id}
+          onNavigateToAtlas={onNavigateToAtlas}
+        />
       )}
 
       {/* ━━━━━ MODAL: CREATE NEW CLASSROOM COHORT ━━━━━ */}
