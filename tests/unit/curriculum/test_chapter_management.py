@@ -6,20 +6,29 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.routes.curriculum import get_service
 from backend.services.curriculum_service import CurriculumService
 from curriculum.repository import CurriculumRepository
 from curriculum.seed import load_spec, seed_curriculum
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_curriculum():
+@pytest.fixture
+def isolated_service(tmp_path):
+    """Provide an isolated CurriculumService and Repository backed by tmp_path."""
+    repo = CurriculumRepository(base_dir=str(tmp_path / "curriculum"))
     spec = load_spec("curriculum/data/jee_curriculum_spec.json")
-    repo = CurriculumRepository()
     seed_curriculum(spec, repository=repo)
+    service = CurriculumService(repository=repo)
+
+    app.dependency_overrides[get_service] = lambda: service
+    try:
+        yield service
+    finally:
+        app.dependency_overrides.pop(get_service, None)
 
 
-def test_list_chapters():
-    service = CurriculumService()
+def test_list_chapters(isolated_service):
+    service = isolated_service
     chapters = service.list_chapters()
     assert len(chapters) > 0
 
@@ -29,8 +38,8 @@ def test_list_chapters():
     assert len(physics_chapters) > 0
 
 
-def test_create_and_update_chapter():
-    service = CurriculumService()
+def test_create_and_update_chapter(isolated_service):
+    service = isolated_service
     chapter = service.create_chapter(
         chapter_id="ch_experimental_optics",
         name="Experimental Optics",
@@ -62,8 +71,8 @@ def test_create_and_update_chapter():
     assert updated["description"] == "Updated optics lab curriculum."
 
 
-def test_reassign_concept_chapter():
-    service = CurriculumService()
+def test_reassign_concept_chapter(isolated_service):
+    service = isolated_service
     # Get a physics concept
     concepts = service.list_concepts(subject="physics", limit=1)
     assert len(concepts) > 0
@@ -79,8 +88,8 @@ def test_reassign_concept_chapter():
     assert res["chapter_id"] == "ch_new_mechanics"
 
 
-def test_reassign_subject_mismatch():
-    service = CurriculumService()
+def test_reassign_subject_mismatch(isolated_service):
+    service = isolated_service
     # Create chemistry chapter
     service.create_chapter(
         chapter_id="ch_organic_reactions",
@@ -100,7 +109,7 @@ def test_reassign_subject_mismatch():
         )
 
 
-def test_chapter_api_endpoints():
+def test_chapter_api_endpoints(isolated_service):
     client = TestClient(app)
 
     # 1. GET /api/curriculum/chapters

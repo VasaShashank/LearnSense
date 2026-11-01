@@ -26,7 +26,7 @@
       "official_unit_title": "SETS, RELATIONS AND FUNCTIONS",
       "official_subtopic": "Representation, operations, and algebraic properties",
       "canonical_concept_ids": [
-        "cc_test_dummy"
+        "cc_5b5bdbe60072f33b"
       ],
       "canonical_stable_keys": [
         "mathematics/algebra/sets_relations_and_functions"
@@ -37,9 +37,7 @@
       "evidence": "Syllabus scope: Sets and their representation; Union, intersection and complement of sets and their algebraic properties; Power set...",
       "source_locator": "Page 1, UNIT 1",
       "review_status": "verified",
-      "last_verified_at": "2026-11-01T12:31:23+00:00",
-      "reviewer": "teacher_expert",
-      "review_notes": "Verified against NCERT Class 11 Chapter 1"
+      "last_verified_at": "2026-10-25T23:00:00Z"
     },
     {
       "syllabus_item_id": "syl_math_u01_02",
@@ -196,7 +194,7 @@
       "official_unit_title": "PERMUTATIONS AND COMBINATIONS",
       "official_subtopic": "Fundamental principle of counting, P(n,r) and C(n,r)",
       "canonical_concept_ids": [
-        "cc_custom_verified"
+        "cc_6c289cbb2834295f"
       ],
       "canonical_stable_keys": [
         "mathematics/algebra/permutations_and_combinations"
@@ -207,9 +205,7 @@
       "evidence": "Syllabus scope: The fundamental principle of counting, permutations and combinations; Meaning of P(n, r) and C(n, r). Simple application...",
       "source_locator": "Page 1, UNIT 4",
       "review_status": "verified",
-      "last_verified_at": "2026-11-01T12:31:23+00:00",
-      "reviewer": "lead_math_teacher",
-      "review_notes": "Permutations and Combinations verified"
+      "last_verified_at": "2026-10-25T23:00:00Z"
     },
     {
       "syllabus_item_id": "syl_math_u05_01",
@@ -431,20 +427,18 @@
       "official_unit_title": "CO-ORDINATE GEOMETRY",
       "official_subtopic": "Distance, section formula, locus, slope and line inclinations",
       "canonical_concept_ids": [
-        "cc_566dd708e45bdf97",
         "cc_7d5698538e81c82d"
       ],
       "canonical_stable_keys": [
-        "mathematics/coordinate_geometry/coordinate_geometry_conics",
         "mathematics/coordinate_geometry/straight_lines"
       ],
-      "mapping_status": "partial_match",
+      "mapping_status": "exact_match",
       "mapping_method": "direct_syllabus_grounding",
       "confidence": 0.95,
       "evidence": "Syllabus scope: Cartesian system of rectangular coordinates in a plane, distance formula, sections formula, locus and its equation, the ...",
       "source_locator": "Page 2, UNIT 10",
       "review_status": "verified",
-      "last_verified_at": "2026-10-25T23:00:00Z"
+      "last_verified_at": "2026-11-01T22:00:00Z"
     },
     {
       "syllabus_item_id": "syl_math_u10_02",
@@ -1420,20 +1414,18 @@
       "official_unit_title": "Optics",
       "official_subtopic": "Reflection, refraction, lenses, total internal reflection, prism, optical instruments",
       "canonical_concept_ids": [
-        "cc_d70ece71bc616b7b",
-        "cc_a0f8c26d421e9c83"
+        "cc_d70ece71bc616b7b"
       ],
       "canonical_stable_keys": [
-        "physics/optics/ray_optics_and_optical_instruments",
-        "physics/optics/ray_and_wave_optics"
+        "physics/optics/ray_optics_and_optical_instruments"
       ],
-      "mapping_status": "partial_match",
+      "mapping_status": "exact_match",
       "mapping_method": "direct_syllabus_grounding",
       "confidence": 0.95,
       "evidence": "Syllabus scope: Reflection of light, spherical mirrors, mirror formula. Refraction of light at plane and spherical surfaces, thin lens f...",
       "source_locator": "Page 5, UNIT 16",
       "review_status": "verified",
-      "last_verified_at": "2026-10-25T23:00:00Z"
+      "last_verified_at": "2026-11-01T22:00:00Z"
     },
     {
       "syllabus_item_id": "syl_phy_u16_02",
@@ -1443,20 +1435,18 @@
       "official_unit_title": "Optics",
       "official_subtopic": "Huygens' principle, interference (YDSE), diffraction, polarization (Brewster's law)",
       "canonical_concept_ids": [
-        "cc_3c10e1bef7c6bb38",
-        "cc_a0f8c26d421e9c83"
+        "cc_3c10e1bef7c6bb38"
       ],
       "canonical_stable_keys": [
-        "physics/optics/wave_optics_interference_diffraction",
-        "physics/optics/ray_and_wave_optics"
+        "physics/optics/wave_optics_interference_diffraction"
       ],
-      "mapping_status": "partial_match",
+      "mapping_status": "exact_match",
       "mapping_method": "direct_syllabus_grounding",
       "confidence": 0.95,
       "evidence": "Syllabus scope: Wave optics: wavefront and Huygens ‘Principle, laws of reflection and refraction using Huygens principle. Interference: ...",
       "source_locator": "Page 5, UNIT 16",
       "review_status": "verified",
-      "last_verified_at": "2026-10-25T23:00:00Z"
+      "last_verified_at": "2026-11-01T22:00:00Z"
     },
     {
       "syllabus_item_id": "syl_phy_u17_01",

@@ -2,14 +2,36 @@
 Unit and API integration tests for Teacher Syllabus Mapping Review (Person 2).
 """
 
+import shutil
+from pathlib import Path
+import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.routes.curriculum import get_service
 from backend.services.curriculum_service import CurriculumService
+from curriculum.repository import CurriculumRepository
 
 
-def test_list_syllabus_items():
-    service = CurriculumService()
+@pytest.fixture
+def isolated_service(tmp_path):
+    """Provide a CurriculumService isolated in temporary storage so persistent data is never mutated."""
+    src_crosswalk = Path("curriculum/data/jee_main_2027_crosswalk.json")
+    tmp_crosswalk = tmp_path / "jee_main_2027_crosswalk.json"
+    shutil.copy2(src_crosswalk, tmp_crosswalk)
+
+    repo = CurriculumRepository(base_dir=str(tmp_path / "curriculum"))
+    service = CurriculumService(repository=repo, crosswalk_path=tmp_crosswalk)
+
+    app.dependency_overrides[get_service] = lambda: service
+    try:
+        yield service
+    finally:
+        app.dependency_overrides.pop(get_service, None)
+
+
+def test_list_syllabus_items(isolated_service):
+    service = isolated_service
     items = service.list_syllabus_items()
     assert len(items) == 135
 
@@ -23,16 +45,16 @@ def test_list_syllabus_items():
     assert len(exact_items) > 0
 
 
-def test_syllabus_coverage_summary():
-    service = CurriculumService()
+def test_syllabus_coverage_summary(isolated_service):
+    service = isolated_service
     summary = service.syllabus_coverage_summary()
     assert summary["has_crosswalk"] is True
     assert summary["summary"]["total_syllabus_items"] == 135
     assert summary["summary"]["coverage_percentage"] == 100.0
 
 
-def test_review_syllabus_mapping():
-    service = CurriculumService()
+def test_review_syllabus_mapping(isolated_service):
+    service = isolated_service
     res = service.review_syllabus_mapping(
         syllabus_item_id="syl_math_u01_01",
         status="exact_match",
@@ -45,7 +67,7 @@ def test_review_syllabus_mapping():
     assert res["canonical_concept_ids"] == ["cc_test_dummy"]
 
 
-def test_syllabus_api_endpoints():
+def test_syllabus_api_endpoints(isolated_service):
     client = TestClient(app)
 
     # 1. GET /api/curriculum/syllabus/items
