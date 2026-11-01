@@ -523,6 +523,233 @@ class KnowledgeService:
             "topic_relationships": topic_relationships,
         }
 
+    def get_learning_sequence(
+        self,
+        document_id: str,
+        starting_concept_id: Optional[str] = None,
+        learner_masteries: Optional[Dict[str, float]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Derives an academic, chapter-coherent learning sequence for a subject,
+        optionally scoped to a user-selected starting concept.
+
+        Semantics:
+        - If starting_concept_id is provided:
+          * Upstream prerequisites (ancestors) needed before starting are identified.
+          * The starting concept is always Step 1.
+          * Downstream reachable concepts are arranged in topological chapter order.
+        - If starting_concept_id is omitted:
+          * The full curriculum is ordered sequentially chapter-by-chapter.
+          * Concepts within the same chapter stay together (chapter coherence).
+        - Parallel branches (e.g., Centripetal vs Tangential Acceleration) are explicitly detected and labeled.
+        - Exactly one primary recommendation is emitted (no duplicate cards).
+        """
+        graph = self.get_subject_graph(document_id, learner_masteries=learner_masteries)
+        concepts = graph.get("concepts", [])
+        topics = graph.get("topics", [])
+        concept_by_id = {c["concept_id"]: c for c in concepts}
+        topic_by_id = {t["id"]: t for t in topics}
+
+        if not concepts:
+            return {
+                "subject_id": document_id,
+                "starting_concept_id": None,
+                "starting_concept_name": None,
+                "upstream_prerequisites": [],
+                "sequence": [],
+                "branching_points": [],
+                "cross_chapter_bridges": [],
+                "primary_recommendation": None,
+            }
+
+        # Build adjacency maps
+        adj_out: Dict[str, List[str]] = {c["concept_id"]: [] for c in concepts}
+        adj_in: Dict[str, List[str]] = {c["concept_id"]: [] for c in concepts}
+        for c in concepts:
+            for p in c.get("prerequisites", []):
+                if p in concept_by_id:
+                    adj_out[p].append(c["concept_id"])
+                    adj_in[c["concept_id"]].append(p)
+
+        # Validate starting_concept_id
+        valid_start = starting_concept_id if (starting_concept_id and starting_concept_id in concept_by_id) else None
+
+        upstream_prereqs = []
+        if valid_start:
+            # Gather all ancestors via BFS
+            ancestor_set = set()
+            queue = list(adj_in[valid_start])
+            while queue:
+                curr = queue.pop(0)
+                if curr not in ancestor_set:
+                    ancestor_set.add(curr)
+                    queue.extend(adj_in[curr])
+
+            for anc_id in ancestor_set:
+                anc_c = concept_by_id[anc_id]
+                t_info = topic_by_id.get(anc_c.get("topic_id", ""), {})
+                upstream_prereqs.append({
+                    "concept_id": anc_id,
+                    "name": anc_c["name"],
+                    "chapter_id": anc_c.get("topic_id"),
+                    "chapter_name": t_info.get("name", "General"),
+                    "mastery": anc_c.get("mastery", 0.0),
+                    "is_direct": anc_id in adj_in[valid_start],
+                })
+
+            # Downstream reachable (including starting concept)
+            reachable = {valid_start}
+            queue = [valid_start]
+            while queue:
+                curr = queue.pop(0)
+                for nxt in adj_out[curr]:
+                    if nxt not in reachable:
+                        reachable.add(nxt)
+                        queue.append(nxt)
+            relevant_cids = reachable
+        else:
+            relevant_cids = set(concept_by_id.keys())
+
+        # Kahn's algorithm with chapter-coherent prioritization
+        in_deg = {cid: 0 for cid in relevant_cids}
+        for cid in relevant_cids:
+            for p in adj_in[cid]:
+                if p in relevant_cids:
+                    in_deg[cid] += 1
+
+        ready = [cid for cid in relevant_cids if in_deg[cid] == 0]
+
+        def sort_ready(q: List[str]):
+            q.sort(key=lambda cid: (
+                0 if cid == valid_start else 1,
+                topic_by_id.get(concept_by_id[cid].get("topic_id", ""), {}).get("order", 999),
+                concept_by_id[cid]["name"],
+            ))
+
+        sort_ready(ready)
+        ordered_cids = []
+        while ready:
+            curr = ready.pop(0)
+            ordered_cids.append(curr)
+            for nxt in adj_out[curr]:
+                if nxt in in_deg:
+                    in_deg[nxt] -= 1
+                    if in_deg[nxt] == 0:
+                        ready.append(nxt)
+                        sort_ready(ready)
+
+        # Detect parallel branches (concepts sharing the same prerequisite parent within the sequence)
+        branching_points = []
+        for cid in ordered_cids:
+            dependents_in_seq = [d for d in adj_out[cid] if d in relevant_cids]
+            if len(dependents_in_seq) > 1:
+                branching_points.append({
+                    "parent_concept_id": cid,
+                    "parent_name": concept_by_id[cid]["name"],
+                    "branches": [
+                        {
+                            "concept_id": d,
+                            "name": concept_by_id[d]["name"],
+                            "chapter_name": topic_by_id.get(concept_by_id[d].get("topic_id", ""), {}).get("name", ""),
+                        }
+                        for d in dependents_in_seq
+                    ],
+                })
+
+        # Cross-chapter bridges
+        cross_bridges = []
+        seen_bridges = set()
+        for link in graph.get("relationships", []):
+            if link.get("type") in ("prerequisite", "prerequisite_of"):
+                s_id = link["source"]
+                t_id = link["target"]
+                if s_id in concept_by_id and t_id in concept_by_id:
+                    s_t = concept_by_id[s_id].get("topic_id")
+                    t_t = concept_by_id[t_id].get("topic_id")
+                    if s_t and t_t and s_t != t_t and (s_id, t_id) not in seen_bridges:
+                        seen_bridges.add((s_id, t_id))
+                        s_name = concept_by_id[s_id]["name"]
+                        t_name = concept_by_id[t_id]["name"]
+                        s_ch = topic_by_id.get(s_t, {}).get("name", "Chapter")
+                        t_ch = topic_by_id.get(t_t, {}).get("name", "Chapter")
+                        cross_bridges.append({
+                            "source_concept_id": s_id,
+                            "source_name": s_name,
+                            "source_chapter": s_ch,
+                            "target_concept_id": t_id,
+                            "target_name": t_name,
+                            "target_chapter": t_ch,
+                            "explanation": f"Transitions from {s_ch} ('{s_name}') into {t_ch} ('{t_name}').",
+                        })
+
+        # Build sequence items
+        sequence = []
+        for idx, cid in enumerate(ordered_cids, start=1):
+            c_data = concept_by_id[cid]
+            t_id = c_data.get("topic_id", "default")
+            t_info = topic_by_id.get(t_id, {})
+            prereq_names = [concept_by_id[p]["name"] for p in adj_in[cid] if p in concept_by_id]
+            is_start = (cid == valid_start)
+
+            # Generate pedagogical explanation
+            if is_start:
+                reason = "Selected starting concept for your personalized study sequence."
+            elif not prereq_names:
+                reason = f"Foundational starting concept in {t_info.get('name', 'Curriculum')}."
+            elif len(prereq_names) == 1:
+                reason = f"Builds directly on prerequisite '{prereq_names[0]}'."
+            else:
+                reason = f"Integrates concepts from {', '.join(prereq_names[:2])}."
+
+            sequence.append({
+                "step_number": idx,
+                "step_label": f"Step {idx}",
+                "concept_id": cid,
+                "name": c_data["name"],
+                "chapter_id": t_id,
+                "chapter_name": t_info.get("name", "General"),
+                "definition": c_data.get("definition"),
+                "mastery": c_data.get("mastery", 0.0),
+                "is_starting_concept": is_start,
+                "prerequisites": prereq_names,
+                "prerequisite_ids": adj_in[cid],
+                "dependents": [concept_by_id[d]["name"] for d in adj_out[cid] if d in concept_by_id],
+                "reason": reason,
+                "bloom_level": c_data.get("bloom_level"),
+            })
+
+        # Single primary recommendation
+        primary_rec = None
+        if sequence:
+            rec_target = sequence[0]
+            if not valid_start:
+                unmastered = next((item for item in sequence if item["mastery"] < 0.75), sequence[0])
+                rec_target = unmastered
+
+            primary_rec = {
+                "concept_id": rec_target["concept_id"],
+                "name": rec_target["name"],
+                "chapter_name": rec_target["chapter_name"],
+                "reason": (
+                    f"Recommended starting concept: '{rec_target['name']}' in {rec_target['chapter_name']}."
+                    if rec_target["is_starting_concept"] or rec_target["step_number"] == 1
+                    else f"Next recommended step: '{rec_target['name']}' ({rec_target['step_label']})."
+                ),
+            }
+
+        start_name = concept_by_id[valid_start]["name"] if valid_start else None
+
+        return {
+            "subject_id": document_id,
+            "starting_concept_id": valid_start,
+            "starting_concept_name": start_name,
+            "upstream_prerequisites": upstream_prereqs,
+            "sequence": sequence,
+            "branching_points": branching_points,
+            "cross_chapter_bridges": cross_bridges,
+            "primary_recommendation": primary_rec,
+        }
+
     @staticmethod
     def _source_references(ctx: LearningContext, concept) -> List[Dict[str, Any]]:
         """

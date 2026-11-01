@@ -157,6 +157,30 @@ def get_subject_graph(subject_id: str, learner_id: Optional[str] = None):
     return knowledge_service.get_subject_graph(subject_id, learner_masteries=masteries)
 
 
+@router.get("/subjects/{subject_id}/learning-sequence")
+def get_subject_learning_sequence(
+    subject_id: str,
+    starting_concept_id: Optional[str] = None,
+    learner_id: Optional[str] = None,
+):
+    """
+    Returns an academic, chapter-coherent learning progression sequence for the subject,
+    optionally scoped from a user-selected starting concept.
+    """
+    masteries = {}
+    if learner_id:
+        ctx = knowledge_service.get_learning_context(subject_id)
+        c_ids = list(ctx.concepts.keys())
+        st = learner_service.get_or_create_learner_state(learner_id, c_ids)
+        masteries = {cid: cs.mastery_probability for cid, cs in st.concept_states.items()}
+
+    return knowledge_service.get_learning_sequence(
+        subject_id,
+        starting_concept_id=starting_concept_id,
+        learner_masteries=masteries,
+    )
+
+
 @router.get("/subjects/{subject_id}/concepts/{concept_id}/question")
 async def get_concept_question(subject_id: str, concept_id: str, learner_id: Optional[str] = None):
     """

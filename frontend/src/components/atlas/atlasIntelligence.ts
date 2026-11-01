@@ -37,13 +37,12 @@ export function determineNextBestSteps(
   nextTarget?: LearningTarget | null,
   activeTargetId?: string
 ): NextBestStepRecommendation[] {
-  const recommendations: NextBestStepRecommendation[] = [];
   const conceptMap = new Map<string, ConceptNode>();
   (graphData.concepts || []).forEach((c) => conceptMap.set(c.concept_id, c));
 
   const targetId = activeTargetId || nextTarget?.concept_id;
 
-  // 1. Primary Recommendation: Authoritative Learning Target from API
+  // 1. Authoritative active target
   if (targetId && conceptMap.has(targetId)) {
     const targetConcept = conceptMap.get(targetId)!;
     const prereqs = targetConcept.prerequisites || [];
@@ -58,24 +57,22 @@ export function determineNextBestSteps(
         ? 'You have completed the required prerequisites for this concept.'
         : 'Recommended next target based on your active curriculum trajectory.');
 
-    recommendations.push({
+    return [{
       conceptId: targetConcept.concept_id,
       conceptName: targetConcept.name,
       reason,
       category: 'ACTIVE_TARGET',
       prerequisiteCount: prereqs.length,
       completedPrerequisites: completedPrereqs,
-    });
+    }];
   }
 
-  // 2. Secondary Recommendation: Topological readiness
-  // Identify a non-mastered concept whose prerequisites are 100% verified mastered
+  // 2. Topological readiness: unmastered concept whose prerequisites are 100% mastered
   for (const c of graphData.concepts || []) {
-    if (recommendations.some((r) => r.conceptId === c.concept_id)) continue;
     if (c.mastery >= MASTERY_THRESHOLD) continue;
 
     const prereqs = c.prerequisites || [];
-    if (prereqs.length === 0) continue; // Skip root concepts if target exists
+    if (prereqs.length === 0) continue;
 
     const allPrereqsMastered = prereqs.every((pId) => {
       const p = conceptMap.get(pId);
@@ -83,38 +80,45 @@ export function determineNextBestSteps(
     });
 
     if (allPrereqsMastered) {
-      recommendations.push({
+      return [{
         conceptId: c.concept_id,
         conceptName: c.name,
         reason: 'You have completed the required prerequisites for this concept.',
         category: 'READY_TO_ADVANCE',
         prerequisiteCount: prereqs.length,
         completedPrerequisites: prereqs.length,
-      });
-      break; // Cap at maximum 2 recommendations total
+      }];
     }
   }
 
-  // 3. Fallback: If still under 2 and no ready concept found, check for a foundation review candidate
-  if (recommendations.length < 2) {
-    for (const c of graphData.concepts || []) {
-      if (recommendations.some((r) => r.conceptId === c.concept_id)) continue;
-      // High uncertainty or low mastery in foundational position
-      if (c.mastery < 0.35 && (c.dependents || []).length >= 2) {
-        recommendations.push({
-          conceptId: c.concept_id,
-          conceptName: c.name,
-          reason: 'Your recent comprehension signals suggest reviewing this foundation.',
-          category: 'FOUNDATION_REVIEW',
-          prerequisiteCount: (c.prerequisites || []).length,
-          completedPrerequisites: 0,
-        });
-        break;
-      }
+  // 3. Fallback: foundation review candidate
+  for (const c of graphData.concepts || []) {
+    if (c.mastery < 0.35 && (c.dependents || []).length >= 2) {
+      return [{
+        conceptId: c.concept_id,
+        conceptName: c.name,
+        reason: 'Your recent comprehension signals suggest reviewing this foundation.',
+        category: 'FOUNDATION_REVIEW',
+        prerequisiteCount: (c.prerequisites || []).length,
+        completedPrerequisites: 0,
+      }];
     }
   }
 
-  return recommendations.slice(0, 2);
+  // 4. Default: first unmastered concept
+  const firstUnmastered = (graphData.concepts || []).find((c) => c.mastery < MASTERY_THRESHOLD);
+  if (firstUnmastered) {
+    return [{
+      conceptId: firstUnmastered.concept_id,
+      conceptName: firstUnmastered.name,
+      reason: 'Recommended starting concept to begin mastering this subject.',
+      category: 'READY_TO_ADVANCE',
+      prerequisiteCount: (firstUnmastered.prerequisites || []).length,
+      completedPrerequisites: 0,
+    }];
+  }
+
+  return [];
 }
 
 /**

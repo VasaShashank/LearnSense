@@ -95,6 +95,69 @@ export interface LearningTarget {
   estimated_minutes?: number;
 }
 
+export interface LearningSequenceItem {
+  step_number: number;
+  step_label: string;
+  concept_id: string;
+  name: string;
+  chapter_id: string;
+  chapter_name: string;
+  definition?: string;
+  mastery: number;
+  is_starting_concept: boolean;
+  prerequisites: string[];
+  prerequisite_ids: string[];
+  dependents: string[];
+  reason: string;
+  bloom_level?: string;
+}
+
+export interface UpstreamPrerequisite {
+  concept_id: string;
+  name: string;
+  chapter_id?: string;
+  chapter_name: string;
+  mastery: number;
+  is_direct: boolean;
+}
+
+export interface BranchingPoint {
+  parent_concept_id: string;
+  parent_name: string;
+  branches: Array<{
+    concept_id: string;
+    name: string;
+    chapter_name: string;
+  }>;
+}
+
+export interface CrossChapterBridge {
+  source_concept_id: string;
+  source_name: string;
+  source_chapter: string;
+  target_concept_id: string;
+  target_name: string;
+  target_chapter: string;
+  explanation: string;
+}
+
+export interface LearningSequenceResponse {
+  subject_id: string;
+  starting_concept_id: string | null;
+  starting_concept_name: string | null;
+  upstream_prerequisites: UpstreamPrerequisite[];
+  sequence: LearningSequenceItem[];
+  branching_points: BranchingPoint[];
+  cross_chapter_bridges: CrossChapterBridge[];
+  primary_recommendation: {
+    concept_id: string;
+    name: string;
+    chapter_name: string;
+    reason: string;
+  } | null;
+}
+
+
 export interface QuestionOption {
   text: string;
 }
@@ -440,6 +503,19 @@ export const ApiClient = {
 
   getSubjectGraph: (subjectId: string, learnerId?: string): Promise<KnowledgeGraphData> =>
     fetchJson(`/subjects/${subjectId}/graph${learnerId ? `?learner_id=${learnerId}` : ''}`),
+
+  getLearningSequence: (
+    subjectId: string,
+    startingConceptId?: string,
+    learnerId?: string
+  ): Promise<LearningSequenceResponse> => {
+    const params = new URLSearchParams();
+    if (startingConceptId) params.append('starting_concept_id', startingConceptId);
+    if (learnerId) params.append('learner_id', learnerId);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return fetchJson(`/subjects/${encodeURIComponent(subjectId)}/learning-sequence${qs}`);
+  },
+
 
   getLearnerProgress: (learnerId: string, subjectId: string): Promise<LearnerProgress> =>
     fetchJson(`/learners/${learnerId}/progress?subject_id=${subjectId}`),

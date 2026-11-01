@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ReactFlow,
   useReactFlow,
@@ -10,7 +10,8 @@ import {
 } from '@xyflow/react';
 import type { Node, Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { KnowledgeGraphData, ConceptNode, TopicTerritory, LearningTarget, LearningPathNode } from '../../api/client';
+import { ApiClient, type KnowledgeGraphData, type ConceptNode, type TopicTerritory, type LearningTarget, type LearningPathNode, type LearningSequenceResponse } from '../../api/client';
+import { GuidedSequenceView } from './GuidedSequenceView';
 import { CustomConceptNode } from './CustomConceptNode';
 import type { ConceptNodeData } from './CustomConceptNode';
 import { SubheadingNode } from './SubheadingNode';
@@ -51,6 +52,8 @@ import {
   Check,
   Map as MapIcon,
 } from 'lucide-react';
+
+export type AtlasViewMode = 'GUIDED' | 'GRAPH' | 'CHAPTERS';
 
 export interface LearningAtlasProps {
   graphData: KnowledgeGraphData;
@@ -203,7 +206,36 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterTopic, setFilterTopic] = useState<string>('ALL');
-  const [viewMode, setViewMode] = useState<'GRAPH' | 'CHAPTERS'>('GRAPH');
+
+  const [viewMode, setViewMode] = useState<AtlasViewMode>('GUIDED');
+  const [selectedStartingConceptId, setSelectedStartingConceptId] = useState<string | null>(null);
+  const [sequenceData, setSequenceData] = useState<LearningSequenceResponse | null>(null);
+  const [isSequenceLoading, setIsSequenceLoading] = useState<boolean>(false);
+
+  // Fetch academic chapter-coherent learning sequence from backend
+  useEffect(() => {
+    if (!graphData?.subject_id) return;
+    let isMounted = true;
+    setIsSequenceLoading(true);
+    ApiClient.getLearningSequence(
+      graphData.subject_id,
+      selectedStartingConceptId || undefined,
+      learnerId
+    )
+      .then((res) => {
+        if (isMounted) {
+          setSequenceData(res);
+          setIsSequenceLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch learning sequence:', err);
+        if (isMounted) setIsSequenceLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [graphData?.subject_id, selectedStartingConceptId, learnerId]);
   const [pathFilter, setPathFilter] = useState<'ALL' | 'PREREQUISITES' | 'LEARNING_PATH'>('ALL');
   const [showBookmarksOnly, setShowBookmarksOnly] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -403,6 +435,9 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
 
   // ── Ordered Learning Path Sequence ──
   const orderedLearningPathIds = useMemo<string[]>(() => {
+    if (sequenceData?.sequence && sequenceData.sequence.length > 0) {
+      return sequenceData.sequence.map((n) => n.concept_id);
+    }
     if (learningPathNodes && learningPathNodes.length > 0) {
       return learningPathNodes.map((n) => n.concept_id);
     }
@@ -467,11 +502,17 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
 
   const learningPathStepMap = useMemo(() => {
     const map = new Map<string, number>();
+    if (sequenceData?.sequence && sequenceData.sequence.length > 0) {
+      sequenceData.sequence.forEach((s) => {
+        map.set(s.concept_id, s.step_number);
+      });
+      return map;
+    }
     orderedLearningPathIds.forEach((id, idx) => {
       map.set(id, idx + 1);
     });
     return map;
-  }, [orderedLearningPathIds]);
+  }, [sequenceData, orderedLearningPathIds]);
 
   // ─────────────────────────────────────────────────────────────
   // 1. COLLISION-FREE RADIAL CONSTELLATION NODE GENERATION
@@ -690,6 +731,11 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           isDimmed = true;
         } else if (highlightedChain) {
           isDimmed = !highlightedChain.conceptIds.includes(concept.concept_id);
+        } else if (selectedStartingConceptId && sequenceData?.sequence) {
+          const inActiveSequence = sequenceData.sequence.some((s) => s.concept_id === concept.concept_id);
+          if (!inActiveSequence && !isSelected) {
+            isDimmed = true;
+          }
         } else if (selectedConceptId) {
           isDimmed = !isSelected && !isPrereq && !isDep && !activePathConceptIds.has(concept.concept_id);
         }
@@ -803,6 +849,12 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
       const isOnActivePrereqPath = activePathConceptIds.has(src) && activePathConceptIds.has(tgt);
       const isLearningStepEdge = edgeType === 'learning_step';
 
+      const srcConcept = conceptLookupMap.get(src);
+      const tgtConcept = conceptLookupMap.get(tgt);
+      const isCrossChapter = Boolean(
+        srcConcept?.topic_id && tgtConcept?.topic_id && srcConcept.topic_id !== tgtConcept.topic_id
+      );
+
       // Filtering semantics:
       // In PREREQUISITES mode, show all structural prerequisite relationships
       if (pathFilter === 'PREREQUISITES' && edgeType !== 'prerequisite') return;
@@ -862,12 +914,15 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
         strokeWidth = 3.2;
         animated = true;
       } else if (edgeType === 'prerequisite') {
-        if (isLearningPathFilter) {
-          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.25)' : 'rgba(56, 189, 248, 0.7)';
-          strokeWidth = isDimmed ? 1.0 : 2.0;
+        if (isCrossChapter) {
+          strokeColor = isDimmed ? 'rgba(168, 85, 247, 0.25)' : '#A855F7';
+          strokeWidth = isDimmed ? 1.0 : 2.2;
+        } else if (isLearningPathFilter) {
+          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.2)' : 'rgba(56, 189, 248, 0.65)';
+          strokeWidth = isDimmed ? 1.0 : 1.8;
         } else {
-          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.2)' : 'rgba(6, 182, 212, 0.55)';
-          strokeWidth = isDimmed ? 0.9 : 1.6;
+          strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.15)' : 'rgba(100, 116, 139, 0.45)';
+          strokeWidth = isDimmed ? 0.9 : 1.4;
         }
       } else if (edgeType === 'part_of') {
         strokeColor = isDimmed ? 'rgba(51, 65, 85, 0.15)' : 'rgba(148, 163, 184, 0.3)';
@@ -1020,6 +1075,18 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
             <div className="flex items-center p-1 rounded-xl bg-space-950/80 border border-white/[0.08]">
               <button
                 type="button"
+                onClick={() => setViewMode('GUIDED')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'GUIDED'
+                    ? 'bg-cyan-400 text-space-950 shadow-[0_0_16px_rgba(0,240,255,0.4)]'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Route className="w-3.5 h-3.5" />
+                <span>Guided Sequence</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setViewMode('GRAPH')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                   viewMode === 'GRAPH'
@@ -1028,7 +1095,7 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
                 }`}
               >
                 <Network className="w-3.5 h-3.5" />
-                <span>Graph View</span>
+                <span>Interactive Graph</span>
               </button>
               <button
                 type="button"
@@ -1043,6 +1110,38 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
                 <span>Chapter View ({graphData.topics?.length || 0})</span>
               </button>
             </div>
+
+            {/* Starting Concept Selector (Interactive Graph Mode) */}
+            {viewMode === 'GRAPH' && (
+              <div className="hidden lg:flex items-center gap-1.5 bg-space-950/80 px-2.5 py-1 rounded-xl border border-white/[0.08] text-xs">
+                <Compass className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <select
+                  value={selectedStartingConceptId || ''}
+                  onChange={(e) => setSelectedStartingConceptId(e.target.value || null)}
+                  className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer pr-1 font-sans max-w-[170px] truncate"
+                  aria-label="Select starting concept"
+                >
+                  <option value="" className="bg-space-900 text-white">
+                    Start: All Curriculum
+                  </option>
+                  {(graphData.concepts || []).map((c) => (
+                    <option key={c.concept_id} value={c.concept_id} className="bg-space-900 text-white">
+                      Start: {c.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedStartingConceptId && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStartingConceptId(null)}
+                    className="text-slate-400 hover:text-white text-xs p-0.5"
+                    title="Reset to full curriculum"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Path Filter Toggles */}
             {viewMode === 'GRAPH' && (
@@ -1514,7 +1613,30 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           </div>
         )}
 
-        {/* Main React Flow Graph Canvas */}
+        {/* Guided Sequence View presentation */}
+        {viewMode === 'GUIDED' ? (
+          <div className="w-full h-full overflow-y-auto p-6 pt-24 pb-16 scrollbar-thin scrollbar-thumb-white/10">
+            <div className="max-w-4xl mx-auto">
+              <GuidedSequenceView
+                sequenceData={sequenceData}
+                isLoading={isSequenceLoading}
+                selectedStartingConceptId={selectedStartingConceptId}
+                onSelectStartingConcept={(cid) => setSelectedStartingConceptId(cid)}
+                onStartLearning={onStartLearning}
+                onStartPractice={onStartPractice}
+                onSwitchToGraphView={(focusConceptId) => {
+                  setViewMode('GRAPH');
+                  if (focusConceptId) {
+                    const c = (graphData.concepts || []).find((item) => item.concept_id === focusConceptId);
+                    if (c) onSelectConcept(c);
+                  }
+                }}
+                allConcepts={graphData.concepts || []}
+              />
+            </div>
+          </div>
+        ) : (
+        /* Main React Flow Graph Canvas */
         <ReactFlow
           nodes={initialNodes}
           edges={initialEdges}
@@ -1555,8 +1677,10 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
             onToggleMiniMap={() => setShowMiniMap(!showMiniMap)}
           />
         </ReactFlow>
+        )}
 
-        {/* Scientific Dock Legend (Bottom-Left) */}
+        {/* Scientific Dock Legend (Bottom-Left in Graph View) */}
+        {viewMode === 'GRAPH' && (
         <div className="absolute bottom-5 left-5 z-20 flex flex-wrap items-center gap-4 px-4 py-2.5 rounded-2xl bg-space-900/90 border border-white/[0.08] text-[11px] font-mono text-slate-300 shadow-xl backdrop-blur-xl">
           {/* Node Status */}
           <div className="flex items-center gap-3 pr-3 border-r border-white/[0.08]">
@@ -1640,28 +1764,29 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Edge Type</span>
             <div className="flex items-center gap-1.5 text-cyan-300">
-              <svg width="24" height="10" className="overflow-visible">
-                <line x1="0" y1="5" x2="16" y2="5" stroke="#00F0FF" strokeWidth="2.5" />
-                <polygon points="16,2 23,5 16,8" fill="#00F0FF" />
+              <svg width="20" height="10" className="overflow-visible">
+                <line x1="0" y1="5" x2="14" y2="5" stroke="#38BDF8" strokeWidth="1.8" />
+                <polygon points="14,2 19,5 14,8" fill="#38BDF8" />
               </svg>
-              <span>Prerequisite</span>
+              <span>Prereq</span>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <svg width="24" height="10" className="overflow-visible">
-                <line x1="0" y1="5" x2="16" y2="5" stroke="rgba(148, 163, 184, 0.6)" strokeWidth="1.2" />
-                <polygon points="16,2 23,5 16,8" fill="rgba(148, 163, 184, 0.6)" />
+            <div className="flex items-center gap-1.5 text-purple-300">
+              <svg width="20" height="10" className="overflow-visible">
+                <line x1="0" y1="5" x2="14" y2="5" stroke="#A855F7" strokeWidth="2.0" />
+                <polygon points="14,2 19,5 14,8" fill="#A855F7" />
               </svg>
-              <span>Related</span>
+              <span>Bridge</span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-400">
-              <svg width="24" height="10" className="overflow-visible">
-                <line x1="0" y1="5" x2="16" y2="5" stroke="rgba(148, 163, 184, 0.6)" strokeWidth="1.2" strokeDasharray="3 3" />
-                <polygon points="16,2 23,5 16,8" fill="rgba(148, 163, 184, 0.6)" />
+              <svg width="20" height="10" className="overflow-visible">
+                <line x1="0" y1="5" x2="14" y2="5" stroke="rgba(148, 163, 184, 0.6)" strokeWidth="1.2" strokeDasharray="3 3" />
+                <polygon points="14,2 19,5 14,8" fill="rgba(148, 163, 184, 0.6)" />
               </svg>
-              <span>Part of</span>
+              <span>Cluster</span>
             </div>
           </div>
         </div>
+        )}
       </ReactFlowProvider>
     </div>
   );
