@@ -110,9 +110,9 @@ class TestKnowledgeGraphVisualization:
             "Newton's Second Law must be a prerequisite for Centripetal Acceleration across chapters"
         )
 
-        # Topic 2 (Friction) -> Topic 3 (Centripetal Motion)
-        assert static_friction["concept_id"] in centripetal_accel["prerequisites"], (
-            "Static Friction must be a prerequisite for Centripetal Acceleration across chapters"
+        # Topic 2 (Friction) is independent from Circular Kinematics
+        assert static_friction["concept_id"] not in centripetal_accel["prerequisites"], (
+            "Static Friction must NOT be a prerequisite for Centripetal Acceleration (independent kinematics)"
         )
 
     def test_laws_of_motion_pedagogical_ordering(self):

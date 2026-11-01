@@ -143,10 +143,10 @@ export const LearningPathTimeline: React.FC<LearningPathTimelineProps> = ({
                   <div className="flex items-center gap-4 self-end sm:self-center shrink-0">
                     <div className="text-right">
                       <span className="text-xs font-mono font-bold text-white block">
-                        {masteryPercent}%
+                        {isBlocked ? '--' : (nodeMastery === 0.3 && !isCompleted && !isTarget ? 'Ready' : `${masteryPercent}%`)}
                       </span>
                       <span className="text-[10px] font-mono text-universe-slate block">
-                        Mastery
+                        {isBlocked ? 'Locked' : (isCompleted ? 'Mastered' : (isTarget ? 'Active' : (nodeMastery === 0.3 ? 'Not Assessed' : 'Mastery')))}
                       </span>
                     </div>
 

@@ -620,7 +620,17 @@ export default function App() {
                 </div>
               )}
             </div>
-          ) : null
+          ) : (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-md mx-auto my-12 animate-fade-in border border-white/[0.08]">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center mx-auto text-cyan-400">
+                <Orbit className="w-6 h-6 animate-spin" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-white">Preparing Knowledge Atlas</h3>
+              <p className="text-xs text-universe-slate font-sans">
+                Connecting to knowledge graph engine...
+              </p>
+            </div>
+          )
         )}
 
         {/* Source Library — shared across all roles */}

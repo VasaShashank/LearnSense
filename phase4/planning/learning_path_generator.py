@@ -82,7 +82,7 @@ class LearningPathGenerator:
         ordered_concept_ids = self.resolver.cycle_safe_topological_sort(learning_context, candidate_ids)
 
         # Step 4: Cap to MAX_LEARNING_PATH_LENGTH
-        max_len = self.config.MAX_LEARNING_PATH_LENGTH
+        max_len = max(getattr(self.config, 'MAX_LEARNING_PATH_LENGTH', 10), len(subject_concept_ids))
         final_concept_ids = ordered_concept_ids[:max_len]
 
         # Step 5: Construct path nodes

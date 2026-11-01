@@ -348,7 +348,6 @@ class KnowledgeService:
             ("coefficient of static friction", "coefficient of kinetic friction"),
             # Cross-chapter: Dynamics / Friction -> Centripetal Motion
             ("newtons second law", "centripetal acceleration"),
-            ("static friction", "centripetal acceleration"),
             # Topic 3: Centripetal Motion
             ("angular velocity", "centripetal acceleration"),
             ("angular velocity", "tangential acceleration"),

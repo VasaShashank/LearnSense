@@ -75,12 +75,33 @@ class PrerequisiteResolver:
                 adj[src].append(tgt)
                 in_degree[tgt] = in_degree.get(tgt, 0) + 1
 
+        # Chapter- and topic-coherent ranking: prioritize pedagogical progression
+        concept_rank: Dict[str, int] = {}
+        topics = getattr(learning_context, "topics", []) or []
+        for t_idx, topic in enumerate(topics):
+            t_concepts = topic.get("concept_ids", []) if isinstance(topic, dict) else (getattr(topic, "concept_ids", []) or [])
+            for c_idx, cid in enumerate(t_concepts):
+                if cid not in concept_rank:
+                    concept_rank[cid] = t_idx * 1000 + c_idx
+
+        all_concepts = getattr(learning_context, "concepts", []) or []
+        if isinstance(all_concepts, dict):
+            concept_list = list(all_concepts.keys())
+        elif isinstance(all_concepts, list):
+            concept_list = [c if isinstance(c, str) else getattr(c, "concept_id", str(c)) for c in all_concepts]
+        else:
+            concept_list = []
+
+        for c_idx, cid in enumerate(concept_list):
+            if cid not in concept_rank:
+                concept_rank[cid] = 100000 + c_idx
+
         queue = [c for c in concept_ids if in_degree[c] == 0]
         sorted_nodes = []
 
         while queue:
-            # Deterministic sorting on queue for stable path generation
-            queue.sort()
+            # Deterministic sorting on queue prioritizing chapter progression
+            queue.sort(key=lambda c: (concept_rank.get(c, 200000), c))
             curr = queue.pop(0)
             sorted_nodes.append(curr)
 
@@ -91,7 +112,7 @@ class PrerequisiteResolver:
 
         # Handle remaining cyclic nodes safely by appending in deterministic order
         remaining = [c for c in concept_ids if c not in set(sorted_nodes)]
-        remaining.sort()
+        remaining.sort(key=lambda c: (concept_rank.get(c, 200000), c))
         sorted_nodes.extend(remaining)
 
         return sorted_nodes

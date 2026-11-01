@@ -30,6 +30,8 @@ class TeachingOptimizer:
     Synthesizes aggregated learning intelligence for teachers and plans interventions.
     """
 
+    _context_concept_names_cache: Optional[Dict[str, str]] = None
+
     @classmethod
     def resolve_concept_name(
         cls,
@@ -56,22 +58,25 @@ class TeachingOptimizer:
                     return g.target_concept_name
                 if g.prerequisite_concept_id == concept_id and g.prerequisite_concept_name and not re.match(r"^c_[a-f0-9]{6,}$", g.prerequisite_concept_name.strip(), re.I):
                     return g.prerequisite_concept_name
-        # 4. From any stored learning context in storage/learning_contexts
+        # 4. From cached stored learning contexts (scanned lazily once instead of on every call)
         try:
-            lc_dir = Path("storage/learning_contexts")
-            if lc_dir.exists():
-                for f in lc_dir.glob("*.json"):
-                    try:
-                        with open(f, "r", encoding="utf-8") as fp:
-                            data = json.load(fp)
-                            cdict = data.get("concepts", {})
-                            if concept_id in cdict:
-                                cname = cdict[concept_id].get("canonical_name") or cdict[concept_id].get("name")
-                                if cname and not re.match(r"^c_[a-f0-9]{6,}$", cname.strip(), re.I):
-                                    return cname
-                    except (IOError, ValueError) as err:
-                        logger.debug("Skipping unreadable learning context %s: %s", f, err)
-                        continue
+            if cls._context_concept_names_cache is None:
+                cache: Dict[str, str] = {}
+                lc_dir = Path("storage/learning_contexts")
+                if lc_dir.exists():
+                    for f in lc_dir.glob("*.json"):
+                        try:
+                            with open(f, "r", encoding="utf-8") as fp:
+                                data = json.load(fp)
+                                for cid, cinfo in data.get("concepts", {}).items():
+                                    cname = cinfo.get("canonical_name") or cinfo.get("name")
+                                    if cname and not re.match(r"^c_[a-f0-9]{6,}$", str(cname).strip(), re.I):
+                                        cache[cid] = cname
+                        except (IOError, ValueError):
+                            continue
+                cls._context_concept_names_cache = cache
+            if concept_id in cls._context_concept_names_cache:
+                return cls._context_concept_names_cache[concept_id]
         except Exception as err:
             logger.debug("Could not scan learning contexts directory: %s", err)
 

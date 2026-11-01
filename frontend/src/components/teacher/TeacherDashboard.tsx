@@ -107,130 +107,18 @@ interface StudentLearningInsight {
   teaching_recommendations: string[];
 }
 
-/** Hardcoded demo fallback insights for when the API is unavailable */
-function getDemoInsights(): StudentLearningInsight[] {
-  return [
-    {
-      concept_name: 'Recursion',
-      total_attempts: 1247,
-      common_mistakes: [
-        { mistake: 'Missing base case — causes infinite recursion', frequency_pct: 38 },
-        { mistake: 'Confusing iteration variable with recursive call return', frequency_pct: 27 },
-        { mistake: 'Stack overflow from non-tail-recursive functions on large inputs', frequency_pct: 19 },
-      ],
-      avg_first_try_accuracy: 0.34,
-      avg_time_to_master_minutes: 145,
-      difficulty_tier: 'HARD',
-      teaching_recommendations: [
-        'Start with tree visualization of recursive calls before code',
-        'Use tracing tables to show call stack frame by frame',
-        'Pair with iteration first, then show recursive equivalent',
-      ],
-    },
-    {
-      concept_name: 'Dynamic Programming',
-      total_attempts: 892,
-      common_mistakes: [
-        { mistake: 'Cannot identify overlapping subproblems', frequency_pct: 45 },
-        { mistake: 'Incorrect memoization table dimensions', frequency_pct: 31 },
-        { mistake: 'Confusing top-down vs bottom-up approach', frequency_pct: 22 },
-      ],
-      avg_first_try_accuracy: 0.21,
-      avg_time_to_master_minutes: 210,
-      difficulty_tier: 'VERY_HARD',
-      teaching_recommendations: [
-        'Show how DP extends recursion — build the bridge explicitly',
-        'Start with Fibonacci, then escalate to knapsack',
-        'Use 2D table visualizations for state transitions',
-      ],
-    },
-    {
-      concept_name: 'Sorting Algorithms',
-      total_attempts: 1834,
-      common_mistakes: [
-        { mistake: 'Confusing best/worst/average case complexities across algorithms', frequency_pct: 42 },
-        { mistake: 'Incorrect partition logic in quicksort', frequency_pct: 28 },
-        { mistake: 'Off-by-one errors in merge step', frequency_pct: 18 },
-      ],
-      avg_first_try_accuracy: 0.52,
-      avg_time_to_master_minutes: 85,
-      difficulty_tier: 'MODERATE',
-      teaching_recommendations: [
-        'Use animated visualizations (bars sorting in real-time)',
-        'Side-by-side comparison tables for complexity',
-        'Hands-on: sort playing cards to build intuition before code',
-      ],
-    },
-    {
-      concept_name: 'Graph Traversal (BFS/DFS)',
-      total_attempts: 967,
-      common_mistakes: [
-        { mistake: 'Not marking nodes as visited — infinite loops', frequency_pct: 35 },
-        { mistake: 'Confusing BFS (queue) with DFS (stack) data structures', frequency_pct: 30 },
-        { mistake: 'Cannot adapt traversal to adjacency matrix vs list', frequency_pct: 20 },
-      ],
-      avg_first_try_accuracy: 0.38,
-      avg_time_to_master_minutes: 120,
-      difficulty_tier: 'HARD',
-      teaching_recommendations: [
-        'Draw graph on board and physically trace BFS vs DFS path',
-        'Emphasize the "visited" set as the #1 rule',
-        'Compare queue (BFS) vs stack (DFS) with real examples',
-      ],
-    },
-    {
-      concept_name: 'Hash Tables',
-      total_attempts: 1523,
-      common_mistakes: [
-        { mistake: 'Not handling collision resolution (chaining vs probing)', frequency_pct: 33 },
-        { mistake: 'Poor hash function causing clustering', frequency_pct: 25 },
-        { mistake: 'Confusing time complexity of lookup vs iteration', frequency_pct: 22 },
-      ],
-      avg_first_try_accuracy: 0.58,
-      avg_time_to_master_minutes: 65,
-      difficulty_tier: 'MODERATE',
-      teaching_recommendations: [
-        'Start with dictionary analogy before formal definition',
-        'Visual: show array of buckets with chained lists',
-        'Compare with binary search tree for lookup scenarios',
-      ],
-    },
-    {
-      concept_name: 'Time Complexity Analysis',
-      total_attempts: 2103,
-      common_mistakes: [
-        { mistake: 'Counting nested loops incorrectly — miscounting powers', frequency_pct: 41 },
-        { mistake: 'Confusing O(n log n) with O(n²) in practical scenarios', frequency_pct: 28 },
-        { mistake: 'Ignoring amortized analysis (e.g., dynamic array resizing)', frequency_pct: 15 },
-      ],
-      avg_first_try_accuracy: 0.45,
-      avg_time_to_master_minutes: 95,
-      difficulty_tier: 'HARD',
-      teaching_recommendations: [
-        'Use concrete number examples: "what happens when n = 10, 100, 1000?"',
-        'Draw growth curves on graph paper for visual comparison',
-        'Practice loop counting exercises before formal Big-O notation',
-      ],
-    },
-  ];
-}
-
-/** Fetch dynamic insights from backend; falls back to demo data on failure. */
+/** Fetch authentic dynamic insights from backend; returns empty list if no telemetry exists yet. */
 async function fetchDynamicInsights(
   classId?: string,
   subjectId?: string,
 ): Promise<StudentLearningInsight[]> {
   try {
-    let result: StudentLearningInsight[] = [];
     if (classId) {
-      result = await ApiClient.getStudentLearningInsights(classId, subjectId);
-    } else {
-      result = await ApiClient.getGlobalStudentLearningInsights(subjectId);
+      return await ApiClient.getStudentLearningInsights(classId, subjectId);
     }
-    // If backend returned real data, use it; otherwise fall back to demo
-    return result.length > 0 ? result : getDemoInsights();
+    return await ApiClient.getGlobalStudentLearningInsights(subjectId);
   } catch {
-    return getDemoInsights();
+    return [];
   }
 }
 
@@ -1030,35 +918,45 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
           )}
 
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
-              <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Total Attempts Tracked</div>
-              <div className="text-2xl font-display font-bold text-white">
-                {insights.reduce((sum, i) => sum + i.total_attempts, 0).toLocaleString()}
+          {/* Summary Stats — only displayed if authentic telemetry exists */}
+          {insights.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+                <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Total Attempts Tracked</div>
+                <div className="text-2xl font-display font-bold text-white">
+                  {insights.reduce((sum, i) => sum + i.total_attempts, 0).toLocaleString()}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+                <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Avg First-Try Accuracy</div>
+                <div className="text-2xl font-display font-bold text-amber-400">
+                  {(insights.reduce((sum, i) => sum + i.avg_first_try_accuracy, 0) / insights.length * 100).toFixed(0)}%
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+                <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Hardest Topic</div>
+                <div className="text-lg font-display font-bold text-rose-400">
+                  {insights.slice().sort((a, b) => a.avg_first_try_accuracy - b.avg_first_try_accuracy)[0]?.concept_name || 'N/A'}
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
+                <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Unique Mistake Patterns</div>
+                <div className="text-2xl font-display font-bold text-purple-400">
+                  {insights.reduce((sum, i) => sum + i.common_mistakes.length, 0)}
+                </div>
               </div>
             </div>
-            <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
-              <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Avg First-Try Accuracy</div>
-              <div className="text-2xl font-display font-bold text-amber-400">
-                {insights.length > 0
-                  ? (insights.reduce((sum, i) => sum + i.avg_first_try_accuracy, 0) / insights.length * 100).toFixed(0)
-                  : 0}%
-              </div>
+          ) : (
+            <div className="p-6 rounded-2xl bg-space-900/60 border border-white/[0.08] flex flex-col items-center gap-2.5 text-center">
+              <Brain className="w-8 h-8 text-universe-slate/70" />
+              <p className="text-sm text-white font-semibold">No Aggregate Misconception Telemetry Recorded Yet</p>
+              <p className="text-xs text-universe-slate max-w-md leading-relaxed font-sans">
+                {selectedClassId
+                  ? 'Real-time learning insights and mistake patterns will be calculated as students in this cohort engage with interactive assessments.'
+                  : 'Select an active class cohort above to view instructional analytics and misconception clusters.'}
+              </p>
             </div>
-            <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
-              <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Hardest Topic</div>
-              <div className="text-lg font-display font-bold text-rose-400">
-                {insights.sort((a, b) => a.avg_first_try_accuracy - b.avg_first_try_accuracy)[0]?.concept_name}
-              </div>
-            </div>
-            <div className="p-4 rounded-2xl bg-space-900/60 border border-white/[0.08]">
-              <div className="text-[10px] font-mono text-universe-slate uppercase mb-1">Unique Mistake Patterns</div>
-              <div className="text-2xl font-display font-bold text-purple-400">
-                {insights.reduce((sum, i) => sum + i.common_mistakes.length, 0)}
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Enrolled Student Mastery Roster Section in Summary View */}
           {!isIndependent && (
@@ -1090,38 +988,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-                  {(studentsMastery.length > 0
-                    ? studentsMastery
-                    : (classes.find((c) => c.class_id === selectedClassId)?.enrolled_learner_ids || [
-                        'student_alex',
-                        'student_sam',
-                        'student_jordan',
-                        'student_priya',
-                      ]).map((lid: string, idx: number) => ({
-                        learner_id: lid,
-                        name: formatStudentName(lid),
-                        role: 'Enrolled Learner',
-                        avatar: DEMO_STUDENT_ROSTER.find((s) => s.id === lid)?.avatar || '🧑‍🎓',
-                        average_mastery: [0.78, 0.36, 0.93, 0.87, 0.62][idx % 5],
-                        accuracy_pct: [78, 36, 93, 87, 62][idx % 5],
-                        total_concepts: 5,
-                        mastered_concepts: idx === 1 ? 1 : 3,
-                        developing_concepts: 2,
-                        struggling_concepts: idx === 1 ? 2 : 0,
-                        total_attempts: 15,
-                        total_correct: 10,
-                        assigned_tier:
-                          idx === 1
-                            ? 'Tier 1: Targeted Remediation'
-                            : idx === 2
-                            ? 'Tier 3: Advanced Synthesis'
-                            : 'Tier 2: Guided Practice',
-                        recommended_intervention:
-                          idx === 1
-                            ? 'Focus on foundational prerequisites with 1-on-1 trace scaffolding.'
-                            : 'Ready for peer mentoring and advanced practice.',
-                      }))
-                  ).map((student: any) => {
+                  {studentsMastery.length === 0 ? (
+                    <div className="col-span-full p-6 text-center text-xs font-mono text-universe-slate bg-space-850/50 rounded-xl border border-white/[0.06]">
+                      No enrolled student mastery records found for this cohort yet.
+                    </div>
+                  ) : (
+                    studentsMastery.map((student: any) => {
                     const isSelected = expandedStudentId === student.learner_id;
                     const mPct = Math.round(student.average_mastery * 100);
                     const isStrug = student.average_mastery < 0.45;
@@ -1184,7 +1056,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                         </div>
                       </div>
                     );
-                  })}
+                  }))}
                 </div>
               )}
             </div>
