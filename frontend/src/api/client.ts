@@ -264,7 +264,18 @@ export interface ConceptLearningContent {
   grounded: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const getDefaultApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    // Relative /api routes through Vite dev proxy or production reverse proxy
+    return '/api';
+  }
+  return 'http://127.0.0.1:8000/api';
+};
+
+const API_BASE_URL = getDefaultApiBaseUrl();
 
 /** Default request timeout. A hung request used to leave the UI spinning forever. */
 const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 120000);

@@ -26,6 +26,74 @@ for p in [Path(".env"), Path(__file__).resolve().parent.parent / ".env"]:
                     if k and k not in os.environ:
                         os.environ[k] = v
 
+import sys
+if sys.platform == "win32":
+    # Workaround for CPython issue #84882 / uvicorn issue #1126 on Windows:
+    # When a client resets a connection before accept() completes, Windows raises
+    # WinError 64 / 121 / 10054. The standard asyncio proactor event loop unhandled exception
+    # handler closes the server listening socket, killing the server.
+    # We patch BaseProactorEventLoop._start_serving to ignore transient client aborts and keep listening.
+    try:
+        import asyncio.proactor_events as _pe
+        _orig_start_serving = _pe.BaseProactorEventLoop._start_serving
+
+        def _patched_start_serving(self, protocol_factory, sock, sslcontext=None, server=None, backlog=100, ssl_handshake_timeout=None, ssl_shutdown_timeout=None):
+            def loop(f=None):
+                try:
+                    if f is not None:
+                        try:
+                            conn, addr = f.result()
+                        except OSError as exc:
+                            if getattr(exc, "winerror", None) in (64, 121, 10054):
+                                if not self.is_closed():
+                                    next_f = self._proactor.accept(sock)
+                                    self._accept_futures[sock.fileno()] = next_f
+                                    next_f.add_done_callback(loop)
+                                return
+                            raise
+                        protocol = protocol_factory()
+                        if sslcontext is not None:
+                            self._make_ssl_transport(
+                                conn, protocol, sslcontext, server_side=True,
+                                extra={"peername": addr}, server=server,
+                                ssl_handshake_timeout=ssl_handshake_timeout,
+                                ssl_shutdown_timeout=ssl_shutdown_timeout)
+                        else:
+                            self._make_socket_transport(
+                                conn, protocol,
+                                extra={"peername": addr}, server=server)
+                    if self.is_closed():
+                        return
+                    f = self._proactor.accept(sock)
+                except OSError as exc:
+                    if getattr(exc, "winerror", None) in (64, 121, 10054):
+                        if not self.is_closed():
+                            next_f = self._proactor.accept(sock)
+                            self._accept_futures[sock.fileno()] = next_f
+                            next_f.add_done_callback(loop)
+                        return
+                    if sock.fileno() != -1:
+                        self.call_exception_handler({
+                            "message": "Accept failed on a socket",
+                            "exception": exc,
+                            "socket": _pe.trsock.TransportSocket(sock),
+                        })
+                        sock.close()
+                    elif self._debug:
+                        _pe.logger.debug("Accept failed on socket %r", sock, exc_info=True)
+                except _pe.exceptions.CancelledError:
+                    sock.close()
+                else:
+                    self._accept_futures[sock.fileno()] = f
+                    f.add_done_callback(loop)
+
+            self.call_soon(loop)
+
+        _pe.BaseProactorEventLoop._start_serving = _patched_start_serving
+    except Exception:
+        pass
+
+
 
 # ---------------------------------------------------------------------------
 # W1: Startup Preflight — probes each subsystem and caches the results.

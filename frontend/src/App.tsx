@@ -42,6 +42,8 @@ export default function App() {
 
   // Resume / Rehydration State
   const [graphData, setGraphData] = useState<KnowledgeGraphData | null>(null);
+  const [isLoadingGraph, setIsLoadingGraph] = useState<boolean>(false);
+  const [graphError, setGraphError] = useState<string | null>(null);
   const [progress, setProgress] = useState<LearnerProgress | null>(null);
   const [gaps, setGaps] = useState<KnowledgeGap[]>([]);
   const [pathNodes, setPathNodes] = useState<LearningPathNode[]>([]);
@@ -111,7 +113,7 @@ export default function App() {
       }
 
       if (targetSub) {
-        setSelectedSubject((prev) => prev ?? targetSub);
+        setSelectedSubject((prev) => (prev && subs.some((s) => s.id === prev.id) ? prev : targetSub));
       }
     } catch (err) {
       console.error('Failed to load initial data', err);
@@ -125,6 +127,8 @@ export default function App() {
   // 2. Load Subject Data
   const refreshSubjectData = useCallback(async () => {
     if (!selectedSubject) return;
+    setIsLoadingGraph(true);
+    setGraphError(null);
     try {
       const [graph, prog, pathGapRes] = await Promise.all([
         ApiClient.getSubjectGraph(selectedSubject.id, learnerId),
@@ -136,8 +140,11 @@ export default function App() {
       setGaps(pathGapRes.gaps);
       setPathNodes(pathGapRes.learning_path.nodes);
       setNextTarget(pathGapRes.next_target);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to refresh subject data', err);
+      setGraphError(err?.message || 'Failed to refresh knowledge topology from backend');
+    } finally {
+      setIsLoadingGraph(false);
     }
   }, [selectedSubject, learnerId]);
 
@@ -421,115 +428,199 @@ export default function App() {
             ════════════════════════════════════════════════ */}
 
         {/* Knowledge Atlas — shared across all roles */}
-        {activeView === 'ATLAS' && graphData && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Orbit className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-lg font-display font-bold text-white tracking-tight">
-                  Knowledge Atlas Topology
-                </h2>
-                {currentPersona.role !== 'LEARNER' && (
-                  <span className="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/30 text-purple-300 text-[10px] font-mono">
-                    {currentPersona.role === 'TEACHER' ? 'Instructor View' : 'Admin View'}
-                  </span>
-                )}
+        {activeView === 'ATLAS' && (
+          !selectedSubject ? (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-xl mx-auto my-12 animate-fade-in border border-white/[0.08]">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center mx-auto text-cyan-400">
+                <Orbit className="w-6 h-6 animate-pulse" />
               </div>
-
-              <button
-                onClick={() => setShowAccessibleAtlas(!showAccessibleAtlas)}
-                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline transition-colors"
-              >
-                {showAccessibleAtlas ? 'Show Interactive Neural Map' : 'Show Accessible Data Table'}
-              </button>
+              <h2 className="text-xl font-display font-bold text-white">No Subject Selected</h2>
+              <p className="text-sm text-universe-slate leading-relaxed font-sans">
+                {subjects.length === 0
+                  ? 'Your knowledge engine is ready. Ingest textbook chapters or course materials in Sources to generate your interactive Knowledge Atlas.'
+                  : 'Select a subject from the selector above or open Sources to explore existing material.'}
+              </p>
+              <div className="pt-2 flex items-center justify-center gap-3">
+                {subjects.length > 0 && (
+                  <button
+                    onClick={() => setSelectedSubject(subjects[0])}
+                    className="px-6 py-2.5 rounded-xl bg-cyan-400 text-space-950 font-display font-bold text-xs hover:bg-cyan-300 transition-all inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,240,255,0.2)]"
+                  >
+                    <Orbit className="w-4 h-4" />
+                    <span>Load {subjects[0].title}</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setActiveView('SOURCES')}
+                  className="px-6 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-white font-display font-bold text-xs transition-all inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>Open Sources</span>
+                </button>
+              </div>
             </div>
-
-            {showAccessibleAtlas ? (
-              <AccessibleAtlasView
-                graphData={graphData}
-                conceptMap={conceptMap}
-                onSelectConcept={(c) => setSelectedConcept(c)}
-              />
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3">
-                  <LearningAtlas
-                    graphData={graphData}
-                    learningPathNodes={pathNodes}
-                    activeTargetId={nextTarget?.concept_id}
-                    nextTarget={nextTarget}
-                    learnerId={learnerId}
-                    selectedTopicId={selectedTopic?.id}
-                    selectedConceptId={selectedConcept?.concept_id}
-                    onSelectTopic={(t) => {
-                      setSelectedTopic(t);
-                      setSelectedConcept(null);
-                    }}
-                    onSelectConcept={(c) => {
-                      setSelectedConcept(c);
-                    }}
-                    onStartLearning={(cId) => {
-                      if (currentPersona.role !== 'LEARNER') return;
-                      const c = graphData?.concepts.find((item) => item.concept_id === cId);
-                      if (c) {
-                        setSessionInitialTab('EXPLANATION');
-                        setActiveStudyConcept(c);
-                      }
-                      setSelectedConcept(null);
-                      setSelectedTopic(null);
-                    }}
-                    onStartPractice={(cId) => {
-                      if (currentPersona.role !== 'LEARNER') return;
-                      const c = graphData?.concepts.find((item) => item.concept_id === cId);
-                      if (c) {
-                        setSessionInitialTab('PRACTICE');
-                        setActiveStudyConcept(c);
-                      }
-                      setSelectedConcept(null);
-                      setSelectedTopic(null);
-                    }}
-                    isXRayMode={isXRayMode}
-                    onToggleXRay={() => setIsXRayMode(!isXRayMode)}
-                    impactedConceptIds={impactedConceptIds}
-                    onTraceImpact={handleTraceImpact}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  {selectedConcept ? (
-                    <XRayInspector
-                      concept={selectedConcept}
-                      downstreamCount={
-                        (selectedConcept.dependents && selectedConcept.dependents.length > 0)
-                          ? selectedConcept.dependents.length
-                          : graphData.concepts.filter((c) => c.prerequisites.includes(selectedConcept.concept_id)).length
-                      }
-                      onTraceImpact={handleTraceImpact}
-                      isTracing={isTracingImpact}
-                    />
-                  ) : selectedTopic ? (
-                    <XRayInspector
-                      topic={selectedTopic}
-                      downstreamCount={selectedTopic.dependents?.length || 0}
-                      onTraceImpact={handleTraceImpact}
-                      isTracing={isTracingImpact}
-                      onOpenLearningPlan={() => {
-                        // Topic is already selected and opened
-                      }}
-                    />
-                  ) : (
-                    <div className="universe-panel rounded-2xl p-6 text-center space-y-2">
-                      <Sparkles className="w-6 h-6 text-cyan-400/60 mx-auto" />
-                      <h4 className="text-xs font-display font-bold text-white">X-Ray Telemetry Standby</h4>
-                      <p className="text-[11px] text-universe-slate font-sans leading-relaxed">
-                        Select any subheading or conceptual node in the Knowledge Atlas to open real-time prerequisite tracing and downstream impact telemetry.
-                      </p>
-                    </div>
+          ) : isLoadingGraph ? (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-md mx-auto my-12 animate-fade-in border border-white/[0.08]">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center mx-auto text-cyan-400">
+                <Orbit className="w-6 h-6 animate-spin" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-white">Initializing Knowledge Atlas</h3>
+              <p className="text-xs text-universe-slate font-sans">
+                Rendering neural topology for <span className="text-cyan-300 font-medium">{selectedSubject.title}</span>...
+              </p>
+            </div>
+          ) : graphError ? (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-md mx-auto my-12 animate-fade-in border border-rose-500/30">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-400">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-white">Failed to Load Knowledge Topology</h3>
+              <p className="text-xs text-universe-slate font-sans leading-relaxed">
+                {graphError}
+              </p>
+              <div className="pt-2 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => refreshSubjectData()}
+                  className="px-5 py-2 rounded-xl bg-cyan-400 text-space-950 font-bold text-xs hover:bg-cyan-300 transition-all cursor-pointer"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={() => setActiveView('SOURCES')}
+                  className="px-5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white text-xs transition-all cursor-pointer"
+                >
+                  Go to Sources
+                </button>
+              </div>
+            </div>
+          ) : graphData && graphData.concepts.length === 0 ? (
+            <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-md mx-auto my-12 animate-fade-in border border-amber-500/30">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-white">No Concepts Detected</h3>
+              <p className="text-xs text-universe-slate font-sans leading-relaxed">
+                No conceptual entities have been mapped for {selectedSubject.title} yet.
+              </p>
+              <div className="pt-2 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setActiveView('SOURCES')}
+                  className="px-5 py-2 rounded-xl bg-cyan-400 text-space-950 font-bold text-xs hover:bg-cyan-300 transition-all cursor-pointer"
+                >
+                  Explore Sources
+                </button>
+              </div>
+            </div>
+          ) : graphData ? (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Orbit className="w-5 h-5 text-cyan-400" />
+                  <h2 className="text-lg font-display font-bold text-white tracking-tight">
+                    Knowledge Atlas Topology
+                  </h2>
+                  {currentPersona.role !== 'LEARNER' && (
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/30 text-purple-300 text-[10px] font-mono">
+                      {currentPersona.role === 'TEACHER' ? 'Instructor View' : 'Admin View'}
+                    </span>
                   )}
                 </div>
+
+                <button
+                  onClick={() => setShowAccessibleAtlas(!showAccessibleAtlas)}
+                  className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline transition-colors"
+                >
+                  {showAccessibleAtlas ? 'Show Interactive Neural Map' : 'Show Accessible Data Table'}
+                </button>
               </div>
-            )}
-          </div>
+
+              {showAccessibleAtlas ? (
+                <AccessibleAtlasView
+                  graphData={graphData}
+                  conceptMap={conceptMap}
+                  onSelectConcept={(c) => setSelectedConcept(c)}
+                />
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                  <div className="lg:col-span-3">
+                    <LearningAtlas
+                      graphData={graphData}
+                      learningPathNodes={pathNodes}
+                      activeTargetId={nextTarget?.concept_id}
+                      nextTarget={nextTarget}
+                      learnerId={learnerId}
+                      selectedTopicId={selectedTopic?.id}
+                      selectedConceptId={selectedConcept?.concept_id}
+                      onSelectTopic={(t) => {
+                        setSelectedTopic(t);
+                        setSelectedConcept(null);
+                      }}
+                      onSelectConcept={(c) => {
+                        setSelectedConcept(c);
+                      }}
+                      onStartLearning={(cId) => {
+                        if (currentPersona.role !== 'LEARNER') return;
+                        const c = graphData?.concepts.find((item) => item.concept_id === cId);
+                        if (c) {
+                          setSessionInitialTab('EXPLANATION');
+                          setActiveStudyConcept(c);
+                        }
+                        setSelectedConcept(null);
+                        setSelectedTopic(null);
+                      }}
+                      onStartPractice={(cId) => {
+                        if (currentPersona.role !== 'LEARNER') return;
+                        const c = graphData?.concepts.find((item) => item.concept_id === cId);
+                        if (c) {
+                          setSessionInitialTab('PRACTICE');
+                          setActiveStudyConcept(c);
+                        }
+                        setSelectedConcept(null);
+                        setSelectedTopic(null);
+                      }}
+                      isXRayMode={isXRayMode}
+                      onToggleXRay={() => setIsXRayMode(!isXRayMode)}
+                      impactedConceptIds={impactedConceptIds}
+                      onTraceImpact={handleTraceImpact}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    {selectedConcept ? (
+                      <XRayInspector
+                        concept={selectedConcept}
+                        downstreamCount={
+                          (selectedConcept.dependents && selectedConcept.dependents.length > 0)
+                            ? selectedConcept.dependents.length
+                            : graphData.concepts.filter((c) => c.prerequisites.includes(selectedConcept.concept_id)).length
+                        }
+                        onTraceImpact={handleTraceImpact}
+                        isTracing={isTracingImpact}
+                      />
+                    ) : selectedTopic ? (
+                      <XRayInspector
+                        topic={selectedTopic}
+                        downstreamCount={selectedTopic.dependents?.length || 0}
+                        onTraceImpact={handleTraceImpact}
+                        isTracing={isTracingImpact}
+                        onOpenLearningPlan={() => {
+                          // Topic is already selected and opened
+                        }}
+                      />
+                    ) : (
+                      <div className="universe-panel rounded-2xl p-6 text-center space-y-2">
+                        <Sparkles className="w-6 h-6 text-cyan-400/60 mx-auto" />
+                        <h4 className="text-xs font-display font-bold text-white">X-Ray Telemetry Standby</h4>
+                        <p className="text-[11px] text-universe-slate font-sans leading-relaxed">
+                          Select any subheading or conceptual node in the Knowledge Atlas to open real-time prerequisite tracing and downstream impact telemetry.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null
         )}
 
         {/* Source Library — shared across all roles */}
