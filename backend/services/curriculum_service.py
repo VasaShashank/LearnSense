@@ -829,8 +829,19 @@ class CurriculumService:
         reviewer_id: str = "curriculum_lead",
         note: str = "",
     ) -> Dict[str, Any]:
-        """Rollback live curriculum graph to a previously saved version snapshot."""
+        """Rollback live curriculum graph to a previously saved version snapshot with pre-rollback archival."""
         versioning = CurriculumVersioning(self.repository)
+
+        # Pre-rollback archival: snapshot current live graph before rolling back
+        current_graph = self.get_graph()
+        if current_graph and current_graph.concepts:
+            pre_rollback_snap = versioning.snapshot(
+                current_graph,
+                created_by=reviewer_id,
+                note=f"Automatic pre-rollback backup prior to reverting to {version_id}. Reason: {note or 'N/A'}",
+            )
+            versioning.commit(pre_rollback_snap)
+
         restored_graph = versioning.rollback(version_id, reverted_by=reviewer_id, note=note)
         self._graph = restored_graph
         return {

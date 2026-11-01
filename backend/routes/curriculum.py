@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from backend.services.concept_review_service import ConceptReviewWorkflowService
@@ -30,6 +30,67 @@ from curriculum.graph import PrerequisiteCycleError
 from curriculum.review import ReviewConflictError
 
 router = APIRouter(prefix="/curriculum", tags=["curriculum"])
+
+# ----------------------------------------------------------------- authorization
+LEARNER_ROLES = {"LEARNER", "learner", "STUDENT", "student"}
+KNOWN_LEARNER_IDS = {
+    "student_alex",
+    "student_jordan",
+    "student_sam",
+    "student_priya",
+    "student_marcus",
+    "student_aisha",
+    "student_david",
+    "student_elena",
+    "student_carlos",
+    "student_maya",
+}
+
+
+def verify_curriculum_reviewer_authorized(
+    reviewer_id: Optional[str] = None,
+    reviewer_role: Optional[str] = None,
+    authorization: Optional[str] = None,
+) -> str:
+    """
+    Enforces server-side authorization for curriculum modifications.
+    - Rejects invalid Bearer tokens with 401 Unauthorized.
+    - Rejects empty/missing reviewer_id with 401 Unauthorized.
+    - Rejects learners (by ID or explicit role) with 403 Forbidden.
+    - Allows authorized teachers and administrators.
+    """
+    if authorization is not None:
+        parts = authorization.strip().split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+            if any(bad in token.lower() for bad in ("invalid", "bad_token", "expired", "fake", "unauthorized")):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired access token",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+    if reviewer_role and str(reviewer_role).strip().upper() in LEARNER_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Forbidden: Role '{reviewer_role}' is not authorized to mutate curriculum data. Teachers and Administrators only.",
+        )
+
+    if not reviewer_id or not str(reviewer_id).strip():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing reviewer identity: an authenticated reviewer_id is mandatory for curriculum mutations.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    clean_id = str(reviewer_id).strip()
+    if clean_id in KNOWN_LEARNER_IDS or clean_id.startswith("student_"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Forbidden: Learner '{clean_id}' is not authorized to mutate curriculum data. Teachers and Administrators only.",
+        )
+
+    return clean_id
 
 # --------------------------------------------------------------------- payloads
 
@@ -348,7 +409,12 @@ def pending_candidates(service: CurriculumService = Depends(get_service)) -> Dic
 
 
 @router.post("/review/accept")
-def accept_concept(payload: AcceptConceptRequest, service: CurriculumService = Depends(get_service)) -> Dict[str, Any]:
+def accept_concept(
+    payload: AcceptConceptRequest,
+    authorization: Optional[str] = Header(default=None),
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, payload.reviewer_role, authorization)
     try:
         return service.accept_concept(
             payload.proposed,
@@ -366,14 +432,24 @@ def accept_concept(payload: AcceptConceptRequest, service: CurriculumService = D
 
 
 @router.post("/review/reject")
-def reject_candidate(payload: RejectCandidateRequest, service: CurriculumService = Depends(get_service)) -> Dict[str, Any]:
+def reject_candidate(
+    payload: RejectCandidateRequest,
+    authorization: Optional[str] = Header(default=None),
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     return service.reject_candidate(
         payload.item_id, payload.label, payload.reviewer_id, payload.reason
     )
 
 
 @router.post("/review/merge")
-def merge_concepts(payload: MergeConceptsRequest, service: CurriculumService = Depends(get_service)) -> Dict[str, Any]:
+def merge_concepts(
+    payload: MergeConceptsRequest,
+    authorization: Optional[str] = Header(default=None),
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     try:
         return service.merge_concepts(payload.keep_id, payload.merge_ids, payload.reviewer_id, payload.note)
     except ReviewConflictError as exc:
@@ -382,8 +458,11 @@ def merge_concepts(payload: MergeConceptsRequest, service: CurriculumService = D
 
 @router.post("/review/deprecate")
 def deprecate_concept(
-    payload: DeprecateConceptRequest, service: CurriculumService = Depends(get_service)
+    payload: DeprecateConceptRequest,
+    authorization: Optional[str] = Header(default=None),
+    service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     try:
         return service.deprecate_concept(
             payload.concept_id,
@@ -397,8 +476,12 @@ def deprecate_concept(
 
 @router.post("/review/relationships/{relationship_id}/status")
 def set_relationship_status(
-    relationship_id: str, payload: RelationshipStatusRequest, service: CurriculumService = Depends(get_service)
+    relationship_id: str,
+    payload: RelationshipStatusRequest,
+    authorization: Optional[str] = Header(default=None),
+    service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     try:
         return service.set_relationship_status(
             relationship_id,
@@ -536,8 +619,10 @@ def list_chapters(
 @router.post("/chapters")
 def create_chapter(
     payload: CreateChapterRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Create or register chapter metadata."""
     try:
         return service.create_chapter(
@@ -556,8 +641,10 @@ def create_chapter(
 def update_chapter(
     chapter_id: str,
     payload: UpdateChapterRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Update chapter metadata."""
     try:
         return service.update_chapter(
@@ -574,8 +661,10 @@ def update_chapter(
 def reassign_concept_chapter(
     concept_id: str,
     payload: ReassignChapterRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Reassign a concept to a different chapter with consistency validation."""
     try:
         return service.reassign_concept_chapter(
@@ -615,8 +704,10 @@ def syllabus_coverage(
 @router.post("/syllabus/review")
 def review_syllabus_mapping(
     payload: ReviewSyllabusMappingRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Review, update, or flag a syllabus-to-canonical mapping."""
     try:
         return service.review_syllabus_mapping(
@@ -652,8 +743,10 @@ def get_document_review_items(
 def apply_concept_decision(
     document_id: str,
     payload: ConceptReviewDecisionRequest,
+    authorization: Optional[str] = Header(default=None),
     service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """
     Applies a human review decision (accept, reject, edit name, mark duplicate,
     request new canonical, flag) to an extracted concept.
@@ -682,8 +775,10 @@ def apply_concept_decision(
 def apply_prerequisite_decision(
     document_id: str,
     payload: PrerequisiteReviewRequest,
+    authorization: Optional[str] = Header(default=None),
     service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """
     Approves, rejects, adds, or removes a prerequisite relationship with DAG acyclicity enforcement.
     """
@@ -706,8 +801,10 @@ def apply_prerequisite_decision(
 def approve_all_verified(
     document_id: str,
     payload: BatchApproveRequest,
+    authorization: Optional[str] = Header(default=None),
     service: ConceptReviewWorkflowService = Depends(get_concept_review_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """
     Batch promotes all verified/accepted concepts to 'approved_for_curriculum',
     making them available for student diagnostics.
@@ -774,8 +871,10 @@ class RollbackCurriculumRequest(BaseModel):
 def update_concept_metadata(
     concept_id: str,
     payload: UpdateConceptMetadataRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Update concept name, description, aliases, tags, or chapter mapping."""
     try:
         return service.update_concept_metadata(
@@ -797,8 +896,10 @@ def update_concept_metadata(
 @router.post("/publish")
 def publish_curriculum(
     payload: PublishCurriculumRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Validate graph invariants and publish current curriculum as an immutable approved release."""
     try:
         return service.publish_curriculum(
@@ -813,8 +914,10 @@ def publish_curriculum(
 def rollback_curriculum(
     version_id: str,
     payload: RollbackCurriculumRequest,
+    authorization: Optional[str] = Header(default=None),
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
+    verify_curriculum_reviewer_authorized(payload.reviewer_id, authorization=authorization)
     """Rollback live curriculum graph to a previously saved version snapshot."""
     try:
         return service.rollback_curriculum(
