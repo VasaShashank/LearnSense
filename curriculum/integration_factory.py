@@ -299,14 +299,34 @@ class CanonicalLearnerStateService:
     def _build_concept_map_from_graph(self) -> None:
         """Construct simulator -> canonical concept mapping from the canonical graph's aliases."""
         for cid, concept in self.adapter.graph.concepts.items():
-            for alias in getattr(concept, "aliases", []) or []:
-                alias_str = str(alias).strip()
-                if (
-                    alias_str.startswith("PHY_")
-                    or alias_str.startswith("CHE_")
-                    or alias_str.startswith("MAT_")
-                ):
-                    self.concept_map[alias_str] = cid
+            if getattr(concept.status, "value", concept.status) != "deprecated":
+                for alias in getattr(concept, "aliases", []) or []:
+                    alias_str = str(alias).strip()
+                    if (
+                        alias_str.startswith("PHY_")
+                        or alias_str.startswith("CHE_")
+                        or alias_str.startswith("MAT_")
+                    ):
+                        self.concept_map[alias_str] = cid
+
+        for cid, concept in self.adapter.graph.concepts.items():
+            if getattr(concept.status, "value", concept.status) == "deprecated":
+                target_cid = self.adapter.graph.resolve_id(cid)
+                if not target_cid or target_cid == cid or getattr(self.adapter.graph.concepts[target_cid].status, "value", self.adapter.graph.concepts[target_cid].status) == "deprecated":
+                    entry = next((e for e in self.adapter.graph.id_map if e.old_id == cid and e.relation == "split_into"), None)
+                    if entry and entry.current_ids and entry.current_ids[0] in self.adapter.graph.concepts:
+                        target_cid = entry.current_ids[0]
+                    else:
+                        target_cid = None
+                if target_cid and target_cid in self.adapter.graph.concepts:
+                    for alias in getattr(concept, "aliases", []) or []:
+                        alias_str = str(alias).strip()
+                        if (
+                            alias_str.startswith("PHY_")
+                            or alias_str.startswith("CHE_")
+                            or alias_str.startswith("MAT_")
+                        ) and alias_str not in self.concept_map:
+                            self.concept_map[alias_str] = target_cid
 
     def process_learner_mastery_update(
         self,

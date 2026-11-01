@@ -25,7 +25,7 @@ def canonical_graph():
 
 def test_concept_and_relationship_counts(canonical_graph):
     assert len(canonical_graph.concepts) == 89
-    assert len(canonical_graph.relationships) == 93
+    assert len(canonical_graph.relationships) == 91
 
     # Check subject breakdown
     physics_concepts = [c for c in canonical_graph.concepts.values() if c.subject.value == "physics"]
@@ -86,7 +86,8 @@ def test_syllabus_crosswalk_completeness():
 
 def test_knowledge_graph_adapter_compatibility(canonical_graph):
     adapter = KnowledgeGraphAdapter(canonical_graph)
-    assert len(adapter.concept_ids) == 89
+    assert len(adapter.concept_ids) == 87  # 87 active concepts (2 deprecated)
+    assert len(canonical_graph.concepts) == 89
 
     # Test readiness evaluation on an expanded concept
     # Vernier calipers requires Units and Measurements

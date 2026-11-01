@@ -652,11 +652,9 @@
       "class_levels": [
         "class_12"
       ],
-      "description": "Core curriculum topic Ray and Wave Optics covering fundamental principles in Physics (Optics).",
+      "description": "Deprecated macro umbrella concept; split into Ray Optics and Optical Instruments and Wave Optics and Wave Phenomena.",
       "name": "Ray and Wave Optics",
-      "prerequisites": [
-        "physics/mechanics/kinematics"
-      ],
+      "prerequisites": [],
       "source_refs": [
         {
           "kind": "CURRICULUM_FRAMEWORK",
@@ -675,7 +673,15 @@
       "topic_path": [
         "physics",
         "Optics"
-      ]
+      ],
+      "status": "deprecated",
+      "metadata": {
+        "replaced_by": [
+          "cc_d70ece71bc616b7b",
+          "cc_3c10e1bef7c6bb38"
+        ],
+        "deprecation_reason": "Obsolete macro umbrella split into modular Ray Optics and Wave Optics"
+      }
     },
     {
       "aliases": [
@@ -2047,11 +2053,9 @@
       "class_levels": [
         "class_11"
       ],
-      "description": "Core curriculum topic Coordinate Geometry: Conics covering fundamental principles in Mathematics (Coordinate Geometry).",
+      "description": "Deprecated duplicate concept; merged into Conic Sections (Parabola, Ellipse, Hyperbola).",
       "name": "Coordinate Geometry: Conics",
-      "prerequisites": [
-        "mathematics/algebra/quadratic_equations"
-      ],
+      "prerequisites": [],
       "source_refs": [
         {
           "kind": "CURRICULUM_FRAMEWORK",
@@ -2070,7 +2074,12 @@
       "topic_path": [
         "mathematics",
         "Coordinate Geometry"
-      ]
+      ],
+      "status": "deprecated",
+      "metadata": {
+        "replaced_by": "cc_3d26d1722cc57f40",
+        "deprecation_reason": "Merged duplicate Conics concept into canonical Conic Sections node"
+      }
     },
     {
       "stable_key": "mathematics/algebra/permutations_and_combinations",
@@ -2135,9 +2144,7 @@
         "line equations",
         "triangle centres"
       ],
-      "prerequisites": [
-        "mathematics/coordinate_geometry/coordinate_geometry_conics"
-      ],
+      "prerequisites": [],
       "source_refs": [
         {
           "source_id": "JEE-MAIN-2027-MATH",
@@ -3171,13 +3178,6 @@
     },
     {
       "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
-      "source_key": "physics/mechanics/kinematics",
-      "status": "accepted",
-      "target_key": "physics/optics/ray_and_wave_optics",
-      "type": "prerequisite_of"
-    },
-    {
-      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
       "source_key": "physics/modern_physics/modern_physics",
       "status": "accepted",
       "target_key": "physics/modern_physics/semiconductors",
@@ -3464,10 +3464,10 @@
       "type": "prerequisite_of"
     },
     {
-      "rationale": "Simulator specification parity: declared as prerequisite in simulator concepts.csv; provisional pending formal subject-matter expert review.",
+      "rationale": "Algebraic foundation: Quadratic equations and discriminants are required for analyzing second-degree conic sections (parabolas, ellipses, hyperbolas).",
       "source_key": "mathematics/algebra/quadratic_equations",
       "status": "accepted",
-      "target_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
+      "target_key": "mathematics/coordinate_geometry/conic_sections_parabola_ellipse_hyperbola",
       "type": "prerequisite_of"
     },
     {
@@ -3476,13 +3476,6 @@
       "type": "prerequisite_of",
       "status": "accepted",
       "rationale": "Pedagogical prerequisite: mathematics/algebra/sets_relations_and_functions must be mastered before mathematics/algebra/permutations_and_combinations"
-    },
-    {
-      "source_key": "mathematics/coordinate_geometry/coordinate_geometry_conics",
-      "target_key": "mathematics/coordinate_geometry/straight_lines",
-      "type": "prerequisite_of",
-      "status": "accepted",
-      "rationale": "Pedagogical prerequisite: mathematics/coordinate_geometry/coordinate_geometry_conics must be mastered before mathematics/coordinate_geometry/straight_lines"
     },
     {
       "source_key": "mathematics/coordinate_geometry/straight_lines",
@@ -3693,6 +3686,27 @@
       "type": "prerequisite_of",
       "status": "accepted",
       "rationale": "Pedagogical prerequisite: chemistry/physical_chemistry/chemical_kinetics must be mastered before chemistry/practical_chemistry/physical_chemistry_experiments"
+    }
+  ],
+  "id_map": [
+    {
+      "old_id": "cc_566dd708e45bdf97",
+      "current_id": "cc_3d26d1722cc57f40",
+      "current_ids": [],
+      "relation": "merged_into",
+      "note": "Merged duplicate Conics concept into canonical Conic Sections node",
+      "version_id": "2026.jee.v1"
+    },
+    {
+      "old_id": "cc_a0f8c26d421e9c83",
+      "current_id": null,
+      "current_ids": [
+        "cc_d70ece71bc616b7b",
+        "cc_3c10e1bef7c6bb38"
+      ],
+      "relation": "split_into",
+      "note": "Obsolete macro umbrella split into modular Ray Optics and Wave Optics",
+      "version_id": "2026.jee.v1"
     }
   ]
 }

@@ -219,6 +219,46 @@ class SimulatorBridge:
         best.sort(key=lambda match: match.sort_key())
 
         if not best:
+            # Check if concept matches a deprecated concept that has a successor in id_map
+            for concept_id in self.graph.concept_ids():
+                target = self.graph.concepts[concept_id]
+                if _status(target.status) == ConceptLifecycleStatus.DEPRECATED.value:
+                    match = score_surface_against_concept(concept.name, target)
+                    if match is not None and match.match_strength >= ACCEPTED_MIN_STRENGTH:
+                        resolved_id = self.graph.resolve_id(target.concept_id)
+                        if (
+                            resolved_id
+                            and resolved_id != target.concept_id
+                            and resolved_id in self.graph.concepts
+                            and _status(self.graph.concepts[resolved_id].status) != ConceptLifecycleStatus.DEPRECATED.value
+                        ):
+                            succ = self.graph.concepts[resolved_id]
+                            return SimulatorMappingEntry(
+                                simulator_concept_id=concept.simulator_concept_id,
+                                simulator_name=concept.name,
+                                status=SimulatorMappingStatus.MAPPED,
+                                canonical_concept_id=succ.concept_id,
+                                canonical_name=succ.name,
+                                match_strength=match.match_strength,
+                                matched_surface=match.matched_surface,
+                                match_kind=match.match_kind,
+                                reason=f"resolved via id_map from deprecated '{target.name}' to '{succ.name}'",
+                            )
+                        entry = next((e for e in self.graph.id_map if e.old_id == target.concept_id and e.relation == "split_into"), None)
+                        if entry and entry.current_ids and entry.current_ids[0] in self.graph.concepts:
+                            succ = self.graph.concepts[entry.current_ids[0]]
+                            return SimulatorMappingEntry(
+                                simulator_concept_id=concept.simulator_concept_id,
+                                simulator_name=concept.name,
+                                status=SimulatorMappingStatus.MAPPED,
+                                canonical_concept_id=succ.concept_id,
+                                canonical_name=succ.name,
+                                match_strength=match.match_strength,
+                                matched_surface=match.matched_surface,
+                                match_kind=match.match_kind,
+                                reason=f"resolved via id_map split from deprecated '{target.name}' to '{succ.name}'",
+                                alternative_concept_ids=entry.current_ids[1:],
+                            )
             return SimulatorMappingEntry(
                 simulator_concept_id=concept.simulator_concept_id,
                 simulator_name=concept.name,

@@ -52,6 +52,7 @@ from curriculum.models import (
     ConceptLifecycleStatus,
     ConceptRelationship,
     CurriculumGraph,
+    IdReference,
     ReviewStatus,
     SourceRef,
     Subject,
@@ -80,6 +81,8 @@ class SeededConceptSpec(BaseModel):
     aliases: List[str] = Field(default_factory=list)
     prerequisites: List[str] = Field(default_factory=list)
     source_refs: List[SourceRef] = Field(default_factory=list)
+    status: Optional[str] = "active"
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("subject", mode="before")
     @classmethod
@@ -109,6 +112,7 @@ class CurriculumSpec(BaseModel):
     title: str = ""
     concepts: List[SeededConceptSpec] = Field(default_factory=list)
     relationships: List[SeededRelationshipSpec] = Field(default_factory=list)
+    id_map: List[IdReference] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     def concept_by_key(self) -> Dict[str, SeededConceptSpec]:
@@ -149,6 +153,7 @@ def seed_curriculum(
         syllabus_version=spec.syllabus_version,
         title=spec.title,
         metadata=dict(spec.metadata),
+        id_map=list(spec.id_map),
     )
     # What the store already holds for this curriculum (None on first seed).
     # Re-seeding rewrites the graph file, so concept creation identities must
@@ -161,6 +166,11 @@ def seed_curriculum(
     # Pass 1: identities.  Prerequisites are wired in pass 2 because a concept may
     # legitimately declare a prerequisite that sorts after it.
     for concept_spec in ordered:
+        concept_status = (
+            ConceptLifecycleStatus(concept_spec.status)
+            if concept_spec.status
+            else ConceptLifecycleStatus.ACTIVE
+        )
         concept = CanonicalConcept.create(
             concept_spec.name,
             concept_spec.subject,
@@ -174,10 +184,12 @@ def seed_curriculum(
             source_refs=concept_spec.source_refs,
             curriculum_id=graph.curriculum_id,
             curriculum_version=graph.syllabus_version,
-            status=ConceptLifecycleStatus.ACTIVE,
+            status=concept_status,
             review_status=ReviewStatus.ACCEPTED,
             created_by=reviewer_id,
         )
+        if concept_spec.metadata:
+            concept.metadata.update(concept_spec.metadata)
         prior = prior_concepts.get(concept.concept_id)
         if prior is not None:
             # Re-seed of an existing concept: keep its original creation

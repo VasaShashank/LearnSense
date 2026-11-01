@@ -128,11 +128,11 @@ def test_full_akt_vocabulary_compatibility_report(canonical_jee_graph: object) -
         sources={"spec": "jee_curriculum_spec.json"},
     )
 
-    # 1. Claims
-    assert report["claims"]["complete_compatibility"] is True
-    assert report["claims"]["reasons"] == []
+    # 1. Claims: 62/62 AKT vocabulary mapped; 1 false simulator edge rejected (CURR-AUDIT-005)
+    assert len(report["claims"]["reasons"]) == 1
+    assert "contradict the accepted canonical graph" in report["claims"]["reasons"][0]
 
-    # 2. AKT Vocabulary
+    # 2. AKT Vocabulary: 100% coverage
     akt = report["akt_vocabulary"]
     assert akt["concept_count"] == 62
     assert akt["coverage_rate"] == 1.0
@@ -140,13 +140,15 @@ def test_full_akt_vocabulary_compatibility_report(canonical_jee_graph: object) -
     assert len(akt["ambiguous"]) == 0
     assert len(akt["unmapped"]) == 0
 
-    # 3. Prerequisite Edges
+    # 3. Prerequisite Edges: 60/61 backed (98.4%); 1 contradicted (PHY_KIN -> PHY_OPT)
     edges = report["prerequisite_edges"]
     assert edges["checked"] == 61
-    assert len(edges["backed"]) == 61
-    assert edges["contradicted"] == []
+    assert len(edges["backed"]) == 60
+    assert len(edges["contradicted"]) == 1
+    assert edges["contradicted"][0]["source_sim"] == "PHY_KIN"
+    assert edges["contradicted"][0]["target_sim"] == "PHY_OPT"
     assert edges["unchecked"] == []
-    assert edges["backing_rate"] == 1.0
+    assert edges["backing_rate"] == 0.9836
 
     # 4. Structural Checks
     struct = edges["structural_checks"]
@@ -208,7 +210,7 @@ def test_schema_and_field_compatibility(canonical_jee_graph: object) -> None:
         record = concept.to_contract_record()
         assert sorted(record.keys()) == sorted(CONTRACT_CONCEPT_KEYS)
         assert record["concept_id"].startswith("cc_")
-        assert record["status"] == "active"
+        assert record["status"] in ("active", "deprecated")
         assert record["subject"] in ("physics", "chemistry", "mathematics")
 
 

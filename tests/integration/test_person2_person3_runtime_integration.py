@@ -87,7 +87,8 @@ def test_scenario_1_successful_initialization(
     assert adapter.curriculum_id == "jee_class_11_12"
     assert adapter.syllabus_version == "2026.jee.v1"
     assert adapter.fingerprint == graph.content_fingerprint()
-    assert len(adapter.concept_ids) == len(graph.concepts)
+    active_concepts = [c for c in graph.concepts.values() if getattr(c.status, "value", c.status) != "deprecated"]
+    assert len(adapter.concept_ids) == len(active_concepts)
 
     # Validate duck-typing contract against Person 3 requirements
     validate_adapter_contract(adapter)
@@ -195,14 +196,15 @@ def test_scenario_5_successful_mastery_translation_and_persistence(
     state_repo = LearnerStateRepository(base_dir=str(tmp_path / "learner_states"))
     service = CanonicalLearnerStateService(adapter=adapter, state_repo=state_repo)
 
-    # 62 simulator concept mastery profile
+    # Active concepts mastery profile
+    active_concepts = [c for c in graph.concepts.values() if getattr(c.status, "value", c.status) != "deprecated"]
     sim_profile = {
         alias: 0.78
-        for concept in graph.concepts.values()
+        for concept in active_concepts
         for alias in concept.aliases
         if alias.startswith("PHY_") or alias.startswith("CHE_") or alias.startswith("MAT_")
     }
-    expected_count = len(graph.concepts)
+    expected_count = len(active_concepts)
     assert len(sim_profile) == expected_count
 
     learner_id = "learner_prod_001"
