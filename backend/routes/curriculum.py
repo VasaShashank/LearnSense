@@ -853,17 +853,17 @@ class UpdateConceptMetadataRequest(BaseModel):
     aliases: Optional[List[str]] = None
     tags: Optional[List[str]] = None
     chapter_id: Optional[str] = None
-    reviewer_id: str = "teacher"
+    reviewer_id: Optional[str] = None
     note: str = ""
 
 
 class PublishCurriculumRequest(BaseModel):
-    reviewer_id: str = "curriculum_lead"
+    reviewer_id: Optional[str] = None
     release_notes: str = ""
 
 
 class RollbackCurriculumRequest(BaseModel):
-    reviewer_id: str = "curriculum_lead"
+    reviewer_id: Optional[str] = None
     note: str = ""
 
 

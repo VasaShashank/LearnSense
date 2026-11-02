@@ -99,7 +99,7 @@ class TeachingOptimizer:
         distributions: Dict[str, ConceptMasteryDistribution] = {}
         all_masteries: List[float] = []
 
-        # 1. Concept mastery distributions
+        # 1. Concept mastery distributions (only genuine assessed attempts)
         for cid, concept in context.concepts.items():
             mastery_vals = []
             attempts = []
@@ -107,26 +107,37 @@ class TeachingOptimizer:
 
             for ls in learner_states:
                 cs = ls.concept_states.get(cid)
-                if cs:
+                if cs and getattr(cs, "attempt_count", 0) > 0:
                     m = cs.mastery_probability
                     mastery_vals.append(m)
                     attempts.append(cs.attempt_count)
                     if m < 0.40:
                         struggling_ids.append(ls.learner_id)
-                else:
-                    mastery_vals.append(0.30)
-                    attempts.append(0)
-                    struggling_ids.append(ls.learner_id)
 
             if not mastery_vals:
+                # Do not invent default 30% mastery for unassessed concepts
+                dist = ConceptMasteryDistribution(
+                    concept_id=cid,
+                    canonical_name=concept.canonical_name,
+                    sample_size=0,
+                    mean_mastery=0.0,
+                    median_mastery=0.0,
+                    p25_mastery=0.0,
+                    p75_mastery=0.0,
+                    proportion_mastered=0.0,
+                    proportion_struggling=0.0,
+                    average_attempts=0.0,
+                    struggling_learner_ids=[],
+                )
+                distributions[cid] = dist
                 continue
 
             sorted_m = sorted(mastery_vals)
             n = len(sorted_m)
             mean_m = statistics.mean(sorted_m)
             median_m = statistics.median(sorted_m)
-            p25 = sorted_m[int(0.25 * n)] if n > 0 else 0.30
-            p75 = sorted_m[int(0.75 * n)] if n > 0 else 0.30
+            p25 = sorted_m[int(0.25 * n)] if n > 0 else 0.0
+            p75 = sorted_m[int(0.75 * n)] if n > 0 else 0.0
             mastered_cnt = sum(1 for m in sorted_m if m >= 0.70)
             struggling_cnt = len(struggling_ids)
 

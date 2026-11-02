@@ -183,20 +183,21 @@ class InstitutionService:
             )
             _atomic_write_json(self.enrollments_dir / f"{enr_id}.json", enr.model_dump(mode="json"), self.enrollments_dir)
 
-        # Cross-sync to native storage/classes so teacher_service immediately sees it
-        native_dir = Path("storage/classes")
-        native_dir.mkdir(parents=True, exist_ok=True)
-        _atomic_write_json(
-            native_dir / f"{class_id}.json",
-            {
-                "class_id": class_id,
-                "subject_id": subject_id,
-                "class_name": title,
-                "enrolled_learner_ids": roster,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
-            native_dir,
-        )
+        # Cross-sync to native storage/classes only when running in production storage (prevents test pollution)
+        if self.base_dir == Path("storage/institutions") or str(self.base_dir).replace("\\", "/").endswith("storage/institutions"):
+            native_dir = Path("storage/classes")
+            native_dir.mkdir(parents=True, exist_ok=True)
+            _atomic_write_json(
+                native_dir / f"{class_id}.json",
+                {
+                    "class_id": class_id,
+                    "subject_id": subject_id,
+                    "class_name": title,
+                    "enrolled_learner_ids": roster,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                native_dir,
+            )
         return c
 
     def get_class(self, class_id: str) -> Optional[CourseClass]:

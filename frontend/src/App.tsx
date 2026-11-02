@@ -253,8 +253,8 @@ export default function App() {
   // ──────────────────────────────────────────────
   const allowedViews: Record<string, AppView[]> = {
     LEARNER: ['DASHBOARD', 'ATLAS', 'PATH', 'SOURCES', 'MARKETPLACE'],
-    TEACHER: ['TEACHER', 'ATLAS', 'SOURCES'],
-    ADMIN: ['INSTITUTION', 'CLASS_KT', 'TEACHER', 'ATLAS', 'SOURCES'],
+    TEACHER: ['TEACHER', 'CURRICULUM', 'ATLAS', 'SOURCES'],
+    ADMIN: ['INSTITUTION', 'CLASS_KT', 'TEACHER', 'CURRICULUM', 'ATLAS', 'SOURCES'],
   };
 
   const isViewAllowed = (view: AppView, role: string): boolean => {
@@ -678,6 +678,7 @@ export default function App() {
             currentUserId={currentPersona.id}
             currentPersona={currentPersona}
             onNavigateToAtlas={() => setActiveView('ATLAS')}
+            onNavigateToCurriculum={() => setActiveView('CURRICULUM')}
           />
         )}
 

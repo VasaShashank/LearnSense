@@ -338,14 +338,11 @@ class KnowledgeService:
             # Cross-chapter: Topic 1 -> Topic 2
             ("newtons second law", "static friction"),
             # Topic 2: Friction
-            ("static friction", "limiting friction"),
-            ("limiting friction", "coefficient of static friction"),
             ("static friction", "coefficient of static friction"),
-            ("coefficient of static friction", "angle of repose"),
-            ("static friction", "angle of repose"),
-            ("static friction", "kinetic friction"),
+            ("coefficient of static friction", "kinetic friction"),
             ("kinetic friction", "coefficient of kinetic friction"),
-            ("coefficient of static friction", "coefficient of kinetic friction"),
+            ("coefficient of static friction", "limiting friction"),
+            ("limiting friction", "angle of repose"),
             # Cross-chapter: Dynamics / Friction -> Centripetal Motion
             ("newtons second law", "centripetal acceleration"),
             # Topic 3: Centripetal Motion

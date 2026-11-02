@@ -90,6 +90,7 @@ interface TeacherDashboardProps {
   currentUserId: string;
   currentPersona?: Persona;
   onNavigateToAtlas?: () => void;
+  onNavigateToCurriculum?: () => void;
 }
 
 /**
@@ -126,6 +127,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   currentUserId,
   currentPersona,
   onNavigateToAtlas,
+  onNavigateToCurriculum,
 }) => {
   const isIndependent: boolean = Boolean(
     currentUserId.startsWith('teacher_independent') ||
@@ -370,10 +372,13 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   };
 
   const renderStudentDetailCard = (student: IndividualStudentMastery, onClose?: () => void) => {
-    const masteryPct = Math.round(student.average_mastery * 100);
-    const isRemediation = student.average_mastery < 0.45;
-    const isDeveloping = student.average_mastery >= 0.45 && student.average_mastery < 0.75;
-    const tierBadgeStyle = isRemediation
+    const isUnassessed = student.assigned_tier === 'Not Assessed' || student.total_attempts === 0 || student.average_mastery === 0;
+    const masteryPct = isUnassessed ? null : Math.round(student.average_mastery * 100);
+    const isRemediation = !isUnassessed && student.average_mastery < 0.45;
+    const isDeveloping = !isUnassessed && student.average_mastery >= 0.45 && student.average_mastery < 0.75;
+    const tierBadgeStyle = isUnassessed
+      ? 'border-white/[0.15] bg-space-800 text-universe-slate'
+      : isRemediation
       ? 'border-rose-500/40 bg-rose-950/30 text-rose-300'
       : isDeveloping
       ? 'border-amber-500/40 bg-amber-950/30 text-amber-300'
@@ -384,7 +389,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     const displayRole = isIndependent
       ? 'De-Identified Platform Telemetry Node'
       : student.role;
-    const displayTier = isIndependent
+    const displayTier = isUnassessed
+      ? 'Not Assessed'
+      : isIndependent
       ? (isRemediation
           ? 'Targeted Scaffolding Track'
           : isDeveloping
@@ -466,16 +473,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
             <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Bayesian Mastery</span>
             <div className={`text-2xl font-display font-bold ${
-              isRemediation ? 'text-rose-400' : isDeveloping ? 'text-amber-400' : 'text-emerald-400'
+              isUnassessed ? 'text-universe-slate' : isRemediation ? 'text-rose-400' : isDeveloping ? 'text-amber-400' : 'text-emerald-400'
             }`}>
-              {masteryPct}%
+              {isUnassessed ? 'Not assessed' : `${masteryPct}%`}
             </div>
             <div className="w-full bg-space-800 rounded-full h-1.5 overflow-hidden mt-1">
               <div
                 className={`h-1.5 rounded-full ${
-                  isRemediation ? 'bg-rose-400' : isDeveloping ? 'bg-amber-400' : 'bg-emerald-400'
+                  isUnassessed ? 'bg-space-700' : isRemediation ? 'bg-rose-400' : isDeveloping ? 'bg-amber-400' : 'bg-emerald-400'
                 }`}
-                style={{ width: `${masteryPct}%` }}
+                style={{ width: `${masteryPct ?? 0}%` }}
               />
             </div>
           </div>
@@ -483,10 +490,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <div className="p-4 rounded-xl bg-space-850/80 border border-white/[0.06] space-y-1">
             <span className="text-[10px] font-mono text-universe-slate uppercase tracking-wider">Practice Accuracy</span>
             <div className="text-2xl font-display font-bold text-cyan-400">
-              {student.accuracy_pct}%
+              {isUnassessed ? 'N/A' : `${student.accuracy_pct}%`}
             </div>
             <p className="text-[10px] font-mono text-universe-slate truncate">
-              {student.total_correct} correct / {student.total_attempts} attempts
+              {isUnassessed ? '0 attempts' : `${student.total_correct} correct / ${student.total_attempts} attempts`}
             </p>
           </div>
 
@@ -682,7 +689,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
             </div>
             <p className="text-[11px] leading-relaxed">
               As an independent educator visiting outside an institutional B2B deployment, you have <strong className="text-white">zero access to college rosters, student names, grades, or institutional boundaries</strong>. 
-              Instead, you receive <strong className="text-cyan-300">aggregated de-identified learning insights</strong>: concept difficulty curves, prerequisite drop-off rates, and high-frequency misconception clusters across 8,500+ student practice sessions. 
+              Instead, you receive <strong className="text-cyan-300">aggregated de-identified learning insights</strong>: concept difficulty curves, prerequisite drop-off rates, and high-frequency misconception clusters across enrolled student practice sessions. 
               Use this intelligence to optimize your lecture delivery, address common student pitfalls, and structure differentiated learning tiers for any classroom or open course.
             </p>
           </div>
@@ -764,18 +771,16 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   name: formatStudentLabel(expandedStudentId, isIndependent),
                   role: isIndependent ? 'De-Identified Platform Telemetry Node' : 'Enrolled Cohort Learner',
                   avatar: isIndependent ? '🧑‍💻' : '🧑‍🎓',
-                  average_mastery: 0.65,
-                  accuracy_pct: 65,
-                  total_concepts: 5,
-                  mastered_concepts: 2,
-                  developing_concepts: 2,
-                  struggling_concepts: 1,
-                  total_attempts: 12,
-                  total_correct: 8,
-                  assigned_tier: isIndependent ? 'Guided Practice Track' : 'Tier 2: Guided Practice',
-                  recommended_intervention: isIndependent
-                    ? 'Provide targeted instructional exercises on developing concepts before advancing to high-order synthesis.'
-                    : 'Provide targeted practice on developing concepts before advancing to high-order synthesis.',
+                  average_mastery: 0,
+                  accuracy_pct: 0,
+                  total_concepts: 0,
+                  mastered_concepts: 0,
+                  developing_concepts: 0,
+                  struggling_concepts: 0,
+                  total_attempts: 0,
+                  total_correct: 0,
+                  assigned_tier: 'Not Assessed',
+                  recommended_intervention: 'Learner has not yet completed interactive assessments in this curriculum.',
                   concept_breakdown: [],
                 },
                 () => setExpandedStudentId(null)
@@ -866,15 +871,22 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         )}
 
         <button
-          onClick={() => setActiveTab('CURRICULUM_REVIEW')}
+          onClick={() => {
+            if (onNavigateToCurriculum) {
+              onNavigateToCurriculum();
+            } else {
+              setActiveTab('CURRICULUM_REVIEW');
+            }
+          }}
           className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === 'CURRICULUM_REVIEW'
               ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/30'
               : 'text-universe-slate hover:text-white hover:bg-white/[0.03]'
           }`}
+          title="Open Curriculum Review & Governance (Person 2)"
         >
           <ShieldCheck className="w-4 h-4 text-cyan-400" />
-          <span>Concept Verification & Review</span>
+          <span>Curriculum Review</span>
           <span className="px-1.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-400/30 text-[10px] font-mono text-cyan-300">
             Person 2
           </span>

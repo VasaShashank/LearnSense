@@ -185,9 +185,32 @@ class TeacherService:
                 except Exception as exc:
                     logger.warning("Unreadable inst class %s: %s", ip, exc)
 
-        classes = list(class_map.values())
+        # Data quality & tenancy filter: exclude integration-test fixtures and deduplicate test duplicates
+        TEST_FIXTURE_NAMES = {
+            "integration test section a",
+            "unauthorized class",
+            "visible",
+            "hidden",
+            "nlm",
+        }
 
-        # If only test fixtures exist, return empty or what exists
+        deduped: Dict[Tuple[str, Optional[str]], Dict[str, Any]] = {}
+        for cid, c in class_map.items():
+            name = (c.get("class_name") or "").strip()
+            if not name or name.lower() in TEST_FIXTURE_NAMES or cid.startswith("cls_integration_test"):
+                continue
+
+            key = (name.lower(), c.get("subject_id"))
+            if key not in deduped:
+                deduped[key] = c
+            else:
+                # Prefer cohort record with active enrolled students
+                existing_roster = deduped[key].get("enrolled_learner_ids") or []
+                new_roster = c.get("enrolled_learner_ids") or []
+                if len(new_roster) > len(existing_roster):
+                    deduped[key] = c
+
+        classes = list(deduped.values())
         return sorted(classes, key=lambda c: c.get("class_name", ""))
 
     def get_class_knowledge_state(
@@ -320,7 +343,7 @@ class TeacherService:
                 target_class_id = target_class_id or all_classes[0].get("class_id")
 
         if not target_subject_id:
-            target_subject_id = "doc_stud-share-sample_c_programs_daa-_lab_programs"
+            return []
 
         # 2. Get class knowledge state
         if target_class_id:
@@ -339,35 +362,34 @@ class TeacherService:
         insights: List[Dict[str, Any]] = []
 
         if class_state and class_state.concept_distributions:
-            # Map misconceptions by concept
+            # Map misconceptions by concept from genuine telemetry
             misconceptions_by_concept: Dict[str, List[Dict[str, Any]]] = {}
             for mc in class_state.misconception_clusters:
                 cid = mc.concept_id
                 if cid not in misconceptions_by_concept:
                     misconceptions_by_concept[cid] = []
                 freq_pct = int(mc.prevalence * 100) if mc.prevalence else int(mc.affected_learner_count / max(1, len(class_state.enrolled_learner_ids or [1])) * 100)
-                clean_mistake = mc.description.replace("_", " ").capitalize() if mc.description else "Unknown misconception"
+                clean_mistake = mc.description.replace("_", " ").capitalize() if mc.description else "Identified misconception"
                 misconceptions_by_concept[cid].append({
                     "mistake": clean_mistake,
-                    "frequency_pct": max(15, min(85, freq_pct)),
+                    "frequency_pct": max(5, min(95, freq_pct)),
                 })
 
             for cid, dist in class_state.concept_distributions.items():
+                sample_size = getattr(dist, "sample_size", 0)
+                avg_att = getattr(dist, "average_attempts", 0.0)
+                if sample_size == 0 or avg_att == 0:
+                    continue
+
                 cname = TeachingOptimizer.resolve_concept_name(cid, context=ctx, class_state=class_state)
-                # Compute empirical metrics from Bayesian mastery & struggling count
-                mean_m = getattr(dist, "mean_mastery", 0.5)
+                mean_m = getattr(dist, "mean_mastery", 0.0)
                 struggling_count = len(getattr(dist, "struggling_learner_ids", []))
                 total_enrolled = max(1, len(class_state.enrolled_learner_ids or [1]))
                 struggling_pct = struggling_count / total_enrolled
 
-                # Dynamic attempts estimation based on cohort interactions
-                base_attempts = 150 + int((1.0 - mean_m) * 800) + (struggling_count * 45)
-                
-                # Dynamic first-try accuracy
-                first_try_acc = round(max(0.15, min(0.92, mean_m * 0.85 + 0.05)), 2)
-                
-                # Dynamic time to master in minutes
-                time_to_master = int(45 + (1.0 - mean_m) * 120)
+                actual_attempts = int(avg_att * sample_size)
+                first_try_acc = round(max(0.0, min(1.0, mean_m)), 2)
+                time_to_master = int(max(15, (1.0 - mean_m) * 60))
 
                 # Tier
                 if mean_m < 0.35 or struggling_pct > 0.5:
@@ -379,17 +401,10 @@ class TeacherService:
                 else:
                     tier = "EASY"
 
-                # Common mistakes
                 c_mistakes = misconceptions_by_concept.get(cid, [])
-                if not c_mistakes:
-                    c_mistakes = [
-                        {"mistake": f"Conceptual boundary confusion in {cname}", "frequency_pct": int(max(20, (1.0 - mean_m) * 60))},
-                        {"mistake": f"Failure to verify edge cases during application", "frequency_pct": 24},
-                    ]
 
                 # Evidence-based recommendations
                 recs = []
-                # Check for prerequisite gaps
                 prereq_gaps = [g for g in class_state.prerequisite_gap_clusters if g.target_concept_id == cid]
                 if prereq_gaps:
                     pg = prereq_gaps[0]
@@ -400,14 +415,14 @@ class TeacherService:
                     recs.append(f"Bust top pitfall: '{c_mistakes[0]['mistake']}' using interactive tracing")
 
                 if tier in ("HARD", "VERY_HARD"):
-                    recs.append(f"Provide dual worked examples with side-by-side execution trace tables")
+                    recs.append("Provide dual worked examples with side-by-side execution trace tables")
                 else:
-                    recs.append(f"Deploy active challenge problems to verify conceptual synthesis")
+                    recs.append("Deploy active challenge problems to verify conceptual synthesis")
 
                 insights.append({
                     "concept_name": cname,
                     "concept_id": cid,
-                    "total_attempts": base_attempts,
+                    "total_attempts": actual_attempts,
                     "common_mistakes": c_mistakes,
                     "avg_first_try_accuracy": first_try_acc,
                     "avg_time_to_master_minutes": time_to_master,
@@ -429,14 +444,12 @@ class TeacherService:
         """
         class_info = self.get_class(class_id)
         if not class_info:
-            learner_ids = ["student_alex", "student_jordan", "student_sam", "student_priya", "student_david"]
-            subj = subject_id or "default"
-        else:
-            learner_ids = class_info.get("enrolled_learner_ids", [])
-            subj = subject_id or class_info.get("subject_id", "default")
+            return []
+        learner_ids = class_info.get("enrolled_learner_ids", [])
+        subj = subject_id or class_info.get("subject_id", "default")
 
         if not learner_ids:
-            learner_ids = ["student_alex", "student_jordan", "student_sam", "student_priya", "student_david"]
+            return []
 
         try:
             ctx = self.knowledge_service.get_learning_context(subj)

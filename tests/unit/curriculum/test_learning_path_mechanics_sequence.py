@@ -111,3 +111,34 @@ def test_topological_sort_respects_topic_rank():
 
     assert n1_idx < sf_idx, "Dynamics (First Law) must precede Friction (Static Friction)"
     assert sf_idx < av_idx, "Friction (Static Friction) must precede Circular Motion (Angular Velocity)"
+
+
+def test_exact_14_step_mechanics_pedagogical_progression():
+    """Verify that both LearnerService and KnowledgeService produce the accepted 14-step mechanics sequence."""
+    expected_order = [
+        "Newton's First Law",
+        "Net Force",
+        "Newton's Second Law",
+        "Newton's Third Law",
+        "Static Friction",
+        "Coefficient of Static Friction",
+        "Kinetic Friction",
+        "Coefficient of Kinetic Friction",
+        "Limiting Friction",
+        "Angle of Repose",
+        "Angular Velocity",
+        "Centripetal Acceleration",
+        "Tangential Acceleration",
+        "Net Acceleration in Circular Motion",
+    ]
+
+    ls = LearnerService()
+    res = ls.get_gaps_and_path("student_alex", DOC_ID)
+    nodes = res.get("learning_path", {}).get("nodes", [])
+    path_names = [n["concept_name"] for n in nodes]
+    assert path_names == expected_order, f"Learning path progression mismatch:\nExpected: {expected_order}\nGot: {path_names}"
+
+    ks = KnowledgeService()
+    seq_data = ks.get_learning_sequence(DOC_ID)
+    seq_names = [s.get("canonical_name") or s.get("name") for s in seq_data.get("sequence", [])]
+    assert seq_names == expected_order, f"Sequence explorer progression mismatch:\nExpected: {expected_order}\nGot: {seq_names}"
