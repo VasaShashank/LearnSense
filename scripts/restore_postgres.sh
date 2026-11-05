@@ -17,8 +17,13 @@
 #   restoring a Supabase-origin dump into plain PostgreSQL. Never needed on Supabase.
 # * The `public` schema object itself (and its comment/ACL) is skipped: the target's
 #   existing public schema is used. Everything inside it is restored.
-# * pg_restore runs in ONE transaction and stops at the first error: on failure the
-#   target database is left exactly as it was (empty). Roles created by
+# * Table privileges end up exactly as in the dump, even on targets with ALTER DEFAULT
+#   PRIVILEGES (Supabase grants every new table in public to anon/authenticated/
+#   service_role, and pg_dump does not record the revocations needed to undo that).
+#   After the restore, the same transaction revokes all table privileges in public
+#   from PUBLIC and Supabase's API roles and re-applies exactly the dump's grants.
+# * Restore and that reconciliation run in ONE transaction and stop at the first error:
+#   on failure the target database is left exactly as it was (empty). Roles created by
 #   --create-supabase-roles are cluster-wide and remain.
 set -euo pipefail
 
@@ -91,9 +96,26 @@ if [[ -n "$MISSING" ]]; then
   exit 4
 fi
 
+# Render the restore as SQL, then append the exact ACL reconciliation (see header).
+"${BIN}pg_restore" --no-owner --use-list="$WORK/restore.toc" --file="$WORK/restore.sql" "$DUMP"
+{
+  echo 'DO $$'
+  echo 'DECLARE r text;'
+  echo 'BEGIN'
+  echo '  REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;'
+  echo "  FOREACH r IN ARRAY ARRAY['anon', 'authenticated', 'service_role'] LOOP"
+  echo '    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN'
+  echo "      EXECUTE format('REVOKE ALL ON ALL TABLES IN SCHEMA public FROM %I', r);"
+  echo '    END IF;'
+  echo '  END LOOP;'
+  echo 'END $$;'
+  grep -E '^GRANT .* ON TABLE .* TO (PUBLIC|anon|authenticated|service_role)( WITH GRANT OPTION)?;$' \
+    "$WORK/schema.sql" || true
+} > "$WORK/acl_reconcile.sql"
+
 echo "Restoring into '$ACTUAL' ..."
-"${BIN}pg_restore" --no-owner --exit-on-error --single-transaction \
-  --use-list="$WORK/restore.toc" --dbname="$SAFE_DSN" "$DUMP"
+"${BIN}psql" --dbname="$SAFE_DSN" -v ON_ERROR_STOP=1 -q --single-transaction \
+  -f "$WORK/restore.sql" -f "$WORK/acl_reconcile.sql" > /dev/null
 
 echo "Restored schema versions: $("${BIN}psql" --dbname="$SAFE_DSN" -At -c \
   "select string_agg(version, ',' order by version) from schema_migrations")"

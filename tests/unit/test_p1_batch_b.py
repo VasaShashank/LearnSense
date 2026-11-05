@@ -160,8 +160,10 @@ def test_restore_script_passes_no_password_and_skips_the_public_schema_object(fa
     )
     assert result.returncode == 0, result.stderr
     _assert_no_password_in_children(result, lines)
-    restore_call = [line for line in lines if line.startswith("TOOL=pg_restore") and "[--single-transaction]" in line]
-    assert len(restore_call) == 1 and "[--use-list=" in restore_call[0]
+    render = [line for line in lines if line.startswith("TOOL=pg_restore") and "restore.sql]" in line]
+    assert len(render) == 1 and "[--use-list=" in render[0]
+    apply = [line for line in lines if line.startswith("TOOL=psql") and "[--single-transaction]" in line]
+    assert len(apply) == 1 and "restore.sql]" in apply[0] and "acl_reconcile.sql]" in apply[0]
 
 
 def test_restore_script_keeps_its_confirmation_guard(fake_pg_bin, tmp_path):

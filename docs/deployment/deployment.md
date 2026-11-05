@@ -58,7 +58,10 @@ Enforcement (all checks happen before connecting and print no credentials):
   whatever `LEARNSENSE_REQUIRE_PG` is; the pool (`backend/db/pg_connection.py`)
   refuses the same DSNs if it is used outside the app.
 * **Migrations:** the runner exits 2 for the same DSNs, and after connecting refuses
-  a connection whose consecutive statements run on different server sessions.
+  a connection whose consecutive statements run on different server sessions. That
+  probe is a backstop, not a guarantee: tested with PgBouncer in transaction mode on a
+  non-6543 port, it refused every time under concurrent load but passed when the pooler
+  was idle (one client stayed on one backend).
 * **Not detectable:** a transaction-mode pooler on another port, without
   `pgbouncer=true`. Do not configure one.
 
@@ -90,6 +93,10 @@ if required.
   (`frontend/vite.config.ts` exposes nothing else).
 
 ## Release procedure
+
+The first migration of the existing Supabase project (001/002 recorded, 003-006
+pending) follows docs/operations/supabase-migration.md instead: read-only
+compatibility check, backup, rehearsal, then the steps below.
 
 1. Back up the database (docs/operations/backup-and-restore.md).
 2. `python scripts/migrate.py status --dsn-env DATABASE_URL` — review pending versions

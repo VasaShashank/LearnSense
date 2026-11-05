@@ -34,7 +34,15 @@ The application never applies migrations itself.
 lock; files with their own `BEGIN`/`COMMIT`). Use a direct connection or a
 session-mode pooler. It refuses, before connecting, any DSN on port **6543**
 (Supabase transaction pooler) or with `pgbouncer=true`, and after connecting refuses a
-connection whose statements land on different backends. The API's `DATABASE_URL`
+connection whose statements land on different backends (a best-effort backstop: an idle
+transaction pooler can keep one client on one backend and pass it).
+
+**Existing databases.** Before migrating a database that already has history (the
+existing Supabase project: 001/002 recorded, no checksum column), run the read-only
+compatibility check and follow docs/operations/supabase-migration.md. A contingency
+migration 007 (`scripts/sql/contingency_007_organization_name_ci.sql`) is prepared and
+rehearsed, but is adopted only if that check reports the case-insensitive organization
+name index missing. The API's `DATABASE_URL`
 follows the same rule (the API refuses to start with a transaction pooler), so one
 5432 DSN serves both. See §Connection string format.
 

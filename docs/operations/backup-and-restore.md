@@ -15,6 +15,12 @@ Executed against **disposable local PostgreSQL 16 clusters** only:
 * `…::test_restore_refuses_grants_to_missing_roles_and_preserves_them_once_created`:
   a dump granting to a role the target lacks is refused before anything is restored
   (target left with zero tables); after the role is created the grant is restored.
+* Supabase migration rehearsal (Milestone 2,
+  `tests/integration/test_supabase_migration_rehearsal_live.py`, runs in CI): a database
+  shaped like the existing Supabase project is backed up as Supabase's non-superuser
+  `postgres` role, the dump's sha256 and row counts are checked against the manifest and
+  its table of contents, it is restored into a Supabase-provisioned database, migrated,
+  verified and smoke-tested. See docs/operations/supabase-migration.md.
 * Supabase-origin reproduction (manual, P1 Batch B): a source cluster set up like a
   Supabase project (`anon`, `authenticated`, `service_role`, an `auth` schema, Supabase's
   default privileges in `public`), migrated and seeded, then backed up and restored into
@@ -95,8 +101,10 @@ limited to operators. Student-data retention rules may shorten these.
    * the target's `public` schema must contain no tables (exit 3);
    * every role named in the dump's GRANT/REVOKE statements must exist in the target
      cluster (exit 4, listing the missing roles, "Nothing was restored").
-   The restore then runs as **one transaction with `--exit-on-error`**: on any error
-   the target is left exactly as before (empty `public`).
+   The restore then runs as **one transaction that stops at the first error**
+   (`psql --single-transaction -v ON_ERROR_STOP=1`): on any error the target is left
+   exactly as before (empty `public`). In the same transaction the table privileges
+   are reconciled to match the dump exactly (next section).
 3. Verify: `python scripts/migrate.py status --dsn-env RESTORE_DSN` (no problems) and
    compare row counts with the manifest.
 4. File stores: stop the API, extract `learnsense_files_<UTC>.tar.gz` into an empty
@@ -121,12 +129,31 @@ Privileges are never silently dropped: there is no option that skips missing rol
 | Object | Restored? |
 |---|---|
 | Tables, data, sequences, functions, triggers, RLS flags in `public` | Yes |
-| Table/sequence/function grants and revocations (including to `service_role`, `anon`, `authenticated`) | Yes, once the roles exist |
+| Table grants (including to `service_role`, `anon`, `authenticated`) | Yes, exactly as dumped, once the roles exist; see "Restoring into Supabase" for the reconciliation |
+| Sequence/function grants | As dumped, plus whatever the target's default privileges add |
 | Ownership | No (`--no-owner`): objects are owned by the restoring role. The application role must own them or have `BYPASSRLS` (see migrations/README.md) |
 | The `public` schema object itself (its comment and schema-level ACL) | No: the target's existing `public` schema is kept. Re-apply schema-level grants manually if your platform relies on them |
 | Supabase platform schemas (`auth`, `storage`, …), default privileges outside `public`, roles and passwords | No (not in the dump) |
 
-Restoring into a **Supabase** project needs no flag: the roles already exist.
+### Restoring into Supabase (or any target with default privileges)
+
+Restoring into a **Supabase** project needs no flag: the roles already exist. But Supabase
+sets `ALTER DEFAULT PRIVILEGES` so that every table the `postgres` role creates in
+`public` is immediately granted to `anon`, `authenticated` and `service_role`.
+`pg_dump` records privileges only relative to PostgreSQL's built-in defaults, so the dump
+contains no statement that removes those automatic grants. Restored LearnSense tables
+would therefore come back **with client-role grants the source never had** (found in the
+Milestone 2 rehearsal; RLS without policies still blocks rows, but the deny-by-default
+grant model is broken).
+
+`restore_postgres.sh` therefore finishes, inside the restore transaction, with an exact
+reconciliation: it revokes every table privilege in `public` from `PUBLIC`, `anon`,
+`authenticated` and `service_role`, then re-applies exactly the dump's `GRANT … ON TABLE`
+statements for those roles. Nothing the dump grants is lost; nothing it does not grant
+remains. (The target's `public` must be empty before a restore, so only restored tables
+are affected.) Verified by
+`tests/integration/test_supabase_migration_rehearsal_live.py`: after restore and
+migration, `anon`/`authenticated`/`PUBLIC` hold no privilege on any of the 14 tables.
 
 ## Schema versions differ
 
