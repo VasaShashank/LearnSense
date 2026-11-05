@@ -11,8 +11,9 @@ name: CI
 
 on:
   pull_request:
+  # Feature and fix branches get CI on every push, before a pull request exists.
   push:
-    branches: [main]
+    branches: [main, "feat/**", "fix/**"]
   workflow_dispatch:
 
 permissions:
