@@ -2,6 +2,8 @@
 fastapi>=0.100.0
 httpx>=0.24.0
 uvicorn>=0.22.0
+# Required by FastAPI for multipart uploads (UploadFile/File routes)
+python-multipart>=0.0.9
 
 # PostgreSQL (institutional persistence — Person 1 / feat/supabase-auth-postgres)
 asyncpg>=0.29.0

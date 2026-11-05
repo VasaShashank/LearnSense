@@ -9,10 +9,16 @@ responsibility and must be checked separately.
 import os
 from typing import Optional
 
+import logging
+
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
+
+from backend.api_errors import ApiError
+
+logger = logging.getLogger(__name__)
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -29,9 +35,9 @@ async def get_current_user(
 ) -> AuthenticatedUser:
     """Validate a Supabase access token and return its trusted user identity."""
     if credentials is None or credentials.scheme.lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing bearer access token",
+        raise ApiError(
+            status.HTTP_401_UNAUTHORIZED, "AUTHENTICATION_REQUIRED",
+            "Missing bearer access token",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -43,9 +49,9 @@ async def get_current_user(
         or os.getenv("SUPABASE_ANON_KEY", "").strip()
     )
     if not supabase_url or not api_key:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Supabase authentication is not configured",
+        raise ApiError(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "AUTH_NOT_CONFIGURED",
+            "Supabase authentication is not configured", recoverable=True,
         )
 
     try:
@@ -58,26 +64,26 @@ async def get_current_user(
                 },
             )
     except httpx.TimeoutException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication provider timed out",
+        raise ApiError(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "AUTH_PROVIDER_TIMEOUT",
+            "Authentication provider timed out", recoverable=True,
         ) from exc
     except httpx.RequestError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication provider is unavailable",
+        raise ApiError(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "AUTH_PROVIDER_UNAVAILABLE",
+            "Authentication provider is unavailable", recoverable=True,
         ) from exc
 
     if response.status_code in (401, 403):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired access token",
+        raise ApiError(
+            status.HTTP_401_UNAUTHORIZED, "INVALID_TOKEN",
+            "Invalid or expired access token",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not response.is_success:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Authentication provider could not validate the token",
+        raise ApiError(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "AUTH_PROVIDER_ERROR",
+            "Authentication provider could not validate the token", recoverable=True,
         )
 
     try:
@@ -88,13 +94,32 @@ async def get_current_user(
         email = user_data.get("email")
         if email is not None and not isinstance(email, str):
             email = None
-        return AuthenticatedUser(id=user_id, email=email)
+        user = AuthenticatedUser(id=user_id, email=email)
     except (ValueError, TypeError) as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication provider returned an invalid identity",
+        raise ApiError(
+            status.HTTP_401_UNAUTHORIZED, "INVALID_IDENTITY",
+            "Authentication provider returned an invalid identity",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+
+    await _reject_disabled_account(user.id)
+    return user
+
+
+async def _reject_disabled_account(user_id: str) -> None:
+    """Single enforcement point for locally disabled accounts (fails closed)."""
+    from backend.services.user_service import get_user_service
+
+    try:
+        disabled = await get_user_service().is_disabled(user_id)
+    except Exception as exc:
+        logger.error("Account status lookup failed: %s", type(exc).__name__)
+        raise ApiError(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "ACCOUNT_STATUS_UNAVAILABLE",
+            "Account status could not be verified", recoverable=True,
+        ) from exc
+    if disabled:
+        raise ApiError(status.HTTP_403_FORBIDDEN, "ACCOUNT_DISABLED", "This account has been disabled.")
 
 
 async def get_optional_current_user(

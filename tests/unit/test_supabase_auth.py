@@ -136,20 +136,24 @@ def test_create_organization_requires_authentication():
     assert response.status_code == 401
 
 
+VERIFIED_CREATOR = "3f0c7a52-8d1e-4b6a-9c2f-5e7d1a0b4c88"  # Supabase identities are UUIDs
+
+
 def test_create_organization_assigns_verified_creator_as_admin(monkeypatch):
     client = TestClient(app)
     seen = {}
 
     async def fake_create_organization_with_admin_async(name, domain, creator_user_id):
         seen.update(name=name, domain=domain, creator_user_id=creator_user_id)
-        return {"org_id": "org-test", "name": name}
+        return {"org_id": "org-test", "name": name, "domain": domain,
+                "created_at_iso": "2026-01-01T00:00:00+00:00"}
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.create_organization_with_admin_async",
         fake_create_organization_with_admin_async,
     )
     app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(
-        id="verified-user", email="verified@example.com"
+        id=VERIFIED_CREATOR, email="verified@example.com"
     )
     try:
         response = client.post(
@@ -163,8 +167,28 @@ def test_create_organization_assigns_verified_creator_as_admin(monkeypatch):
     assert seen == {
         "name": "Example Institute",
         "domain": "example.edu",
-        "creator_user_id": "verified-user",
+        "creator_user_id": VERIFIED_CREATOR,
     }
+
+
+# Contract-shaped return values for faked service calls (the routes now declare
+# response models, so fakes must return what the real services return).
+CONTRACT_SHAPES = {
+    "membership": {"membership_id": "mem-1", "org_id": "org-123", "user_id": "learner-456",
+                   "role": "LEARNER", "is_active": True},
+    "enrollment": {"enrollment_id": "enr-1", "class_id": "class-1", "learner_id": "learner-456",
+                   "enrolled_at_iso": "2026-01-01T00:00:00+00:00", "status": "active"},
+    "class": {"class_id": "class-1", "org_id": "org-1", "subject_id": "doc_x", "title": "T",
+              "teacher_ids": [], "created_at_iso": "2026-01-01T00:00:00+00:00"},
+}
+
+
+def _shape_for(call_locals):
+    if "role" in call_locals:
+        return "membership"
+    if "enroller_user_id" in call_locals:
+        return "enrollment"
+    return "class"
 
 
 def test_add_membership_uses_verified_actor(monkeypatch):
@@ -180,7 +204,7 @@ def test_add_membership_uses_verified_actor(monkeypatch):
             target_user_id=target_user_id,
             role=role,
         )
-        return {"ok": True}
+        return CONTRACT_SHAPES[_shape_for(locals())]
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.add_membership_as_admin_async",
@@ -208,7 +232,8 @@ def test_list_organizations_is_scoped_to_verified_user(monkeypatch):
 
     async def fake_list_organizations_for_user_async(user_id):
         seen["user_id"] = user_id
-        return [{"org_id": "org-allowed", "name": "Allowed"}]
+        return [{"org_id": "org-allowed", "name": "Allowed", "domain": None,
+                 "created_at_iso": "2026-01-01T00:00:00+00:00"}]
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.list_organizations_for_user_async",
@@ -239,7 +264,8 @@ def test_class_listing_is_scoped_to_verified_user(monkeypatch):
 
     async def fake_list_classes_for_user_async(user_id, org_id=None):
         seen.update(user_id=user_id, org_id=org_id)
-        return [{"class_id": "class-visible", "org_id": "org-visible"}]
+        return [{"class_id": "class-visible", "org_id": "org-visible", "subject_id": "doc_x",
+                 "title": "Visible", "teacher_ids": [], "created_at_iso": "2026-01-01T00:00:00+00:00"}]
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.list_classes_for_user_async",
@@ -265,7 +291,7 @@ def test_enroll_endpoint_uses_verified_identity_not_request_body(monkeypatch):
         seen["class_id"] = class_id
         seen["learner_id"] = learner_id
         seen["enroller_user_id"] = enroller_user_id
-        return {"ok": True}
+        return CONTRACT_SHAPES[_shape_for(locals())]
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.enroll_learner",
@@ -294,7 +320,7 @@ def test_create_class_uses_verified_identity_not_request_body(monkeypatch):
         org_id, subject_id, title, teacher_ids, creator_user_id, enrolled_learner_ids
     ):
         seen["creator_user_id"] = creator_user_id
-        return {"ok": True}
+        return CONTRACT_SHAPES[_shape_for(locals())]
 
     monkeypatch.setattr(
         "backend.routes.api.institution_service.create_class",

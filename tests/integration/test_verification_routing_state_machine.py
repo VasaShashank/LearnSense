@@ -34,41 +34,45 @@ def client():
 
 
 @pytest.fixture(scope="module")
-def subject_id(services):
-    """A real ingested subject with a grounded question bank."""
-    learning, ks, _ = services
-    subjects = ks.list_subjects()
-    if not subjects:
-        pytest.fail("No subjects available; this is a required fixture.")
-    for sub in subjects:
-        sid = sub.get("id") or sub.get("subject_id", "")
-        if not sid:
-            continue
-        try:
-            if learning.get_or_create_question_bank(sid).get_grounded_questions():
-                return sid
-        except Exception:
-            continue
-    pytest.fail("No subject with a grounded question bank is available.")
+def subject_id(ingested_calculus):
+    """The session-scoped ingested fixture document (never developer-local storage)."""
+    return ingested_calculus.document_id
+
+
+_AUTH = None
+_DOC = None
+
+
+@pytest.fixture(autouse=True)
+def _authenticated_learners(api_auth, ingested_calculus):
+    """Requests carry a verified identity (tests/support/api_auth.py)."""
+    global _AUTH, _DOC
+    _AUTH, _DOC = api_auth, ingested_calculus.document_id
+    yield
+    _AUTH = None
 
 
 def _unique(prefix: str) -> str:
-    return f"{prefix}_{int(time.time() * 1000)}"
+    """A fresh canonical learner, logged in, with access to the fixture document."""
+    return _AUTH.learner(f"{prefix}_{time.time_ns()}", _DOC)
 
 
 def _entry(client, learner_id, sid=None):
+    _AUTH.login(learner_id)
     resp = client.get(f"/api/learners/{learner_id}/entry-state", params={"subject_id": sid} if sid else None)
     assert resp.status_code == 200, resp.text
     return resp.json()
 
 
 def _resume(client, learner_id, sid=None):
+    _AUTH.login(learner_id)
     resp = client.get(f"/api/learners/{learner_id}/resume", params={"subject_id": sid} if sid else None)
     assert resp.status_code == 200, resp.text
     return resp.json()
 
 
 def _start_calibration(client, learner_id, sid, all_know=True):
+    _AUTH.login(learner_id)
     # NOTE: deliberately no learner_id here. That query parameter makes the
     # endpoint materialise learner state, which is precisely the conflation this
     # file guards against.
@@ -90,7 +94,7 @@ def test_case01_no_source_yields_source_selection(client, monkeypatch):
     ks = KnowledgeService()
     ls = LearnerService(knowledge_service=ks)
     learning = LearningService(learner_service=ls, knowledge_service=ks)
-    monkeypatch.setattr(learning.knowledge_service, "list_subjects", lambda: [])
+    monkeypatch.setattr(learning.knowledge_service, "list_subjects", lambda *_a, **_kw: [])
 
     state = learning.get_entry_state(_unique("learner_nosrc"))
     assert state["entry_state"] == "SOURCE_SELECTION"
@@ -287,6 +291,7 @@ def test_case09_other_learner_cannot_answer(client, subject_id):
     ).json()
     qid = started["next_question"]["question_id"]
 
+    _AUTH.login(intruder)   # an authenticated, different learner
     resp = client.post(
         "/api/initialization/diagnostic/answer",
         json={
@@ -296,7 +301,8 @@ def test_case09_other_learner_cannot_answer(client, subject_id):
             "selected_option": "definitely_not_the_answer",
         },
     )
-    assert resp.status_code == 400
+    # Refused; another learner's session is concealed (404) under token identity.
+    assert resp.status_code in (400, 403, 404)
     assert _entry(client, owner, subject_id)["answered_count"] == 0
 
 

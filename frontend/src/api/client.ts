@@ -639,6 +639,19 @@ export const ApiClient = {
   },
 
   /**
+   * Provision the verified Supabase identity as its own learner, idempotently.
+   * The server derives identity from the bearer token and accepts no learner ID.
+   */
+  initializeCurrentLearner: (): Promise<{
+    learner_id: string;
+    status: string;
+    created: boolean;
+    entry_state: EntryStateName;
+    subject_id: string | null;
+  }> =>
+    fetchJson('/learners/me/initialize', { method: 'POST' }),
+
+  /**
    * Resume learner state after browser refresh.
    * Returns persisted progress, onboarding status, and any active assessment.
    */

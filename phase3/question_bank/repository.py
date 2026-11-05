@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from phase3.question_bank.models import QuestionBank, QuestionValidationStatus
+from storage.atomic_replace import replace_atomically
 
 
 class QuestionBankRepository:
@@ -37,7 +38,7 @@ class QuestionBankRepository:
                 json.dump(data, f, indent=2, ensure_ascii=False)
                 f.flush()
                 os.fsync(f.fileno())
-            os.replace(tmp_name, path)
+            replace_atomically(tmp_name, path)
         except Exception:
             # Never leave a stray temp file behind on failure.
             try:

@@ -351,18 +351,14 @@ class TestRosterAndTenantIsolation:
 # ---------------------------------------------------------------------------
 
 class TestProductionEnforcement:
-    def test_require_pg_without_database_url_raises(self, monkeypatch):
+    def test_require_pg_without_database_url_raises(self, monkeypatch, tmp_path):
         monkeypatch.delenv("DATABASE_URL", raising=False)
         monkeypatch.setenv("LEARNSENSE_REQUIRE_PG", "1")
         from backend.services import institution_service as _mod
-        # Force re-import to pick up env changes
-        import importlib
-        importlib.reload(_mod)
+        # The constructor reads the environment; reloading the module is unnecessary
+        # and would replace its exception classes for every other importer.
         with pytest.raises(RuntimeError, match="LEARNSENSE_REQUIRE_PG"):
-            _mod.InstitutionService()
-        # Cleanup: reload without env var
-        monkeypatch.delenv("LEARNSENSE_REQUIRE_PG", raising=False)
-        importlib.reload(_mod)
+            _mod.InstitutionService(base_dir=str(tmp_path / "inst"))
 
 
 def test_create_organization_with_admin_assigns_creator(tmp_path, monkeypatch):

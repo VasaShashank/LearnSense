@@ -10,6 +10,7 @@ import threading
 import time
 import uuid
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Query, UploadFile, File, Depends
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
 from backend.services.knowledge_service import KnowledgeService
@@ -19,11 +20,26 @@ from backend.services.tutor_service import TutorService
 from backend.services.source_service import SourceService
 from backend.services.resource_service import ResourceService
 from backend.services.teacher_service import TeacherService
-from backend.services.institution_service import InstitutionService
+from backend.services.institution_service import (
+    ClassNotFoundError,
+    DuplicateOrganizationError,
+    EnrollmentNotFoundError,
+    InstitutionService,
+    InvalidAssignmentError,
+    LastAdminError,
+    MembershipNotFoundError,
+)
+from backend.services import audit_log
+from backend.services.authorization import AuthorizedTeacherAnalytics, grant_class_staff_access
+from backend.services.document_access_store import build_document_stores
+from backend.services.user_service import UserNotProvisionedError
+from backend.api_errors import AUTH_ERRORS, CONCEALED_ERRORS, ApiError, ErrorEnvelope
+from backend.config import is_strict
+from backend.routes import schemas
 from backend.services.document_access import DocumentAccessService
 from phase3.resources.models import ResourceRecord
 from phase4.institution.models import UserRole
-from phase3.errors import LearnSenseError
+from phase3.errors import AuthorizationError, LearnSenseError
 from phase4.models import ConfidenceLevel, SelfAssessmentStatus
 import logging
 from storage.job_repository import JobRepository
@@ -46,13 +62,34 @@ resource_service = ResourceService(knowledge_service=knowledge_service, learner_
 teacher_service = TeacherService(knowledge_service=knowledge_service, learner_service=learner_service)
 institution_service = InstitutionService()
 job_repo = JobRepository()
-document_ownership = DocumentOwnershipRepository()
-document_shares = DocumentShareRepository()
+# PostgreSQL stores when DATABASE_URL is configured, JSON files otherwise (no dual-write).
+document_ownership, document_shares = build_document_stores()
 document_access = DocumentAccessService(
     ownership=document_ownership,
     shares=document_shares,
     institutions=institution_service,
 )
+# Teacher analytics are reachable from requests only with a class-staff grant.
+teacher_analytics = AuthorizedTeacherAnalytics(lambda: teacher_service)
+_CONFLICT = {409: {"model": ErrorEnvelope, "description": "CONFLICT"}}
+
+
+def _class_not_found() -> ApiError:
+    return ApiError(404, "CLASS_NOT_FOUND", "Class not found.")
+
+
+async def _class_scoped(call):
+    """Await ``call()``; a missing class and a class the caller may not access are
+    indistinguishable (same 404). Validation errors about the *subject* of an
+    operation are only reachable after the caller was authorized."""
+    try:
+        return await call()
+    except (InvalidAssignmentError, UserNotProvisionedError):
+        raise
+    except EnrollmentNotFoundError:
+        raise ApiError(404, "ENROLLMENT_NOT_FOUND", "Enrollment not found.") from None
+    except (ClassNotFoundError, AuthorizationError):
+        raise _class_not_found() from None
 
 
 def _sync_document_access_dependencies() -> None:
@@ -81,32 +118,71 @@ def _assert_self_id(claimed_learner_id: str, authenticated_learner_id: str) -> N
         raise HTTPException(status_code=404, detail="Learner resource not found.")
 
 
-@router.post("/learners/me/initialize")
-def initialize_current_learner(user: AuthenticatedUser = Depends(get_current_user)):
-    """Provision this verified Supabase identity as its own learner, idempotently.
+@router.post(
+    "/learners/me/initialize",
+    response_model=schemas.InitializeLearnerResponse,
+    responses={**AUTH_ERRORS, **_CONFLICT},
+)
+async def initialize_current_learner(user: AuthenticatedUser = Depends(get_current_user)):
+    """Provision this verified Supabase identity as a user and as its own learner,
+    idempotently.
 
     The request accepts no learner ID. Existing state without trusted provisioning
     provenance is preserved and rejected rather than adopted.
     """
     learner_id = _authenticated_learner_id(user)
-    try:
-        _state, created = learner_service.provision_authenticated_learner(learner_id)
-        entry = learning_service.get_entry_state(
-            learner_id,
-            visible_document_ids=_accessible_document_ids(learner_id),
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=409,
-            detail="Learner state cannot be safely initialized; contact support.",
-        ) from exc
+    await institution_service.users.ensure_user(learner_id, user.email)
+
+    def _provision():
+        try:
+            _state, created = learner_service.provision_authenticated_learner(learner_id)
+            entry = learning_service.get_entry_state(
+                learner_id,
+                visible_document_ids=_accessible_document_ids(learner_id),
+            )
+        except ValueError as exc:
+            raise ApiError(
+                409, "LEARNER_STATE_CONFLICT",
+                "Learner state cannot be safely initialized; contact support.",
+            ) from exc
+        return {
+            "learner_id": learner_id,
+            "status": "ready",
+            "created": created,
+            "entry_state": entry["entry_state"],
+            "subject_id": entry["subject_id"],
+        }
+
+    return await run_in_threadpool(_provision)
+
+
+@router.get("/me", response_model=schemas.CurrentUserResponse, responses=AUTH_ERRORS)
+async def get_me(user: AuthenticatedUser = Depends(get_current_user)):
+    """The verified caller and their ACTIVE organization memberships.
+
+    Identity comes only from the bearer token. The user record is provisioned
+    idempotently (and last_seen refreshed) as a side effect.
+    """
+    user_id = _authenticated_learner_id(user)
+    record = await institution_service.users.ensure_user(user_id, user.email)
+    memberships = await institution_service.list_memberships_for_user_async(user_id)
     return {
-        "learner_id": learner_id,
-        "status": "ready",
-        "created": created,
-        "entry_state": entry["entry_state"],
-        "subject_id": entry["subject_id"],
+        "user_id": user_id,
+        "email": record.get("email"),
+        "account_status": record.get("status", "active"),
+        "memberships": memberships,
     }
+
+
+@router.get("/me/export", response_model=schemas.IdentityExportResponse, responses=AUTH_ERRORS)
+async def export_me(user: AuthenticatedUser = Depends(get_current_user)):
+    """Export of Person 1-owned identity records for the caller (user record,
+    memberships, enrollments, owned document IDs, audit events they performed).
+    Learning records owned by other modules are not included."""
+    user_id = _authenticated_learner_id(user)
+    records = await institution_service.export_identity_records_async(user_id)
+    owned = await run_in_threadpool(document_ownership.list_owned_document_ids, user_id)
+    return {**records, "owned_document_ids": sorted(owned)}
 
 
 def _require_owned_uploaded_document(document_id: str, user_id: str) -> None:
@@ -116,6 +192,16 @@ def _require_owned_uploaded_document(document_id: str, user_id: str) -> None:
     _sync_document_access_dependencies()
     if not document_access.can_read(document_id, user_id):
         raise HTTPException(status_code=404, detail="Document not found.")
+
+
+async def _require_document_read_access(document_id: str, user_id: str) -> None:
+    """Async-route form of ``_require_owned_uploaded_document``.
+
+    The check may hit PostgreSQL (document ownership/shares, memberships) through
+    synchronous store calls, so async handlers run it in the threadpool instead of
+    on the request event loop. Same checks, same 404 on denial.
+    """
+    await run_in_threadpool(_require_owned_uploaded_document, document_id, user_id)
 
 
 def _require_document_owner(document_id: str, user_id: str) -> str:
@@ -278,7 +364,7 @@ async def get_concept_question(
     Returns authentic domain question and options for a specific concept mini-quiz generated via LLM.
     P0 Security: correct_answer and explanation are strictly stripped before submission!
     """
-    _require_owned_uploaded_document(subject_id, user.id)
+    await _require_document_read_access(subject_id, user.id)
     if learner_id is not None:
         _assert_self_id(learner_id, _authenticated_learner_id(user))
     try:
@@ -297,7 +383,7 @@ async def get_concept_learning_content(
     """
     Returns in-depth educational learning content for a concept.
     """
-    _require_owned_uploaded_document(subject_id, user.id)
+    await _require_document_read_access(subject_id, user.id)
     try:
         return learning_service.get_concept_learning_content(subject_id, concept_id)
     except LearnSenseError:
@@ -342,7 +428,7 @@ async def diagnose_root_gap(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(learner_id, canonical_id)
-    _require_owned_uploaded_document(req.subject_id, canonical_id)
+    await _require_document_read_access(req.subject_id, canonical_id)
     try:
         return learner_service.diagnose_root_gap(
             learner_id=canonical_id,
@@ -369,7 +455,7 @@ async def submit_self_assessment(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
-    _require_owned_uploaded_document(req.subject_id, canonical_id)
+    await _require_document_read_access(req.subject_id, canonical_id)
     try:
         session = learning_service.submit_self_assessment(
             learner_id=canonical_id,
@@ -396,7 +482,7 @@ async def calibration_status(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(learner_id, canonical_id)
-    _require_owned_uploaded_document(subject_id, canonical_id)
+    await _require_document_read_access(subject_id, canonical_id)
     return learning_service.get_calibration_status(canonical_id, subject_id)
 
 
@@ -446,7 +532,7 @@ async def set_active_subject(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(learner_id, canonical_id)
-    _require_owned_uploaded_document(subject_id, canonical_id)
+    await _require_document_read_access(subject_id, canonical_id)
     learner_service.active_subject_repo.set_active_subject(canonical_id, subject_id)
     return {"learner_id": canonical_id, "subject_id": subject_id}
 
@@ -470,7 +556,7 @@ async def start_diagnostic(
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
     session = _require_owned_init_session(req.session_id, canonical_id)
-    _require_owned_uploaded_document(session.subject_id, canonical_id)
+    await _require_document_read_access(session.subject_id, canonical_id)
     try:
         return learning_service.start_diagnostic(req.session_id, learner_id=canonical_id)
     except ValueError as exc:
@@ -492,7 +578,7 @@ async def answer_diagnostic(
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
     session = _require_owned_init_session(req.session_id, canonical_id)
-    _require_owned_uploaded_document(session.subject_id, canonical_id)
+    await _require_document_read_access(session.subject_id, canonical_id)
     try:
         return learning_service.submit_diagnostic_answer(
             session_id=req.session_id,
@@ -518,7 +604,7 @@ async def submit_diagnostic(
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
     session = _require_owned_init_session(req.session_id, canonical_id)
-    _require_owned_uploaded_document(session.subject_id, canonical_id)
+    await _require_document_read_access(session.subject_id, canonical_id)
     try:
         return learning_service.submit_diagnostic(req.session_id, req.responses, learner_id=canonical_id)
     except ValueError as exc:
@@ -550,7 +636,7 @@ async def submit_activity_response(
 
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
-    _require_owned_uploaded_document(req.subject_id, canonical_id)
+    await _require_document_read_access(req.subject_id, canonical_id)
 
     try:
         return learning_service.process_activity_response(
@@ -602,7 +688,7 @@ async def start_final_assessment(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
-    _require_owned_uploaded_document(req.subject_id, canonical_id)
+    await _require_document_read_access(req.subject_id, canonical_id)
     try:
         return learning_service.start_final_assessment(canonical_id, req.subject_id)
     except ValueError as exc:
@@ -622,7 +708,7 @@ async def submit_final_assessment(
     assessment = _require_owned_final_assessment(req.assessment_id, canonical_id)
     if assessment.subject_id != req.subject_id:
         raise HTTPException(status_code=404, detail="Assessment not found.")
-    _require_owned_uploaded_document(assessment.subject_id, canonical_id)
+    await _require_document_read_access(assessment.subject_id, canonical_id)
     try:
         return learning_service.submit_final_assessment(
             assessment_id=req.assessment_id,
@@ -652,7 +738,7 @@ async def get_final_assessment_status(
     if learner_id is not None:
         _assert_self_id(learner_id, canonical_id)
     assessment = _require_owned_final_assessment(assessment_id, canonical_id)
-    _require_owned_uploaded_document(assessment.subject_id, canonical_id)
+    await _require_document_read_access(assessment.subject_id, canonical_id)
     try:
         return learning_service.get_final_assessment_status(assessment_id, learner_id=canonical_id)
     except ValueError as exc:
@@ -671,7 +757,7 @@ async def interact_with_tutor(
     """
     canonical_id = _authenticated_learner_id(user)
     _assert_self_id(req.learner_id, canonical_id)
-    _require_owned_uploaded_document(req.subject_id, canonical_id)
+    await _require_document_read_access(req.subject_id, canonical_id)
     return tutor_service.generate_contextual_response(
         learner_id=canonical_id,
         subject_id=req.subject_id,
@@ -705,15 +791,15 @@ async def api_health():
     adapter = get_llm_adapter()
     health = adapter.health()
     # §2 #14: Mock can never count as ready. Only real provider + credentials = ready.
-    return {
-        "status": "healthy",
-        "llm": health,
-        "llm_ready": bool(
-            not getattr(adapter, "is_mock", False)
-            and health.get("has_credentials")
-            and health.get("provider")
-        ),
-    }
+    llm_ready = bool(
+        not getattr(adapter, "is_mock", False)
+        and health.get("has_credentials")
+        and health.get("provider")
+    )
+    if is_strict():
+        # Unauthenticated endpoint: no provider/model/mode detail outside dev and test.
+        return {"status": "healthy", "llm_ready": llm_ready}
+    return {"status": "healthy", "llm": health, "llm_ready": llm_ready}
 
 
 @router.post("/sources/upload")
@@ -863,7 +949,7 @@ async def get_concept_resources(
     Evaluates formula equivalence, prerequisite coverage, and learner mastery level (§9).
     """
     canonical_id = None
-    _require_owned_uploaded_document(subject_id, user.id)
+    await _require_document_read_access(subject_id, user.id)
     if learner_id:
         canonical_id = _authenticated_learner_id(user)
         _assert_self_id(learner_id, canonical_id)
@@ -906,8 +992,15 @@ async def index_resource(
         )
     try:
         validate_storage_id(resource.resource_id, name="resource_id")
+        # Create-only: replacing an existing catalog record (possibly created by another
+        # organization) is refused until the catalog editing policy is agreed
+        # (docs/contracts/resource-sharing.md).
+        if resource_service.get_resource(resource.resource_id) is not None:
+            raise ApiError(409, "RESOURCE_EXISTS", "A resource with this ID already exists.")
         resource_service.save_resource(resource)
         return {"resource_id": resource.resource_id, "status": "indexed"}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -955,13 +1048,13 @@ def _authorize_teacher_class(class_id: str, user: AuthenticatedUser):
     """Authorize against institutional records, never legacy JSON class IDs alone."""
     course_class = institution_service.get_class(class_id)
     if course_class is None:
-        raise HTTPException(status_code=404, detail="Class not found.")
+        raise _class_not_found()
     try:
         membership = institution_service.require_role(
             course_class.org_id, user.id, [UserRole.ADMIN, UserRole.TEACHER]
         )
         if membership.role == UserRole.TEACHER and user.id not in course_class.teacher_ids:
-            raise HTTPException(status_code=404, detail="Class not found.")
+            raise _class_not_found()
         _require_owned_uploaded_document(course_class.subject_id, user.id)
         roster = institution_service.get_class_roster(class_id, user.id)
     except HTTPException:
@@ -969,15 +1062,15 @@ def _authorize_teacher_class(class_id: str, user: AuthenticatedUser):
     except Exception as exc:
         from phase3.errors import AuthorizationError
         if isinstance(exc, AuthorizationError):
-            raise HTTPException(status_code=404, detail="Class not found.") from exc
+            raise _class_not_found() from exc
         raise
 
     projection = teacher_service.get_class(class_id)
     if projection is None or set(projection.get("enrolled_learner_ids", [])) != set(roster):
         # The legacy analytics projection is not authoritative. A mismatch fails closed.
-        raise HTTPException(status_code=404, detail="Class not found.")
+        raise _class_not_found()
     if projection.get("subject_id") != course_class.subject_id:
-        raise HTTPException(status_code=404, detail="Class not found.")
+        raise _class_not_found()
     return course_class
 
 
@@ -985,7 +1078,7 @@ def _require_assigned_teacher_class(class_id: str, user: AuthenticatedUser):
     """Resolve a class and require its assigned, active TEACHER member."""
     course_class = institution_service.get_class(class_id)
     if course_class is None:
-        raise HTTPException(status_code=404, detail="Class not found.")
+        raise _class_not_found()
     try:
         institution_service.require_role(
             course_class.org_id, user.id, [UserRole.TEACHER]
@@ -993,14 +1086,33 @@ def _require_assigned_teacher_class(class_id: str, user: AuthenticatedUser):
     except Exception as exc:
         from phase3.errors import AuthorizationError
         if isinstance(exc, AuthorizationError):
-            raise HTTPException(status_code=404, detail="Class not found.") from exc
+            raise _class_not_found() from exc
         raise
     if user.id not in course_class.teacher_ids:
-        raise HTTPException(status_code=404, detail="Class not found.")
+        raise _class_not_found()
     return course_class
 
 
-@router.post("/classes/{class_id}/materials/{document_id}/share")
+def _record_share_audit(action: str, actor_user_id: str, document_id: str, class_id: str) -> None:
+    """JSON mode only: PostgreSQL share stores write the event in their transaction."""
+    if getattr(document_shares, "writes_audit", False):
+        return
+    audit = getattr(institution_service, "audit", None)
+    if audit is None or getattr(institution_service, "_pg_enabled", False):
+        return
+    course_class = institution_service.get_class(class_id)
+    audit.record(
+        actor_user_id=actor_user_id, org_id=getattr(course_class, "org_id", None),
+        action=action, target_type="document", target_id=document_id,
+        details={"class_id": class_id},
+    )
+
+
+@router.post(
+    "/classes/{class_id}/materials/{document_id}/share",
+    response_model=schemas.ShareResponse,
+    responses=CONCEALED_ERRORS,
+)
 def share_class_material(
     class_id: str,
     document_id: str,
@@ -1009,12 +1121,17 @@ def share_class_material(
     """Explicitly share an uploader-owned document with an assigned class."""
     _require_assigned_teacher_class(class_id, current_user)
     owner_id = _require_document_owner(document_id, current_user.id)
+    already_shared = any(
+        g.get("class_id") == class_id for g in document_shares.list_for_document(document_id)
+    )
     grant = document_shares.grant(
         document_id=document_id,
         class_id=class_id,
         owner_id=owner_id,
         shared_by=current_user.id,
     )
+    if not already_shared:
+        _record_share_audit(audit_log.SHARE_GRANTED, current_user.id, document_id, class_id)
     return {
         "document_id": document_id,
         "class_id": class_id,
@@ -1023,7 +1140,11 @@ def share_class_material(
     }
 
 
-@router.delete("/classes/{class_id}/materials/{document_id}/share")
+@router.delete(
+    "/classes/{class_id}/materials/{document_id}/share",
+    response_model=schemas.RevokeShareResponse,
+    responses=CONCEALED_ERRORS,
+)
 def revoke_class_material_share(
     class_id: str,
     document_id: str,
@@ -1032,6 +1153,8 @@ def revoke_class_material_share(
     """Let the uploader withdraw a grant even after class assignment changes."""
     owner_id = _require_document_owner(document_id, current_user.id)
     revoked = document_shares.revoke(document_id, class_id, owner_id)
+    if revoked:
+        _record_share_audit(audit_log.SHARE_REVOKED, current_user.id, document_id, class_id)
     return {
         "document_id": document_id,
         "class_id": class_id,
@@ -1039,35 +1162,44 @@ def revoke_class_material_share(
     }
 
 
-@router.get("/classes")
+@router.get("/classes", responses=AUTH_ERRORS)
 async def list_classes(current_user: AuthenticatedUser = Depends(get_current_user)):
     """
     Lists only institutionally authorized classes assigned to this user.
     """
     classes = await institution_service.list_classes_for_user_async(current_user.id)
-    projected = {item.get("class_id"): item for item in teacher_service.list_classes()}
-    results = []
-    for course_class in classes:
-        item = projected.get(course_class.class_id)
-        if item is None:
-            continue
-        try:
-            roster = institution_service.get_class_roster(course_class.class_id, current_user.id)
-        except Exception:
-            continue
-        if set(item.get("enrolled_learner_ids", [])) != set(roster):
-            continue
-        results.append({
-            **item,
-            "org_id": course_class.org_id,
-            "subject_id": course_class.subject_id,
-            "class_name": course_class.title,
-            "enrolled_learner_ids": roster,
-        })
-    return results
+
+    def _project():
+        projected = {item.get("class_id"): item for item in teacher_service.list_classes()}
+        results = []
+        for course_class in classes:
+            item = projected.get(course_class.class_id)
+            if item is None:
+                continue
+            try:
+                roster = institution_service.get_class_roster(course_class.class_id, current_user.id)
+            except Exception:
+                logger.warning("Skipping class %s: roster unavailable", course_class.class_id)
+                continue
+            if set(item.get("enrolled_learner_ids", [])) != set(roster):
+                continue
+            results.append({
+                **item,
+                "org_id": course_class.org_id,
+                "subject_id": course_class.subject_id,
+                "class_name": course_class.title,
+                "enrolled_learner_ids": roster,
+            })
+        return results
+
+    return await run_in_threadpool(_project)
 
 
-@router.post("/classes")
+@router.post(
+    "/classes",
+    response_model=schemas.CourseClassResponse,
+    responses={**CONCEALED_ERRORS, 400: {"model": ErrorEnvelope}},
+)
 async def register_class(
     req: RegisterClassApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1076,12 +1208,13 @@ async def register_class(
     Registers a class cohort with enrolled learners for teacher collective knowledge tracing.
     """
     if not req.org_id:
-        raise HTTPException(
-            status_code=400,
-            detail="org_id is required; create classes through an authorized organization.",
+        raise ApiError(
+            400, "ORG_REQUIRED",
+            "org_id is required; create classes through an authorized organization.",
         )
-    _require_owned_uploaded_document(req.subject_id, current_user.id)
-    return institution_service.create_class(
+    await run_in_threadpool(_require_owned_uploaded_document, req.subject_id, current_user.id)
+    return await run_in_threadpool(
+        institution_service.create_class,
         org_id=req.org_id,
         subject_id=req.subject_id,
         title=req.class_name,
@@ -1091,7 +1224,13 @@ async def register_class(
     )
 
 
-@router.get("/classes/{class_id}/knowledge-state")
+async def _teacher_grant(class_id: str, user: AuthenticatedUser):
+    """Full class-staff authorization off the event loop, then mint the analytics grant."""
+    course_class = await run_in_threadpool(_authorize_teacher_class, class_id, user)
+    return course_class, grant_class_staff_access(course_class, user.id)
+
+
+@router.get("/classes/{class_id}/knowledge-state", responses=CONCEALED_ERRORS)
 async def get_class_knowledge_state(
     class_id: str, subject_id: Optional[str] = None,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1101,10 +1240,10 @@ async def get_class_knowledge_state(
     hypotheses across all enrolled students in the class (§10.1).
     """
     try:
-        course_class = _authorize_teacher_class(class_id, current_user)
+        course_class, grant = await _teacher_grant(class_id, current_user)
         if subject_id and subject_id != course_class.subject_id:
-            raise HTTPException(status_code=404, detail="Class not found.")
-        return teacher_service.get_class_knowledge_state(class_id, subject_id=subject_id)
+            raise _class_not_found()
+        return await run_in_threadpool(teacher_analytics.knowledge_state, grant, subject_id=subject_id)
     except HTTPException:
         raise
     except LearnSenseError:
@@ -1113,7 +1252,7 @@ async def get_class_knowledge_state(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.post("/classes/{class_id}/teaching-optimizer/plan")
+@router.post("/classes/{class_id}/teaching-optimizer/plan", responses=CONCEALED_ERRORS)
 async def generate_teaching_plan(
     class_id: str, req: CreateTeachingPlanApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1123,11 +1262,12 @@ async def generate_teaching_plan(
     differentiated student groups and time budgets for teacher review (§10.2).
     """
     try:
-        course_class = _authorize_teacher_class(class_id, current_user)
+        course_class, grant = await _teacher_grant(class_id, current_user)
         if req.subject_id and req.subject_id != course_class.subject_id:
-            raise HTTPException(status_code=404, detail="Class not found.")
-        return teacher_service.create_intervention_plan(
-            class_id=class_id,
+            raise _class_not_found()
+        return await run_in_threadpool(
+            teacher_analytics.create_plan,
+            grant,
             subject_id=req.subject_id,
             target_concept_id=req.target_concept_id,
             duration_minutes=req.duration_minutes,
@@ -1138,7 +1278,7 @@ async def generate_teaching_plan(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.post("/classes/{class_id}/interventions/{intervention_id}/approve")
+@router.post("/classes/{class_id}/interventions/{intervention_id}/approve", responses=CONCEALED_ERRORS)
 async def approve_teaching_plan(
     class_id: str, intervention_id: str, req: ApproveTeachingPlanApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1147,21 +1287,19 @@ async def approve_teaching_plan(
     Records teacher review and approval of an intervention plan (§10.3).
     """
     try:
-        _authorize_teacher_class(class_id, current_user)
-        plan = teacher_service.load_intervention_plan(intervention_id)
-        if plan is None or plan.class_id != class_id:
-            raise HTTPException(status_code=404, detail="Intervention not found.")
-        return teacher_service.approve_intervention_plan(
-            intervention_id=intervention_id,
-            teacher_notes=req.teacher_notes,
+        _course_class, grant = await _teacher_grant(class_id, current_user)
+        return await run_in_threadpool(
+            teacher_analytics.approve_plan, grant, intervention_id, req.teacher_notes
         )
     except HTTPException:
         raise
+    except LookupError:
+        raise HTTPException(status_code=404, detail="Intervention not found.")
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.post("/classes/{class_id}/interventions/{intervention_id}/evaluate")
+@router.post("/classes/{class_id}/interventions/{intervention_id}/evaluate", responses=CONCEALED_ERRORS)
 async def evaluate_intervention_outcome(
     class_id: str, intervention_id: str, req: EvaluateInterventionApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1170,26 +1308,21 @@ async def evaluate_intervention_outcome(
     Evaluates learning gains and reduction in struggling students after reassessment (§10.3).
     """
     try:
-        _authorize_teacher_class(class_id, current_user)
-        plan = teacher_service.load_intervention_plan(intervention_id)
-        if plan is None or plan.class_id != class_id:
-            raise HTTPException(status_code=404, detail="Intervention not found.")
-        # Load baseline state before intervention
-        pre_state = teacher_service.get_class_knowledge_state(class_id)
-        return teacher_service.evaluate_intervention(
-            intervention_id=intervention_id,
-            target_concept_id=req.target_concept_id,
-            pre_state=pre_state,
+        _course_class, grant = await _teacher_grant(class_id, current_user)
+        return await run_in_threadpool(
+            teacher_analytics.evaluate_plan, grant, intervention_id, req.target_concept_id
         )
     except HTTPException:
         raise
+    except LookupError:
+        raise HTTPException(status_code=404, detail="Intervention not found.")
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
 # --- STUDENT LEARNING INSIGHTS (Dynamic Aggregation) ---
 
-@router.get("/classes/{class_id}/student-learning-insights")
+@router.get("/classes/{class_id}/student-learning-insights", responses=CONCEALED_ERRORS)
 async def get_student_learning_insights(
     class_id: str, subject_id: Optional[str] = None,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1201,12 +1334,10 @@ async def get_student_learning_insights(
     knowledge states rather than hardcoded fixtures.
     """
     try:
-        course_class = _authorize_teacher_class(class_id, current_user)
+        course_class, grant = await _teacher_grant(class_id, current_user)
         if subject_id and subject_id != course_class.subject_id:
-            raise HTTPException(status_code=404, detail="Class not found.")
-        return teacher_service.get_student_learning_insights(
-            class_id=class_id, subject_id=subject_id
-        )
+            raise _class_not_found()
+        return await run_in_threadpool(teacher_analytics.learning_insights, grant, subject_id=subject_id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -1232,7 +1363,7 @@ async def get_global_student_learning_insights(
     )
 
 
-@router.get("/classes/{class_id}/student-mastery")
+@router.get("/classes/{class_id}/student-mastery", responses=CONCEALED_ERRORS)
 async def get_class_student_mastery(
     class_id: str, subject_id: Optional[str] = None,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1242,12 +1373,10 @@ async def get_class_student_mastery(
     and targeted intervention recommendations for enrolled students in the class cohort (§10.1).
     """
     try:
-        course_class = _authorize_teacher_class(class_id, current_user)
+        course_class, grant = await _teacher_grant(class_id, current_user)
         if subject_id and subject_id != course_class.subject_id:
-            raise HTTPException(status_code=404, detail="Class not found.")
-        return teacher_service.get_class_students_mastery(
-            class_id=class_id, subject_id=subject_id
-        )
+            raise _class_not_found()
+        return await run_in_threadpool(teacher_analytics.student_mastery, grant, subject_id=subject_id)
     except HTTPException:
         raise
     except Exception as exc:
@@ -1283,38 +1412,134 @@ class EnrollLearnerApiRequest(BaseModel):
     enroller_user_id: Optional[str] = None
 
 
-@router.post("/institutions/organizations")
+@router.post(
+    "/institutions/organizations",
+    response_model=schemas.OrganizationResponse,
+    responses={**AUTH_ERRORS, **_CONFLICT},
+)
 async def create_organization(
     req: CreateOrgApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
-    return await institution_service.create_organization_with_admin_async(
-        name=req.name,
-        domain=req.domain,
-        creator_user_id=current_user.id,
-    )
+    """Create an organization; the verified caller becomes its first ADMIN."""
+    await institution_service.users.ensure_user(_authenticated_learner_id(current_user), current_user.email)
+    try:
+        return await institution_service.create_organization_with_admin_async(
+            name=req.name,
+            domain=req.domain,
+            creator_user_id=current_user.id,
+        )
+    except DuplicateOrganizationError:
+        raise ApiError(
+            409, "ORGANIZATION_NAME_TAKEN", "An organization with this name already exists."
+        ) from None
 
 
-@router.post("/institutions/memberships")
+@router.post(
+    "/institutions/memberships",
+    response_model=schemas.MembershipResponse,
+    responses={**AUTH_ERRORS, 404: {"model": ErrorEnvelope}, **_CONFLICT},
+)
 async def add_membership(
     req: AddMembershipApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
-    return await institution_service.add_membership_as_admin_async(
-        org_id=req.org_id,
-        acting_user_id=current_user.id,
-        target_user_id=req.user_id,
-        role=req.role,
+    """Create, change the role of, or reactivate a membership (active org ADMIN only).
+
+    LEARNER targets must be provisioned learners; TEACHER/ADMIN targets must be
+    provisioned, active users (they have signed in). 409 if the change would leave
+    the organization without an active ADMIN.
+    """
+    try:
+        return await institution_service.add_membership_as_admin_async(
+            org_id=req.org_id,
+            acting_user_id=current_user.id,
+            target_user_id=req.user_id,
+            role=req.role,
+        )
+    except LastAdminError:
+        raise ApiError(
+            409, "LAST_ADMIN",
+            "Cannot demote the last active administrator of an organization.",
+        ) from None
+
+
+@router.get(
+    "/institutions/organizations/{org_id}/memberships",
+    response_model=schemas.MembershipPage,
+    responses=AUTH_ERRORS,
+)
+async def list_organization_memberships(
+    org_id: str,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    include_inactive: bool = False,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Members of an organization, ordered by user_id. Active org ADMIN only.
+    Deactivated memberships are excluded unless include_inactive=true."""
+    members, total = await institution_service.list_org_memberships_async(
+        org_id, current_user.id, limit=limit, offset=offset, include_inactive=include_inactive
     )
+    return {
+        "items": [
+            {"membership_id": m.membership_id, "user_id": m.user_id, "role": m.role, "is_active": m.is_active}
+            for m in members
+        ],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
-@router.post("/institutions/classes")
+@router.delete(
+    "/institutions/organizations/{org_id}/memberships/{user_id}",
+    response_model=schemas.DeactivationResponse,
+    responses={**AUTH_ERRORS, 404: {"model": ErrorEnvelope}, **_CONFLICT},
+)
+async def deactivate_membership(
+    org_id: str,
+    user_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Deactivate (not delete) a membership. Active org ADMIN only; never the last admin.
+
+    Access is revoked immediately; the membership, class enrollments and learner
+    records are retained as history. Repeating the call is idempotent.
+    """
+    try:
+        membership, changed = await institution_service.deactivate_membership_as_admin_async(
+            org_id=org_id,
+            acting_user_id=current_user.id,
+            target_user_id=user_id,
+        )
+    except MembershipNotFoundError:
+        raise ApiError(404, "MEMBERSHIP_NOT_FOUND", "Membership not found.") from None
+    except LastAdminError:
+        raise ApiError(
+            409, "LAST_ADMIN",
+            "Cannot deactivate the last active administrator of an organization.",
+        ) from None
+    return {
+        "org_id": org_id,
+        "user_id": user_id,
+        "role": membership.role,
+        "status": "deactivated" if changed else "already_inactive",
+    }
+
+
+@router.post(
+    "/institutions/classes",
+    response_model=schemas.CourseClassResponse,
+    responses={**CONCEALED_ERRORS, 400: {"model": ErrorEnvelope}},
+)
 async def create_institution_class(
     req: CreateOrgClassApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
-    _require_owned_uploaded_document(req.subject_id, current_user.id)
-    return institution_service.create_class(
+    await run_in_threadpool(_require_owned_uploaded_document, req.subject_id, current_user.id)
+    return await run_in_threadpool(
+        institution_service.create_class,
         org_id=req.org_id,
         subject_id=req.subject_id,
         title=req.title,
@@ -1324,27 +1549,84 @@ async def create_institution_class(
     )
 
 
-@router.post("/institutions/classes/{class_id}/enroll")
+@router.post(
+    "/institutions/classes/{class_id}/enroll",
+    response_model=schemas.EnrollmentResponse,
+    responses={**CONCEALED_ERRORS, 400: {"model": ErrorEnvelope}},
+)
 async def enroll_learner_in_class(
     class_id: str,
     req: EnrollLearnerApiRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
-    return institution_service.enroll_learner(
+    """Enroll (or re-enroll) an active LEARNER of the class's organization."""
+    return await _class_scoped(lambda: run_in_threadpool(
+        institution_service.enroll_learner,
         class_id=class_id,
         learner_id=req.learner_id,
         enroller_user_id=current_user.id,
-    )
+    ))
 
 
-@router.get("/institutions/organizations")
+@router.delete(
+    "/institutions/classes/{class_id}/enrollments/{learner_id}",
+    response_model=schemas.UnenrollmentResponse,
+    responses=CONCEALED_ERRORS,
+)
+async def unenroll_learner_from_class(
+    class_id: str,
+    learner_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Soft-unenroll a learner (ADMIN of the class's org or an assigned TEACHER).
+
+    The learner leaves the active roster and loses class-shared materials at once.
+    The enrollment row, the learner's account and all learning evidence are kept.
+    Idempotent: repeating returns status "already_unenrolled".
+    """
+    changed = await _class_scoped(lambda: institution_service.unenroll_learner_async(
+        class_id, learner_id, current_user.id
+    ))
+    return {
+        "class_id": class_id,
+        "learner_id": learner_id,
+        "status": "unenrolled" if changed else "already_unenrolled",
+    }
+
+
+@router.put(
+    "/institutions/classes/{class_id}/teachers",
+    response_model=schemas.CourseClassResponse,
+    responses={**CONCEALED_ERRORS, 400: {"model": ErrorEnvelope}},
+)
+async def set_class_teachers(
+    class_id: str,
+    req: schemas.TeacherAssignmentRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Replace the class's teachers (active org ADMIN only). Every teacher must be an
+    active TEACHER member of the class's organization."""
+    return await _class_scoped(lambda: institution_service.set_class_teachers_async(
+        class_id, req.teacher_ids, current_user.id
+    ))
+
+
+@router.get(
+    "/institutions/organizations",
+    response_model=List[schemas.OrganizationResponse],
+    responses=AUTH_ERRORS,
+)
 async def list_organizations(
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
     return await institution_service.list_organizations_for_user_async(current_user.id)
 
 
-@router.get("/institutions/classes")
+@router.get(
+    "/institutions/classes",
+    response_model=List[schemas.CourseClassResponse],
+    responses=AUTH_ERRORS,
+)
 async def list_institution_classes(
     org_id: Optional[str] = None,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -1354,31 +1636,33 @@ async def list_institution_classes(
     )
 
 
-@router.get("/institutions/classes/{class_id}/roster")
+@router.get(
+    "/institutions/classes/{class_id}/roster",
+    response_model=schemas.RosterResponse,
+    responses=CONCEALED_ERRORS,
+)
 async def get_class_roster(
     class_id: str,
     current_user: AuthenticatedUser = Depends(get_current_user),
 ):
-    """Return a class roster only after authenticating the caller.
+    """Active roster of a class (ADMIN of its org, or an assigned TEACHER).
 
-    The caller identity is derived from a Supabase-verified access token; it is
-    never accepted from a query parameter. The service still enforces role and
-    organization membership for this identity.
+    A missing class and another tenant's class produce the same 404.
     """
-    return {
-        "class_id": class_id,
-        "roster": institution_service.get_class_roster(
-            class_id=class_id,
-            caller_user_id=current_user.id,
-        ),
-    }
+    roster = await _class_scoped(lambda: run_in_threadpool(
+        institution_service.get_class_roster, class_id=class_id, caller_user_id=current_user.id
+    ))
+    return {"class_id": class_id, "roster": roster}
 
 
 @router.get("/auth/personas")
 async def get_personas():
     """
-    Returns available role personas for swift switching between Student, Teacher, and B2B Admin modes.
+    Demo-only role personas. Disabled (404) in staging and production: demo fixtures
+    must stay isolated from real sessions (Master Blueprint §14).
     """
+    if is_strict():
+        raise ApiError(404, "NOT_FOUND", "Not found.")
     return [
         {
             "id": "student_alex",

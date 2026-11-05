@@ -92,7 +92,8 @@ def test_active_teacher_or_admin_can_manage_global_resource_and_reads_stay_publi
     saved = []
     monkeypatch.setattr(api_route.resource_service, "save_resource", saved.append)
     resource = ResourceRecord.model_validate(_resource_payload())
-    monkeypatch.setattr(api_route.resource_service, "get_resource", lambda _id: resource)
+    # Reads reflect what was actually saved (the catalog is create-only).
+    monkeypatch.setattr(api_route.resource_service, "get_resource", lambda _id: resource if saved else None)
     app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(
         id="verified-manager", email=None
     )
@@ -131,4 +132,27 @@ def test_shared_resource_mutation_rejects_unsafe_resource_id(client, monkeypatch
     )
 
     assert response.status_code == 400
+    assert saved == []
+
+
+def test_existing_catalog_record_cannot_be_overwritten_by_another_manager(client, monkeypatch):
+    """Create-only until the catalog editing policy is agreed (resource-sharing.md)."""
+    async def organizations(_user_id):
+        return [SimpleNamespace(org_id="org-other")]
+
+    monkeypatch.setattr(api_route.institution_service, "list_organizations_for_user_async", organizations)
+    monkeypatch.setattr(
+        api_route.institution_service, "get_membership",
+        lambda *_args: SimpleNamespace(is_active=True, role=UserRole.ADMIN),
+    )
+    existing = ResourceRecord.model_validate(_resource_payload())
+    monkeypatch.setattr(api_route.resource_service, "get_resource", lambda _id: existing)
+    saved = []
+    monkeypatch.setattr(api_route.resource_service, "save_resource", saved.append)
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(id="other-org-admin", email=None)
+
+    response = client.post("/api/resources", json=_resource_payload())
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "RESOURCE_EXISTS"
     assert saved == []

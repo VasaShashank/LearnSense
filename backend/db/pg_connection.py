@@ -11,9 +11,11 @@ Environment variables
 DATABASE_URL (required for PostgreSQL operations)
     Full libpq-compatible connection string, e.g.
     ``postgresql://user:password@host:5432/dbname``
-    When running against Supabase, use the connection pooler (port 6543) for
-    transaction-mode pooling, or the direct connection (port 5432) for
-    session-mode access.
+    Against Supabase, use the direct connection
+    (``db.<project-ref>.supabase.co:5432``) or the session pooler
+    (``<region>.pooler.supabase.com:5432``). The transaction pooler (port 6543,
+    or any DSN with ``pgbouncer=true``) is refused: asyncpg caches prepared
+    statements per connection, which transaction pooling does not support.
 
 PG_MIN_SIZE / PG_MAX_SIZE (optional)
     Pool size bounds.  Defaults to 1 / 5.
@@ -44,6 +46,60 @@ except ImportError:
 
 _pool: Optional["asyncpg.Pool"] = None  # type: ignore[name-defined]
 _pool_lock: Optional[asyncio.Lock] = None
+
+SUPABASE_TRANSACTION_POOLER_PORT = 6543
+DIRECT_OR_SESSION_HINT = (
+    "Use a direct connection (db.<project-ref>.supabase.co:5432) or the Supabase "
+    "session pooler (<region>.pooler.supabase.com:5432)."
+)
+
+
+class UnsupportedConnectionError(RuntimeError):
+    """DATABASE_URL points at a connection type LearnSense does not support."""
+
+
+def transaction_pooler_reason(dsn: str) -> Optional[str]:
+    """Why ``dsn`` is (or may be) a transaction-mode pooler, or None.
+
+    Detects Supabase's transaction pooler port and an explicit ``pgbouncer=true``.
+    A transaction pooler on another port cannot be recognised from the DSN.
+    The returned text never contains credentials or the DSN.
+    """
+    parts = urlsplit(dsn)
+    try:
+        port = parts.port or 5432
+    except ValueError:
+        return None  # reported by dsn_port_problem
+    if port == SUPABASE_TRANSACTION_POOLER_PORT:
+        return f"port {SUPABASE_TRANSACTION_POOLER_PORT} is Supabase's transaction pooler"
+    query = {k.lower(): [v.lower() for v in vs] for k, vs in parse_qs(parts.query).items()}
+    if any(v in ("true", "1", "yes") for v in query.get("pgbouncer", [])):
+        return "the DSN declares a PgBouncer pooler (pgbouncer=true)"
+    return None
+
+
+def dsn_port_problem(dsn: str) -> Optional[str]:
+    """Credential-free message when the DSN port cannot be parsed, or None."""
+    try:
+        urlsplit(dsn).port
+    except ValueError:
+        return "DATABASE_URL is not usable: its port is not a valid number."
+    return None
+
+
+def api_connection_problem(dsn: str) -> Optional[str]:
+    """Credential-free reason the API must not use ``dsn``, or None."""
+    port_problem = dsn_port_problem(dsn)
+    if port_problem:
+        return port_problem
+    reason = transaction_pooler_reason(dsn)
+    if reason is None:
+        return None
+    return (
+        f"DATABASE_URL is not supported: {reason}. The API's asyncpg pool caches "
+        "prepared statements per connection, which transaction pooling breaks. "
+        + DIRECT_OR_SESSION_HINT
+    )
 
 
 def _normalize_database_url(database_url: str) -> str:
@@ -84,6 +140,8 @@ async def get_pg_pool() -> "asyncpg.Pool":  # type: ignore[name-defined]
     ------
     RuntimeError
         If asyncpg is not installed, or if DATABASE_URL is not configured.
+    UnsupportedConnectionError
+        If DATABASE_URL is a transaction pooler (checked before connecting).
     """
     global _pool, _pool_lock
     if _pool is not None:
@@ -107,6 +165,9 @@ async def get_pg_pool() -> "asyncpg.Pool":  # type: ignore[name-defined]
                 "DATABASE_URL is not set. "
                 "Configure it in .env (see .env.example) before using PostgreSQL persistence."
             )
+        problem = api_connection_problem(database_url)
+        if problem:
+            raise UnsupportedConnectionError(problem)
 
         min_size = int(os.getenv("PG_MIN_SIZE", "1"))
         max_size = int(os.getenv("PG_MAX_SIZE", "5"))

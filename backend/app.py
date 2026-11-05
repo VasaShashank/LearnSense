@@ -6,10 +6,8 @@ Configures CORS, exception handlers, REST routers, and application services.
 import logging
 import os
 from pathlib import Path
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from phase3.errors import LearnSenseError
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ for p in [Path(".env"), Path(__file__).resolve().parent.parent / ".env"]:
                 if line and not line.startswith("#") and "=" in line:
                     k, v = line.split("=", 1)
                     k, v = k.strip(), v.strip().strip("'\"")
-                    if k in {"DATABASE_URL", "LEARNSENSE_REQUIRE_PG"} and k not in os.environ:
+                    if k in {"DATABASE_URL", "LEARNSENSE_REQUIRE_PG", "LEARNSENSE_ENV"} and k not in os.environ:
                         os.environ[k] = v
 
 # Import routes only after environment loading: the institutional service
@@ -132,34 +130,77 @@ app = FastAPI(
     version="2026.09.0",
 )
 
-# Environment-driven CORS configuration for frontend integration
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
-allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
-if "*" in allowed_origins or not allowed_origins:
-    allowed_origins = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*",
-    ]
+# CORS: explicit origins only. A wildcard is never combined with credentials, and
+# strict environments (staging/production) fail startup without explicit origins.
+from backend.config import cors_settings, enforce_runtime_config, is_strict  # noqa: E402
+from backend.api_errors import install_error_handlers  # noqa: E402
+
+allowed_origins, allow_credentials = cors_settings()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+install_error_handlers(app)
 
 # Mount REST API Routers
 app.include_router(api.router, prefix="/api", tags=["application_facades"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
 
 
+async def _optional_pg_schema_status() -> dict:
+    """Optional PostgreSQL mode: report schema state loudly, never block startup."""
+    import asyncio
+
+    from backend.db.pg_connection import get_pg_pool
+    from backend.db.schema_check import describe_report, has_problems, inspect_migrations
+    from backend.services.institution_service import _await_background
+
+    async def _check():
+        return await inspect_migrations(await get_pg_pool())
+
+    try:
+        report = await asyncio.wait_for(_await_background(_check()), timeout=15)
+    except Exception as exc:
+        reason = f"could not verify migrations ({type(exc).__name__})"
+        logger.warning("PostgreSQL is configured but %s; schema readiness is UNVERIFIED.", reason)
+        return {"status": "FAILED", "reason": reason}
+    if has_problems(report):
+        banner = "=" * 72
+        logger.warning(
+            "\n%s\nPOSTGRESQL SCHEMA NOT READY - institutional features may fail.\n%s\n%s",
+            banner, describe_report(report), banner,
+        )
+        summary = "; ".join(
+            f"{label}: {', '.join(report[key])}"
+            for key, label in (("missing", "migrations not recorded"),
+                               ("modified", "checksum mismatch"),
+                               ("unverified", "checksum not recorded"))
+            if report[key]
+        )
+        return {"status": "FAILED", "reason": summary}
+    return {"status": "OK"}
+
+
 @app.on_event("startup")
 async def on_startup():
     global _preflight_results
+    # Fails startup in staging/production when required settings are missing or
+    # unsafe. Names the settings only; never their values.
+    enforce_runtime_config()
+    # Refuse a transaction-pooler DATABASE_URL in every mode (credential-free message);
+    # the asyncpg pool cannot work reliably through it.
+    from backend.db.pg_connection import UnsupportedConnectionError, api_connection_problem
+    from backend.db.pg_connection import is_pg_configured as _pg_configured
+
+    if _pg_configured():
+        problem = api_connection_problem(os.environ["DATABASE_URL"].strip())
+        if problem:
+            raise UnsupportedConnectionError(problem)
+    pg_schema = None
     if os.getenv("LEARNSENSE_REQUIRE_PG", "0").strip() == "1":
         from backend.db.pg_connection import get_pg_pool, is_pg_configured
 
@@ -168,14 +209,26 @@ async def on_startup():
                 "LEARNSENSE_REQUIRE_PG=1 but DATABASE_URL is not configured."
             )
 
+        from backend.db.schema_check import ensure_required_migrations
         from backend.services.institution_service import _await_background
 
         # Fail startup on connection or pool initialization errors rather than
         # accepting traffic with an unusable PostgreSQL configuration.
-        await _await_background(get_pg_pool())
+        pool = await _await_background(get_pg_pool())
+        # ...and on missing migrations (read-only check; nothing is applied).
+        await _await_background(ensure_required_migrations(pool))
+        pg_schema = {"status": "OK"}
+    else:
+        from backend.db.pg_connection import is_pg_configured
+
+        if is_pg_configured():
+            pg_schema = await _optional_pg_schema_status()
 
     logger.info("Running startup preflight checks...")
     _preflight_results = _run_startup_preflight()
+    if pg_schema is not None:
+        # Only present when PostgreSQL is configured, so JSON-mode health is unchanged.
+        _preflight_results["postgres_schema"] = pg_schema
     for subsystem, result in _preflight_results.items():
         st = result.get("status", "UNKNOWN")
         if st == "OK":
@@ -198,36 +251,6 @@ async def on_shutdown():
             _run_async(close_pg_pool())
         except Exception:
             logger.exception("Failed to close institutional PostgreSQL pool")
-
-
-@app.exception_handler(ValueError)
-async def value_error_exception_handler(request: Request, exc: ValueError):
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"error": "VALIDATION_ERROR", "message": str(exc)},
-    )
-
-
-@app.exception_handler(LearnSenseError)
-async def learnsense_error_handler(request: Request, exc: LearnSenseError):
-    """
-    Render every typed runtime error with its machine-readable code and retry state.
-
-    Without this, a route-level ``except Exception`` turned "the LLM provider is rate
-    limited" into an opaque 400 with no indication that retrying would succeed, and the
-    frontend had no way to distinguish a transient failure from a bad upload.
-    """
-    return JSONResponse(
-        status_code=exc.http_status,
-        content={
-            "error": exc.code,
-            "code": exc.code,
-            "message": str(exc),
-            "recoverable": exc.recoverable,
-            "details": exc.details,
-        },
-        headers={"Retry-After": "5"} if exc.recoverable else None,
-    )
 
 
 @app.get("/", tags=["root"])
@@ -259,6 +282,9 @@ async def feature_status():
     W1: Returns real probe evidence for each subsystem.
     Status values: OK | FAILED | DISABLED_BY_CONFIG | NOT_IMPLEMENTED
     """
-    return {
-        "subsystems": _preflight_results or {"_": {"status": "NOT_IMPLEMENTED", "reason": "Preflight not yet run"}},
-    }
+    results = _preflight_results or {"_": {"status": "NOT_IMPLEMENTED", "reason": "Preflight not yet run"}}
+    if is_strict():
+        # Unauthenticated endpoint: in staging/production expose status only, not
+        # exception text, provider names or versions.
+        results = {name: {"status": r.get("status", "UNKNOWN")} for name, r in results.items()}
+    return {"subsystems": results}

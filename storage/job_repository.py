@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from storage.id_validation import validate_storage_id
+from storage.atomic_replace import replace_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class JobRepository:
                 json.dump(job, f, indent=2, ensure_ascii=False)
                 f.flush()
                 os.fsync(f.fileno())
-            os.replace(tmp_name, path)
+            replace_atomically(tmp_name, path)
         except Exception as exc:
             logger.error("Failed to save job %s: %s", job_id, exc)
             try:

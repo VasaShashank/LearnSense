@@ -169,3 +169,19 @@ LearnSense/
 - [CHANGES_SUMMARY.md](./CHANGES_SUMMARY.md) — Changelog of recent platform features and enhancements.
 - [FEATURE_VERIFICATION_REPORT.md](./FEATURE_VERIFICATION_REPORT.md) — Automated live feature execution report.
 - [frontend/README.md](./frontend/README.md) — Frontend architecture and component hierarchy.
+
+## Platform foundations (Person 1)
+
+| Topic | Document |
+|---|---|
+| Identities, roles, membership and class lifecycle | `docs/contracts/identity-and-roles.md` |
+| Error envelope and status codes | `docs/contracts/api-errors.md` |
+| Usage events, plans, quotas | `docs/contracts/usage-and-quotas.md` |
+| Job persistence | `docs/contracts/jobs.md` |
+| Where data lives, migrations, repository conventions | `docs/architecture/persistence-strategy.md` |
+| Deployment, configuration, secrets, rollback | `docs/deployment/deployment.md` |
+| Backup and restore | `docs/operations/backup-and-restore.md` |
+
+Tests never touch a configured database: live PostgreSQL tests are opt-in
+(`LEARNSENSE_ALLOW_LIVE_PG_TESTS=1` + `LEARNSENSE_TEST_DATABASE_URL` pointing at a
+**disposable** database; see `tests/support/pg_safety.py`).

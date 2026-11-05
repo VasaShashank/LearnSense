@@ -26,8 +26,10 @@ pipeline = IngestionPipeline()
 storage = DocumentStorage()
 db = DatabaseManager()
 input_validator = InputValidator()
-ownership = DocumentOwnershipRepository()
-shares = DocumentShareRepository()
+# PostgreSQL stores when DATABASE_URL is configured, JSON files otherwise.
+from backend.services.document_access_store import build_document_stores  # noqa: E402
+
+ownership, shares = build_document_stores()
 document_access = DocumentAccessService(
     ownership=ownership,
     shares=shares,

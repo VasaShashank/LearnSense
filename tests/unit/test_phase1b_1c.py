@@ -119,7 +119,14 @@ def test_security_sandbox():
     assert inj_warnings[0].code == "POSSIBLE_PROMPT_INJECTION"
 
 
-def test_fastapi_backend_endpoints():
+def test_fastapi_backend_endpoints(tmp_path, monkeypatch):
+    # Ownership records go under tmp_path, never the repository's storage/document_owners.
+    from backend.routes import documents as documents_route
+    from storage.document_ownership import DocumentOwnershipRepository
+
+    ownership = DocumentOwnershipRepository(str(tmp_path / "owners"))
+    monkeypatch.setattr(documents_route, "ownership", ownership)
+    monkeypatch.setattr(documents_route.document_access, "ownership", ownership)
     client = TestClient(app)
 
     # Health check

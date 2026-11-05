@@ -14,29 +14,52 @@ Version-controlled PostgreSQL migrations for LearnSense / TAPROOT.
 
 ---
 
-### Apply via psql (recommended for CI / local dev)
+### Apply with the migration runner (recommended)
 
 ```bash
-# Activate your virtual environment first
-source .venv/bin/activate          # Linux/macOS
-.venv\Scripts\activate             # Windows PowerShell
+# On non-Supabase PostgreSQL (local, CI, compose) create Supabase's API roles first:
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f deploy/postgres/init/00_supabase_roles.sql
 
-# Apply migrations in order (001 is already applied in existing environments)
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_institutional_schema.sql
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/002_revoke_institutional_client_privileges.sql
+python scripts/migrate.py status --dsn-env DATABASE_URL   # applied / pending / problems
+python scripts/migrate.py apply  --dsn-env DATABASE_URL   # apply pending, in order
 ```
 
-All migrations are **idempotent** — re-running them is safe and produces no
-duplicate data.
+The runner reads the DSN from the named environment variable (it never reads `.env`
+and never prints credentials), takes an advisory lock, refuses unknown or
+out-of-order history and modified applied files (sha256 checksums), and applies each
+file in its own transaction. Exit codes: 0 ok, 1 pending (`status`), 2 error.
+The application never applies migrations itself.
 
----
+**Connection requirement.** The runner needs one server session (session advisory
+lock; files with their own `BEGIN`/`COMMIT`). Use a direct connection or a
+session-mode pooler. It refuses, before connecting, any DSN on port **6543**
+(Supabase transaction pooler) or with `pgbouncer=true`, and after connecting refuses a
+connection whose statements land on different backends. The API's `DATABASE_URL`
+follows the same rule (the API refuses to start with a transaction pooler), so one
+5432 DSN serves both. See §Connection string format.
 
-### Apply via Supabase SQL Editor
+### Startup verification
 
-1. Open your project at **https://supabase.com/dashboard**.
-2. Navigate to **SQL Editor → New query**.
-3. For a new database, paste and run `migrations/001_institutional_schema.sql` first.
-4. Paste and run `migrations/002_revoke_institutional_client_privileges.sql`.
+With `LEARNSENSE_REQUIRE_PG=1` the API refuses to start unless, for every file in this
+directory, the version is recorded in `schema_migrations` **and** the recorded sha256
+equals the file's. Startup only reads; it never applies or repairs anything. Without
+`LEARNSENSE_REQUIRE_PG=1` the same problems are logged and reported in `/health`.
+
+| Problem | Cause | Operator action |
+|---|---|---|
+| missing | version not recorded | `python scripts/migrate.py apply --dsn-env <DSN env>` |
+| checksum mismatch | an applied migration file was edited (or the database belongs to different code) | Restore the file exactly as applied, or deploy code/restore a database that matches. Never edit an applied migration; add a new one. The runner refuses too and never overwrites a recorded checksum |
+| checksum not recorded | applied with psql/SQL Editor, or before 003 added the column | Confirm the files match what was applied, then run `migrate.py apply` once; it records the current files' checksums for those versions only and prints which ones |
+
+Versions recorded in the database but missing on disk (newer schema) are tolerated
+at startup; the runner refuses to apply against them.
+
+### Manual alternative (psql / Supabase SQL Editor)
+
+Apply the files below in version order with `psql -v ON_ERROR_STOP=1 -f <file>` or
+paste them into the Supabase SQL Editor. All migrations are idempotent. Then run
+`scripts/migrate.py apply` once to record checksums (the API refuses to start until
+then).
 
 ---
 
@@ -46,20 +69,32 @@ duplicate data.
 |---------|------|-------------|
 | 001 | `001_institutional_schema.sql` | Organizations, memberships, course classes, enrollments. Creates `schema_migrations` tracking table. |
 | 002 | `002_revoke_institutional_client_privileges.sql` | Revokes direct table privileges from `PUBLIC`, `anon`, and `authenticated` on the four institutional tables. |
+| 003 | `003_identity_lifecycle_audit.sql` | `users`, soft unenrollment columns, append-only `audit_events`, migration checksums. |
+| 004 | `004_document_access.sql` | `document_owners`, `document_shares` (import JSON records with `scripts/import_document_access.py`). |
+| 005 | `005_plans_usage_quotas.sql` | `plans`, `org_plan_assignments`, `quota_limits`, `usage_events`. |
+| 006 | `006_jobs.sql` | Canonical `jobs` table (docs/contracts/jobs.md). |
 
 ---
 
 ## Connection string format
 
-### Supabase Transaction Pooler (recommended for short-lived connections)
+### Supabase Direct Connection (migrations, backup/restore, API)
 ```
-postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+postgresql://postgres:<db-password>@db.<project-ref>.supabase.co:5432/postgres
 ```
 
-### Supabase Direct Connection (session-mode, for migrations)
+### Supabase Session Pooler (migrations, backup/restore, API; use when direct IPv6 is unavailable)
 ```
-postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.supabase.com:5432/postgres
+postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres
 ```
+
+### Supabase Transaction Pooler — not supported
+
+Port 6543 (or any DSN with `pgbouncer=true`) is refused by both the API (startup
+fails; asyncpg's per-connection prepared statements do not survive transaction
+pooling) and `scripts/migrate.py` (exit 2). Both checks run before connecting and
+print no credentials. A transaction pooler on another port cannot be detected from
+the DSN; do not configure one.
 
 Find these strings in: **Supabase Dashboard → Project Settings → Database → Connection string**.
 

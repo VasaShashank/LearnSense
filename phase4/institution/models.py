@@ -41,8 +41,9 @@ class CourseClass(BaseModel):
 
 
 class ClassEnrollment(BaseModel):
-    """Enrolls a student in a class."""
+    """Enrolls a student in a class. Unenrollment is soft: the row is retained."""
     enrollment_id: str
     class_id: str
     learner_id: str
     enrolled_at_iso: str
+    status: str = "active"  # "active" | "unenrolled"

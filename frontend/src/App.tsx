@@ -21,6 +21,7 @@ import { OnboardingWorkflow } from './components/onboarding/OnboardingWorkflow';
 import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
 import { getConceptDisplayName, registerConceptNameMap } from './utils/conceptName';
 import { AuthGate } from './auth/AuthGate';
+import { AuthenticatedLearnerEntry } from './auth/AuthenticatedLearnerEntry';
 import { authSessionStore, useSupabaseAuth } from './auth/session';
 
 
@@ -35,7 +36,17 @@ export default function App() {
     );
   }
 
-  return <AuthGate auth={auth} configured={authSessionStore.configured} />;
+  if (!auth.session) {
+    return <AuthGate auth={auth} configured={authSessionStore.configured} />;
+  }
+
+  return (
+    <AuthenticatedLearnerEntry
+      userId={auth.session.user.id}
+      onSignOut={() => authSessionStore.signOut()}
+      signingOut={auth.operation === 'signing-out'}
+    />
+  );
 }
 
 /**

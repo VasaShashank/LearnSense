@@ -21,6 +21,7 @@ from phase4.teacher.optimizer import TeachingOptimizer
 from backend.services.knowledge_service import KnowledgeService
 from backend.services.learner_service import LearnerService
 from phase3.learner.models import LearnerState
+from storage.atomic_replace import replace_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
             json.dump(data, f, indent=2, ensure_ascii=False)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp_name, path)
+        replace_atomically(tmp_name, path)
     except Exception:
         try:
             os.unlink(tmp_name)

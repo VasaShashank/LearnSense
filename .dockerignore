@@ -1,0 +1,44 @@
+# Never ship secrets or local environments in an image.
+.env
+.env.*
+**/.env
+**/.env.*
+**/*.env
+# Keys, certificates and package-registry credentials, at any depth.
+**/*.pem
+**/*.key
+**/.npmrc
+# Operator-created staging/production env files and Docker secret files.
+deploy/env/*
+!.env.example
+!deploy/env/*.example
+.venv/
+**/__pycache__/
+*.pyc
+.git/
+.github/
+
+# Local data stores: mounted as a volume at runtime, never baked in.
+storage/**/*.json
+storage/**/*.jsonl
+storage/*.db
+storage/*.db-*
+storage/documents/
+storage/jobs/
+storage/sessions/
+storage/learner_states/
+storage/learners/
+
+# Frontend dependencies/build output (the frontend image runs `npm ci` itself).
+frontend/node_modules/
+frontend/dist/
+
+# Not part of the runtime.
+tests/
+docs/
+backend.log
+LearnSense_org_security_update/
+LearnSense_org_security_update.zip
+learnsense_supabase_auth.patch
+README_APPLY.txt
+Microsoft/

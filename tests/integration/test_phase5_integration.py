@@ -28,7 +28,7 @@ def test_api_upload_invalid_file_rejected():
     assert "PDF" in response.json()["detail"]
 
 
-def test_api_activity_response_idempotency(ingested_calculus):
+def test_api_activity_response_idempotency(ingested_calculus, api_auth):
     """
     Verify duplicate activity response submission is handled idempotently without
     double KT update.
@@ -50,7 +50,7 @@ def test_api_activity_response_idempotency(ingested_calculus):
     question = learning.get_or_create_question_bank(subject_id).get_grounded_questions()[0]
 
     payload = {
-        "learner_id": f"learner_p5_test_{int(time.time())}",
+        "learner_id": api_auth.learner(f"learner_p5_test_{time.time_ns()}", subject_id),
         "subject_id": subject_id,
         "concept_ids": [concept_id],
         "question_id": question.question_id,
@@ -75,7 +75,7 @@ def test_api_activity_response_idempotency(ingested_calculus):
     assert data2["updated_masteries"] == first_masteries
 
 
-def test_api_activity_response_rejects_client_correctness(ingested_calculus):
+def test_api_activity_response_rejects_client_correctness(ingested_calculus, api_auth):
     """
     P0 SECURITY: the API must never accept client-reported correctness.
     This is the exact bypass that previously let a client forge mastery.
@@ -86,7 +86,7 @@ def test_api_activity_response_rejects_client_correctness(ingested_calculus):
     res = client.post(
         "/api/learners/activity-response",
         json={
-            "learner_id": f"learner_p5_forge_{int(time.time())}",
+            "learner_id": api_auth.learner(f"learner_p5_forge_{time.time_ns()}", subject_id),
             "subject_id": subject_id,
             "concept_ids": [concept_id],
             "correctness": 1.0,

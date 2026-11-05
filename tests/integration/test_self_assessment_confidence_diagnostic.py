@@ -38,8 +38,30 @@ import uuid as _uuid
 _RUN = _uuid.uuid4().hex[:8]
 
 
+_AUTH = None
+_DOCS: set = set()
+
+
+@pytest.fixture(autouse=True)
+def _authenticated_learners(api_auth, ingested_calculus):
+    """Requests carry a verified identity (tests/support/api_auth.py)."""
+    global _AUTH
+    _AUTH = api_auth
+    _DOCS.clear()
+    _DOCS.add(ingested_calculus.document_id)
+    yield
+    _AUTH = None
+
+
+def _doc(subject_id: str) -> str:
+    """Register a test subject the test's learners may read."""
+    _DOCS.add(subject_id)
+    return subject_id
+
+
 def _learner(tag: str) -> str:
-    return f"{tag}_{_RUN}"
+    """Canonical learner for this run's tag, logged in, with access to the test's documents."""
+    return _AUTH.learner(f"{tag}_{_RUN}", *_DOCS)
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend" / "src"
 
@@ -103,6 +125,7 @@ def _synthetic_bank(*concept_ids: str) -> QuestionBank:
 
 # --- Test 1: ingestion complete -> self-assessment available -----------------
 def test_1_ingestion_complete_enables_self_assessment(ingested_calculus):
+    _learner("t1_viewer")
     graph = client.get(f"/api/subjects/{ingested_calculus.document_id}/graph")
     assert graph.status_code == 200, graph.text
     concepts = graph.json()["concepts"]
@@ -238,7 +261,7 @@ def test_9_repeated_evidence_establishes_weakness(ingested_calculus, purge_subje
 
     all_ids = ingested_calculus.concept_ids
     target = all_ids[0]
-    subject_id = purge_subject("subj_t9_evidence")
+    subject_id = _doc(purge_subject("subj_t9_evidence"))
     learner_id = _learner("t9_learner")
 
     src_ctx = LearningContextRepository().load_context(ingested_calculus.document_id)
@@ -330,7 +353,7 @@ def test_10_prerequisite_failure_redirects_path(ingested_calculus, purge_subject
     assert concept_b != concept_c
     # Registered for cleanup: this synthetic subject must not survive the run
     # and appear in the learner's real library.
-    subject_id = purge_subject("subj_prereq_t10")
+    subject_id = _doc(purge_subject("subj_prereq_t10"))
     learner_id = _learner("t10_learner")
 
     src_ctx = LearningContextRepository().load_context(ingested_calculus.document_id)

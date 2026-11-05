@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from storage.id_validation import validate_storage_id
+from storage.atomic_replace import replace_atomically
 
 
 class DocumentShareRepository:
@@ -57,7 +58,7 @@ class DocumentShareRepository:
                 json.dump(data, stream, indent=2, ensure_ascii=False)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.replace(temp_name, path)
+            replace_atomically(temp_name, path)
         except Exception:
             try:
                 os.unlink(temp_name)

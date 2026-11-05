@@ -25,6 +25,20 @@ import os
 # calls during tests.
 os.environ["LEARNSENSE_TEST_HARNESS"] = "1"
 os.environ["LLM_MODE"] = "mock"
+# The runtime environment is never inferred (backend/config.py); tests declare theirs.
+os.environ["LEARNSENSE_ENV"] = "test"
+
+# PostgreSQL safety: ordinary tests must never reach a database configured through
+# ``.env`` or the shell. ``backend/app.py`` only loads .env keys that are absent from
+# os.environ, so defining DATABASE_URL here (empty) before any test module imports the
+# app keeps .env from re-injecting it. Live tests are opt-in; see tests/support/pg_safety.py.
+from tests.support.pg_safety import resolve_live_pg  # noqa: E402
+
+_LIVE_PG_ENABLED, _LIVE_PG_URL, _LIVE_PG_REASON = resolve_live_pg(
+    os.environ, os.environ.get("DATABASE_URL")
+)
+os.environ["DATABASE_URL"] = ""
+os.environ["LEARNSENSE_REQUIRE_PG"] = "0"
 
 import shutil
 from typing import Dict, List
@@ -34,6 +48,12 @@ import pytest
 
 def pytest_configure(config):
     """Reset the shared LLM adapter singleton and inject the test double."""
+    config.addinivalue_line(
+        "markers",
+        "live_pg: talks to a real, disposable PostgreSQL database; runs only when "
+        "LEARNSENSE_ALLOW_LIVE_PG_TESTS=1 and LEARNSENSE_TEST_DATABASE_URL are set "
+        "(the URL MUST be a disposable database; see tests/support/pg_safety.py)",
+    )
     os.environ["LEARNSENSE_TEST_HARNESS"] = "1"
     os.environ["LLM_MODE"] = "mock"
     try:
@@ -42,6 +62,74 @@ def pytest_configure(config):
         set_llm_adapter(MockLLMAdapter())
     except Exception:
         pass
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip ``live_pg`` tests unless the explicit disposable-database opt-in is set."""
+    if _LIVE_PG_ENABLED:
+        return
+    skip = pytest.mark.skip(reason=f"live PostgreSQL test: {_LIVE_PG_REASON}")
+    for item in items:
+        if item.get_closest_marker("live_pg"):
+            item.add_marker(skip)
+
+
+def _refuse_postgres_connection(*_args, **_kwargs):
+    raise RuntimeError(
+        "Blocked by tests/conftest.py: ordinary tests must not open PostgreSQL "
+        "connections. Mark the test @pytest.mark.live_pg and opt in with "
+        "LEARNSENSE_ALLOW_LIVE_PG_TESTS=1 + LEARNSENSE_TEST_DATABASE_URL."
+    )
+
+
+@pytest.fixture(autouse=True)
+def postgres_safety(monkeypatch, request):
+    """Keep every test off PostgreSQL unless it is an explicitly opted-in live test."""
+    live = bool(request.node.get_closest_marker("live_pg")) and _LIVE_PG_ENABLED
+    if live:
+        monkeypatch.setenv("DATABASE_URL", _LIVE_PG_URL)
+    else:
+        # Undo any direct os.environ assignment a previous test leaked, and block the
+        # driver itself as a backstop in case a test sets DATABASE_URL on its own.
+        monkeypatch.setenv("DATABASE_URL", "")
+        try:
+            import asyncpg
+        except ImportError:
+            asyncpg = None
+        if asyncpg is not None:
+            monkeypatch.setattr(asyncpg, "create_pool", _refuse_postgres_connection)
+            monkeypatch.setattr(asyncpg, "connect", _refuse_postgres_connection)
+    yield
+    if live:
+        from backend.db.pg_connection import reset_pool_for_testing
+
+        reset_pool_for_testing()
+
+
+@pytest.fixture(autouse=True)
+def isolated_user_records(tmp_path, monkeypatch):
+    """User-record provisioning (``/api/me``, ``/learners/me/initialize``) and the
+    disabled-account check must never read or write the repository's storage/users."""
+    from backend.services import user_service as user_module
+
+    service = user_module.UserService(base_dir=str(tmp_path / "users"), pg_enabled=False)
+    user_module.reset_user_service_for_testing(service)
+    import sys
+    api_module = sys.modules.get("backend.routes.api")
+    if api_module is not None:
+        monkeypatch.setattr(api_module.institution_service, "users", service)
+    yield service
+    user_module.reset_user_service_for_testing(None)
+
+
+@pytest.fixture
+def api_auth(monkeypatch):
+    """Authenticated API access for route tests (see tests/support/api_auth.py)."""
+    from tests.support.api_auth import ApiAuth
+
+    auth = ApiAuth(monkeypatch)
+    yield auth
+    auth.logout()
 
 
 @pytest.fixture(autouse=True)

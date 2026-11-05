@@ -23,7 +23,7 @@ def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
             json.dump(data, f, indent=2, ensure_ascii=False)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(tmp_name, path)
+        replace_atomically(tmp_name, path)
     except Exception:
         try:
             os.unlink(tmp_name)
@@ -35,6 +35,7 @@ def _atomic_write_json(path: Path, data: Any, base_dir: Path) -> Path:
 
 from phase4.models import KnowledgeInitializationSession, FinalAssessmentSession
 from storage.id_validation import validate_storage_id
+from storage.atomic_replace import replace_atomically
 
 
 def _contained_storage_path(base_dir: Path, filename: str) -> Path:
@@ -155,7 +156,7 @@ class QuestionBankRepository:
                 json.dump(data, f, indent=2, ensure_ascii=False)
                 f.flush()
                 os.fsync(f.fileno())
-            os.replace(tmp_name, path)
+            replace_atomically(tmp_name, path)
         except Exception:
             try:
                 os.unlink(tmp_name)

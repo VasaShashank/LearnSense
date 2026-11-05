@@ -1,0 +1,77 @@
+# Local staging stack: PostgreSQL + migration release step + API + web.
+#
+#   cp deploy/env/staging.env.example deploy/env/staging.env   # fill in values; never commit
+#   docker compose up --build
+#
+# This is a self-contained STAGING environment with its own disposable database.
+# It is not a production deployment (docs/deployment/deployment.md).
+name: learnsense-staging
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: learnsense
+      POSTGRES_USER: learnsense
+      POSTGRES_PASSWORD_FILE: /run/secrets/staging_db_password
+    secrets: [staging_db_password]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Creates Supabase's anon/authenticated roles (non-Supabase PostgreSQL only).
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learnsense -d learnsense"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Release step: apply migrations, then exit. The API starts only if it succeeds.
+  migrate:
+    build: .
+    command: ["python", "scripts/migrate.py", "apply", "--dsn-env", "DATABASE_URL"]
+    env_file: deploy/env/staging.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: .
+    env_file: deploy/env/staging.env
+    ports: ["8000:8000"]
+    volumes:
+      - file-stores:/app/storage
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        SUPABASE_URL: ${SUPABASE_URL:-}
+        SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api}
+    ports: ["8080:80"]
+    depends_on: [api]
+
+  # Worker execution slot (Person 5). Long-running ingestion/extraction must move
+  # out of the API process (docs/contracts/jobs.md). Enable once P5 provides the
+  # worker entry point and queue choice; it shares the API image, environment and
+  # file-store volume, and must run with LEARNSENSE_ENV=staging|production.
+  # worker:
+  #   build: .
+  #   command: ["python", "-m", "<p5_worker_module>"]
+  #   env_file: deploy/env/staging.env
+  #   volumes: [file-stores:/app/storage]
+  #   depends_on:
+  #     migrate:
+  #       condition: service_completed_successfully
+
+secrets:
+  staging_db_password:
+    file: deploy/env/staging_db_password.txt   # create locally; never commit
+
+volumes:
+  db-data:
+  file-stores:

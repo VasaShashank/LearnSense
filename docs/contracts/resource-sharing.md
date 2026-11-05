@@ -2,7 +2,7 @@
 
 ## Globally shared educational resources
 
-- `POST /api/resources` creates or replaces a record in the shared educational-resource catalog.
+- `POST /api/resources` creates a record in the shared educational-resource catalog. It is **create-only**: an existing `resource_id` returns 409 `RESOURCE_EXISTS`, so one organization cannot overwrite another's record. Updating catalog records requires an agreed editing policy (P1, P2, P3).
 - The request requires a verified Supabase bearer token and an active `TEACHER` or `ADMIN` membership in at least one organization.
 - A caller-supplied user ID or role is ignored; authorization uses the verified token identity and server-side membership.
 - `GET /api/resources/{resource_id}` remains public for existing educational-resource reads. No update or delete route currently exists; POST is the only HTTP mutation route.

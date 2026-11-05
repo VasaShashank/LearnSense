@@ -13,7 +13,7 @@ from backend.app import app
 client = TestClient(app)
 
 
-def test_full_phase4_adaptive_loop_flow(ingested_calculus):
+def test_full_phase4_adaptive_loop_flow(ingested_calculus, api_auth):
     """
     Full Phase 4 flow via the canonical /api routes:
     self-assessment → diagnostic start → diagnostic submit →
@@ -27,7 +27,7 @@ def test_full_phase4_adaptive_loop_flow(ingested_calculus):
     selections = {cid: "KNOW" for cid in know_ids}
     selections.update({cid: "DONT_KNOW" for cid in dont_ids})
 
-    learner_id = "learner_phase4_test_1"
+    learner_id = api_auth.learner("learner_phase4_test_1", subject_id)
 
     # 1. Concept Self-Assessment
     resp = client.post(

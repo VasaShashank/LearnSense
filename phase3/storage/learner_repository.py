@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, Optional
 from phase3.learner.models import LearnerState
 from storage.id_validation import validate_storage_id
+from storage.atomic_replace import replace_atomically
 
 _LEARNER_LOCKS: Dict[str, threading.RLock] = {}
 _LOCKS_MUTEX = threading.Lock()
@@ -47,7 +48,7 @@ class LearnerStateRepository:
                     json.dump(data, f, indent=2, ensure_ascii=False)
                     f.flush()
                     os.fsync(f.fileno())
-                os.replace(tmp_name, path)
+                replace_atomically(tmp_name, path)
             except Exception:
                 try:
                     os.unlink(tmp_name)

@@ -13,9 +13,10 @@ from phase3.errors import AuthorizationError
 client = TestClient(app)
 
 
-def test_resource_api_endpoints(ingested_calculus):
+def test_resource_api_endpoints(ingested_calculus, api_auth):
     subject_id = ingested_calculus.document_id
     concept_id = ingested_calculus.concept_ids[0]
+    api_auth.learner("b2b_resource_reader", subject_id)
 
     # 1. Fetch recommendations for concept
     res = client.get(f"/api/subjects/{subject_id}/concepts/{concept_id}/resources")
@@ -29,29 +30,77 @@ def test_resource_api_endpoints(ingested_calculus):
     assert "notation_score" in top
     assert "recommended_timestamp_seconds" in top
 
-    # 2. Fetch specific resource by ID
+    # 2. Fetch specific resource by ID (public read)
     rid = top["resource_id"]
     res_detail = client.get(f"/api/resources/{rid}")
     assert res_detail.status_code == 200
     assert res_detail.json()["resource_id"] == rid
 
 
-def test_teacher_optimizer_and_class_api(ingested_calculus):
+@pytest.fixture
+def b2b_class_env(ingested_calculus, api_auth, tmp_path, monkeypatch):
+    """An organization, an assigned teacher and three provisioned learners, with every
+    store (institutions, users, class projection, interventions) under tmp_path."""
+    import asyncio
+
+    from backend.routes import api as api_route
+    from backend.services.institution_service import InstitutionService
+    from backend.services.learner_service import LearnerService
+    from backend.services.teacher_service import TeacherService
+    from tests.support.api_auth import learner_uuid
+
+    teacher_service = TeacherService(
+        storage_dir=str(tmp_path / "interventions"),
+        class_storage_dir=str(tmp_path / "classes"),
+        knowledge_service=api_route.knowledge_service,
+        learner_service=api_route.learner_service,
+    )
+    svc = InstitutionService(base_dir=str(tmp_path / "institutions"),
+                             learner_state_repo=api_route.learner_service.repo)
+    monkeypatch.setattr(svc, "_sync_class_to_teacher_storage",
+                        lambda cid, sid, title, roster: teacher_service.register_class(cid, sid, title, roster))
+    monkeypatch.setattr(svc, "_append_learner_to_teacher_storage", lambda *a: None)
+    monkeypatch.setattr(svc, "_set_teacher_storage_roster", lambda *a: None)
+    monkeypatch.setattr(api_route, "institution_service", svc)
+    monkeypatch.setattr(api_route, "teacher_service", teacher_service)
+    monkeypatch.setattr(api_route.document_access, "institutions", svc)
+
+    admin, teacher = learner_uuid("b2b_admin"), learner_uuid("b2b_teacher")
+    learners = [learner_uuid(f"b2b_learner_{tag}") for tag in "abc"]
+    for user in (admin, teacher):
+        asyncio.run(svc.users.ensure_user(user, None))
+    for learner in learners:
+        try:
+            LearnerService(repo=api_route.learner_service.repo).provision_authenticated_learner(learner)
+        except ValueError:
+            pass  # already provisioned by an earlier run with the same deterministic ID
+    org = asyncio.run(svc.create_organization_with_admin_async(f"B2B {uuid.uuid4().hex[:6]}", None, admin))
+    asyncio.run(svc.add_membership_as_admin_async(org.org_id, admin, teacher, UserRole.TEACHER))
+    for learner in learners:
+        asyncio.run(svc.add_membership_as_admin_async(org.org_id, admin, learner, UserRole.LEARNER))
+    api_auth.allow(ingested_calculus.document_id, teacher)
+    api_auth.login(teacher)
+    return org, teacher, learners
+
+
+def test_teacher_optimizer_and_class_api(ingested_calculus, b2b_class_env):
+    org, _teacher, learners = b2b_class_env
     subject_id = ingested_calculus.document_id
     concept_id = ingested_calculus.concept_ids[0]
-    class_id = "cls_integration_test_101"
 
-    # 1. Register Class
+    # 1. Register class inside the teacher's organization (class IDs are server-assigned)
     reg_res = client.post(
-        f"/api/classes?class_id={class_id}",
+        "/api/classes",
         json={
+            "org_id": org.org_id,
             "subject_id": subject_id,
             "class_name": "Integration Test Section A",
-            "enrolled_learner_ids": ["learner_a", "learner_b", "learner_c"],
+            "enrolled_learner_ids": learners,
         },
     )
     assert reg_res.status_code == 200, reg_res.text
-    assert reg_res.json()["class_id"] == class_id
+    class_id = reg_res.json()["class_id"]
+    assert class_id.startswith("cls_")
 
     # 2. Get Class Knowledge State
     state_res = client.get(f"/api/classes/{class_id}/knowledge-state")

@@ -13,7 +13,7 @@ from backend.app import app
 client = TestClient(app)
 
 
-def test_onboarding_quiz_generation_and_submission(ingested_calculus):
+def test_onboarding_quiz_generation_and_submission(ingested_calculus, api_auth):
     """
     Full onboarding flow:
     self-assessment → diagnostic start → diagnostic submit.
@@ -23,7 +23,7 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
     """
     subject_id = ingested_calculus.document_id
     all_concept_ids = ingested_calculus.concept_ids
-    LEARNER_ID = "test_quiz_learner_real"
+    LEARNER_ID = api_auth.learner("test_quiz_learner_real", subject_id)
 
     # Pick the first two concept IDs; we will mark them KNOW so the diagnostic runs.
     know_ids = all_concept_ids[:2]
@@ -93,7 +93,7 @@ def test_onboarding_quiz_generation_and_submission(ingested_calculus):
         )
 
 
-def test_onboarding_zero_know_concepts(ingested_calculus):
+def test_onboarding_zero_know_concepts(ingested_calculus, api_auth):
     """
     When the learner marks everything as DONT_KNOW, the diagnostic must return
     zero questions (nothing to probe) and the session must still be created cleanly.
@@ -102,11 +102,12 @@ def test_onboarding_zero_know_concepts(ingested_calculus):
     all_concept_ids = ingested_calculus.concept_ids
 
     selections = {cid: "DONT_KNOW" for cid in all_concept_ids}
+    learner_id = api_auth.learner("test_zero_know_learner", subject_id)
 
     sa_res = client.post(
         "/api/initialization/self-assessment",
         json={
-            "learner_id": "test_zero_know_learner",
+            "learner_id": learner_id,
             "subject_id": subject_id,
             "selections": selections,
             "all_subject_concept_ids": all_concept_ids,
@@ -118,7 +119,7 @@ def test_onboarding_zero_know_concepts(ingested_calculus):
 
     diag_res = client.post(
         "/api/initialization/diagnostic/start",
-        json={"session_id": session_id, "learner_id": "test_zero_know_learner"},
+        json={"session_id": session_id, "learner_id": learner_id},
     )
     assert diag_res.status_code == 200, diag_res.text
     assert diag_res.json()["question_count"] == 0

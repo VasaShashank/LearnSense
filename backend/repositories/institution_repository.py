@@ -166,6 +166,22 @@ class InstitutionRepository:
         )
         return _membership_from_row(row) if row else None
 
+    async def lock_active_admins(self, conn: Any, org_id: str) -> List[OrgMembership]:
+        """Row-lock every active ADMIN of an org, in a fixed order, inside the caller's
+        transaction. Concurrent admin changes serialize on this set, and the fixed
+        ORDER BY keeps two lockers from deadlocking each other."""
+        rows = await conn.fetch(
+            """
+            SELECT membership_id, org_id, user_id, role, is_active
+            FROM org_memberships
+            WHERE org_id = $1 AND role = 'ADMIN' AND is_active = TRUE
+            ORDER BY membership_id
+            FOR UPDATE
+            """,
+            org_id,
+        )
+        return [_membership_from_row(row) for row in rows]
+
     async def deactivate_membership(
         self, conn: Any, org_id: str, user_id: str
     ) -> bool:
@@ -211,14 +227,16 @@ class InstitutionRepository:
         )
         return _class_from_row(row)
 
-    async def get_class(self, conn: Any, class_id: str) -> Optional[CourseClass]:
+    async def get_class(
+        self, conn: Any, class_id: str, *, for_update: bool = False
+    ) -> Optional[CourseClass]:
         """Fetch a course class by primary key."""
         row = await conn.fetchrow(
             """
             SELECT class_id, org_id, subject_id, title, teacher_ids, created_at
             FROM course_classes
             WHERE class_id = $1
-            """,
+            """ + (" FOR UPDATE" if for_update else ""),
             class_id,
         )
         return _class_from_row(row) if row else None
@@ -284,8 +302,11 @@ class InstitutionRepository:
             INSERT INTO class_enrollments (enrollment_id, class_id, learner_id, enrolled_at)
             VALUES ($1, $2, $3, NOW())
             ON CONFLICT (class_id, learner_id) DO UPDATE
-                SET enrollment_id = EXCLUDED.enrollment_id
-            RETURNING enrollment_id, class_id, learner_id, enrolled_at
+                SET status        = 'active',
+                    unenrolled_at = NULL,
+                    unenrolled_by = NULL,
+                    updated_at    = NOW()
+            RETURNING enrollment_id, class_id, learner_id, enrolled_at, status
             """,
             enrollment_id,
             class_id,
@@ -306,20 +327,118 @@ class InstitutionRepository:
         )
         return [r["learner_id"] for r in rows]
 
+    async def get_active_class_learner_ids(self, conn: Any, class_id: str) -> List[str]:
+        """Actively enrolled learners who currently hold an ACTIVE LEARNER membership
+        in the class's organization. Enrollment rows of unenrolled or deactivated
+        learners are retained as history and simply do not appear here."""
+        rows = await conn.fetch(
+            """
+            SELECT e.learner_id
+            FROM class_enrollments AS e
+            JOIN course_classes AS c ON c.class_id = e.class_id
+            JOIN org_memberships AS m
+              ON m.org_id = c.org_id AND m.user_id = e.learner_id
+            WHERE e.class_id = $1 AND e.status = 'active'
+              AND m.is_active = TRUE AND m.role = 'LEARNER'
+            ORDER BY e.learner_id
+            """,
+            class_id,
+        )
+        return [r["learner_id"] for r in rows]
+
     async def get_enrollment(
-        self, conn: Any, class_id: str, learner_id: str
+        self, conn: Any, class_id: str, learner_id: str, *, for_update: bool = False
     ) -> Optional[ClassEnrollment]:
         """Return an existing enrollment or None."""
         row = await conn.fetchrow(
             """
-            SELECT enrollment_id, class_id, learner_id, enrolled_at
+            SELECT enrollment_id, class_id, learner_id, enrolled_at, status
             FROM class_enrollments
             WHERE class_id = $1 AND learner_id = $2
-            """,
+            """ + (" FOR UPDATE" if for_update else ""),
             class_id,
             learner_id,
         )
         return _enrollment_from_row(row) if row else None
+
+    async def unenroll_learner(
+        self, conn: Any, *, class_id: str, learner_id: str, actor_user_id: str
+    ) -> Optional[str]:
+        """Soft-unenroll inside the caller's transaction.
+
+        Returns the previous status ('active' or 'unenrolled'), or None when the
+        learner was never enrolled. The row is kept as history.
+        """
+        current = await self.get_enrollment(conn, class_id, learner_id, for_update=True)
+        if current is None:
+            return None
+        if current.status != "active":
+            return current.status
+        await conn.execute(
+            """
+            UPDATE class_enrollments
+            SET status = 'unenrolled', unenrolled_at = NOW(), unenrolled_by = $3,
+                updated_at = NOW()
+            WHERE class_id = $1 AND learner_id = $2
+            """,
+            class_id,
+            learner_id,
+            actor_user_id,
+        )
+        return "active"
+
+    async def set_class_teachers(
+        self, conn: Any, class_id: str, teacher_ids: List[str]
+    ) -> None:
+        await conn.execute(
+            "UPDATE course_classes SET teacher_ids = $2::jsonb WHERE class_id = $1",
+            class_id,
+            json.dumps(teacher_ids),
+        )
+
+    async def list_memberships_for_user(
+        self, conn: Any, user_id: str, *, include_inactive: bool = False
+    ) -> List[Dict[str, Any]]:
+        """Memberships of one user with organization names (for GET /api/me)."""
+        rows = await conn.fetch(
+            """
+            SELECT m.membership_id, m.org_id, m.user_id, m.role, m.is_active, o.name AS org_name
+            FROM org_memberships AS m
+            JOIN organizations AS o ON o.org_id = m.org_id
+            WHERE m.user_id = $1 AND ($2 OR m.is_active = TRUE)
+            ORDER BY o.name, m.org_id
+            """,
+            user_id,
+            include_inactive,
+        )
+        return [
+            {"membership": _membership_from_row(r), "org_name": r["org_name"]}
+            for r in rows
+        ]
+
+    async def list_org_memberships(
+        self, conn: Any, org_id: str, *, limit: int, offset: int, include_inactive: bool
+    ) -> tuple[List[OrgMembership], int]:
+        """One page of an organization's memberships, ordered by user_id."""
+        total = await conn.fetchval(
+            "SELECT COUNT(*) FROM org_memberships WHERE org_id = $1 AND ($2 OR is_active = TRUE)",
+            org_id,
+            include_inactive,
+        )
+        rows = await conn.fetch(
+            """
+            SELECT membership_id, org_id, user_id, role, is_active
+            FROM org_memberships
+            WHERE org_id = $1 AND ($2 OR is_active = TRUE)
+            ORDER BY user_id, membership_id
+            LIMIT $3 OFFSET $4
+            """,
+            org_id,
+            include_inactive,
+            limit,
+            offset,
+        )
+        return [_membership_from_row(r) for r in rows], int(total)
 
     # ------------------------------------------------------------------
     # Cross-tenant guard helpers
@@ -389,4 +508,5 @@ def _enrollment_from_row(row: Any) -> ClassEnrollment:
         class_id=row["class_id"],
         learner_id=row["learner_id"],
         enrolled_at_iso=enrolled_iso,
+        status=row.get("status", "active") if hasattr(row, "get") else "active",
     )

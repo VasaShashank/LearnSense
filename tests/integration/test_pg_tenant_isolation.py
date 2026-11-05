@@ -207,22 +207,31 @@ class TestApiAuthEnforcement:
 # Live PostgreSQL integration tests (skipped when DATABASE_URL is absent)
 # ---------------------------------------------------------------------------
 
-_pg_available = bool(os.getenv("DATABASE_URL", "").strip())
-
-@pytest.mark.skipif(not _pg_available, reason="DATABASE_URL not configured — skipping live PG tests")
+@pytest.mark.live_pg
 class TestLivePostgreSQL:
     """
-    These tests run only when DATABASE_URL is set.  They verify the full
-    round-trip through InstitutionRepository against a real Supabase/PG database.
+    These tests run only with LEARNSENSE_ALLOW_LIVE_PG_TESTS=1 and
+    LEARNSENSE_TEST_DATABASE_URL pointing at a DISPOSABLE database (tests/conftest.py
+    injects it as DATABASE_URL for these tests only).  They write rows and never
+    clean up.  They verify the full round-trip through InstitutionRepository.
 
-    Requires migration 001 to have been applied first:
-        psql $DATABASE_URL -f migrations/001_institutional_schema.sql
+    Requires all migrations to have been applied first:
+        python scripts/migrate.py apply --dsn-env LEARNSENSE_TEST_DATABASE_URL
     """
 
     @pytest.fixture()
-    def pg_svc(self):
-        from backend.services.institution_service import InstitutionService
-        return InstitutionService()
+    def pg_svc(self, tmp_path, monkeypatch):
+        from backend.db import pg_connection
+        from backend.services.institution_service import InstitutionService, _run_async
+
+        pg_connection.reset_pool_for_testing()
+        # JSON mirrors and the analytics projection go to tmp_path, never the repository.
+        svc = InstitutionService(base_dir=str(tmp_path / "inst"))
+        for name in ("_sync_class_to_teacher_storage", "_append_learner_to_teacher_storage"):
+            monkeypatch.setattr(svc, name, lambda *a, **k: None)
+        yield svc
+        _run_async(pg_connection.close_pg_pool())
+        pg_connection.reset_pool_for_testing()
 
     def test_pg_create_and_retrieve_organization(self, pg_svc):
         import uuid

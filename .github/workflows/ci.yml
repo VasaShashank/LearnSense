@@ -1,0 +1,169 @@
+# LearnSense CI: backend (unit + integration + live PostgreSQL against a disposable
+# service container), frontend (lint, type check, tests, production build) and
+# Docker image builds (no push).
+#
+# * No developer .env is read: .env files are git-ignored (never in the checkout)
+#   and every setting below is explicit and CI-only. No repository secrets are used.
+# * The PostgreSQL service is created fresh for each run and destroyed with it;
+#   its password is a throwaway CI value, not a secret.
+# * Live tests are opt-in (tests/support/pg_safety.py) and point only at that service.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Pull requests and other branches: a newer push cancels the redundant in-progress run.
+# main: each commit gets its own group (keyed by SHA), so nothing on main is cancelled
+# and every main commit receives a complete result.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ls_ci
+          POSTGRES_PASSWORD: ls_ci_throwaway
+          POSTGRES_DB: learnsense_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ls_ci -d learnsense_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      LEARNSENSE_ENV: test
+      LLM_MODE: mock
+      LEARNSENSE_ALLOW_LIVE_PG_TESTS: "1"
+      LEARNSENSE_TEST_DATABASE_URL: postgresql://ls_ci:ls_ci_throwaway@localhost:5432/learnsense_ci?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: System packages (OCR, PostgreSQL client tools for the backup drill)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-hin postgresql-client
+
+      - name: Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Prepare the disposable database (Supabase role shim + migrations)
+        run: |
+          psql -v ON_ERROR_STOP=1 -f deploy/postgres/init/00_supabase_roles.sql "$LEARNSENSE_TEST_DATABASE_URL"
+          python scripts/migrate.py apply --dsn-env LEARNSENSE_TEST_DATABASE_URL
+          python scripts/migrate.py status --dsn-env LEARNSENSE_TEST_DATABASE_URL
+
+      - name: Test-safety guard
+        run: python -m pytest -q -p no:cacheprovider tests/unit/test_pg_test_safety.py
+
+      - name: Security and authorization suites
+        run: >
+          python -m pytest -q -p no:cacheprovider
+          tests/unit/test_route_authentication_sweep.py
+          tests/unit/test_two_org_isolation_http.py
+          tests/unit/test_membership_deactivation.py
+          tests/unit/test_p1_identity_lifecycle_api.py
+          tests/unit/test_p1_platform_foundations.py
+
+      - name: Full backend suite (includes live PostgreSQL tests)
+        run: >
+          python -m pytest -q -p no:cacheprovider -rs
+          tests/unit tests/integration
+          --junitxml=reports/backend-junit.xml
+
+      - name: Tests must not modify tracked files
+        run: |
+          git status --porcelain
+          git diff --exit-code
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-junit
+          path: reports/backend-junit.xml
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint (fails on errors; warnings are reported only)
+        run: npm run lint
+      - name: Type check (app and build config)
+        run: |
+          npx tsc -p tsconfig.app.json --noEmit
+          npx tsc -p tsconfig.node.json --noEmit
+      - name: Unit tests
+        run: npx vitest run
+      - name: Production build
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Created BEFORE the build so the exclusion check below proves .dockerignore
+      # keeps operator env/secret files out of the image. Placeholders only.
+      - name: Placeholder env and secret files (as an operator would have them)
+        run: |
+          cp deploy/env/staging.env.example deploy/env/staging.env
+          printf '%s' ci-placeholder > deploy/env/staging_db_password.txt
+          printf 'CI_PLACEHOLDER=1\n' > .env
+          printf 'CI_PLACEHOLDER=1\n' > backend/ci-placeholder.env
+          printf 'ci-placeholder\n' > ci-placeholder.pem
+          printf 'ci-placeholder\n' > backend/ci-placeholder.key
+          printf '# ci-placeholder\n' > frontend/.npmrc
+
+      - name: Build API image (not pushed)
+        run: docker build --pull -t learnsense-api:ci .
+
+      # Importing the app constructs the LLM adapter, which requires a provider and
+      # model (mock adapters are refused outside the test harness). The values below are
+      # obvious placeholders, not credentials, and --network none prevents any call.
+      - name: API image smoke test (imports the app; no network, no database)
+        run: >
+          docker run --rm --network none
+          -e LEARNSENSE_ENV=test -e DATABASE_URL= -e VLM_MODE=disabled
+          -e LLM_PROVIDER=groq -e GROQ_API_KEY=ci-placeholder-not-a-key -e GROQ_MODEL=ci-placeholder
+          learnsense-api:ci python -c "import backend.app; print('api import ok')"
+
+      - name: API image contains no env or secret files
+        run: >
+          docker run --rm --network none learnsense-api:ci sh -c
+          'found=$(find /app \( -name ".env" -o -name ".env.*" -o -name "*.env" -o -name "*.pem" -o -name "*.key" -o -name ".npmrc" -o -path "/app/deploy/env/*" \) ! -name "*.example");
+          if [ -n "$found" ]; then echo "env/secret files found in image:"; echo "$found"; exit 1; fi; echo "no env/secret files in image"'
+
+      - name: Build web image (not pushed; placeholder public settings only)
+        run: >
+          docker build --pull -f frontend/Dockerfile
+          --build-arg VITE_API_BASE_URL=http://localhost:8000/api
+          -t learnsense-web:ci .
+
+      - name: Validate docker-compose.yml (placeholder env and secret files from above)
+        run: docker compose -f docker-compose.yml config --quiet
