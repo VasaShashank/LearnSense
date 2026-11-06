@@ -247,9 +247,16 @@ class CurriculumService:
             raise CurriculumNotFoundError(f"Unknown concept id '{concept_id}'")
         return prerequisite_closure(graph, concept_id, max_depth=depth)
 
-    def get_learning_order(self) -> List[str]:
+    def get_learning_order(self, include_deprecated: bool = False) -> List[str]:
         """Strict topological order over reviewed prerequisite edges."""
-        return topological_order(self.get_graph())
+        graph = self.get_graph()
+        if not include_deprecated:
+            active_ids = [
+                cid for cid, c in graph.concepts.items()
+                if (c.status.value if hasattr(c.status, "value") else str(c.status)) != "deprecated"
+            ]
+            return topological_order(graph, active_ids)
+        return topological_order(graph)
 
     # -------------------------------------------------------------- validation
     def validate_graph(self) -> GraphValidationReport:
@@ -399,8 +406,18 @@ class CurriculumService:
             for entry in concept.surface_keys()
         }
 
+        # Load latest mapping run per document to prevent historical test runs from multiplying counts
+        all_runs = self.repository.load_mapping_results(graph.curriculum_id)
+        latest_runs_by_doc: Dict[str, Dict[str, Any]] = {}
+        for r in all_runs:
+            doc = r.get("document_id") or ""
+            created = r.get("created_at") or ""
+            if doc not in latest_runs_by_doc or created > (latest_runs_by_doc[doc].get("created_at") or ""):
+                latest_runs_by_doc[doc] = r
+
         pending: List[Dict[str, Any]] = []
-        for payload in self.repository.load_mapping_results(graph.curriculum_id):
+        seen_candidate_keys: set = set()
+        for payload in latest_runs_by_doc.values():
             for candidate in payload.get("candidates") or []:
                 if candidate.get("source_kind") != "extracted_concept":
                     continue
@@ -409,12 +426,17 @@ class CurriculumService:
                 proposed = candidate.get("proposed_concept")
                 if not proposed:
                     continue
-                if normalize_term(proposed.get("name", "")) in existing_names:
+                prop_name = proposed.get("name", "")
+                if normalize_term(prop_name) in existing_names:
                     continue
+                cand_key = candidate.get("item_id") or normalize_term(prop_name)
+                if cand_key in seen_candidate_keys:
+                    continue
+                seen_candidate_keys.add(cand_key)
                 pending.append(
                     {
                         "item_id": candidate.get("item_id"),
-                        "label": proposed.get("name"),
+                        "label": prop_name,
                         "proposed": proposed,
                         "source_refs": candidate.get("source_refs") or [],
                         "already_rejected": candidate.get("item_id") in already_rejected,
@@ -485,9 +507,11 @@ class CurriculumService:
         reviewer_id: str,
         note: str = "",
         excerpt: Optional[str] = None,
+        relationship_type: Optional[str] = None,
+        confidence: Optional[float] = None,
     ) -> Dict[str, Any]:
         from curriculum.models import SourceRef
-        from phase2.models import RelationshipStatusEnum
+        from phase2.models import RelationshipStatusEnum, RelationshipTypeEnum
 
         graph = self.get_graph()
         refs = []
@@ -497,6 +521,7 @@ class CurriculumService:
                     source_id=graph.curriculum_id, locator=f"review:{reviewer_id}", excerpt=excerpt
                 )
             )
+        rel_type = RelationshipTypeEnum(relationship_type) if relationship_type else None
         relationship = self.review_service.set_relationship_status(
             graph,
             relationship_id,
@@ -504,6 +529,8 @@ class CurriculumService:
             reviewer_id,
             note,
             source_refs=refs,
+            relationship_type=rel_type,
+            confidence=confidence,
         )
         self._persist()
         return relationship.model_dump(mode="json")
@@ -578,6 +605,7 @@ class CurriculumService:
         self,
         subject: Optional[str] = None,
         class_level: Optional[str] = None,
+        include_deprecated: bool = False,
     ) -> List[Dict[str, Any]]:
         """List all curriculum chapters, aggregated from graph concepts and metadata."""
         graph = self.get_graph()
@@ -590,32 +618,39 @@ class CurriculumService:
                 "chapter_id": ch_id,
                 "name": ch_data.get("name") or ch_id.replace("ch_", "").replace("_", " ").title(),
                 "subject": ch_data.get("subject", ""),
+                "category": ch_data.get("category") or "",
                 "class_levels": list(ch_data.get("class_levels") or []),
                 "description": ch_data.get("description", ""),
                 "concept_ids": [],
                 "concept_count": 0,
+                "is_deprecated": ch_data.get("is_deprecated", False),
             }
 
         # Aggregate concepts into chapters
         for concept in graph.concepts.values():
-            if concept.status.value == "deprecated":
+            if not include_deprecated and concept.status.value == "deprecated":
                 continue
-            ch_id = concept.chapter_id or f"ch_{slugify(concept.topic_path[-1] if concept.topic_path else 'general')}"
+            cat = concept.topic_path[-1] if concept.topic_path else ""
+            ch_id = concept.chapter_id or f"ch_{slugify(cat or 'general')}"
             if ch_id not in chapters_map:
-                ch_name = concept.topic_path[-1] if concept.topic_path else ch_id.replace("ch_", "").replace("_", " ").title()
+                ch_name = ch_id.replace("ch_", "").replace("_", " ").title()
                 subj_str = concept.subject.value if isinstance(concept.subject, Subject) else str(concept.subject)
                 chapters_map[ch_id] = {
                     "chapter_id": ch_id,
                     "name": ch_name,
                     "subject": subj_str,
+                    "category": cat,
                     "class_levels": [lvl.value if hasattr(lvl, "value") else str(lvl) for lvl in concept.class_levels],
-                    "description": f"Chapter covering {ch_name}",
+                    "description": f"Chapter covering {ch_name}.",
                     "concept_ids": [],
                     "concept_count": 0,
+                    "is_deprecated": concept.status.value == "deprecated",
                 }
             entry = chapters_map[ch_id]
             entry["concept_ids"].append(concept.concept_id)
             entry["concept_count"] += 1
+            if not entry.get("category") and cat:
+                entry["category"] = cat
             for lvl in concept.class_levels:
                 lvl_str = lvl.value if hasattr(lvl, "value") else str(lvl)
                 if lvl_str not in entry["class_levels"]:
@@ -624,6 +659,13 @@ class CurriculumService:
                 entry["subject"] = concept.subject.value if isinstance(concept.subject, Subject) else str(concept.subject)
 
         result = list(chapters_map.values())
+        if not include_deprecated:
+            # Active chapters: exclude chapters explicitly marked deprecated or with only deprecated concepts
+            result = [
+                ch for ch in result
+                if not ch.get("is_deprecated")
+                and not (ch["concept_count"] == 0 and ch["chapter_id"] in {"ch_coordinate_geometry_conics", "ch_ray_and_wave_optics"})
+            ]
         if subject:
             norm_subj = Subject.coerce(subject).value
             result = [ch for ch in result if ch["subject"] == norm_subj]
@@ -638,6 +680,7 @@ class CurriculumService:
         chapter_id: str,
         name: str,
         subject: str,
+        category: Optional[str] = None,
         class_levels: Optional[List[str]] = None,
         description: str = "",
         reviewer_id: str = "teacher",
@@ -655,6 +698,7 @@ class CurriculumService:
             "chapter_id": chapter_id,
             "name": name,
             "subject": subj,
+            "category": category or "",
             "class_levels": list(class_levels or []),
             "description": description,
             "created_by": reviewer_id,
@@ -668,6 +712,7 @@ class CurriculumService:
         self,
         chapter_id: str,
         name: Optional[str] = None,
+        category: Optional[str] = None,
         description: Optional[str] = None,
         reviewer_id: str = "teacher",
     ) -> Dict[str, Any]:
@@ -683,6 +728,7 @@ class CurriculumService:
                 "chapter_id": chapter_id,
                 "name": chapter_id.replace("ch_", "").replace("_", " ").title(),
                 "subject": "",
+                "category": "",
                 "class_levels": [],
                 "description": "",
             }
@@ -690,6 +736,8 @@ class CurriculumService:
         rec = meta_chapters[chapter_id]
         if name:
             rec["name"] = name
+        if category is not None:
+            rec["category"] = category
         if description is not None:
             rec["description"] = description
         rec["updated_by"] = reviewer_id
@@ -936,18 +984,26 @@ class CurriculumService:
     def status(self) -> Dict[str, Any]:
         graph = self.get_graph()
         report = self.validate_graph()
+        pending = self.pending_candidates()
+        active_concepts = [c for c in graph.concepts.values() if c.status.value != "deprecated"]
+        legacy_concepts = [c for c in active_concepts if "legacy_retained" in c.tags]
+        active_jee_concepts = [c for c in active_concepts if "legacy_retained" not in c.tags]
         return {
             "curriculum_id": graph.curriculum_id,
             "syllabus_version": graph.syllabus_version,
             "has_curriculum": bool(graph.concepts),
             "concept_count": len(graph.concepts),
+            "active_concept_count": len(active_concepts),
+            "active_jee_main_2027_concepts": len(active_jee_concepts),
+            "legacy_retained_concepts": len(legacy_concepts),
             "relationship_count": len(graph.relationships),
             "is_valid": report.is_valid,
             "error_count": report.error_count,
             "warning_count": report.warning_count,
             "fingerprint": graph.content_fingerprint(),
             "versions": len(self.list_versions()),
-            "pending_review": len(self.pending_candidates()),
+            "pending_review": len(pending),
+            "unmapped_mapping_candidates": len(pending),
         }
 
     def get_adapter(self, accepted_only: bool = True) -> Any:

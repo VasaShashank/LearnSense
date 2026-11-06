@@ -154,3 +154,79 @@ def test_chapter_api_endpoints(isolated_service):
     res = client.put(f"/api/curriculum/concepts/{cid}/chapter", json=reassign_payload)
     assert res.status_code == 200
     assert res.json()["chapter_id"] == "ch_api_test_chapter"
+
+
+def test_chapter_taxonomy_and_deprecated_filtering(isolated_service):
+    """Verify authoritative chapter names, category separation, and deprecated filtering."""
+    client = TestClient(app)
+
+    # 1. Active chapters default (78 chapters)
+    res = client.get("/api/curriculum/chapters")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["count"] == 78
+    assert len(data["chapters"]) == 78
+
+    ch_by_id = {c["chapter_id"]: c for c in data["chapters"]}
+    # Check taxonomy examples from prompt
+    assert ch_by_id["ch_chemical_bonding"]["name"] == "Chemical Bonding"
+    assert ch_by_id["ch_chemical_bonding"]["category"] == "Inorganic Chemistry"
+    assert ch_by_id["ch_chemical_bonding"]["subject"] == "chemistry"
+
+    assert ch_by_id["ch_coordination_compounds"]["name"] == "Coordination Compounds"
+    assert ch_by_id["ch_coordination_compounds"]["category"] == "Inorganic Chemistry"
+
+    assert ch_by_id["ch_hydrocarbons"]["name"] == "Hydrocarbons"
+    assert ch_by_id["ch_hydrocarbons"]["category"] == "Organic Chemistry"
+
+    assert ch_by_id["ch_atomic_structure"]["name"] == "Atomic Structure"
+    assert ch_by_id["ch_atomic_structure"]["category"] == "Physical Chemistry"
+
+    assert ch_by_id["ch_binomial_theorem"]["name"] == "Binomial Theorem"
+    assert ch_by_id["ch_binomial_theorem"]["category"] == "Algebra"
+
+    assert ch_by_id["ch_circles"]["name"] == "Circles"
+    assert ch_by_id["ch_circles"]["category"] == "Coordinate Geometry"
+
+    assert ch_by_id["ch_laws_of_motion"]["name"] == "Laws of Motion"
+    assert ch_by_id["ch_laws_of_motion"]["category"] == "Mechanics"
+
+    # 2. Verify deprecated chapters are excluded by default but accessible via include_deprecated=true
+    assert "ch_coordinate_geometry_conics" not in ch_by_id
+    assert "ch_ray_and_wave_optics" not in ch_by_id
+
+    res_all = client.get("/api/curriculum/chapters?include_deprecated=true")
+    assert res_all.status_code == 200
+    all_data = res_all.json()
+    assert all_data["count"] == 80
+    all_ch_by_id = {c["chapter_id"]: c for c in all_data["chapters"]}
+    assert "ch_coordinate_geometry_conics" in all_ch_by_id
+    assert "ch_ray_and_wave_optics" in all_ch_by_id
+    assert all_ch_by_id["ch_coordinate_geometry_conics"]["is_deprecated"] is True
+    assert all_ch_by_id["ch_ray_and_wave_optics"]["is_deprecated"] is True
+
+
+def test_status_endpoint_metrics_and_provenance_coverage(isolated_service):
+    """Verify /api/curriculum/status and /api/curriculum/quality metrics."""
+    client = TestClient(app)
+
+    status_res = client.get("/api/curriculum/status")
+    assert status_res.status_code == 200
+    st = status_res.json()
+    assert st["concept_count"] == 89
+    assert st["active_concept_count"] == 87
+    assert st["active_jee_main_2027_concepts"] == 84
+    assert st["legacy_retained_concepts"] == 3
+    assert "pending_review" in st
+    assert "unmapped_mapping_candidates" in st
+    assert st["pending_review"] == st["unmapped_mapping_candidates"]
+
+    quality_res = client.get("/api/curriculum/quality")
+    assert quality_res.status_code == 200
+    q = quality_res.json()
+    cm = q["concept_metrics"]
+    assert cm["total"] == 89
+    assert cm["active"] == 87
+    assert cm["deprecated"] == 2
+    assert cm["provenance_coverage"] == 1.0
+    assert cm["hashed_excerpt_coverage"] >= 0.94

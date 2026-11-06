@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from curriculum.ids import (
     DEFAULT_CURRICULUM_ID,
@@ -184,6 +184,24 @@ class SourceRef(BaseModel):
         default_factory=dict,
         description="Extended, non-contract provenance (pages, blocks, excerpt, sections).",
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_provenance(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            data = dict(data)
+            prov = dict(data.get("provenance") or {})
+            if "excerpt" in data and "excerpt" not in prov:
+                prov["excerpt"] = data["excerpt"]
+            raw_excerpt = prov.get("excerpt") or data.get("excerpt")
+            if raw_excerpt and not data.get("excerpt_hash"):
+                data["excerpt_hash"] = _excerpt_hash(raw_excerpt)
+            data["provenance"] = prov
+        return data
+
+    @property
+    def excerpt_text(self) -> str:
+        return str(self.provenance.get("excerpt") or "")
 
     @classmethod
     def build(

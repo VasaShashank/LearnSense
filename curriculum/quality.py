@@ -21,6 +21,7 @@ from curriculum.graph import CurriculumGraphValidator
 from curriculum.mapping import ContentMappingResult, MappingStatus
 from curriculum.models import ConceptLifecycleStatus, CurriculumGraph
 from curriculum.provenance import provenance_coverage
+from curriculum.evidence_verification import audit_all_relationships_evidence
 
 #: Human-readable metric definitions, including the denominator of each rate.
 METRIC_DEFINITIONS = {
@@ -47,6 +48,12 @@ METRIC_DEFINITIONS = {
         "review records that merge, deprecate, replace or reject / all review records"
     ),
     "review_rejection_rate": "reject review records / all review records",
+    "source_reference_coverage": "relationships with >= 1 registered source reference / all relationships",
+    "hash_verification_coverage": "relationships whose evidence excerpts match recorded sha256 digests / all relationships",
+    "evidence_relevance_coverage": "relationships whose evidence is verified relevant to source/target concepts / all relationships",
+    "direction_support_coverage": "relationships whose evidence/unit progression supports the asserted direction / all relationships",
+    "human_reviewed_coverage": "relationships verified by a teacher or curriculum expert / all relationships",
+    "academic_review_required_rate": "relationships based on topic listings that require expert pedagogical review / all relationships",
 }
 
 
@@ -93,6 +100,7 @@ def build_structural_quality_report(
 
     mapping_section = _mapping_section(mapping_results or [])
     review_section = _review_section(review_records or [])
+    evidence_metrics = audit_all_relationships_evidence(graph)
 
     return {
         "curriculum_id": graph.curriculum_id,
@@ -131,6 +139,7 @@ def build_structural_quality_report(
         },
         "mapping_metrics": mapping_section,
         "review_metrics": review_section,
+        "evidence_metrics": evidence_metrics,
         "definitions": dict(METRIC_DEFINITIONS),
     }
 
@@ -204,6 +213,18 @@ def summarize_for_teacher(report: Dict[str, Any]) -> List[str]:
             f"{review['records']} review decision(s) recorded; "
             f"{round(review.get('human_correction_rate', 0) * 100)}% were corrections to pipeline output."
         )
+    evidence = report.get("evidence_metrics", {})
+    if evidence.get("total_relationships"):
+        lines.append(
+            f"Evidence grounding: {round(evidence.get('source_reference_coverage', 0) * 100)}% source provenance, "
+            f"{round(evidence.get('hash_verification_coverage', 0) * 100)}% hash-verified authentic, "
+            f"{round(evidence.get('direction_support_coverage', 0) * 100)}% direction-supported."
+        )
+        if evidence.get("academic_review_required_rate", 0) > 0:
+            lines.append(
+                f"{round(evidence.get('academic_review_required_rate', 0) * 100)}% of relationships rely on syllabus topic listings "
+                f"and require expert educator peer review."
+            )
     return lines
 
 

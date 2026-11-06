@@ -84,12 +84,25 @@ class TestP1AcademicRemediation:
                 "Found bogus relationship: Kinematics -> Ray and Wave Optics!"
             )
 
-        # Genuine optics progression: Waves -> Ray Optics -> Wave Optics
+        # Genuine optics progression:
+        # Geometrical Ray Optics models rectilinear ray propagation (short wavelength limit lambda -> 0)
+        # without requiring wave mechanics, so Waves -> Ray Optics is classified as a non-blocking
+        # related_to curriculum association rather than a strict prerequisite blocker.
+        # Wave Optics (interference, diffraction) strictly depends on Ray Optics.
         ray_optics = graph.concepts["cc_d70ece71bc616b7b"]
         wave_optics = graph.concepts["cc_3c10e1bef7c6bb38"]
 
-        assert "cc_45e6d2763944e1d4" in ray_optics.prerequisite_concept_ids  # Waves
-        assert "cc_d70ece71bc616b7b" in wave_optics.prerequisite_concept_ids  # Ray Optics
+        assert "cc_45e6d2763944e1d4" not in ray_optics.prerequisite_concept_ids  # Waves not strict prereq
+        assert "cc_d70ece71bc616b7b" in wave_optics.prerequisite_concept_ids  # Ray Optics is prereq of Wave Optics
+
+        # Verify Waves -> Ray Optics is preserved as an accepted related_to relationship
+        waves_ray_rel = [
+            r for r in graph.relationships.values()
+            if r.source == "cc_45e6d2763944e1d4" and r.target == "cc_d70ece71bc616b7b"
+        ]
+        assert len(waves_ray_rel) == 1
+        assert waves_ray_rel[0].type_value == "related_to"
+        assert waves_ray_rel[0].status_value == "accepted" 
 
         # Crosswalk mappings
         items = service.list_syllabus_items()

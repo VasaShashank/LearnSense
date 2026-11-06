@@ -384,3 +384,108 @@ class TestDeterminism:
         link(graph, a, b)
         after = graph.content_fingerprint()
         assert len({before, with_edge, after}) == 3
+
+
+class TestKnowledgeGraphRemediation:
+    """Verify enhancements made during Person 2 Knowledge Graph Audit."""
+
+    def test_applies_to_edges_do_not_create_prerequisite_cycles(self):
+        graph = CurriculumGraph(curriculum_id="t")
+        a, b = concept("a"), concept("b")
+        for item in (a, b):
+            graph.add_concept(item)
+
+        # a is prerequisite_of b
+        link(graph, a, b, rel_type="prerequisite_of")
+        # b applies_to a (e.g. practical / experimental application)
+        link(graph, b, a, rel_type="applies_to")
+
+        validator = CurriculumGraphValidator()
+        report = validator.validate(graph)
+        assert report.is_valid is True
+        assert report.error_count == 0
+
+        # Topological sort should succeed and place a before b
+        order = topological_order(graph)
+        assert order.index(a.concept_id) < order.index(b.concept_id)
+
+    def test_rejected_relationship_excluded_from_prerequisites(self):
+        graph = CurriculumGraph(curriculum_id="t")
+        a, b = concept("a"), concept("b")
+        for item in (a, b):
+            graph.add_concept(item)
+
+        rel = link(graph, a, b, status=RelationshipStatusEnum.REJECTED, rel_type="prerequisite_of")
+
+        # Rejected edge must not appear in active prerequisite edges
+        assert rel not in graph.prerequisite_edges(include_unreviewed=False)
+        assert rel in graph.relationships.values()
+        assert rel.status == RelationshipStatusEnum.REJECTED
+        assert a.concept_id not in b.prerequisite_concept_ids
+
+    def test_relationship_review_type_and_confidence_synchronization(self, tmp_path):
+        from curriculum.review import CurriculumReviewService, RelationshipStatusEnum, RelationshipTypeEnum, SourceRef
+        from curriculum.repository import CurriculumRepository
+
+        repo = CurriculumRepository(str(tmp_path / "curriculum"))
+        graph = CurriculumGraph(curriculum_id="t")
+        a, b = concept("a"), concept("b")
+        for item in (a, b):
+            graph.add_concept(item)
+
+        rel = ConceptRelationship.create(
+            a.concept_id, "prerequisite_of", b.concept_id,
+            curriculum_id="t", status=RelationshipStatusEnum.CANDIDATE, extraction_method=HUMAN,
+        )
+        graph.add_relationship(rel)
+        repo.save_graph(graph)
+
+        review_svc = CurriculumReviewService(repo)
+        demo_ref = SourceRef(source_id="ref1", locator="syllabus unit 1", excerpt="foundation excerpt")
+
+        # 1. Accept as prerequisite_of with confidence 0.95 and source evidence
+        updated = review_svc.set_relationship_status(
+            graph, rel.relationship_id, RelationshipStatusEnum.ACCEPTED, reviewer_id="teacher_1",
+            relationship_type=RelationshipTypeEnum.PREREQUISITE_OF, confidence=0.95,
+            source_refs=[demo_ref]
+        )
+        assert updated.status == RelationshipStatusEnum.ACCEPTED
+        assert updated.type == "prerequisite_of"
+        assert updated.confidence == 0.95
+        assert a.concept_id in b.prerequisite_concept_ids
+
+        # 2. Reclassify to applies_to with confidence 0.80
+        updated2 = review_svc.set_relationship_status(
+            graph, rel.relationship_id, RelationshipStatusEnum.ACCEPTED, reviewer_id="teacher_1",
+            relationship_type=RelationshipTypeEnum.APPLIES_TO, confidence=0.80
+        )
+        assert updated2.type == "applies_to"
+        assert updated2.confidence == 0.80
+        # When reclassified to applies_to, a must be removed from b's prerequisite IDs
+        assert a.concept_id not in b.prerequisite_concept_ids
+
+    def test_learning_order_deprecated_filtering(self, tmp_path):
+        from curriculum.repository import CurriculumRepository
+        from backend.services.curriculum_service import CurriculumService
+
+        repo = CurriculumRepository(str(tmp_path / "curriculum"))
+        graph = CurriculumGraph(curriculum_id="t")
+        a = CanonicalConcept.create("Alpha", Subject.PHYSICS, stable_key="alpha", curriculum_id="t")
+        b = CanonicalConcept.create("Beta", Subject.PHYSICS, stable_key="beta", curriculum_id="t")
+        dep = CanonicalConcept.create("Legacy", Subject.PHYSICS, stable_key="legacy", curriculum_id="t")
+        dep.status = ConceptLifecycleStatus.DEPRECATED
+        for item in (a, b, dep):
+            graph.add_concept(item)
+
+        repo.save_graph(graph)
+        svc = CurriculumService(repo)
+
+        # Default includes active only
+        order_default = svc.get_learning_order(include_deprecated=False)
+        assert a.concept_id in order_default
+        assert b.concept_id in order_default
+        assert dep.concept_id not in order_default
+
+        # Explicit include_deprecated=True
+        order_all = svc.get_learning_order(include_deprecated=True)
+        assert dep.concept_id in order_all

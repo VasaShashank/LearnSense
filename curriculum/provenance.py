@@ -25,6 +25,7 @@ review stays ``EXTRACTION``-stage and is never presented as verified curriculum.
 from __future__ import annotations
 
 import hashlib
+import re
 import json
 import logging
 from enum import Enum
@@ -359,5 +360,10 @@ def provenance_coverage(concepts: Iterable[CanonicalConcept]) -> Dict[str, Any]:
 
 
 def excerpt_matches(excerpt: str, expected_hash: str) -> bool:
-    """Re-verify stored evidence against its recorded hash."""
-    return bool(expected_hash) and excerpt_hash(excerpt) == expected_hash
+    """Re-verify stored evidence against its recorded hash (supporting 16-char and 64-char sha256)."""
+    if not (excerpt and expected_hash):
+        return False
+    normalized = re.sub(r"\s+", " ", (excerpt or "").strip())
+    full_sha = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    short_sha = full_sha[:16]
+    return expected_hash in (short_sha, full_sha) or expected_hash == excerpt_hash(excerpt)

@@ -45,6 +45,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from curriculum.graph import CurriculumGraphValidator
+from curriculum.ids import generate_relationship_id
 from curriculum.models import (
     AuditInfo,
     CanonicalConcept,
@@ -100,6 +101,10 @@ class SeededRelationshipSpec(BaseModel):
     type: str = "prerequisite_of"
     status: str = "accepted"
     rationale: Optional[str] = None
+    confidence: float = 0.85
+    evidence_ids: List[str] = Field(default_factory=list)
+    source_refs: List[SourceRef] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class CurriculumSpec(BaseModel):
@@ -160,6 +165,7 @@ def seed_curriculum(
     # be carried forward from here rather than restamped (see pass 1).
     stored = repository.load_graph(spec.curriculum_id) if repository is not None else None
     prior_concepts = stored.concepts if stored is not None else {}
+    prior_relationships = stored.relationships if stored is not None else {}
     key_to_id: Dict[str, str] = {}
     ordered = sorted(spec.concepts, key=lambda concept: concept.stable_key)
 
@@ -220,7 +226,46 @@ def seed_curriculum(
         graph.add_concept(concept)
         key_to_id[concept_spec.stable_key] = concept.concept_id
 
-    # Pass 2: prerequisites declared at concept level.
+    # Pass 2: explicitly declared relationships.
+    for rel_spec in sorted(
+        spec.relationships, key=lambda rel: (rel.source_key, rel.type, rel.target_key)
+    ):
+        source_id = key_to_id.get(rel_spec.source_key)
+        target_id = key_to_id.get(rel_spec.target_key)
+        if source_id is None or target_id is None:
+            missing = [k for k, v in ((rel_spec.source_key, source_id), (rel_spec.target_key, target_id)) if v is None]
+            raise ValueError(f"Relationship references unknown stable_key(s): {', '.join(missing)}")
+        rel_type = RelationshipTypeEnum(rel_spec.type)
+        rel_id = generate_relationship_id(graph.curriculum_id, source_id, rel_type.value, target_id)
+        prior_rel = prior_relationships.get(rel_id)
+        if (
+            prior_rel is not None
+            and prior_rel.is_reviewed
+            and (prior_rel.extraction_method or "") in {"curriculum_review", "teacher_authored"}
+            and prior_rel.status_value != rel_spec.status
+        ):
+            relationship = prior_rel
+        else:
+            relationship = ConceptRelationship.create(
+                source_id,
+                rel_type,
+                target_id,
+                curriculum_id=graph.curriculum_id,
+                status=RelationshipStatusEnum(rel_spec.status),
+                confidence=rel_spec.confidence,
+                evidence_ids=rel_spec.evidence_ids,
+                source_refs=rel_spec.source_refs,
+                rationale=rel_spec.rationale or f"declared in curriculum spec, confirmed by {reviewer_id}",
+                extraction_method="curriculum_spec",
+                metadata=rel_spec.metadata,
+            )
+        if relationship.relationship_id in graph.relationships:
+            continue
+        graph.add_relationship(relationship)
+        if rel_type == RelationshipTypeEnum.PREREQUISITE_OF and relationship.status_value == "accepted":
+            graph.concepts[target_id].add_prerequisite(source_id)
+
+    # Pass 3: prerequisites declared at concept level (for any undeclared edges).
     for concept_spec in ordered:
         concept_id = key_to_id[concept_spec.stable_key]
         for prereq_key in concept_spec.prerequisites:
@@ -232,33 +277,13 @@ def seed_curriculum(
                 )
             if prereq_id == concept_id:
                 raise ValueError(f"Concept '{concept_spec.stable_key}' is its own prerequisite")
-            graph.concepts[concept_id].add_prerequisite(prereq_id)
-            _ensure_prerequisite_edge(graph, prereq_id, concept_id, reviewer_id)
-
-    # Pass 3: explicitly declared relationships.
-    for rel_spec in sorted(
-        spec.relationships, key=lambda rel: (rel.source_key, rel.type, rel.target_key)
-    ):
-        source_id = key_to_id.get(rel_spec.source_key)
-        target_id = key_to_id.get(rel_spec.target_key)
-        if source_id is None or target_id is None:
-            missing = [k for k, v in ((rel_spec.source_key, source_id), (rel_spec.target_key, target_id)) if v is None]
-            raise ValueError(f"Relationship references unknown stable_key(s): {', '.join(missing)}")
-        rel_type = RelationshipTypeEnum(rel_spec.type)
-        relationship = ConceptRelationship.create(
-            source_id,
-            rel_type,
-            target_id,
-            curriculum_id=graph.curriculum_id,
-            status=RelationshipStatusEnum(rel_spec.status),
-            rationale=rel_spec.rationale,
-            extraction_method="curriculum_spec",
-        )
-        if relationship.relationship_id in graph.relationships:
-            continue
-        graph.add_relationship(relationship)
-        if rel_type == RelationshipTypeEnum.PREREQUISITE_OF and rel_spec.status == "accepted":
-            graph.concepts[target_id].add_prerequisite(source_id)
+            existing_edges = graph.relationships_between(prereq_id, concept_id)
+            if existing_edges:
+                if any(e.is_prerequisite and e.status_value == "accepted" for e in existing_edges):
+                    graph.concepts[concept_id].add_prerequisite(prereq_id)
+            else:
+                graph.concepts[concept_id].add_prerequisite(prereq_id)
+                _ensure_prerequisite_edge(graph, prereq_id, concept_id, reviewer_id)
 
     if validate:
         report = CurriculumGraphValidator().validate(graph)
@@ -285,6 +310,7 @@ def _ensure_prerequisite_edge(
             target,
             curriculum_id=graph.curriculum_id,
             status=RelationshipStatusEnum.ACCEPTED,
+            confidence=0.85,
             rationale=f"declared in curriculum spec, confirmed by {reviewer_id}",
             extraction_method="curriculum_spec",
         )

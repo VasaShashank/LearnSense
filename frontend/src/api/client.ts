@@ -510,6 +510,18 @@ export interface PageEvidenceResponse {
 }
 
 
+export interface CurriculumChapter {
+  chapter_id: string;
+  name: string;
+  subject: string;
+  category?: string;
+  class_levels: string[];
+  description: string;
+  concept_ids: string[];
+  concept_count: number;
+  is_deprecated?: boolean;
+}
+
 export interface CurriculumStatusResponse {
   curriculum_id: string;
   syllabus_version: string;
@@ -522,6 +534,10 @@ export interface CurriculumStatusResponse {
   fingerprint: string;
   versions: number;
   pending_review: number;
+  active_concept_count?: number;
+  active_jee_main_2027_concepts?: number;
+  legacy_retained_concepts?: number;
+  unmapped_mapping_candidates?: number;
   published_version?: string | null;
   published_at?: string | null;
   published_by?: string | null;
@@ -1437,7 +1453,14 @@ export const ApiClient = {
 
   updateRelationshipStatus: (
     relationshipId: string,
-    payload: { status: string; reviewer_id: string; note?: string; excerpt?: string }
+    payload: {
+      status: string;
+      reviewer_id: string;
+      note?: string;
+      excerpt?: string;
+      relationship_type?: string;
+      confidence?: number;
+    }
   ): Promise<any> =>
     fetchJson('/curriculum/review/relationships/' + encodeURIComponent(relationshipId) + '/status', {
       method: 'POST',

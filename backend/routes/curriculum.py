@@ -142,6 +142,8 @@ class RelationshipStatusRequest(BaseModel):
     reviewer_id: str = Field(..., min_length=1)
     note: str = ""
     excerpt: Optional[str] = Field(default=None, max_length=4000)
+    relationship_type: Optional[str] = None
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
 
 class SnapshotRequest(BaseModel):
@@ -163,6 +165,7 @@ class CreateChapterRequest(BaseModel):
     chapter_id: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1)
     subject: str = Field(..., min_length=1)
+    category: Optional[str] = None
     class_levels: List[str] = Field(default_factory=list)
     description: str = ""
     reviewer_id: str = Field(default="teacher", min_length=1)
@@ -170,6 +173,7 @@ class CreateChapterRequest(BaseModel):
 
 class UpdateChapterRequest(BaseModel):
     name: Optional[str] = None
+    category: Optional[str] = None
     description: Optional[str] = None
     reviewer_id: str = Field(default="teacher", min_length=1)
 
@@ -323,9 +327,12 @@ def get_closure(
 
 
 @router.get("/learning-order")
-def learning_order(service: CurriculumService = Depends(get_service)) -> Dict[str, Any]:
+def learning_order(
+    include_deprecated: bool = Query(default=False),
+    service: CurriculumService = Depends(get_service),
+) -> Dict[str, Any]:
     try:
-        order = service.get_learning_order()
+        order = service.get_learning_order(include_deprecated=include_deprecated)
     except PrerequisiteCycleError as exc:
         raise _conflict(exc)
     return {"order": order, "count": len(order)}
@@ -489,6 +496,8 @@ def set_relationship_status(
             payload.reviewer_id,
             note=payload.note,
             excerpt=payload.excerpt,
+            relationship_type=payload.relationship_type,
+            confidence=payload.confidence,
         )
     except ReviewConflictError as exc:
         raise _conflict(exc)
@@ -609,10 +618,13 @@ def get_curriculum_compatibility(
 def list_chapters(
     subject: Optional[str] = None,
     class_level: Optional[str] = None,
+    include_deprecated: bool = False,
     service: CurriculumService = Depends(get_service),
 ) -> Dict[str, Any]:
     """List curriculum chapters with concept counts and metadata."""
-    chapters = service.list_chapters(subject=subject, class_level=class_level)
+    chapters = service.list_chapters(
+        subject=subject, class_level=class_level, include_deprecated=include_deprecated
+    )
     return {"count": len(chapters), "chapters": chapters}
 
 
@@ -629,6 +641,7 @@ def create_chapter(
             payload.chapter_id,
             payload.name,
             payload.subject,
+            category=payload.category,
             class_levels=payload.class_levels,
             description=payload.description,
             reviewer_id=payload.reviewer_id,
@@ -650,6 +663,7 @@ def update_chapter(
         return service.update_chapter(
             chapter_id,
             name=payload.name,
+            category=payload.category,
             description=payload.description,
             reviewer_id=payload.reviewer_id,
         )

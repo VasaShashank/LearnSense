@@ -387,6 +387,7 @@ export const CurriculumDashboard: React.FC<CurriculumDashboardProps> = ({
         status: relModalItem.targetStatus,
         reviewer_id: reviewerId,
         note: relStatusNote.trim() || `Status updated to ${relModalItem.targetStatus}`,
+        excerpt: relStatusNote.trim() || undefined,
       });
       setSuccessToast(`Relationship ${relModalItem.rel.relationship_id} set to ${relModalItem.targetStatus}.`);
       setRelModalItem(null);
@@ -1524,8 +1525,10 @@ export const CurriculumDashboard: React.FC<CurriculumDashboardProps> = ({
                 onChange={(e) => setRelTypeFilter(e.target.value)}
                 className="px-3 py-2 rounded-xl bg-space-900 border border-white/[0.1] text-xs text-white focus:outline-none"
               >
-                <option value="all">All Relationship Types</option>
-                <option value="prerequisite_of">prerequisite_of (91)</option>
+                <option value="all">All Relationship Types ({relationships.length})</option>
+                <option value="prerequisite_of">prerequisite_of</option>
+                <option value="applies_to">applies_to</option>
+                <option value="related_to">related_to</option>
               </select>
 
               <select
@@ -1534,7 +1537,7 @@ export const CurriculumDashboard: React.FC<CurriculumDashboardProps> = ({
                 className="px-3 py-2 rounded-xl bg-space-900 border border-white/[0.1] text-xs text-white focus:outline-none"
               >
                 <option value="all">All Statuses</option>
-                <option value="accepted">Accepted (91)</option>
+                <option value="accepted">Accepted</option>
                 <option value="candidate">Candidate</option>
                 <option value="rejected">Rejected</option>
               </select>
@@ -1580,7 +1583,7 @@ export const CurriculumDashboard: React.FC<CurriculumDashboardProps> = ({
                         {sourceName}
                       </div>
                       <div className="flex flex-col items-center shrink-0 px-1">
-                        <span className="text-[9px] font-mono text-cyan-400">prerequisite_of</span>
+                        <span className={`text-[9px] font-mono ${r.type === 'applies_to' ? 'text-indigo-400' : r.type === 'related_to' ? 'text-purple-400' : 'text-cyan-400'}`}>{r.type}</span>
                         <ArrowRight className="w-4 h-4 text-cyan-400" />
                       </div>
                       <div className="flex-1 p-2 rounded-lg bg-space-950 border border-white/[0.06] text-white font-medium truncate">
@@ -1594,8 +1597,73 @@ export const CurriculumDashboard: React.FC<CurriculumDashboardProps> = ({
                       </p>
                     )}
 
+                    {/* Verified Excerpt, Locator, and Hash Provenance */}
+                    {(() => {
+                      const ref = r.source_refs && r.source_refs.length > 0 ? r.source_refs[0] : null;
+                      const locator = ref?.locator || r.metadata?.locator;
+                      const excerpt = ref?.excerpt || ref?.provenance?.excerpt || r.metadata?.evidence_verification?.verified_excerpt;
+                      const hashVerified = r.metadata?.evidence_verification?.hash_verified ?? Boolean(ref?.excerpt_hash);
+                      const breakdown = r.metadata?.confidence_breakdown;
+                      const tier = breakdown?.confidence_tier || (
+                        r.status === 'rejected' ? 'rejected' :
+                        r.type === 'applies_to' ? 'practical_application' :
+                        r.type === 'related_to' ? 'curriculum_association' :
+                        r.confidence >= 0.85 ? 'direct_derivation' :
+                        'sequenced_topic_listing'
+                      );
+
+                      return (
+                        <div className="space-y-1.5 pt-1 border-t border-white/[0.04]">
+                          {locator && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-universe-slate font-mono">
+                              <span className="text-sky-400 font-semibold">Source:</span> {locator}
+                            </div>
+                          )}
+                          {excerpt && (
+                            <div className="p-2 rounded-lg bg-space-950/70 border border-white/[0.04] text-[11px] text-universe-slate/90 italic font-serif leading-relaxed line-clamp-2">
+                              &ldquo;{excerpt}&rdquo;
+                            </div>
+                          )}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-medium ${
+                              hashVerified
+                                ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                                : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                            }`}>
+                              {hashVerified ? '✓ Hash Verified' : '⚠ Hash Unverified'}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-medium ${
+                              tier.includes('derivation')
+                                ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                                : tier.includes('application')
+                                ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20'
+                                : tier.includes('association')
+                                ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
+                                : tier.includes('rejected')
+                                ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20'
+                                : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                            }`}>
+                              Tier: {tier}
+                            </span>
+                            {breakdown?.requires_academic_review && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                                Requires Academic Review
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex items-center justify-between pt-2 border-t border-white/[0.05] text-[11px]">
-                      <span className="text-universe-slate font-mono">Confidence: {Math.round((r.confidence || 1) * 100)}%</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-universe-slate font-mono">
+                          Calibrated Confidence: <strong className="text-white font-semibold">{Math.round((r.confidence || 0) * 100)}%</strong>
+                        </span>
+                        {r.status === 'rejected' && (
+                          <span className="text-[10px] text-rose-400 font-mono italic">(rejected = 0%)</span>
+                        )}
+                      </div>
                       {isAuthorized && (
                         <div className="flex gap-1.5">
                           {r.status !== 'accepted' && (

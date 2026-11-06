@@ -128,7 +128,7 @@ def test_full_akt_vocabulary_compatibility_report(canonical_jee_graph: object) -
         sources={"spec": "jee_curriculum_spec.json"},
     )
 
-    # 1. Claims: 62/62 AKT vocabulary mapped; 1 false simulator edge rejected (CURR-AUDIT-005)
+    # 1. Claims: 62/62 AKT vocabulary mapped; 2 false simulator edges rejected (CURR-AUDIT-005, CURR-AUDIT-006)
     assert len(report["claims"]["reasons"]) == 1
     assert "contradict the accepted canonical graph" in report["claims"]["reasons"][0]
 
@@ -140,15 +140,15 @@ def test_full_akt_vocabulary_compatibility_report(canonical_jee_graph: object) -
     assert len(akt["ambiguous"]) == 0
     assert len(akt["unmapped"]) == 0
 
-    # 3. Prerequisite Edges: 60/61 backed (98.4%); 1 contradicted (PHY_KIN -> PHY_OPT)
+    # 3. Prerequisite Edges: 59/61 backed (96.7%); 2 contradicted (PHY_KIN -> PHY_OPT, PHY_KIN -> PHY_THM)
     edges = report["prerequisite_edges"]
     assert edges["checked"] == 61
-    assert len(edges["backed"]) == 60
-    assert len(edges["contradicted"]) == 1
-    assert edges["contradicted"][0]["source_sim"] == "PHY_KIN"
-    assert edges["contradicted"][0]["target_sim"] == "PHY_OPT"
+    assert len(edges["backed"]) == 59
+    assert len(edges["contradicted"]) == 2
+    contradicted_pairs = {(e["source_sim"], e["target_sim"]) for e in edges["contradicted"]}
+    assert contradicted_pairs == {("PHY_KIN", "PHY_OPT"), ("PHY_KIN", "PHY_THM")}
     assert edges["unchecked"] == []
-    assert edges["backing_rate"] == 0.9836
+    assert edges["backing_rate"] == 0.9672
 
     # 4. Structural Checks
     struct = edges["structural_checks"]

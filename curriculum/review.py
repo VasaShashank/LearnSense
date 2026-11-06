@@ -25,6 +25,8 @@ from typing import Any, Dict, List, Optional, Sequence
 from pydantic import BaseModel, ConfigDict, Field
 
 from curriculum.graph import CurriculumGraphValidator, would_create_cycle
+from curriculum.evidence_verification import evaluate_relationship_evidence
+from curriculum.confidence import calculate_calibrated_confidence
 from curriculum.mapping import ProposedConcept
 from curriculum.models import (
     AuditInfo,
@@ -322,6 +324,8 @@ class CurriculumReviewService:
         reviewer_role: ReviewerRole = ReviewerRole.TEACHER,
         source_refs: Optional[Sequence[SourceRef]] = None,
         created_at: Optional[str] = None,
+        relationship_type: Optional[RelationshipTypeEnum] = None,
+        confidence: Optional[float] = None,
     ) -> ConceptRelationship:
         """
         Accept or reject a proposed edge.
@@ -339,8 +343,16 @@ class CurriculumReviewService:
 
         snapshot = graph.model_copy(deep=True)
         previous = relationship.status_value
+        previous_type = relationship.type_value
         previous_status = relationship.status
+        previous_confidence = relationship.confidence
+
+        if relationship_type is not None:
+            relationship.type = relationship_type
+        if confidence is not None:
+            relationship.confidence = confidence
         relationship.status = status
+
         if status == RelationshipStatusEnum.ACCEPTED:
             if not (relationship.evidence_ids or relationship.source_refs):
                 raise ReviewConflictError(
@@ -351,16 +363,47 @@ class CurriculumReviewService:
                     raise ReviewConflictError("Cannot accept a prerequisite edge with unknown endpoints")
                 if would_create_cycle(graph, relationship.source, relationship.target):
                     relationship.status = previous_status
+                    relationship.type = previous_type
                     raise ReviewConflictError(
                         f"Accepting {relationship.source} -> {relationship.target} would create a "
                         f"prerequisite cycle."
                     )
                 graph.concepts[relationship.target].add_prerequisite(relationship.source)
-        elif relationship.is_prerequisite and relationship.target in graph.concepts:
+            elif relationship.target in graph.concepts:
+                target = graph.concepts[relationship.target]
+                target.prerequisite_concept_ids = [
+                    prereq for prereq in target.prerequisite_concept_ids if prereq != relationship.source
+                ]
+        elif relationship.target in graph.concepts:
             target = graph.concepts[relationship.target]
             target.prerequisite_concept_ids = [
                 prereq for prereq in target.prerequisite_concept_ids if prereq != relationship.source
             ]
+
+        # Attach evidence evaluation and calibrated confidence breakdown
+        eval_result = evaluate_relationship_evidence(relationship, graph)
+        relationship.metadata["evidence_verification"] = eval_result
+        relationship.metadata["reviewer_role"] = (
+            reviewer_role.value if hasattr(reviewer_role, "value") else str(reviewer_role)
+        )
+        if status == RelationshipStatusEnum.REJECTED:
+            relationship.metadata["rejection_reason"] = note or "Rejected by academic review"
+
+        if confidence is None:
+            new_conf, breakdown = calculate_calibrated_confidence(
+                relationship, eval_result, reviewer_role=reviewer_role
+            )
+            relationship.confidence = new_conf
+            relationship.metadata["confidence_breakdown"] = breakdown
+        else:
+            relationship.confidence = confidence
+            relationship.metadata["confidence_breakdown"] = {
+                "confidence_score": confidence,
+                "confidence_tier": "manual_override",
+                "origin": "manual_review",
+                "human_reviewed": True,
+                "components": {"base_score": confidence},
+            }
 
         self._require_valid(
             graph, snapshot, f"setting {relationship_id} to {status.value} would leave the graph invalid"
@@ -379,8 +422,8 @@ class CurriculumReviewService:
                 reviewer_role=reviewer_role,
                 note=note,
                 created_at=created_at or "",
-                previous_state={"status": previous},
-                new_state={"status": relationship.status_value},
+                previous_state={"status": previous, "type": previous_type, "confidence": previous_confidence},
+                new_state={"status": relationship.status_value, "type": relationship.type_value, "confidence": relationship.confidence},
             )
         )
         return relationship
