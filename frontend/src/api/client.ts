@@ -384,7 +384,9 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
   try {
     const headers = new Headers(options?.headers);
-    if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    if (!headers.has('Content-Type') && !(options?.body instanceof FormData)) {
+      headers.set('Content-Type', 'application/json');
+    }
     // Only a Supabase session can provide identity. Drop stale or caller-provided
     // bearer headers when no current session exists; persona IDs are never credentials.
     headers.delete('Authorization');
@@ -946,8 +948,15 @@ export const ApiClient = {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10 * 60 * 1000);
     try {
+      const headers = new Headers();
+      const accessToken = await getCurrentAccessToken();
+      if (accessToken) {
+        headers.set('Authorization', `Bearer ${accessToken}`);
+      }
+
       const res = await fetch(`${API_BASE_URL}/sources/upload`, {
         method: 'POST',
+        headers,
         body: formData,
         signal: controller.signal,
       });
@@ -963,8 +972,15 @@ export const ApiClient = {
         const jobId: string = data.job_id;
         const deadline = Date.now() + 10 * 60 * 1000; // 10 min max
         while (Date.now() < deadline) {
-          await new Promise(r => setTimeout(r, 3000));
-          const pollRes = await fetch(`${API_BASE_URL}/sources/upload/status/${jobId}`);
+          await new Promise(r => setTimeout(r, 2000));
+          const pollHeaders = new Headers();
+          const currentToken = await getCurrentAccessToken();
+          if (currentToken) {
+            pollHeaders.set('Authorization', `Bearer ${currentToken}`);
+          }
+          const pollRes = await fetch(`${API_BASE_URL}/sources/upload/status/${jobId}`, {
+            headers: pollHeaders,
+          });
           if (!pollRes.ok) continue;
           const poll = await pollRes.json();
           if (poll.status === 'done' && poll.result) return poll.result;
