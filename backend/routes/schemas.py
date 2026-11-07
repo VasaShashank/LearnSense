@@ -28,8 +28,37 @@ class MembershipSummary(BaseModel):
 class CurrentUserResponse(BaseModel):
     user_id: str = Field(description="Supabase user UUID (canonical identity and learner ID)")
     email: Optional[str] = None
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
     account_status: Literal["active", "disabled"]
+    active_role: Optional[UserRole] = None
     memberships: List[MembershipSummary]
+
+
+class UpdateProfileRequest(BaseModel):
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class UpdateRoleRequest(BaseModel):
+    role: str
+    org_name: Optional[str] = None
+
+
+class CreateInvitationRequest(BaseModel):
+    email: str
+    role: UserRole = UserRole.LEARNER
+    class_id: Optional[str] = None
+
+
+class InvitationResponse(BaseModel):
+    invitation_id: str
+    org_id: str
+    email: str
+    role: str
+    class_id: Optional[str] = None
+    expires_at: str
+    token: Optional[str] = None
 
 
 class IdentityExportResponse(BaseModel):

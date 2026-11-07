@@ -639,6 +639,37 @@ export const ApiClient = {
   },
 
   /**
+   * Fetch current verified user identity and memberships.
+   */
+  getCurrentUser: (): Promise<{
+    user_id: string;
+    email: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
+    account_status: string;
+    memberships: Array<{
+      membership_id: string;
+      org_id: string;
+      org_name: string;
+      role: 'ADMIN' | 'TEACHER' | 'LEARNER';
+      is_active: boolean;
+    }>;
+  }> =>
+    fetchJson('/me'),
+
+  updateProfile: (data: { display_name?: string; avatar_url?: string }): Promise<any> =>
+    fetchJson('/me', { method: 'PATCH', body: JSON.stringify(data) }),
+
+  deactivateAccount: (): Promise<{ status: string; user_id: string }> =>
+    fetchJson('/me/deactivate', { method: 'POST' }),
+
+  acceptInvitation: (token: string): Promise<any> =>
+    fetchJson(`/institutions/invitations/${encodeURIComponent(token)}/accept`, { method: 'POST' }),
+
+  updateRole: (role: string, orgName?: string): Promise<any> =>
+    fetchJson('/me/role', { method: 'PATCH', body: JSON.stringify({ role, org_name: orgName }) }),
+
+  /**
    * Provision the verified Supabase identity as its own learner, idempotently.
    * The server derives identity from the bearer token and accepts no learner ID.
    */

@@ -418,3 +418,87 @@ def test_class_analytics_and_sharing_conceal_with_class_not_found(env, method, s
 def test_class_analytics_subject_mismatch_uses_the_same_code(env):
     response = call(TEACHER, "GET", f"/api/classes/{env.cls.class_id}/knowledge-state?subject_id=other_doc")
     assert response.status_code == 404 and response.json()["code"] == "CLASS_NOT_FOUND"
+
+
+# --- F8: Role-escalation prevention and authorized role-switching ---------------------------
+
+def test_student_cannot_escalate_to_teacher(env):
+    response = call(LEARNER, "PATCH", "/api/me/role", json={"role": "TEACHER"})
+    assert response.status_code == 403
+    data = response.json()
+    assert data["code"] == "FORBIDDEN_ROLE_ESCALATION"
+    assert "TEACHER" in data["detail"] or "TEACHER" in data["message"]
+
+
+def test_student_cannot_escalate_to_admin(env):
+    response = call(LEARNER, "PATCH", "/api/me/role", json={"role": "ADMIN"})
+    assert response.status_code == 403
+    data = response.json()
+    assert data["code"] == "FORBIDDEN_ROLE_ESCALATION"
+    assert "ADMIN" in data["detail"] or "ADMIN" in data["message"]
+
+
+def test_teacher_cannot_escalate_to_admin(env):
+    response = call(TEACHER, "PATCH", "/api/me/role", json={"role": "ADMIN"})
+    assert response.status_code == 403
+    data = response.json()
+    assert data["code"] == "FORBIDDEN_ROLE_ESCALATION"
+
+
+def test_authorized_multi_role_admin_switches_between_assigned_roles(env):
+    # Admin switches active view to TEACHER
+    res_teacher = call(ADMIN, "PATCH", "/api/me/role", json={"role": "TEACHER"})
+    assert res_teacher.status_code == 200
+    assert res_teacher.json()["active_role"] == "TEACHER"
+
+    # Admin switches active view to LEARNER
+    res_learner = call(ADMIN, "PATCH", "/api/me/role", json={"role": "LEARNER"})
+    assert res_learner.status_code == 200
+    assert res_learner.json()["active_role"] == "LEARNER"
+
+    # Verify that underlying DB membership was NOT modified or downgraded
+    mems = asyncio.run(env.svc.list_memberships_for_user_async(ADMIN))
+    assert any(m["role"] == UserRole.ADMIN for m in mems)
+
+
+def test_teacher_can_switch_to_learner_view_without_membership_loss(env):
+    res = call(TEACHER, "PATCH", "/api/me/role", json={"role": "LEARNER"})
+    assert res.status_code == 200
+    assert res.json()["active_role"] == "LEARNER"
+
+    # Verify underlying DB membership still retains TEACHER
+    mems = asyncio.run(env.svc.list_memberships_for_user_async(TEACHER))
+    assert any(m["role"] == UserRole.TEACHER for m in mems)
+
+
+def test_missing_or_invalid_jwt_rejected_on_role_patch(env):
+    client = TestClient(app, raise_server_exceptions=False)
+    # Missing authorization header
+    res_missing = client.patch("/api/me/role", json={"role": "TEACHER"})
+    assert res_missing.status_code == 401
+
+    # Invalid authorization header
+    res_invalid = client.patch(
+        "/api/me/role",
+        headers={"Authorization": "Bearer invalid.mock.token"},
+        json={"role": "TEACHER"}
+    )
+    assert res_invalid.status_code == 401
+
+
+def test_role_switch_across_different_organization_memberships(env):
+    # TEACHER is in 'Org One', NOT in 'Org Two'
+    res_wrong_org = call(TEACHER, "PATCH", "/api/me/role", json={"role": "TEACHER", "org_name": "Org Two"})
+    assert res_wrong_org.status_code == 403
+    assert res_wrong_org.json()["code"] == "FORBIDDEN_ORG_MEMBERSHIP"
+
+    # OUTSIDER is ADMIN in 'Org Two', but NOT in 'Org One'
+    res_outsider_org_one = call(OUTSIDER, "PATCH", "/api/me/role", json={"role": "ADMIN", "org_name": "Org One"})
+    assert res_outsider_org_one.status_code == 403
+    assert res_outsider_org_one.json()["code"] == "FORBIDDEN_ORG_MEMBERSHIP"
+
+    # OUTSIDER in 'Org Two' succeeds
+    res_outsider_org_two = call(OUTSIDER, "PATCH", "/api/me/role", json={"role": "ADMIN", "org_name": "Org Two"})
+    assert res_outsider_org_two.status_code == 200
+    assert res_outsider_org_two.json()["active_role"] == "ADMIN"
+

@@ -91,21 +91,30 @@ class AuditRepository:
 # ---------------------------------------------------------------------------
 
 class UserRepository:
-    _COLUMNS = "user_id, email, status, status_reason, created_at, updated_at, last_seen_at"
+    _COLUMNS = "user_id, email, display_name, avatar_url, status, status_reason, created_at, updated_at, last_seen_at"
 
-    async def upsert_seen(self, conn: Any, user_id: str, email: Optional[str]) -> Tuple[Dict[str, Any], bool]:
+    async def upsert_seen(
+        self,
+        conn: Any,
+        user_id: str,
+        email: Optional[str],
+        display_name: Optional[str] = None,
+        avatar_url: Optional[str] = None,
+    ) -> Tuple[Dict[str, Any], bool]:
         """Create the record or refresh email/last_seen_at. Returns (record, created)."""
         row = await conn.fetchrow(
             f"""
-            INSERT INTO users (user_id, email, last_seen_at)
-            VALUES ($1::uuid, $2, NOW())
+            INSERT INTO users (user_id, email, display_name, avatar_url, last_seen_at)
+            VALUES ($1::uuid, $2, $3, $4, NOW())
             ON CONFLICT (user_id) DO UPDATE
                 SET email = COALESCE(EXCLUDED.email, users.email),
+                    display_name = COALESCE(EXCLUDED.display_name, users.display_name),
+                    avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
                     last_seen_at = NOW(),
                     updated_at = NOW()
             RETURNING {self._COLUMNS}, (xmax = 0) AS inserted
             """,
-            user_id, email,
+            user_id, email, display_name, avatar_url,
         )
         return self._row(row), bool(row["inserted"])
 
@@ -128,11 +137,31 @@ class UserRepository:
         )
         return self._row(row) if row else None
 
+    async def update_profile(
+        self, conn: Any, user_id: str,
+        display_name: Optional[str] = None, avatar_url: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        row = await conn.fetchrow(
+            f"""
+            UPDATE users
+            SET display_name = COALESCE($2, display_name),
+                avatar_url = COALESCE($3, avatar_url),
+                updated_at = NOW()
+            WHERE user_id = $1::uuid
+            RETURNING {self._COLUMNS}
+            """,
+            user_id, display_name, avatar_url,
+        )
+        return self._row(row) if row else None
+
     @staticmethod
     def _row(row: Any) -> Dict[str, Any]:
+        keys = row.keys() if hasattr(row, 'keys') else []
         return {
             "user_id": str(row["user_id"]),
             "email": row["email"],
+            "display_name": row["display_name"] if "display_name" in keys else None,
+            "avatar_url": row["avatar_url"] if "avatar_url" in keys else None,
             "status": row["status"],
             "status_reason": row["status_reason"],
             "created_at": _iso(row["created_at"]),
@@ -345,4 +374,78 @@ class UsageRepository:
             "quantity": int(row["quantity"]),
             "source": row["source"],
             "request_id": row["request_id"],
+        }
+
+
+# ---------------------------------------------------------------------------
+# Organization Invitations
+# ---------------------------------------------------------------------------
+
+class InvitationRepository:
+    _COLUMNS = "invitation_id, org_id, email, role, class_id, token_hash, invited_by, expires_at, accepted_at, accepted_by, created_at"
+
+    async def create(
+        self, conn: Any, *, org_id: str, email: str, role: str, class_id: Optional[str],
+        token_hash: str, invited_by: str, expires_at: datetime
+    ) -> Dict[str, Any]:
+        row = await conn.fetchrow(
+            f"""
+            INSERT INTO org_invitations (org_id, email, role, class_id, token_hash, invited_by, expires_at)
+            VALUES ($1, $2, $3::user_role, $4, $5, $6, $7)
+            RETURNING {self._COLUMNS}
+            """,
+            org_id, email.lower().strip(), role, class_id, token_hash, invited_by, expires_at,
+        )
+        return self._row(row)
+
+    async def get_by_token_hash(self, conn: Any, token_hash: str) -> Optional[Dict[str, Any]]:
+        row = await conn.fetchrow(
+            f"SELECT {self._COLUMNS} FROM org_invitations WHERE token_hash = $1",
+            token_hash,
+        )
+        return self._row(row) if row else None
+
+    async def list_for_org(self, conn: Any, org_id: str) -> List[Dict[str, Any]]:
+        rows = await conn.fetch(
+            f"SELECT {self._COLUMNS} FROM org_invitations WHERE org_id = $1 ORDER BY created_at DESC",
+            org_id,
+        )
+        return [self._row(r) for r in rows]
+
+    async def mark_accepted(self, conn: Any, invitation_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+        row = await conn.fetchrow(
+            f"""
+            UPDATE org_invitations
+            SET accepted_at = NOW(), accepted_by = $2
+            WHERE invitation_id = $1::uuid AND accepted_at IS NULL
+            RETURNING {self._COLUMNS}
+            """,
+            invitation_id, user_id,
+        )
+        return self._row(row) if row else None
+
+    async def revoke(self, conn: Any, invitation_id: str, org_id: str) -> bool:
+        result = await conn.execute(
+            """
+            DELETE FROM org_invitations
+            WHERE invitation_id = $1::uuid AND org_id = $2 AND accepted_at IS NULL
+            """,
+            invitation_id, org_id,
+        )
+        return result.endswith("1")
+
+    @staticmethod
+    def _row(row: Any) -> Dict[str, Any]:
+        return {
+            "invitation_id": str(row["invitation_id"]),
+            "org_id": row["org_id"],
+            "email": row["email"],
+            "role": str(row["role"]),
+            "class_id": row["class_id"],
+            "token_hash": row["token_hash"],
+            "invited_by": row["invited_by"],
+            "expires_at": _iso(row["expires_at"]),
+            "accepted_at": _iso(row["accepted_at"]),
+            "accepted_by": row["accepted_by"],
+            "created_at": _iso(row["created_at"]),
         }

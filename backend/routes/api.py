@@ -156,7 +156,7 @@ async def initialize_current_learner(user: AuthenticatedUser = Depends(get_curre
     return await run_in_threadpool(_provision)
 
 
-@router.get("/me", response_model=schemas.CurrentUserResponse, responses=AUTH_ERRORS)
+@router.get("/me", response_model=schemas.CurrentUserResponse, response_model_exclude_none=True, responses=AUTH_ERRORS)
 async def get_me(user: AuthenticatedUser = Depends(get_current_user)):
     """The verified caller and their ACTIVE organization memberships.
 
@@ -169,9 +169,137 @@ async def get_me(user: AuthenticatedUser = Depends(get_current_user)):
     return {
         "user_id": user_id,
         "email": record.get("email"),
+        "display_name": record.get("display_name"),
+        "avatar_url": record.get("avatar_url"),
         "account_status": record.get("status", "active"),
         "memberships": memberships,
     }
+
+
+@router.patch("/me", response_model=schemas.CurrentUserResponse, responses=AUTH_ERRORS)
+async def update_me(
+    payload: schemas.UpdateProfileRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Update profile information (display_name, avatar_url) for verified identity."""
+    user_id = _authenticated_learner_id(user)
+    record = await institution_service.users.update_profile(
+        user_id, display_name=payload.display_name, avatar_url=payload.avatar_url
+    )
+    if record is None:
+        raise ApiError(404, "USER_NOT_FOUND", "User record not found.")
+    memberships = await institution_service.list_memberships_for_user_async(user_id)
+    return {
+        "user_id": user_id,
+        "email": record.get("email"),
+        "display_name": record.get("display_name"),
+        "avatar_url": record.get("avatar_url"),
+        "account_status": record.get("status", "active"),
+        "memberships": memberships,
+    }
+
+
+@router.patch("/me/role", response_model=schemas.CurrentUserResponse, responses=AUTH_ERRORS)
+async def update_my_role(
+    payload: schemas.UpdateRoleRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Switch the verified user's active platform role or workspace context.
+
+    The backend derives identity solely from the verified JWT and checks the caller's
+    actual assigned organization memberships. Self-promotion (e.g. LEARNER -> TEACHER
+    or TEACHER -> ADMIN) without administrative grant is strictly rejected with 403 Forbidden.
+    """
+    user_id = _authenticated_learner_id(user)
+
+    role_map = {
+        "STUDENT": UserRole.LEARNER,
+        "LEARNER": UserRole.LEARNER,
+        "TEACHER": UserRole.TEACHER,
+        "ADMIN": UserRole.ADMIN,
+        "ADMINISTRATOR": UserRole.ADMIN,
+    }
+    target_role = role_map.get((payload.role or "").strip().upper())
+    if not target_role:
+        raise ApiError(status.HTTP_400_BAD_REQUEST, "INVALID_ROLE", f"Invalid role: {payload.role}")
+
+    # Fetch verified user's active memberships
+    memberships = await institution_service.list_memberships_for_user_async(user_id, include_inactive=False)
+
+    # If org_name is specified, filter to memberships matching that organization
+    if payload.org_name:
+        org_matched = [
+            m for m in memberships
+            if m.get("org_name", "").strip().lower() == payload.org_name.strip().lower()
+            or m.get("org_id") == payload.org_name
+        ]
+        if not org_matched:
+            raise ApiError(
+                status.HTTP_403_FORBIDDEN,
+                "FORBIDDEN_ORG_MEMBERSHIP",
+                "User has no active membership in the specified organization."
+            )
+        eval_memberships = org_matched
+    else:
+        eval_memberships = memberships
+
+    # Determine assigned roles from active memberships
+    assigned_roles = {m["role"] for m in eval_memberships} if eval_memberships else {UserRole.LEARNER}
+
+    # Evaluate permission to activate target_role:
+    # 1. Any authenticated user can always use the LEARNER workspace context.
+    # 2. To switch to TEACHER, the user must have TEACHER or ADMIN assigned in active memberships.
+    # 3. To switch to ADMIN, the user must have ADMIN assigned in active memberships.
+    if target_role == UserRole.LEARNER:
+        is_authorized = True
+    elif target_role == UserRole.TEACHER:
+        is_authorized = (UserRole.TEACHER in assigned_roles or UserRole.ADMIN in assigned_roles)
+    elif target_role == UserRole.ADMIN:
+        is_authorized = (UserRole.ADMIN in assigned_roles)
+    else:
+        is_authorized = False
+
+    if not is_authorized:
+        if target_role == UserRole.ADMIN:
+            raise ApiError(
+                status.HTTP_403_FORBIDDEN,
+                "FORBIDDEN_ROLE_ESCALATION",
+                "Cannot switch to ADMIN role without an administrative grant or invitation."
+            )
+        elif target_role == UserRole.TEACHER:
+            raise ApiError(
+                status.HTTP_403_FORBIDDEN,
+                "FORBIDDEN_ROLE_ESCALATION",
+                "Cannot switch to TEACHER role without an administrative assignment or invitation."
+            )
+        else:
+            raise ApiError(
+                status.HTTP_403_FORBIDDEN,
+                "FORBIDDEN_ROLE_SWITCH",
+                f"Role {target_role.value} is not assigned to this account."
+            )
+
+    # Switching active roles does not modify privileged membership records in the database.
+    record = await institution_service.users.get_user(user_id) or {}
+    return {
+        "user_id": user_id,
+        "email": record.get("email") or user.email,
+        "display_name": record.get("display_name"),
+        "avatar_url": record.get("avatar_url"),
+        "account_status": record.get("status", "active"),
+        "active_role": target_role,
+        "memberships": memberships,
+    }
+
+
+@router.post("/me/deactivate", responses=AUTH_ERRORS)
+async def deactivate_me(user: AuthenticatedUser = Depends(get_current_user)):
+    """Self-service account deactivation for verified caller."""
+    user_id = _authenticated_learner_id(user)
+    record = await institution_service.users.set_status(
+        user_id, "disabled", reason="Self-service account deactivation", actor_user_id=user_id
+    )
+    return {"status": "disabled", "user_id": user_id}
 
 
 @router.get("/me/export", response_model=schemas.IdentityExportResponse, responses=AUTH_ERRORS)
@@ -1526,6 +1654,85 @@ async def deactivate_membership(
         "role": membership.role,
         "status": "deactivated" if changed else "already_inactive",
     }
+
+
+
+
+@router.post(
+    "/institutions/organizations/{org_id}/invitations",
+    response_model=schemas.InvitationResponse,
+    responses={**CONCEALED_ERRORS, 400: {"model": ErrorEnvelope}},
+)
+async def create_organization_invitation(
+    org_id: str,
+    payload: schemas.CreateInvitationRequest,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Invite a teacher or learner to join an organization by email. Admin only."""
+    try:
+        inv = await institution_service.create_invitation_async(
+            org_id=org_id,
+            email=payload.email,
+            role=payload.role,
+            class_id=payload.class_id,
+            actor_user_id=current_user.id,
+        )
+        return inv
+    except AuthorizationError:
+        raise ApiError(403, "FORBIDDEN", "Only organization administrators can create invitations.")
+
+
+@router.get(
+    "/institutions/organizations/{org_id}/invitations",
+    response_model=List[schemas.InvitationResponse],
+    responses={**CONCEALED_ERRORS},
+)
+async def list_organization_invitations(
+    org_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """List pending invitations for an organization. Admin only."""
+    try:
+        return await institution_service.list_invitations_async(org_id, current_user.id)
+    except AuthorizationError:
+        raise ApiError(403, "FORBIDDEN", "Only organization administrators can view invitations.")
+
+
+@router.delete(
+    "/institutions/organizations/{org_id}/invitations/{invitation_id}",
+    responses={**CONCEALED_ERRORS},
+)
+async def revoke_organization_invitation(
+    org_id: str,
+    invitation_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Revoke a pending organization invitation. Admin only."""
+    try:
+        ok = await institution_service.revoke_invitation_async(org_id, invitation_id, current_user.id)
+        if not ok:
+            raise ApiError(404, "INVITATION_NOT_FOUND", "Invitation not found or already accepted.")
+        return {"revoked": True, "invitation_id": invitation_id}
+    except AuthorizationError:
+        raise ApiError(403, "FORBIDDEN", "Only organization administrators can revoke invitations.")
+
+
+@router.post(
+    "/institutions/invitations/{token}/accept",
+    responses={**AUTH_ERRORS, 400: {"model": ErrorEnvelope}, 403: {"model": ErrorEnvelope}},
+)
+async def accept_organization_invitation(
+    token: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+):
+    """Accept an invitation to join an organization using the secure invitation token."""
+    if not current_user.email:
+        raise ApiError(400, "EMAIL_REQUIRED", "Your authenticated identity must have a verified email.")
+    try:
+        res = await institution_service.accept_invitation_async(token, current_user.id, current_user.email)
+        return {"accepted": True, **res}
+    except AuthorizationError as exc:
+        raise ApiError(403, "INVITATION_INVALID", str(exc))
 
 
 @router.post(

@@ -29,6 +29,10 @@ CLASS_TEACHERS_UPDATED = "class.teachers.updated"
 SHARE_GRANTED = "document.share.granted"
 SHARE_REVOKED = "document.share.revoked"
 USER_STATUS_CHANGED = "user.status_changed"
+INVITATION_CREATED = "org.invitation.created"
+INVITATION_REVOKED = "org.invitation.revoked"
+INVITATION_ACCEPTED = "org.invitation.accepted"
+USER_PROFILE_UPDATED = "user.profile_updated"
 
 
 class AuditLog:

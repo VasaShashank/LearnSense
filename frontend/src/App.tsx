@@ -22,6 +22,7 @@ import { Zap, Sparkles, Orbit, BookOpen } from 'lucide-react';
 import { getConceptDisplayName, registerConceptNameMap } from './utils/conceptName';
 import { AuthGate } from './auth/AuthGate';
 import { AuthenticatedLearnerEntry } from './auth/AuthenticatedLearnerEntry';
+import { AuthenticatedAppShell } from './components/AuthenticatedAppShell';
 import { authSessionStore, useSupabaseAuth } from './auth/session';
 
 
@@ -43,9 +44,19 @@ export default function App() {
   return (
     <AuthenticatedLearnerEntry
       userId={auth.session.user.id}
-      onSignOut={() => authSessionStore.signOut()}
+      userEmail={auth.session.user.email}
+      onSignOut={() => void authSessionStore.signOut()}
       signingOut={auth.operation === 'signing-out'}
-    />
+    >
+      {({ learnerId, resume }) => (
+        <AuthenticatedAppShell
+          learnerId={learnerId}
+          userEmail={auth.session!.user.email || ''}
+          initialResume={resume}
+          onSignOut={() => void authSessionStore.signOut()}
+        />
+      )}
+    </AuthenticatedLearnerEntry>
   );
 }
 

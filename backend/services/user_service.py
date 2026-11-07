@@ -94,14 +94,17 @@ class UserService:
 
     # -- Public API -----------------------------------------------------------
 
-    async def ensure_user(self, user_id: str, email: Optional[str]) -> Dict[str, Any]:
+    async def ensure_user(
+        self, user_id: str, email: Optional[str],
+        display_name: Optional[str] = None, avatar_url: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Idempotently provision the record for a verified identity; refresh last_seen."""
         user_id = validate_canonical_learner_id(user_id)
         if self._pg_enabled:
             from backend.repositories.platform_repository import UserRepository
 
             async def _op(conn):
-                record, _created = await UserRepository().upsert_seen(conn, user_id, email)
+                record, _created = await UserRepository().upsert_seen(conn, user_id, email, display_name, avatar_url)
                 return record
 
             return await self._pg(_op)
@@ -110,13 +113,41 @@ class UserService:
             record = self.get_user_json(user_id) or {
                 "user_id": user_id,
                 "email": None,
+                "display_name": None,
+                "avatar_url": None,
                 "status": "active",
                 "status_reason": None,
                 "created_at": now,
             }
             record["email"] = email or record.get("email")
+            if display_name is not None:
+                record["display_name"] = display_name
+            if avatar_url is not None:
+                record["avatar_url"] = avatar_url
             record["updated_at"] = now
             record["last_seen_at"] = now
+            self._write_json(record)
+            return record
+
+    async def update_profile(
+        self, user_id: str, *, display_name: Optional[str] = None, avatar_url: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Update user profile display properties."""
+        user_id = validate_canonical_learner_id(user_id)
+        if self._pg_enabled:
+            from backend.repositories.platform_repository import UserRepository
+
+            return await self._pg(lambda conn: UserRepository().update_profile(conn, user_id, display_name, avatar_url))
+        now = datetime.now(timezone.utc).isoformat()
+        with self._lock:
+            record = self.get_user_json(user_id)
+            if record is None:
+                return None
+            if display_name is not None:
+                record["display_name"] = display_name
+            if avatar_url is not None:
+                record["avatar_url"] = avatar_url
+            record["updated_at"] = now
             self._write_json(record)
             return record
 

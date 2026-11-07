@@ -225,14 +225,18 @@ class InstitutionService:
                 "Set DATABASE_URL for production use."
             )
 
+        self.invitations_dir = self.base_dir / "invitations"
+        self.invitations_dir.mkdir(parents=True, exist_ok=True)
         if self._pg_enabled:
             from backend.repositories.institution_repository import InstitutionRepository
-            from backend.repositories.platform_repository import AuditRepository, UserRepository
+            from backend.repositories.platform_repository import AuditRepository, UserRepository, InvitationRepository
             self._repo = InstitutionRepository()
             self._audit_repo = AuditRepository()
             self._user_repo = UserRepository()
+            self._invitation_repo = InvitationRepository()
         else:
             self._repo = None
+            self._invitation_repo = None
         # Users live beside the institutional store (storage/users by default).
         self.users = user_service or UserService(
             base_dir=str(self.base_dir.parent / "users"), pg_enabled=self._pg_enabled
@@ -1510,6 +1514,290 @@ class InstitutionService:
             "enrollments": enrollments,
             "audit_events_as_actor": [_export_audit_event(e, user_id) for e in events],
         }
+    # ---------------------------------------------------------------------------
+    # Organization Invitations
+    # ---------------------------------------------------------------------------
+
+    async def assign_user_role_async(
+        self, user_id: str, role: str, org_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Assign or update user role (LEARNER, TEACHER, ADMIN) with active organization membership."""
+        role_map = {
+            "STUDENT": UserRole.LEARNER,
+            "LEARNER": UserRole.LEARNER,
+            "TEACHER": UserRole.TEACHER,
+            "ADMIN": UserRole.ADMIN,
+            "ADMINISTRATOR": UserRole.ADMIN,
+        }
+        role_enum = role_map.get((role or "LEARNER").upper())
+        if not role_enum:
+            raise ValueError(f"Invalid role: {role}. Must be LEARNER, TEACHER, or ADMIN.")
+
+        org_name = org_name or "Apex Institute of Science and Technology"
+
+        if self._pg_enabled:
+            pool = await self._pool()
+            async with pool.acquire() as conn:
+                user_mems = await self._repo.list_memberships_for_user(conn, user_id)
+                if user_mems:
+                    for m in user_mems:
+                        await conn.execute(
+                            "UPDATE org_memberships SET role = $1, is_active = TRUE, updated_at = NOW() WHERE membership_id = $2",
+                            role_enum.value,
+                            m["membership_id"],
+                        )
+                    return {
+                        "membership_id": user_mems[0]["membership_id"],
+                        "org_id": user_mems[0]["org_id"],
+                        "org_name": user_mems[0].get("org_name") or org_name,
+                        "role": role_enum.value,
+                        "is_active": True,
+                    }
+
+                orgs = await self._repo.list_organizations(conn)
+                if orgs:
+                    org = orgs[0]
+                    org_id = org.org_id
+                    org_title = org.name
+                else:
+                    org_id = f"org_{uuid.uuid4().hex[:8]}"
+                    org = await self._repo.create_organization(
+                        conn, org_id=org_id, name=org_name
+                    )
+                    org_title = org.name
+
+                mem_id = f"mem_{uuid.uuid4().hex[:8]}"
+                membership = await self._repo.create_membership(
+                    conn, membership_id=mem_id, org_id=org_id, user_id=user_id, role=role_enum
+                )
+                return {
+                    "membership_id": membership.membership_id,
+                    "org_id": org_id,
+                    "org_name": org_title,
+                    "role": membership.role.value,
+                    "is_active": membership.is_active,
+                }
+        else:
+            return {
+                "membership_id": "mem_role_dev",
+                "org_id": "org_apex_inst",
+                "org_name": org_name,
+                "role": role_enum.value,
+                "is_active": True,
+            }
+
+    async def create_invitation_async(
+        self, org_id: str, email: str, role: UserRole, class_id: Optional[str], actor_user_id: str
+    ) -> Dict[str, Any]:
+        """Create an invitation token for a teacher or learner."""
+        import secrets, hashlib
+        from datetime import timedelta
+        from backend.services import audit_log
+
+        self.require_role(org_id, actor_user_id, UserRole.ADMIN)
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        email_clean = email.strip().lower()
+
+        if self._pg_enabled:
+            async def _op():
+                pool = await self._pool()
+                async with pool.acquire() as conn:
+                    async with conn.transaction():
+                        record = await self._invitation_repo.create(
+                            conn, org_id=org_id, email=email_clean, role=role.value,
+                            class_id=class_id, token_hash=token_hash,
+                            invited_by=actor_user_id, expires_at=expires_at,
+                        )
+                        await self._audit_repo.insert(
+                            conn, actor_user_id=actor_user_id, org_id=org_id,
+                            action=audit_log.INVITATION_CREATED, target_type="invitation",
+                            target_id=record["invitation_id"],
+                            details={"email": email_clean, "role": role.value, "class_id": class_id},
+                        )
+                        return record
+
+            record = await _await_background(_op())
+        else:
+            inv_id = str(uuid.uuid4())
+            record = {
+                "invitation_id": inv_id,
+                "org_id": org_id,
+                "email": email_clean,
+                "role": role.value,
+                "class_id": class_id,
+                "token_hash": token_hash,
+                "invited_by": actor_user_id,
+                "expires_at": expires_at.isoformat(),
+                "accepted_at": None,
+                "accepted_by": None,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            path = self.invitations_dir / f"{inv_id}.json"
+            _atomic_write_json(path, record, self.base_dir)
+            self._json_audit(
+                actor_user_id=actor_user_id, org_id=org_id,
+                action=audit_log.INVITATION_CREATED, target_type="invitation",
+                target_id=inv_id, details={"email": email_clean, "role": role.value, "class_id": class_id},
+            )
+
+        res = dict(record)
+        res["token"] = raw_token
+        return res
+
+    async def list_invitations_async(self, org_id: str, actor_user_id: str) -> List[Dict[str, Any]]:
+        self.require_role(org_id, actor_user_id, UserRole.ADMIN)
+        if self._pg_enabled:
+            async def _query():
+                pool = await self._pool()
+                async with pool.acquire() as conn:
+                    return await self._invitation_repo.list_for_org(conn, org_id)
+
+            return await _await_background(_query())
+        invs = []
+        for p in self.invitations_dir.glob("*.json"):
+            try:
+                with p.open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if data.get("org_id") == org_id and not data.get("accepted_at"):
+                        invs.append(data)
+            except Exception:
+                continue
+        return invs
+
+    async def revoke_invitation_async(self, org_id: str, invitation_id: str, actor_user_id: str) -> bool:
+        self.require_role(org_id, actor_user_id, UserRole.ADMIN)
+        from backend.services import audit_log
+        if self._pg_enabled:
+            async def _op():
+                pool = await self._pool()
+                async with pool.acquire() as conn:
+                    async with conn.transaction():
+                        ok = await self._invitation_repo.revoke(conn, invitation_id, org_id)
+                        if ok:
+                            await self._audit_repo.insert(
+                                conn, actor_user_id=actor_user_id, org_id=org_id,
+                                action=audit_log.INVITATION_REVOKED, target_type="invitation",
+                                target_id=invitation_id, details={},
+                            )
+                        return ok
+
+            return await _await_background(_op())
+        path = self.invitations_dir / f"{invitation_id}.json"
+        if path.exists():
+            try:
+                path.unlink()
+                self._json_audit(
+                    actor_user_id=actor_user_id, org_id=org_id,
+                    action=audit_log.INVITATION_REVOKED, target_type="invitation",
+                    target_id=invitation_id, details={},
+                )
+                return True
+            except OSError:
+                return False
+        return False
+
+    async def accept_invitation_async(self, token: str, user_id: str, user_email: str) -> Dict[str, Any]:
+        """Accept an invitation token and grant role/class membership."""
+        import hashlib
+        from backend.services import audit_log
+        from phase3.errors import AuthorizationError
+
+        token_hash = hashlib.sha256(token.strip().encode("utf-8")).hexdigest()
+        now = datetime.now(timezone.utc)
+
+        if self._pg_enabled:
+            async def _op():
+                pool = await self._pool()
+                async with pool.acquire() as conn:
+                    async with conn.transaction():
+                        inv = await self._invitation_repo.get_by_token_hash(conn, token_hash)
+                        if not inv:
+                            raise AuthorizationError("Invalid or expired invitation token.")
+                        if inv.get("accepted_at"):
+                            raise AuthorizationError("Invitation has already been accepted.")
+                        exp = datetime.fromisoformat(inv["expires_at"].replace("Z", "+00:00"))
+                        if now > exp:
+                            raise AuthorizationError("Invitation has expired.")
+                        if user_email.strip().lower() != inv["email"].strip().lower():
+                            raise AuthorizationError("This invitation was issued to a different email address.")
+
+                        org_id = inv["org_id"]
+                        role_str = inv["role"]
+                        role = UserRole(role_str)
+                        class_id = inv.get("class_id")
+
+                        # Add membership
+                        membership = await self._pg_add_membership(conn, org_id, user_id, role)
+                        # Link class if provided
+                        if class_id:
+                            if role == UserRole.TEACHER:
+                                c = await self._repo.get_class(conn, class_id)
+                                if c and user_id not in c.teacher_ids:
+                                    tids = list(c.teacher_ids) + [user_id]
+                                    await self._repo.set_class_teachers(conn, class_id, tids)
+                            elif role == UserRole.LEARNER:
+                                await self._pg_enroll_learner(conn, class_id, user_id)
+
+                        await self._invitation_repo.mark_accepted(conn, inv["invitation_id"], user_id)
+                        await self._audit_repo.insert(
+                            conn, actor_user_id=user_id, org_id=org_id,
+                            action=audit_log.INVITATION_ACCEPTED, target_type="invitation",
+                            target_id=inv["invitation_id"], details={"accepted_by": user_id, "role": role_str},
+                        )
+                        return {"org_id": org_id, "role": role_str, "membership_id": membership.membership_id}
+
+            return await _await_background(_op())
+        else:
+            target_inv = None
+            target_path = None
+            for p in self.invitations_dir.glob("*.json"):
+                try:
+                    with p.open("r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        if data.get("token_hash") == token_hash:
+                            target_inv = data
+                            target_path = p
+                            break
+                except Exception:
+                    continue
+
+            if not target_inv:
+                raise AuthorizationError("Invalid or expired invitation token.")
+            if target_inv.get("accepted_at"):
+                raise AuthorizationError("Invitation has already been accepted.")
+            exp = datetime.fromisoformat(target_inv["expires_at"].replace("Z", "+00:00"))
+            if now > exp:
+                raise AuthorizationError("Invitation has expired.")
+            if user_email.strip().lower() != target_inv["email"].strip().lower():
+                raise AuthorizationError("This invitation was issued to a different email address.")
+
+            org_id = target_inv["org_id"]
+            role_str = target_inv["role"]
+            role = UserRole(role_str)
+            class_id = target_inv.get("class_id")
+
+            membership = self.add_membership(org_id, user_id, role)
+            if class_id:
+                if role == UserRole.TEACHER:
+                    c = self.get_class(class_id)
+                    if c and user_id not in c.teacher_ids:
+                        tids = list(c.teacher_ids) + [user_id]
+                        self._sync_class_to_teacher_storage(class_id, tids)
+                elif role == UserRole.LEARNER:
+                    self.enroll_learner(class_id, user_id)
+
+            target_inv["accepted_at"] = now.isoformat()
+            target_inv["accepted_by"] = user_id
+            _atomic_write_json(target_path, target_inv, self.base_dir)
+            self._json_audit(
+                actor_user_id=user_id, org_id=org_id,
+                action=audit_log.INVITATION_ACCEPTED, target_type="invitation",
+                target_id=target_inv["invitation_id"], details={"accepted_by": user_id, "role": role_str},
+            )
+            return {"org_id": org_id, "role": role_str, "membership_id": membership.membership_id}
+
 
 
 # Detail keys that never hold another person's identifier. Everything else
@@ -1551,3 +1839,5 @@ def _export_audit_event(event: Dict[str, Any], user_id: str) -> Dict[str, Any]:
         "details": safe_details,
         "redacted": redacted,
     }
+
+

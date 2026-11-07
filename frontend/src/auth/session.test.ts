@@ -23,6 +23,10 @@ function makeClient(initialSession: Session | null = null) {
     getSession: vi.fn().mockResolvedValue({ data: { session: initialSession }, error: null }),
     signInWithPassword: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
+    signUp: vi.fn().mockResolvedValue({ data: { session: null, user: null }, error: null }),
+    resetPasswordForEmail: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    updateUser: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    resend: vi.fn().mockResolvedValue({ data: {}, error: null }),
   }
   const client = { auth } as unknown as ConstructorParameters<typeof AuthSessionStore>[0]
   return {
@@ -120,5 +124,41 @@ describe('AuthSessionStore', () => {
       operation: 'idle',
       error: 'Sign-out failed. Your session status could not be confirmed; please try again.',
     })
+  })
+
+  it('handles registration establishing direct session', async () => {
+    const fake = makeClient()
+    const session = makeSession('new@example.test')
+    fake.auth.signUp.mockResolvedValue({ data: { session, user: session.user }, error: null })
+    const store = new AuthSessionStore(fake.client)
+
+    const res = await store.signUp('new@example.test', 'ValidPassword123!')
+    expect(res).toEqual({ success: true, needsConfirmation: false })
+    expect(store.getSnapshot().session).toBe(session)
+  })
+
+  it('handles registration requiring email confirmation', async () => {
+    const fake = makeClient()
+    fake.auth.signUp.mockResolvedValue({ data: { session: null, user: { id: 'u1', email: 'unconf@example.test' } }, error: null })
+    const store = new AuthSessionStore(fake.client)
+
+    const res = await store.signUp('unconf@example.test', 'ValidPassword123!')
+    expect(res).toEqual({ success: true, needsConfirmation: true })
+    expect(store.getSnapshot().needsEmailConfirmation).toBe(true)
+    expect(store.getSnapshot().confirmationEmail).toBe('unconf@example.test')
+  })
+
+  it('handles password recovery request and update', async () => {
+    const fake = makeClient()
+    const store = new AuthSessionStore(fake.client)
+
+    await expect(store.resetPasswordForEmail('learner@example.test')).resolves.toBe(true)
+    expect(fake.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+      'learner@example.test',
+      expect.objectContaining({ redirectTo: expect.stringContaining('#type=recovery') })
+    )
+
+    await expect(store.updatePassword('NewPassword123!')).resolves.toBe(true)
+    expect(fake.auth.updateUser).toHaveBeenCalledWith({ password: 'NewPassword123!' })
   })
 })
