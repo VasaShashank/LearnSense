@@ -46,6 +46,88 @@ class DurableIdempotencyTracker:
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_idempotency_expires ON idempotency_records(expires_at)"
             )
+            # Keep the legacy table and its records intact. Its token-only key
+            # cannot safely represent an owner/resource/operation scope.
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS scoped_idempotency_records (
+                    owner_id TEXT NOT NULL,
+                    resource_id TEXT NOT NULL,
+                    operation TEXT NOT NULL,
+                    request_id TEXT NOT NULL,
+                    response_json TEXT,
+                    created_at REAL NOT NULL,
+                    expires_at REAL NOT NULL,
+                    PRIMARY KEY (owner_id, resource_id, operation, request_id)
+                )
+                """
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_scoped_idempotency_expires "
+                "ON scoped_idempotency_records(expires_at)"
+            )
+            conn.commit()
+
+    @staticmethod
+    def _validate_scope(owner_id: str, resource_id: str, operation: str, request_id: str) -> None:
+        if not all(isinstance(value, str) and value for value in (owner_id, resource_id, operation, request_id)):
+            raise ValueError("Idempotency scope requires non-empty owner, resource, operation, and request IDs.")
+
+    def is_scoped_duplicate(
+        self, request_id: str, *, owner_id: str, resource_id: str, operation: str
+    ) -> bool:
+        self._validate_scope(owner_id, resource_id, operation, request_id)
+        self._cleanup()
+        with self._get_connection() as conn:
+            row = conn.execute(
+                """SELECT 1 FROM scoped_idempotency_records
+                   WHERE owner_id = ? AND resource_id = ? AND operation = ?
+                     AND request_id = ? AND expires_at > ?""",
+                (owner_id, resource_id, operation, request_id, time.time()),
+            ).fetchone()
+            return row is not None
+
+    def get_scoped_cached_response(
+        self, request_id: str, *, owner_id: str, resource_id: str, operation: str
+    ) -> Optional[Dict[str, Any]]:
+        self._validate_scope(owner_id, resource_id, operation, request_id)
+        with self._get_connection() as conn:
+            row = conn.execute(
+                """SELECT response_json FROM scoped_idempotency_records
+                   WHERE owner_id = ? AND resource_id = ? AND operation = ?
+                     AND request_id = ? AND expires_at > ?""",
+                (owner_id, resource_id, operation, request_id, time.time()),
+            ).fetchone()
+            if row and row[0]:
+                try:
+                    return json.loads(row[0])
+                except json.JSONDecodeError:
+                    return None
+            return None
+
+    def mark_scoped_processed(
+        self,
+        request_id: str,
+        *,
+        owner_id: str,
+        resource_id: str,
+        operation: str,
+        response_payload: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self._validate_scope(owner_id, resource_id, operation, request_id)
+        now = time.time()
+        with self._get_connection() as conn:
+            conn.execute(
+                """INSERT INTO scoped_idempotency_records
+                   (owner_id, resource_id, operation, request_id, response_json, created_at, expires_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(owner_id, resource_id, operation, request_id) DO UPDATE SET
+                     response_json = excluded.response_json,
+                     expires_at = excluded.expires_at""",
+                (owner_id, resource_id, operation, request_id,
+                 json.dumps(response_payload) if response_payload is not None else None,
+                 now, now + self.ttl_seconds),
+            )
             conn.commit()
 
     def is_duplicate(self, token: str) -> bool:
@@ -99,4 +181,5 @@ class DurableIdempotencyTracker:
         now = time.time()
         with self._get_connection() as conn:
             conn.execute("DELETE FROM idempotency_records WHERE expires_at <= ?", (now,))
+            conn.execute("DELETE FROM scoped_idempotency_records WHERE expires_at <= ?", (now,))
             conn.commit()

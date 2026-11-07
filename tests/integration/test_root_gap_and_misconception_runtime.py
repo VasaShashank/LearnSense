@@ -22,12 +22,13 @@ def client():
 class TestRootGapRuntimeIntegration:
     """Verifies that RootGapDiagnoser is directly wired into the API and LearnerService."""
 
-    def test_diagnose_root_gap_endpoint(self, client, ingested_calculus):
+    def test_diagnose_root_gap_endpoint(self, client, ingested_calculus, api_auth):
         sid = ingested_calculus.document_id
         target_concept = ingested_calculus.concept_ids[-1]
+        learner_id = api_auth.learner("test_rg_learner", sid)
 
         res = client.post(
-            f"/api/learners/test_rg_learner/diagnose-root-gap",
+            f"/api/learners/{learner_id}/diagnose-root-gap",
             json={
                 "subject_id": sid,
                 "target_concept_id": target_concept,
@@ -597,12 +598,13 @@ class TestQuestionBankAuthoritativeReuse:
 class TestTutorFailClosedGrounding:
     """Verifies Tutor failure modes: unknown concepts, no evidence, citation validation."""
 
-    def test_unknown_concept_raises_404(self, client, ingested_calculus):
+    def test_unknown_concept_raises_404(self, client, ingested_calculus, api_auth):
         sid = ingested_calculus.document_id
+        learner_id = api_auth.learner("test_tutor_user", sid)
         res = client.post(
             "/api/tutor/interact",
             json={
-                "learner_id": "test_tutor_user",
+                "learner_id": learner_id,
                 "subject_id": sid,
                 "concept_id": "c_completely_nonexistent_xyz",
                 "intent": "EXPLAIN",

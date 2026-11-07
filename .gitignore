@@ -30,5 +30,10 @@ recheck_topics.py
 storage/classes/
 storage/interventions/
 storage/institutions/
-tests/tmp_knowledge/
 storage/curriculum/
+storage/document_owners/
+tests/tmp_knowledge/
+# Local deployment secrets (templates end in .example and are committed)
+deploy/env/*.env
+deploy/env/*.txt
+backups/

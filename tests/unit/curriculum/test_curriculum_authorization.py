@@ -93,7 +93,10 @@ class TestCurriculumAuthorization:
         assert "Learner 'student_alex' is not authorized" in res.json()["detail"]
 
         # Confirm persistent data was NOT modified
-        concept_res = client.get(f"/api/curriculum/concepts/{concept_id}")
+        concept_res = client.get(
+            f"/api/curriculum/concepts/{concept_id}",
+            headers={"Authorization": "Bearer valid_auth_token"},
+        )
         assert concept_res.status_code == 200
         assert concept_res.json()["name"] == "Kinematics 1D"
 
@@ -141,6 +144,7 @@ class TestCurriculumAuthorization:
     def test_authorized_teacher_metadata_update_succeeds(self, auth_test_env):
         _, concept_id = auth_test_env
         client = TestClient(app)
+        client.headers["Authorization"] = "Bearer valid_faculty_jwt"
         res = client.put(
             f"/api/curriculum/concepts/{concept_id}",
             json={
@@ -163,6 +167,7 @@ class TestCurriculumAuthorization:
     def test_authorized_admin_publishing_and_rollback_with_pre_archival(self, auth_test_env):
         _, concept_id = auth_test_env
         client = TestClient(app)
+        client.headers["Authorization"] = "Bearer valid_admin_token"
 
         # 1. Admin publishes initial version
         pub_res = client.post(

@@ -66,8 +66,8 @@ class SemanticTopicExtractor:
                             src = concept_map.get(p_key, p_key).lower()
                             rules.append((src, tgt))
                     return rules
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Spec prerequisite rule load skipped: %s", exc)
         return []
 
     def _get_adapter(self) -> Any:

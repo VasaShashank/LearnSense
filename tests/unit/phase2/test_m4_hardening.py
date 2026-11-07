@@ -75,7 +75,7 @@ def test_metamorphic_block_renaming():
     assert names1 == names2
 
 
-def test_storage_and_id_map_migration():
+def test_storage_and_id_map_migration(tmp_path):
     with open("tests/fixtures/phase2/textbook.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -83,7 +83,8 @@ def test_storage_and_id_map_migration():
     runner = Phase2PipelineRunner()
     ekr = runner.process(doc)
 
-    storage = KnowledgeStorageManager("tests/tmp_knowledge")
+    # Write under tmp_path: tests/tmp_knowledge holds tracked files.
+    storage = KnowledgeStorageManager(str(tmp_path / "knowledge"))
     saved_dir = storage.store_knowledge_representation(ekr)
     assert saved_dir is not None
 

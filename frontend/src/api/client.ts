@@ -3,6 +3,8 @@
  * Connects frontend views to backend facade endpoints (/api/...) with robust error handling and fallback mock generation if server is offline.
  */
 
+import { getCurrentAccessToken } from '../auth/supabase'
+
 export interface Subject {
   id: string;
   title: string;
@@ -381,12 +383,17 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
+    const headers = new Headers(options?.headers);
+    if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    // Only a Supabase session can provide identity. Drop stale or caller-provided
+    // bearer headers when no current session exists; persona IDs are never credentials.
+    headers.delete('Authorization');
+    const accessToken = await getCurrentAccessToken();
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+
     const res = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {}),
-      },
+      headers,
       signal: controller.signal,
     });
 
@@ -992,6 +999,50 @@ export const ApiClient = {
       return { ok: false, error: error instanceof ApiError ? error : new ApiError(String(error)) };
     }
   },
+
+  /**
+   * Fetch current verified user identity and memberships.
+   */
+  getCurrentUser: (): Promise<{
+    user_id: string;
+    email: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
+    account_status: string;
+    memberships: Array<{
+      membership_id: string;
+      org_id: string;
+      org_name: string;
+      role: 'ADMIN' | 'TEACHER' | 'LEARNER';
+      is_active: boolean;
+    }>;
+  }> =>
+    fetchJson('/me'),
+
+  updateProfile: (data: { display_name?: string; avatar_url?: string }): Promise<any> =>
+    fetchJson('/me', { method: 'PATCH', body: JSON.stringify(data) }),
+
+  deactivateAccount: (): Promise<{ status: string; user_id: string }> =>
+    fetchJson('/me/deactivate', { method: 'POST' }),
+
+  acceptInvitation: (token: string): Promise<any> =>
+    fetchJson(`/institutions/invitations/${encodeURIComponent(token)}/accept`, { method: 'POST' }),
+
+  updateRole: (role: string, orgName?: string): Promise<any> =>
+    fetchJson('/me/role', { method: 'PATCH', body: JSON.stringify({ role, org_name: orgName }) }),
+
+  /**
+   * Provision the verified Supabase identity as its own learner, idempotently.
+   * The server derives identity from the bearer token and accepts no learner ID.
+   */
+  initializeCurrentLearner: (): Promise<{
+    learner_id: string;
+    status: string;
+    created: boolean;
+    entry_state: EntryStateName;
+    subject_id: string | null;
+  }> =>
+    fetchJson('/learners/me/initialize', { method: 'POST' }),
 
   /**
    * Resume learner state after browser refresh.

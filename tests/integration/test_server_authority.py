@@ -56,8 +56,33 @@ def subject_with_bank(services, ingested_calculus):
     return sid, bank
 
 
+_AUTH = None
+_DOC = None
+
+
+@pytest.fixture(autouse=True)
+def _authenticated_as_test_learners(api_auth, ingested_calculus):
+    """Requests carry a verified identity (tests/support/api_auth.py). Each learner
+    created by ``_unique`` is logged in and may read the fixture document."""
+    global _AUTH, _DOC
+    _AUTH, _DOC = api_auth, ingested_calculus.document_id
+    yield
+    _AUTH = None
+
+
 def _unique(prefix):
-    return f"{prefix}_{int(time.time() * 1000)}"
+    """A fresh canonical learner, authenticated for the following requests."""
+    return _AUTH.learner(f"{prefix}_{time.time_ns()}", _DOC)
+
+
+def _request_id(prefix):
+    """A unique idempotency key (not an identity)."""
+    return f"{prefix}_{time.time_ns()}"
+
+
+def _attacker():
+    """Authenticate as a different, legitimate learner (the attacker) and return its ID."""
+    return _AUTH.learner(f"attacker_{time.time_ns()}", _DOC)
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +113,7 @@ class TestClientCorrectnessBypassIsClosed:
                 "concept_ids": [concept_id],
                 "question_id": question.question_id,
                 "selected_option": question.correct_answer,
-                "request_id": _unique("req_ok"),
+                "request_id": _request_id("req_ok"),
             },
         )
         assert resp.status_code == 200, resp.text
@@ -314,9 +339,9 @@ class TestDiagnosticOwnership:
         _, session_id = self._session(services, ingested_calculus, "foreign")
         resp = client.post(
             "/api/initialization/diagnostic/start",
-            json={"session_id": session_id, "learner_id": "attacker_learner"},
+            json={"session_id": session_id, "learner_id": _attacker()},
         )
-        assert resp.status_code in (400, 403), (
+        assert resp.status_code in (400, 403, 404), (
             f"SECURITY VIOLATION: foreign learner started a diagnostic: {resp.text}"
         )
 
@@ -328,10 +353,10 @@ class TestDiagnosticOwnership:
             json={
                 "session_id": session_id,
                 "responses": {},
-                "learner_id": "attacker_learner",
+                "learner_id": _attacker(),
             },
         )
-        assert resp.status_code in (400, 403), (
+        assert resp.status_code in (400, 403, 404), (
             f"SECURITY VIOLATION: foreign learner submitted a diagnostic: {resp.text}"
         )
 
@@ -396,10 +421,12 @@ class TestFinalAssessmentStatusOverHttp:
         assert resp.json()["assessment_id"] == assessment_id
 
     def test_b_missing_learner_identity_is_rejected(self, client, services, ingested_calculus):
-        """B. No learner_id -> 422 (required query param). Pre-fix this was 200."""
+        """B. Identity now comes only from the bearer token: without one the status is
+        unreadable (401). (The original pre-auth bug: an omitted learner_id was 200.)"""
         _, assessment_id = self._completed(services, ingested_calculus, "missing")
+        _AUTH.logout()
         resp = client.get(f"/api/assessment/final/status/{assessment_id}")
-        assert resp.status_code in (400, 422), (
+        assert resp.status_code == 401, (
             f"SECURITY VIOLATION: status readable without identity: {resp.status_code}"
         )
 
@@ -407,7 +434,7 @@ class TestFinalAssessmentStatusOverHttp:
         """C. A different learner is refused."""
         _, assessment_id = self._completed(services, ingested_calculus, "foreign")
         resp = client.get(f"/api/assessment/final/status/{assessment_id}",
-                          params={"learner_id": "attacker_learner"})
+                          params={"learner_id": _attacker()})
         assert resp.status_code in (400, 403, 404), (
             f"SECURITY VIOLATION: foreign learner read status: {resp.text}"
         )

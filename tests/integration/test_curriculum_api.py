@@ -122,8 +122,10 @@ def repo(tmp_path):
 def client(repo):
     """The real app; every request builds a fresh service over the tmp repo."""
     app.dependency_overrides[get_service] = lambda: CurriculumService(repository=repo)
+    c = TestClient(app)
+    c.headers.update({"Authorization": "Bearer valid_test_teacher_jwt"})
     try:
-        yield TestClient(app)
+        yield c
     finally:
         app.dependency_overrides.pop(get_service, None)
 

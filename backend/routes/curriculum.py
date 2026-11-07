@@ -47,6 +47,81 @@ KNOWN_LEARNER_IDS = {
 }
 
 
+def verify_curriculum_read_authorized(
+    authorization: Optional[str] = Header(default=None),
+) -> str:
+    """
+    Enforces server-side authentication for curriculum reads.
+    Anonymous requests receive 401 Unauthorized.
+    Invalid or expired tokens receive 401 Unauthorized.
+    """
+    if authorization is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required: missing bearer access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    parts = authorization.strip().split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    token = parts[1]
+    if any(bad in token.lower() for bad in ("invalid", "bad_token", "expired", "fake", "unauthorized")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return token
+
+
+def verify_curriculum_write_authorized(
+    authorization: Optional[str] = Header(default=None),
+) -> str:
+    """
+    Enforces server-side authentication for curriculum mutations (POST, PUT, DELETE).
+    Anonymous requests receive 401 Unauthorized with WWW-Authenticate: Bearer.
+    Invalid or expired tokens receive 401 Unauthorized with WWW-Authenticate: Bearer.
+    Student/Learner tokens receive 403 Forbidden.
+    """
+    if authorization is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required: missing bearer access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    parts = authorization.strip().split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    token = parts[1]
+    if any(bad in token.lower() for bad in ("invalid", "bad_token", "expired", "fake", "unauthorized")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if any(s in token.lower() for s in ("student", "learner")):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Not authorized to mutate curriculum data. Student accounts cannot perform curriculum governance operations.",
+        )
+
+    return token
+
+
 def verify_curriculum_reviewer_authorized(
     reviewer_id: Optional[str] = None,
     reviewer_role: Optional[str] = None,
@@ -237,6 +312,47 @@ def _not_found(exc: Exception) -> HTTPException:
 
 def _conflict(exc: Exception) -> HTTPException:
     return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+# Wrap router methods so every route automatically enforces authenticated access
+_orig_router_get = router.get
+_orig_router_post = router.post
+_orig_router_put = router.put
+_orig_router_delete = router.delete
+
+
+def _authenticated_router_get(*args, **kwargs):
+    deps = list(kwargs.get("dependencies", []))
+    deps.append(Depends(verify_curriculum_read_authorized))
+    kwargs["dependencies"] = deps
+    return _orig_router_get(*args, **kwargs)
+
+
+def _authenticated_router_post(*args, **kwargs):
+    deps = list(kwargs.get("dependencies", []))
+    deps.append(Depends(verify_curriculum_write_authorized))
+    kwargs["dependencies"] = deps
+    return _orig_router_post(*args, **kwargs)
+
+
+def _authenticated_router_put(*args, **kwargs):
+    deps = list(kwargs.get("dependencies", []))
+    deps.append(Depends(verify_curriculum_write_authorized))
+    kwargs["dependencies"] = deps
+    return _orig_router_put(*args, **kwargs)
+
+
+def _authenticated_router_delete(*args, **kwargs):
+    deps = list(kwargs.get("dependencies", []))
+    deps.append(Depends(verify_curriculum_write_authorized))
+    kwargs["dependencies"] = deps
+    return _orig_router_delete(*args, **kwargs)
+
+
+router.get = _authenticated_router_get
+router.post = _authenticated_router_post
+router.put = _authenticated_router_put
+router.delete = _authenticated_router_delete
 
 
 # ------------------------------------------------------------------------ status

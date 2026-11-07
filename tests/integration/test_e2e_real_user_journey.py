@@ -119,13 +119,13 @@ def create_sample_learning_context(subject_id: str) -> LearningContext:
     return remapped
 
 
-def test_e2e_new_learner_complete_journey(purge_subject):
+def test_e2e_new_learner_complete_journey(purge_subject, api_auth):
     """
     Tests the full user flow for a new student:
     Self-Assessment -> Diagnostic -> Initial KT -> Gaps -> Path -> Activity -> State & Atlas Sync.
     """
     subject_id = purge_subject("subj_calculus_e2e")
-    learner_id = "learner_new_101"
+    learner_id = api_auth.learner("learner_new_101", subject_id)
     create_sample_learning_context(subject_id)
 
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
@@ -216,7 +216,7 @@ def test_e2e_new_learner_complete_journey(purge_subject):
     assert c_limits_node["mastery"] == act_data["updated_masteries"]["c_limits"]
 
 
-def test_e2e_zero_knowledge_learner(purge_subject):
+def test_e2e_zero_knowledge_learner(purge_subject, api_auth):
     """
     Tests edge case where learner selects DONT_KNOW for all concepts:
     - Diagnostic is NOT run
@@ -226,7 +226,7 @@ def test_e2e_zero_knowledge_learner(purge_subject):
     - Path generated normally
     """
     subject_id = purge_subject("subj_calculus_e2e")
-    learner_id = "learner_zero_202"
+    learner_id = api_auth.learner("learner_zero_202", subject_id)
     create_sample_learning_context(subject_id)
 
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
@@ -270,7 +270,7 @@ def test_e2e_zero_knowledge_learner(purge_subject):
     assert next_target["concept_id"] == "c_limits"  # Foundational root node in graph
 
 
-def test_e2e_returning_learner(purge_subject):
+def test_e2e_returning_learner(purge_subject, api_auth):
     """
     Tests returning learner session restoration from disk storage:
     - Existing state reloaded
@@ -278,7 +278,7 @@ def test_e2e_returning_learner(purge_subject):
     - Progress preserved
     """
     subject_id = purge_subject("subj_calculus_e2e")
-    learner_id = "learner_returning_303"
+    learner_id = api_auth.learner("learner_returning_303", subject_id)
     create_sample_learning_context(subject_id)
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
 
@@ -315,14 +315,14 @@ def test_e2e_returning_learner(purge_subject):
     assert len(path_data["learning_path"]["nodes"]) > 0
 
 
-def test_e2e_mixed_knowledge_learner(purge_subject):
+def test_e2e_mixed_knowledge_learner(purge_subject, api_auth):
     """
     Tests learner with mixed mastery levels:
     - Strong concepts are not repeated
     - Weak prerequisites are prioritized
     """
     subject_id = purge_subject("subj_calculus_e2e")
-    learner_id = "learner_mixed_404"
+    learner_id = api_auth.learner("learner_mixed_404", subject_id)
     create_sample_learning_context(subject_id)
     all_concepts = ["c_limits", "c_derivatives", "c_chain_rule", "c_integrals"]
 

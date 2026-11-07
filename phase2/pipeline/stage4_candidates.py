@@ -698,6 +698,8 @@ def extract_candidates(
         unit = unit_by_block.get(blk_id)
         unit_id = unit.unit_id if unit else None
 
+        words: List[str] = []
+
         # 1. Harvest Acronyms
         for match in acronym_pattern.finditer(text):
             full_term, acr = match.group(1).strip(), match.group(2).strip()
@@ -822,7 +824,7 @@ def extract_candidates(
             line_standalone.add(s.lower())
         harvested_def_terms = {d["term"].lower() for d in res.harvested_definitions}
         # 1. Title-cased academic phrases (horizontal whitespace only, no crossing lines)
-        words: List[str] = list(re.findall(r"\b[A-Z][A-Za-z0-9]*(?:'[a-z]+)?(?:[^\S\r\n]+(?:of|in|and|the|for)[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?|[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?){1,4}\b", text))
+        words.extend(re.findall(r"\b[A-Z][A-Za-z0-9]*(?:'[a-z]+)?(?:[^\S\r\n]+(?:of|in|and|the|for)[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?|[^\S\r\n]+[A-Z][A-Za-z0-9]*(?:'[a-z]+)?){1,4}\b", text))
         # 2. Multi-word all-caps headings as complete phrases (e.g. "ANGLE OF REPOSE", "LAWS OF MOTION")
         words.extend(re.findall(r"\b[A-Z]{2,}(?:[^\S\r\n]+[A-Z]{2,})+\b", text))
         # 3. Valid acronyms and uppercase tokens

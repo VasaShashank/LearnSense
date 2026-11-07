@@ -190,6 +190,7 @@ _LEADING_TRIM_WORDS: Set[str] = {
 
 # Academic concept canonical alias map (for Laws of Motion & Classical Mechanics)
 _KNOWN_ACADEMIC_ALIASES: Dict[str, str] = {
+    "ai": "Artificial Intelligence",
     "first law": "Newton's First Law",
     "newtons first law": "Newton's First Law",
     "newton's first law of motion": "Newton's First Law",
@@ -276,7 +277,7 @@ _SUBSTANTIVE_HEAD_NOUNS: Set[str] = {
     "diagram", "diagrams", "number", "numbers", "motion", "friction", "force", "forces", "acceleration", "velocity", "moment", "bonding", "parts", "reaction", "mass", "inertia", "inertias",
     "momentum", "energy", "work", "power", "torque",
     "repose", "theorem", "principle", "principles", "method", "methods",
-    "system", "systems", "constant", "coefficient", "coefficients", "property",
+    "system", "systems", "constant", "coefficient", "intelligence", "coefficients", "property",
     "properties", "equilibrium", "density", "pressure", "temperature", "volume",
     "charge", "current", "field", "potential", "resistance", "capacitance",
     "inductance", "flux", "frequency", "wavelength", "amplitude", "oscillation",

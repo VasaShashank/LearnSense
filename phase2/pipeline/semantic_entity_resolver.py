@@ -12,9 +12,12 @@ Implements the multi-stage resolution pipeline specified in Section 15 of TAPROO
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import uuid
+
+logger = logging.getLogger(__name__)
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from phase2.models import (
@@ -295,8 +298,8 @@ class SemanticEntityResolver:
                                 aliases.add(a.strip().lower())
                         self.domain_equivalences.append((c_name, aliases))
                     break
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Spec load skipped: %s", exc)
 
     @staticmethod
     def normalize_surface_key(text: str) -> str:

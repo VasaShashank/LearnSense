@@ -1,16 +1,29 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { fileURLToPath } from 'node:url'
+import { defineConfig, loadEnv } from 'vite'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
+const projectRoot = fileURLToPath(new URL('..', import.meta.url))
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, projectRoot, '')
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 5173,
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8000',
+          changeOrigin: true,
+        },
       },
     },
-  },
+    // Expose only the existing public Supabase browser configuration. Never expose
+    // DATABASE_URL, service-role keys, or other server-side settings to the browser.
+    define: {
+      'import.meta.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL || ''),
+      'import.meta.env.SUPABASE_PUBLISHABLE_KEY': JSON.stringify(env.SUPABASE_PUBLISHABLE_KEY || ''),
+      'import.meta.env.SUPABASE_ANON_KEY': JSON.stringify(env.SUPABASE_ANON_KEY || ''),
+    },
+  }
 })

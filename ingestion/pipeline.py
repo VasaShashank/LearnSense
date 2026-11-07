@@ -6,6 +6,7 @@ Matches Section 10 of TAPROOT_PHASE_1_MASTER_IMPLEMENTATION_PLAN.md.
 """
 
 from typing import Dict, Any, List, Optional
+import hashlib
 import fitz  # PyMuPDF
 from ingestion.inspector import PageInspector
 from ingestion.pass_b import PassBAggregator
@@ -23,6 +24,7 @@ from schemas.document import (
 )
 from security.sandbox import SecuritySandbox
 from storage.db import DatabaseManager
+from storage.document_ownership import DocumentOwnershipRepository
 from storage.store import DocumentStorage
 
 
@@ -45,15 +47,23 @@ class IngestionPipeline:
         self.sandbox = sandbox or SecuritySandbox()
         self.pass_b_aggregator = pass_b_aggregator or PassBAggregator()
 
+    @staticmethod
+    def owner_scoped_cache_key(owner_id: str, sha256: str) -> str:
+        return hashlib.sha256(f"{owner_id}:{sha256}".encode("utf-8")).hexdigest()
+
     def process_pdf_bytes(
         self,
         pdf_bytes: bytes,
         filename: str,
         document_id: Optional[str] = None,
+        owner_id: Optional[str] = None,
     ) -> StructuredDocument:
         size_bytes = len(pdf_bytes)
         sha256 = DocumentStorage.compute_sha256(pdf_bytes)
         doc_id = document_id or f"doc_{sha256[:12]}"
+        if owner_id is None:
+            owner_id = DocumentOwnershipRepository().get_owner(doc_id)
+        cache_key = self.owner_scoped_cache_key(owner_id, sha256) if owner_id else sha256
 
         # 1. Store Original File & Initialize Job
         pdf_path = self.storage.save_original_pdf(doc_id, pdf_bytes)
@@ -62,7 +72,8 @@ class IngestionPipeline:
             sha256=sha256,
             filename=filename,
             size_bytes=size_bytes,
-            cache_key=sha256,
+            owner_id=owner_id,
+            cache_key=cache_key,
             status="validating",
         )
 

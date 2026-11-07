@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from enum import Enum
 import hashlib
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Literal
 from pydantic import BaseModel, Field
 
 
@@ -56,6 +56,9 @@ class ConceptState(BaseModel):
 
 class LearnerState(BaseModel):
     learner_id: str
+    # Set only by the authenticated learner provisioning path. Older persona and
+    # pre-authentication records remain unmarked and cannot be claimed implicitly.
+    identity_provider: Optional[Literal["supabase"]] = None
     concept_states: Dict[str, ConceptState] = Field(default_factory=dict)
     misconceptions: Dict[str, MisconceptionRecord] = Field(default_factory=dict)
     topic_scores: Dict[str, float] = Field(default_factory=dict)
