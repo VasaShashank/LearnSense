@@ -9,6 +9,13 @@ interface AuthGateProps {
 
 type GateMode = 'sign-in' | 'sign-up' | 'forgot-password' | 'verification-notice' | 'update-password'
 
+const DEMO_EMAILS = [
+  'alex.rivera@apex.edu',
+  'e.vance@apex.edu',
+  'sarah.lin@open-ed.org',
+  'm.sterling@apex.edu',
+]
+
 export function AuthGate({ auth, configured }: AuthGateProps) {
   const [mode, setMode] = useState<GateMode>(() => (auth.isPasswordRecovery ? 'update-password' : 'sign-in'))
   const [email, setEmail] = useState('')
@@ -19,6 +26,27 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null)
 
   const isBusy = auth.operation !== 'idle'
+
+  const handleDemoPersonaLogin = async (demoEmail: string, role: string, subrole?: string) => {
+    setEmail(demoEmail)
+    setPassword('TestUser123!')
+    localStorage.setItem('learnsense_initial_role', role)
+    if (subrole) {
+      localStorage.setItem('learnsense_initial_subrole', subrole)
+    }
+    setValidationError(null)
+    setNoticeMessage(null)
+    authSessionStore.clearError()
+
+    const signedIn = await authSessionStore.signIn(demoEmail, 'TestUser123!')
+    if (!signedIn) {
+      authSessionStore.clearError()
+      const supRes = await authSessionStore.signUp(demoEmail, 'TestUser123!')
+      if (supRes.success) {
+        await authSessionStore.signIn(demoEmail, 'TestUser123!')
+      }
+    }
+  }
 
   // If already authenticated and not in password recovery, session is handled by parent/entry
   if (auth.session && !auth.isPasswordRecovery) {
@@ -343,7 +371,14 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
                 }
               }
             } else {
-              void authSessionStore.signIn(email, password)
+              const signedIn = await authSessionStore.signIn(email, password)
+              if (!signedIn && DEMO_EMAILS.includes(email.trim().toLowerCase())) {
+                authSessionStore.clearError()
+                const supRes = await authSessionStore.signUp(email, password)
+                if (supRes.success) {
+                  await authSessionStore.signIn(email, password)
+                }
+              }
             }
           }}
         >
@@ -503,17 +538,14 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
           <div className="pt-3 border-t border-white/[0.08] space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold text-universe-slate uppercase tracking-wider">
               <span>Demo Personas &amp; Quick Test</span>
-              <span className="text-[10px] text-cyan-400 normal-case font-mono">1-click autofill</span>
+              <span className="text-[10px] text-cyan-400 normal-case font-mono">1-click login</span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-left">
               <button
                 type="button"
-                onClick={() => {
-                  setEmail('alex.rivera@apex.edu')
-                  setPassword('TestUser123!')
-                  localStorage.setItem('learnsense_initial_role', 'LEARNER')
-                }}
-                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group"
+                disabled={isBusy}
+                onClick={() => void handleDemoPersonaLogin('alex.rivera@apex.edu', 'LEARNER')}
+                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group disabled:opacity-50"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">👨‍🎓</span>
@@ -526,12 +558,9 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  setEmail('e.vance@apex.edu')
-                  setPassword('TestUser123!')
-                  localStorage.setItem('learnsense_initial_role', 'TEACHER')
-                }}
-                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group"
+                disabled={isBusy}
+                onClick={() => void handleDemoPersonaLogin('e.vance@apex.edu', 'TEACHER')}
+                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group disabled:opacity-50"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">👩‍🏫</span>
@@ -544,12 +573,9 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  setEmail('sarah.lin@open-ed.org')
-                  setPassword('TestUser123!')
-                  localStorage.setItem('learnsense_initial_role', 'TEACHER')
-                }}
-                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group"
+                disabled={isBusy}
+                onClick={() => void handleDemoPersonaLogin('sarah.lin@open-ed.org', 'TEACHER', 'INDEPENDENT_TEACHER')}
+                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group disabled:opacity-50"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🧑‍🏫</span>
@@ -562,12 +588,9 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  setEmail('m.sterling@apex.edu')
-                  setPassword('TestUser123!')
-                  localStorage.setItem('learnsense_initial_role', 'ADMIN')
-                }}
-                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group"
+                disabled={isBusy}
+                onClick={() => void handleDemoPersonaLogin('m.sterling@apex.edu', 'ADMIN')}
+                className="p-2.5 rounded-xl border border-white/[0.08] bg-space-950/60 hover:border-cyan-400/40 hover:bg-space-800 transition-all text-left group disabled:opacity-50"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🏛️</span>

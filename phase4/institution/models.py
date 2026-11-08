@@ -3,8 +3,8 @@ Institutional and B2B Organization Models (§11).
 """
 
 from enum import Enum
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from typing import Any, List, Optional
+from pydantic import BaseModel, Field, field_validator
 
 
 class UserRole(str, Enum):
@@ -28,6 +28,15 @@ class OrgMembership(BaseModel):
     user_id: str
     role: UserRole = UserRole.LEARNER
     is_active: bool = True
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def normalize_role(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_upper = v.strip().upper()
+            if v_upper in UserRole.__members__:
+                return UserRole(v_upper)
+        return v
 
 
 class CourseClass(BaseModel):

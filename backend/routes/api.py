@@ -156,6 +156,34 @@ async def initialize_current_learner(user: AuthenticatedUser = Depends(get_curre
     return await run_in_threadpool(_provision)
 
 
+DEMO_PERSONAS: Dict[str, Dict[str, Any]] = {
+    "alex.rivera@apex.edu": {
+        "display_name": "Alex Rivera",
+        "role": UserRole.LEARNER,
+        "org_name": "Apex Institute of Science & Technology",
+        "org_domain": "apex.edu",
+    },
+    "e.vance@apex.edu": {
+        "display_name": "Prof. Eleanor Vance",
+        "role": UserRole.TEACHER,
+        "org_name": "Apex Institute of Science & Technology",
+        "org_domain": "apex.edu",
+    },
+    "sarah.lin@open-ed.org": {
+        "display_name": "Dr. Sarah Lin",
+        "role": UserRole.TEACHER,
+        "org_name": "Open Academic Community",
+        "org_domain": "open-ed.org",
+    },
+    "m.sterling@apex.edu": {
+        "display_name": "Dr. Marcus Sterling",
+        "role": UserRole.ADMIN,
+        "org_name": "Apex Institute of Science & Technology",
+        "org_domain": "apex.edu",
+    },
+}
+
+
 @router.get("/me", response_model=schemas.CurrentUserResponse, response_model_exclude_none=True, responses=AUTH_ERRORS)
 async def get_me(user: AuthenticatedUser = Depends(get_current_user)):
     """The verified caller and their ACTIVE organization memberships.
@@ -164,8 +192,29 @@ async def get_me(user: AuthenticatedUser = Depends(get_current_user)):
     idempotently (and last_seen refreshed) as a side effect.
     """
     user_id = _authenticated_learner_id(user)
+    email_clean = (user.email or "").strip().lower()
+    demo_cfg = DEMO_PERSONAS.get(email_clean)
+
     record = await institution_service.users.ensure_user(user_id, user.email)
+    if demo_cfg and not record.get("display_name"):
+        updated = await institution_service.users.update_profile(
+            user_id, display_name=demo_cfg["display_name"]
+        )
+        if updated:
+            record = updated
+
     memberships = await institution_service.list_memberships_for_user_async(user_id)
+    if not memberships and demo_cfg:
+        orgs = institution_service.list_organizations()
+        target_org = next((o for o in orgs if o.name.lower() == demo_cfg["org_name"].lower()), None)
+        if not target_org:
+            target_org = institution_service.create_organization(
+                name=demo_cfg["org_name"],
+                domain=demo_cfg.get("org_domain"),
+            )
+        institution_service.add_membership(target_org.org_id, user_id, demo_cfg["role"])
+        memberships = await institution_service.list_memberships_for_user_async(user_id)
+
     return {
         "user_id": user_id,
         "email": record.get("email"),
