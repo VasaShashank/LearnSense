@@ -645,9 +645,17 @@ class ConceptReviewWorkflowService:
         """
         Retrieves layout blocks and text for a given page number (1-based)
         so a reviewer can visually verify evidence in source context.
+        Handles both dictionary documents (from JSON storage) and object models safely.
         """
         structured = self.doc_storage.load_structured_document(document_id)
-        if not structured or not structured.pages:
+        if isinstance(structured, dict):
+            pages = structured.get("pages", [])
+        elif hasattr(structured, "pages"):
+            pages = getattr(structured, "pages", [])
+        else:
+            pages = []
+
+        if not structured or not pages:
             # Fallback to reading context evidence
             ctx = self.context_repo.load_context(document_id)
             if not ctx:
@@ -655,30 +663,54 @@ class ConceptReviewWorkflowService:
             page_excerpts = [
                 ev.excerpt for ev in ctx.evidence.values()
             ]
+            raw_text = "\n\n".join(page_excerpts[:10])
             return {
                 "document_id": document_id,
                 "page_number": page_number,
                 "total_pages": 1,
-                "blocks": [{"block_id": f"blk_page_{page_number}", "text": "\n\n".join(page_excerpts[:10])}],
-                "raw_text": "\n\n".join(page_excerpts[:10]),
+                "blocks": [{"block_id": f"blk_page_{page_number}", "block_type": "paragraph", "text": raw_text, "section_title": ""}],
+                "raw_text": raw_text,
             }
 
-        total_pages = len(structured.pages)
+        total_pages = len(pages)
         page_idx = max(0, min(page_number - 1, total_pages - 1))
-        page = structured.pages[page_idx]
+        page = pages[page_idx]
+
+        if isinstance(page, dict):
+            blocks = page.get("blocks", [])
+        elif hasattr(page, "blocks"):
+            blocks = getattr(page, "blocks", [])
+        else:
+            blocks = []
 
         blocks_data = []
         raw_lines = []
-        for b in page.blocks:
+        for b in blocks:
+            if isinstance(b, dict):
+                b_id = b.get("block_id") or b.get("id", "")
+                b_type = b.get("type") or b.get("block_type", "text")
+                content = b.get("content")
+                if isinstance(content, dict):
+                    b_text = content.get("text", "") or content.get("text_raw", "")
+                else:
+                    b_text = b.get("text") or str(content or "")
+                b_sec = b.get("section_title") or ""
+            else:
+                b_id = getattr(b, "id", getattr(b, "block_id", ""))
+                b_type = getattr(b, "type", getattr(b, "block_type", "text"))
+                b_text = getattr(b, "text", "")
+                b_sec = getattr(b, "section_title", "") or ""
+
             blocks_data.append(
                 {
-                    "block_id": b.id,
-                    "block_type": getattr(b, "type", "text"),
-                    "text": b.text,
-                    "section_title": b.section_title or "",
+                    "block_id": b_id,
+                    "block_type": b_type,
+                    "text": b_text,
+                    "section_title": b_sec,
                 }
             )
-            raw_lines.append(b.text)
+            if b_text:
+                raw_lines.append(b_text)
 
         return {
             "document_id": document_id,

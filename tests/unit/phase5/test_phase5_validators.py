@@ -40,10 +40,10 @@ def test_input_validator():
     res = validator.validate_file(valid_pdf_bytes, "test.pdf")
     assert res.is_valid is True
 
-    # Non-PDF extension
-    res_txt = validator.validate_file(valid_pdf_bytes, "test.txt")
-    assert res_txt.is_valid is False
-    assert "Unsupported file type" in res_txt.errors[0]
+    # Unsupported extension
+    res_unsupported = validator.validate_file(valid_pdf_bytes, "test.exe")
+    assert res_unsupported.is_valid is False
+    assert "Unsupported file type" in res_unsupported.errors[0]
 
     # Oversized PDF
     res_large = validator.validate_file(b"%PDF-" + b"0" * 20000, "large.pdf")

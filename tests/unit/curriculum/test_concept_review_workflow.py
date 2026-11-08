@@ -553,3 +553,73 @@ def test_rest_api_concept_review_endpoints(review_setup, monkeypatch):
 
     finally:
         app.dependency_overrides.clear()
+
+
+def test_get_page_evidence_structured_dictionary_and_fallbacks(review_setup):
+    """Verifies get_page_evidence handles dictionary structured documents, layout blocks, and fallbacks."""
+    service = review_setup["service"]
+    doc_id = review_setup["doc_id"]
+
+    # 1. Mock structured document returning a dict with pages, blocks, and content.text
+    dict_doc = {
+        "document_id": doc_id,
+        "metadata": {"page_count": 2},
+        "pages": [
+            {
+                "page_index": 0,
+                "blocks": [
+                    {
+                        "block_id": "blk_001",
+                        "type": "paragraph",
+                        "content": {"text": "Introduction to classical dynamics and inertia."},
+                        "section_title": "Section 1",
+                    },
+                    {
+                        "block_id": "blk_002",
+                        "type": "heading",
+                        "text": "Newton's First Law Statement",
+                        "section_title": "Section 1",
+                    },
+                ],
+            },
+            {
+                "page_index": 1,
+                "blocks": [
+                    {
+                        "block_id": "blk_003",
+                        "type": "paragraph",
+                        "content": {"text": "Second Law: F = ma relationship and forces."},
+                        "section_title": "Section 2",
+                    }
+                ],
+            },
+        ],
+    }
+
+    # Inject into doc_storage
+    service.doc_storage.load_structured_document = lambda d_id: dict_doc if d_id == doc_id else None
+
+    # Test page 1
+    ev_p1 = service.get_page_evidence(doc_id, 1)
+    assert ev_p1["document_id"] == doc_id
+    assert ev_p1["page_number"] == 1
+    assert ev_p1["total_pages"] == 2
+    assert len(ev_p1["blocks"]) == 2
+    assert ev_p1["blocks"][0]["block_id"] == "blk_001"
+    assert ev_p1["blocks"][0]["text"] == "Introduction to classical dynamics and inertia."
+    assert "Newton's First Law" in ev_p1["raw_text"]
+
+    # Test page 2
+    ev_p2 = service.get_page_evidence(doc_id, 2)
+    assert ev_p2["page_number"] == 2
+    assert len(ev_p2["blocks"]) == 1
+    assert ev_p2["blocks"][0]["block_id"] == "blk_003"
+    assert "F = ma" in ev_p2["raw_text"]
+
+    # Test clamping out-of-range page number (e.g. page 99 clamps to last page)
+    ev_clamped = service.get_page_evidence(doc_id, 99)
+    assert ev_clamped["page_number"] == 2
+
+    # Test unknown document raises ValueError
+    with pytest.raises(ValueError, match="not found"):
+        service.get_page_evidence("nonexistent_doc_id", 1)

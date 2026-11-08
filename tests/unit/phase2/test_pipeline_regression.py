@@ -181,9 +181,9 @@ class TestConnectivityHeuristicRemoval:
         PREREQUISITE_OF edges purely because of their sequential order.
         """
         doc = _make_doc("doc_no_seq_prereq", [
-            "Concept Alpha is defined as the first concept in the curriculum.",
-            "Concept Beta is defined as the second concept in the curriculum.",
-            "Concept Gamma is defined as the third concept in the curriculum.",
+            "Kinematics Motion describes the motion of points without forces.",
+            "Linear Momentum is defined as the product of mass and velocity.",
+            "Kinetic Energy is the energy possessed by an object due to its motion.",
         ])
 
         ekr = _run_full_pipeline(doc)

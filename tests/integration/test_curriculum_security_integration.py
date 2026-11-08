@@ -37,8 +37,21 @@ ADMIN_UUID = "d3b07384-0000-0000-0000-000000000003"
 LEAD_UUID = "d3b07384-0000-0000-0000-000000000004"
 
 
+class FakeResponse:
+    def __init__(self, status_code, payload):
+        self.status_code = status_code
+        self._payload = payload
+        self.is_success = 200 <= status_code < 300
+
+    def json(self):
+        return self._payload
+
+
 @pytest.fixture
-def test_curriculum_env(tmp_path):
+def test_curriculum_env(tmp_path, monkeypatch):
+    from backend import auth
+    from backend.auth import clear_auth_cache
+
     repo = CurriculumRepository(base_dir=str(tmp_path / "sec_curriculum"))
     service = CurriculumService(repository=repo)
 
@@ -54,12 +67,47 @@ def test_curriculum_env(tmp_path):
     graph.add_concept(c1)
     repo.save_graph(graph)
 
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_PUBLISHABLE_KEY", "test-publishable-key")
+
+    token_map = {
+        "mock_valid_student_jwt": {"id": STUDENT_UUID, "email": "student@test.edu"},
+        "mock_student_jwt": {"id": STUDENT_UUID, "email": "student@test.edu"},
+        "mock_valid_teacher_jwt": {"id": TEACHER_UUID, "email": "teacher@test.edu"},
+        "mock_teacher_jwt": {"id": TEACHER_UUID, "email": "teacher@test.edu"},
+        "mock_valid_admin_jwt": {"id": ADMIN_UUID, "email": "admin@test.edu"},
+        "mock_admin_jwt": {"id": ADMIN_UUID, "email": "admin@test.edu"},
+        "mock_lead_jwt": {"id": LEAD_UUID, "email": "prof_lead_vance@apex.edu"},
+        "mock_outsider_jwt": {"id": "outsider_student", "email": "outsider@other.edu"},
+    }
+
+    class MockAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def get(self, url, headers=None):
+            auth_header = (headers or {}).get("Authorization", "")
+            token = auth_header.replace("Bearer ", "").strip()
+            if token in token_map:
+                return FakeResponse(200, token_map[token])
+            return FakeResponse(401, {"message": "Invalid JWT signature"})
+
+    monkeypatch.setattr(auth.httpx, "AsyncClient", MockAsyncClient)
+    clear_auth_cache()
+
     app.dependency_overrides[get_service] = lambda: service
     try:
         yield service, c1.concept_id
     finally:
         app.dependency_overrides.pop(get_service, None)
         app.dependency_overrides.pop(get_current_user, None)
+        clear_auth_cache()
 
 
 # 1. Anonymous curriculum read request returns 401
@@ -67,7 +115,7 @@ def test_01_anonymous_curriculum_read_returns_401(test_curriculum_env):
     client = TestClient(app, raise_server_exceptions=False)
     res = client.get("/api/curriculum/concepts")
     assert res.status_code == 401
-    assert "Authentication required" in res.json().get("detail", "") or "INVALID" in res.json().get("code", "")
+    assert "bearer" in res.json().get("detail", "").lower() or "authentication" in res.json().get("code", "").lower()
 
 
 # 2. Authenticated Student can read permitted curriculum data
@@ -245,3 +293,67 @@ def test_15_role_switching_cannot_grant_new_permissions(test_curriculum_env):
     )
     assert promote_res.status_code == 403
     assert promote_res.json()["code"] == "FORBIDDEN_ROLE_ESCALATION"
+
+
+# 16. P0 Security Regression: Forged JWT without "invalid" substring is rejected 401
+def test_16_forged_jwt_without_invalid_substring_rejected(test_curriculum_env):
+    """
+    Demonstrates fix for critical P0 bypass: forged tokens without the substring
+    'invalid' were previously accepted by naive substring check. Now verified via Supabase Auth.
+    """
+    client = TestClient(app, raise_server_exceptions=False)
+    forged_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIn0.signature"
+    res = client.post(
+        "/api/curriculum/review/accept",
+        headers={"Authorization": f"Bearer {forged_token}"},
+        json={
+            "proposed": {"name": "Injected Attack Concept", "subject": "physics"},
+            "reviewer_id": "teacher_vance",
+            "reviewer_role": "teacher",
+        },
+    )
+    assert res.status_code == 401
+    assert res.headers.get("www-authenticate", "").lower() == "bearer"
+
+
+# 17. P0 Security Regression: Client-supplied reviewer_id spoofing is blocked
+def test_17_student_token_cannot_spoof_teacher_reviewer_id(test_curriculum_env):
+    """
+    Demonstrates fix for reviewer identity spoofing: student token supplying
+    reviewer_id='prof_vance' in body is rejected with 403 Forbidden.
+    """
+    client = TestClient(app, raise_server_exceptions=False)
+    res = client.post(
+        "/api/curriculum/review/accept",
+        headers={"Authorization": "Bearer mock_student_jwt"},
+        json={
+            "proposed": {"name": "Spoofed Concept", "subject": "physics"},
+            "reviewer_id": "prof_vance",
+            "reviewer_role": "teacher",
+        },
+    )
+    assert res.status_code == 403
+    assert "not authorized" in res.json().get("detail", "").lower()
+
+
+# 18. P0 Security Regression: Teacher token succeeds and action is attributed to teacher
+def test_18_teacher_mutation_succeeds_with_auth_identity(test_curriculum_env):
+    """Teacher token succeeds and properly updates curriculum graph."""
+    client = TestClient(app, raise_server_exceptions=False)
+    res = client.post(
+        "/api/curriculum/review/accept",
+        headers={"Authorization": "Bearer mock_teacher_jwt"},
+        json={
+            "proposed": {
+                "name": "Work Energy Theorem",
+                "subject": "physics",
+                "class_levels": ["class_11"],
+                "chapter_id": "ch_work_energy",
+                "description": "Work done equals change in kinetic energy.",
+            },
+            "reviewer_id": "teacher_vance",
+            "note": "Authorized faculty addition",
+        },
+    )
+    assert res.status_code == 200
+    assert "concept_id" in res.json()

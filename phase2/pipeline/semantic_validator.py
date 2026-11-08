@@ -310,6 +310,7 @@ _SUBSTANTIVE_HEAD_NOUNS: Set[str] = {
     "complexity", "programming", "notation", "traversal", "search", "sorting",
     "algorithm", "tree", "graph", "network", "structure", "structures",
     "database", "databases", "entity", "entities", "query", "queries", "learning", "state", "states",
+    "key", "keys", "index", "indices", "table", "tables", "schema", "schemas",
 }
 
 
@@ -468,6 +469,9 @@ class SemanticConceptValidator:
             return False, ConceptValidationOutcome.REJECTED_NOISE, RejectionCategory.NON_CONCEPTUAL_DESCRIPTIVE.value, None
         # Reject entities embedded in subject particles like 'object in motion' or 'particle in non-uniform'
         if re.search(r"^(?:object|body|particle)\s+in\b", low):
+            return False, ConceptValidationOutcome.REJECTED_NOISE, RejectionCategory.NON_CONCEPTUAL_DESCRIPTIVE.value, None
+        # Reject descriptive cross-relation references like 'key in another relation'
+        if re.search(r"\b(?:in|of|on|from)\s+another\b", low):
             return False, ConceptValidationOutcome.REJECTED_NOISE, RejectionCategory.NON_CONCEPTUAL_DESCRIPTIVE.value, None
 
         # 8. Check invalid leading tokens

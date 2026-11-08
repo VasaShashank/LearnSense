@@ -379,12 +379,16 @@ def auto_auth_curriculum_tests(request):
     overridden_write = False
     overridden_user = False
 
+    teacher_user = AuthenticatedUser(
+        id="d3b07384-0000-0000-0000-000000000002", email="teacher@learnsense.test"
+    )
+
     if verify_curriculum_read_authorized not in app.dependency_overrides:
-        app.dependency_overrides[verify_curriculum_read_authorized] = lambda: "mock_test_token"
+        app.dependency_overrides[verify_curriculum_read_authorized] = lambda: teacher_user
         overridden_read = True
 
     if verify_curriculum_write_authorized not in app.dependency_overrides:
-        app.dependency_overrides[verify_curriculum_write_authorized] = lambda: "mock_teacher_test_token"
+        app.dependency_overrides[verify_curriculum_write_authorized] = lambda: teacher_user
         overridden_write = True
 
     if "tests/unit/curriculum/" in nodeid.replace("\\", "/"):

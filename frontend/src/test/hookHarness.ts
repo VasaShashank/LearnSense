@@ -85,6 +85,22 @@ export function useCallback<F extends (...args: never[]) => unknown>(fn: F, deps
   return slot.fn
 }
 
+export function useMemo<T>(factory: () => T, deps: readonly unknown[] | undefined): T {
+  const instance = active()
+  const idx = instance.index++
+  if (!(idx in instance.hooks)) {
+    const value = factory()
+    instance.hooks[idx] = { value, deps }
+    return value
+  }
+  const slot = instance.hooks[idx] as { value: T; deps: readonly unknown[] | undefined }
+  if (depsChanged(slot.deps, deps)) {
+    slot.value = factory()
+    slot.deps = deps
+  }
+  return slot.value
+}
+
 export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void {
   const instance = active()
   const idx = instance.index++
