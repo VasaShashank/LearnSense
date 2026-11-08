@@ -28,6 +28,7 @@ export interface OnboardingWorkflowProps {
   mode?: 'SOURCE_SELECTION' | 'CALIBRATION';
   /** When true, forces the self-assessment survey quiz to open even if the subject was previously calibrated. */
   forceSurvey?: boolean;
+  learnerId?: string;
   /** Notifies the parent that the subject list changed (e.g. after an upload). */
   onSubjectsChanged?: () => void;
 }
@@ -45,6 +46,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
   onCompleteOnboarding,
   resumeInitSession,
   initialSubject,
+  learnerId: learnerIdProp,
   mode = 'SOURCE_SELECTION',
   forceSurvey = false,
   onSubjectsChanged,
@@ -54,7 +56,7 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
     mode === 'CALIBRATION' || forceSurvey ? 'SELF_ASSESSMENT' : 'SELECT_SUBJECT',
   );
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [learnerId] = useState<string>('student_alex');
+  const learnerId = learnerIdProp || 'student_alex';
   const [concepts, setConcepts] = useState<ConceptNode[]>([]);
   const [topics, setTopics] = useState<TopicTerritory[]>([]);
   const [selfAssessmentSelections, setSelfAssessmentSelections] = useState<Record<string, string>>({});

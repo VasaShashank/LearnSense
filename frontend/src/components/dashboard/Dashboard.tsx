@@ -14,6 +14,7 @@ export interface DashboardProps {
   onNavigateToSession: (conceptId: string) => void;
   onNavigateToSources: () => void;
   onStartFinalAssessment?: () => void;
+  onStartDiagnostic?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -27,6 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onNavigateToSession,
   onNavigateToSources,
   onStartFinalAssessment,
+  onStartDiagnostic,
 }) => {
   const masteryPercent = progress ? Math.round(progress.average_mastery * 100) : 0;
   const explorationPercent = progress ? Math.round(progress.exploration_rate * 100) : 0;
@@ -73,6 +75,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span>Launch Knowledge Atlas</span>
               <ArrowUpRight className="w-4 h-4 text-space-950" />
             </button>
+
+            {onStartDiagnostic && (
+              <button
+                onClick={onStartDiagnostic}
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-space-850 hover:bg-space-750 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 text-xs font-mono font-medium flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_16px_rgba(0,240,255,0.1)]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Diagnostic Assessment</span>
+              </button>
+            )}
 
             <button
               onClick={onNavigateToSources}

@@ -25,6 +25,7 @@ import { LearningSession } from './session/LearningSession';
 import { FinalAssessment } from './session/FinalAssessment';
 import { ContextualTutor } from './tutor/ContextualTutor';
 import { SourceLibrary } from './sources/SourceLibrary';
+import { OnboardingWorkflow } from './onboarding/OnboardingWorkflow';
 import { CommandPalette } from './palette/CommandPalette';
 import { ClassKnowledgeView } from './institution/ClassKnowledgeView';
 import { CurriculumDashboard } from './curriculum/CurriculumDashboard';
@@ -116,6 +117,8 @@ export function AuthenticatedAppShell({
   const [isSavingName, setIsSavingName] = useState(false);
   const [inviteTokenInput, setInviteTokenInput] = useState('');
   const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
+  const [isCalibrationOpen, setIsCalibrationOpen] = useState<boolean>(false);
+  const [pendingCalibration, setPendingCalibration] = useState<Subject | null>(null);
 
   // Apply initial role preference if chosen during registration or sign-in
   useEffect(() => {
@@ -484,6 +487,51 @@ export function AuthenticatedAppShell({
     }
   };
 
+  // Full-screen Starting Diagnostic & Calibration Mode
+  if (isCalibrationOpen) {
+    return (
+      <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300">
+        <header className="sticky top-0 z-40 w-full border-b border-white/[0.07] bg-space-950/80 backdrop-blur-2xl px-5 lg:px-8 py-3">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+            <button
+              onClick={() => {
+                setIsCalibrationOpen(false);
+                setPendingCalibration(null);
+                setActiveView('DASHBOARD');
+              }}
+              className="px-4 py-2 rounded-xl bg-space-800 hover:bg-space-750 text-xs font-mono text-cyan-400 border border-cyan-500/20 flex items-center gap-2 transition-all cursor-pointer"
+            >
+              ← Back to Dashboard
+            </button>
+            <span className="text-xs font-mono text-universe-slate uppercase tracking-wider">
+              Starting Diagnostic &amp; Knowledge Calibration
+            </span>
+          </div>
+        </header>
+        <main className="flex-1">
+          <OnboardingWorkflow
+            subjects={subjects}
+            learnerId={currentPersona.id || learnerId}
+            onCompleteOnboarding={(subId) => {
+              const sub = subjects.find((s) => s.id === subId) ?? (pendingCalibration ?? selectedSubject);
+              if (sub) setSelectedSubject(sub);
+              setPendingCalibration(null);
+              setIsCalibrationOpen(false);
+              refreshSubjectData();
+              setKnowledgeChangedNotification('DIAGNOSTIC TEST COMPLETE // Knowledge tracing calibrated. Adaptive curriculum personalized!');
+              setTimeout(() => setKnowledgeChangedNotification(null), 8000);
+              setActiveView('DASHBOARD');
+            }}
+            initialSubject={pendingCalibration ?? (selectedSubject ?? undefined)}
+            mode="CALIBRATION"
+            forceSurvey={true}
+            onSubjectsChanged={reloadSubjectsAndSources}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen universe-canvas text-universe-text flex flex-col font-sans transition-colors duration-300">
       {/* Top Navigation */}
@@ -543,6 +591,10 @@ export function AuthenticatedAppShell({
               }}
               onNavigateToSources={() => setActiveView('SOURCES')}
               onStartFinalAssessment={() => setIsFinalAssessmentOpen(true)}
+              onStartDiagnostic={() => {
+                setPendingCalibration(selectedSubject);
+                setIsCalibrationOpen(true);
+              }}
             />
           ) : (
             <div className="universe-panel rounded-3xl p-10 text-center space-y-5 max-w-xl mx-auto my-12 animate-fade-in border border-white/[0.08]">
@@ -786,7 +838,7 @@ export function AuthenticatedAppShell({
           <SourceLibrary
             sources={sources}
             onReloadSources={reloadSubjectsAndSources}
-            onSelectSubject={async (subjectId) => {
+            onSelectSubject={async (subjectId, isNewUpload = false) => {
               try {
                 const subs = await ApiClient.getSubjects();
                 setSubjects(subs);
@@ -799,7 +851,12 @@ export function AuthenticatedAppShell({
                 };
                 setSelectedSubject(sub);
                 void ApiClient.setActiveSubject(learnerId, sub.id).catch(() => undefined);
-                setActiveView('ATLAS');
+                if (isNewUpload && currentPersona.role === 'LEARNER') {
+                  setPendingCalibration(sub);
+                  setIsCalibrationOpen(true);
+                } else {
+                  setActiveView('ATLAS');
+                }
               } catch (err) {
                 console.error('Failed to switch subject', err);
               }

@@ -186,6 +186,9 @@ const ChapterQuickJumpStrip: React.FC<{
   );
 };
 
+// Module-level sequence cache across tab transitions so users never re-synthesize or wait
+const sequenceCache = new Map<string, LearningSequenceResponse>();
+
 export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   graphData,
   activeTargetId,
@@ -207,22 +210,76 @@ export const LearningAtlas: React.FC<LearningAtlasProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterTopic, setFilterTopic] = useState<string>('ALL');
 
-  const [viewMode, setViewMode] = useState<AtlasViewMode>('GUIDED');
+  const [viewMode, setViewModeState] = useState<AtlasViewMode>(() => {
+    try {
+      const saved = sessionStorage.getItem('learnsense_atlas_view_mode') as AtlasViewMode | null;
+      if (saved && ['GUIDED', 'GRAPH', 'CHAPTERS'].includes(saved)) return saved;
+    } catch {
+      // ignore
+    }
+    return 'GUIDED';
+  });
+
+  const setViewMode = (mode: AtlasViewMode) => {
+    setViewModeState(mode);
+    try {
+      sessionStorage.setItem('learnsense_atlas_view_mode', mode);
+    } catch {
+      // ignore
+    }
+  };
+
   const [selectedStartingConceptId, setSelectedStartingConceptId] = useState<string | null>(null);
-  const [sequenceData, setSequenceData] = useState<LearningSequenceResponse | null>(null);
-  const [isSequenceLoading, setIsSequenceLoading] = useState<boolean>(false);
+
+  const cacheKey = `${graphData?.subject_id || ''}::${selectedStartingConceptId || 'default'}::${learnerId}`;
+
+  const [sequenceData, setSequenceData] = useState<LearningSequenceResponse | null>(() => {
+    if (!graphData?.subject_id) return null;
+    const mem = sequenceCache.get(cacheKey);
+    if (mem) return mem;
+    try {
+      const stored = sessionStorage.getItem(`learnsense_seq_${cacheKey}`);
+      if (stored) {
+        const parsed = JSON.parse(stored) as LearningSequenceResponse;
+        sequenceCache.set(cacheKey, parsed);
+        return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+
+  const [isSequenceLoading, setIsSequenceLoading] = useState<boolean>(() => {
+    return !sequenceCache.has(cacheKey);
+  });
 
   // Fetch academic chapter-coherent learning sequence from backend
   useEffect(() => {
     if (!graphData?.subject_id) return;
+    const currentKey = `${graphData.subject_id}::${selectedStartingConceptId || 'default'}::${learnerId}`;
+    const cached = sequenceCache.get(currentKey);
+
+    if (cached) {
+      setSequenceData(cached);
+      setIsSequenceLoading(false);
+    } else {
+      setIsSequenceLoading(true);
+    }
+
     let isMounted = true;
-    setIsSequenceLoading(true);
     ApiClient.getLearningSequence(
       graphData.subject_id,
       selectedStartingConceptId || undefined,
       learnerId
     )
       .then((res) => {
+        sequenceCache.set(currentKey, res);
+        try {
+          sessionStorage.setItem(`learnsense_seq_${currentKey}`, JSON.stringify(res));
+        } catch {
+          // ignore
+        }
         if (isMounted) {
           setSequenceData(res);
           setIsSequenceLoading(false);
