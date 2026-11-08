@@ -299,10 +299,12 @@ class LearningService:
 
     def _build_diagnostic_bank(self, session) -> Any:
         """Bank scoped to the highest-priority slice of the verification set."""
-        # The diagnostic asks at most DIAGNOSTIC_MAX_QUESTIONS questions, so only
-        # the highest-priority slice of the verification set needs a question.
-        # Scoping the bank build to that slice keeps start fast and bounded even
-        # when a document yields hundreds of concepts.
+        # Fast path: If the document already has a grounded question bank persisted,
+        # reuse it directly without triggering expensive LLM generation on every answer.
+        existing = self.bank_repo.load_grounded_bank(session.subject_id)
+        if existing is not None and len(existing.get_grounded_questions()) >= 3:
+            return existing
+
         orch = self.adapter.diagnostic_orchestrator
         verify_ids = orch.verification_concepts(session)
         if verify_ids:
@@ -532,7 +534,9 @@ class LearningService:
                 )
 
             learner_state = self._diagnostic_learner_state(session)
-            bank = self._build_diagnostic_bank(session)
+            bank = self.bank_repo.load_grounded_bank(session.subject_id)
+            if bank is None:
+                bank = self._build_diagnostic_bank(session)
 
             if session.diagnostic_completed:
                 # Already finalized: report the stored verdict instead of regrading.
@@ -595,7 +599,9 @@ class LearningService:
                 )
 
             learner_state = self._diagnostic_learner_state(session)
-            bank = self._build_diagnostic_bank(session)
+            bank = self.bank_repo.load_grounded_bank(session.subject_id)
+            if bank is None or question_id not in bank.questions:
+                bank = self._build_diagnostic_bank(session)
 
             already_answered = question_id in session.diagnostic_responses
             q_item = bank.questions.get(question_id)

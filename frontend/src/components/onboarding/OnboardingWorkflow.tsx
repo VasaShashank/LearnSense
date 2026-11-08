@@ -1003,12 +1003,16 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
               const qId = q.question_id || q.item_id || 'q_current';
               const rawOptions = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
 
+              const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
               const isDontKnowText = (text: string) => {
                 const lower = text.toLowerCase();
                 return lower.includes("don't know") || lower.includes("dont know") || lower.includes("unsure");
               };
 
               const hasDontKnowInOptions = rawOptions.some(isDontKnowText);
+              const standardOptions = rawOptions.filter((opt) => !isDontKnowText(opt));
+              const showDontKnowEscapeHatch = hasDontKnowInOptions || q.allow_dont_know_option;
 
               const onOptionClick = (optText: string) => {
                 void handleAnswerDiagnosticQuestion(
@@ -1020,60 +1024,164 @@ export const OnboardingWorkflow: React.FC<OnboardingWorkflowProps> = ({
 
               return (
                 <div className="space-y-6">
-                  <div className="pb-4 border-b border-white/[0.08] flex items-center justify-between">
+                  {/* Header & Progress */}
+                  <div className="pb-4 border-b border-white/[0.08] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-mono tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-bold uppercase">
+                          VERIFICATION {answeredCount + 1}
+                          {totalPlanned > 0 ? ` OF ${totalPlanned}` : ''}
+                        </span>
+                        <span className="text-[11px] font-mono text-universe-slate hidden sm:inline">
+                          Adaptive Calibration
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-emerald-400">
+                        <Brain className="w-5 h-5" />
+                      </div>
+                    </div>
+
                     <div>
-                      <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                        VERIFICATION {answeredCount + 1}
-                        {totalPlanned > 0 ? ` // UP TO ${totalPlanned}` : ''}
-                      </span>
-                      <h2 className="text-xl font-display font-bold text-white mt-0.5">
+                      <h2 className="text-xl font-display font-bold text-white tracking-tight">
                         Verify Your Understanding
                       </h2>
-                      <p className="text-[11px] text-universe-slate font-sans mt-0.5">
-                        Each question is chosen based on what you have answered so far, so the test
-                        adapts to you. Answers are saved as you go.
+                      <p className="text-xs text-universe-slate font-sans mt-0.5">
+                        Each question is chosen based on what you have answered so far. Answers calibrate your personalized learning sequence.
                       </p>
                     </div>
-                    <Brain className="w-5 h-5 text-emerald-400 shrink-0" />
+
+                    {totalPlanned > 0 && (
+                      <div className="space-y-1 pt-1">
+                        <div className="flex justify-between text-[10px] font-mono text-universe-slate">
+                          <span>Verification Progress</span>
+                          <span>{Math.round((answeredCount / totalPlanned) * 100)}%</span>
+                        </div>
+                        <div className="w-full bg-space-950/80 rounded-full h-1.5 overflow-hidden border border-white/[0.06]">
+                          <div
+                            className="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full rounded-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(100, Math.max(8, Math.round((answeredCount / totalPlanned) * 100)))}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">
-                    <div className="p-5 rounded-2xl bg-space-950/70 border border-white/[0.06]">
-                      <p className="text-xs sm:text-sm font-sans text-universe-text leading-relaxed break-words overflow-wrap-anywhere">
+                    {/* Distinct Question Prompt Card */}
+                    <div className="relative p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-space-900/95 via-space-900/70 to-space-950/95 border border-cyan-500/30 shadow-[0_8px_30px_rgba(0,0,0,0.45)] overflow-hidden">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+                      
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                          Question {answeredCount + 1}
+                        </span>
+                        <span className="text-[11px] font-sans text-universe-slate">
+                          Select the best answer:
+                        </span>
+                      </div>
+
+                      <p className="text-sm sm:text-base font-sans font-medium text-white leading-relaxed break-words overflow-wrap-anywhere">
                         {qText}
                       </p>
                     </div>
 
-                    <div className="space-y-2">
-                      {rawOptions.map((opt, optIdx) => (
-                        <button
-                          key={optIdx}
-                          disabled={answering}
-                          onClick={() => onOptionClick(opt)}
-                          className={`w-full p-3.5 rounded-xl border border-white/[0.06] bg-space-950/50 hover:bg-space-850 hover:border-cyan-400/40 text-left text-xs text-universe-text transition-all font-sans flex items-center justify-between disabled:opacity-50 break-words overflow-wrap-anywhere ${
-                            isDontKnowText(opt) ? 'text-amber-300 hover:border-amber-400/40 bg-amber-950/20' : ''
-                          }`}
-                        >
-                          <span className="flex-1">{opt}</span>
-                          {isDontKnowText(opt) && <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 ml-2" />}
-                        </button>
-                      ))}
+                    {/* Interactive Multiple Choice Options with Letter Badges */}
+                    <div className="space-y-2.5">
+                      {standardOptions.map((opt, optIdx) => {
+                        const isSelected = pendingAnswer?.option === opt;
+                        const isThisOptionSubmitting = answering && isSelected;
+                        const letter = OPTION_LETTERS[optIdx] || String(optIdx + 1);
 
-                      {q.allow_dont_know_option && !hasDontKnowInOptions && (
-                        <button
-                          disabled={answering}
-                          onClick={() => void handleAnswerDiagnosticQuestion(qId, "I don't know", true)}
-                          className="w-full p-3.5 rounded-xl border border-amber-500/30 bg-amber-950/30 hover:bg-amber-900/40 text-left text-xs font-mono text-amber-200 transition-all flex items-center gap-2 disabled:opacity-50"
-                        >
-                          <ShieldCheck className="w-4 h-4 text-amber-400" />
-                          <span>I don&apos;t know this concept yet</span>
-                        </button>
+                        return (
+                          <button
+                            key={optIdx}
+                            disabled={answering}
+                            onClick={() => onOptionClick(opt)}
+                            className={`group w-full p-4 rounded-xl border text-left transition-all duration-150 flex items-center gap-3.5 break-words overflow-wrap-anywhere ${
+                              isSelected
+                                ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_16px_rgba(0,240,255,0.2)] ring-1 ring-cyan-400/50'
+                                : answering
+                                  ? 'bg-space-950/40 border-white/[0.04] opacity-40 cursor-not-allowed'
+                                  : 'bg-space-950/60 border-white/[0.08] hover:bg-space-850 hover:border-cyan-400/50 hover:shadow-lg cursor-pointer'
+                            }`}
+                          >
+                            <span
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center font-mono font-bold text-xs shrink-0 transition-colors ${
+                                isSelected
+                                  ? 'bg-cyan-400 text-space-950 shadow-[0_0_10px_rgba(0,240,255,0.4)]'
+                                  : 'bg-space-850 text-universe-slate border border-white/10 group-hover:border-cyan-400/40 group-hover:text-cyan-300 group-hover:bg-cyan-950/30'
+                              }`}
+                            >
+                              {letter}
+                            </span>
+
+                            <span
+                              className={`flex-1 text-xs sm:text-sm font-sans leading-relaxed transition-colors ${
+                                isSelected
+                                  ? 'text-white font-medium'
+                                  : 'text-universe-text group-hover:text-white'
+                              }`}
+                            >
+                              {opt}
+                            </span>
+
+                            {isThisOptionSubmitting ? (
+                              <RefreshCw className="w-4 h-4 text-cyan-400 animate-spin shrink-0 ml-2" />
+                            ) : (
+                              <div
+                                className={`w-2 h-2 rounded-full transition-all shrink-0 ${
+                                  isSelected ? 'bg-cyan-400 ring-4 ring-cyan-400/20' : 'bg-transparent group-hover:bg-cyan-400/30'
+                                }`}
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+
+                      {/* Explicit "I don't know this concept yet" Escape Hatch */}
+                      {showDontKnowEscapeHatch && (
+                        <div className="pt-2">
+                          <div className="flex items-center gap-3 my-2">
+                            <div className="h-px bg-white/[0.06] flex-1" />
+                            <span className="text-[10px] font-mono text-universe-slate/50 uppercase tracking-widest">
+                              or
+                            </span>
+                            <div className="h-px bg-white/[0.06] flex-1" />
+                          </div>
+
+                          <button
+                            disabled={answering}
+                            onClick={() => void handleAnswerDiagnosticQuestion(qId, "I don't know", true)}
+                            className={`w-full p-3.5 rounded-xl border text-left text-xs font-mono transition-all flex items-center justify-between ${
+                              pendingAnswer?.isDontKnow
+                                ? 'bg-amber-950/40 border-amber-400 text-amber-200 ring-1 ring-amber-400/40'
+                                : answering
+                                  ? 'bg-space-950/30 border-white/[0.04] text-universe-slate/40 cursor-not-allowed'
+                                  : 'border-amber-500/20 bg-amber-950/15 hover:bg-amber-950/30 hover:border-amber-400/40 text-amber-300/80 hover:text-amber-200 cursor-pointer'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                              <span>I don&apos;t know this concept yet</span>
+                            </div>
+                            {pendingAnswer?.isDontKnow && answering ? (
+                              <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                            ) : (
+                              <span className="text-[10px] text-amber-400/60 font-sans">
+                                Skip without penalty
+                              </span>
+                            )}
+                          </button>
+                        </div>
                       )}
 
                       {answering && (
-                        <p className="text-[11px] font-mono text-cyan-300 text-center pt-2">
-                          Saving your answer...
-                        </p>
+                        <div className="flex items-center justify-center gap-2 pt-2 text-[11px] font-mono text-cyan-300 animate-pulse">
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span>Saving answer and calibrating learning trajectory...</span>
+                        </div>
                       )}
                     </div>
                   </div>
