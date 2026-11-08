@@ -223,14 +223,63 @@ class KnowledgeService:
                 if concept_id in valid_concepts:
                     concept_to_topic.setdefault(concept_id, target_tid)
 
+        # Deduplicate unassigned concepts against already-assigned concepts
+        from phase2.pipeline.semantic_entity_resolver import SemanticEntityResolver
+        resolver = SemanticEntityResolver()
+
+        def _get_canonical_equiv(name: str) -> str:
+            eq = resolver.find_semantic_equivalent(name)
+            if eq:
+                return eq[0].lower()
+            norm = resolver.normalize_surface_key(name)
+            clean = norm.replace(" of motion", "").replace(" in circular motion", "").strip()
+            return clean
+
+        assigned_canonical_keys: Dict[str, str] = {}
+        for cid in list(concept_to_topic.keys()):
+            if cid in valid_concepts:
+                c_name = valid_concepts[cid].canonical_name
+                eq_key = _get_canonical_equiv(c_name)
+                assigned_canonical_keys[eq_key] = cid
+
         # Distribute any remaining valid unassigned concepts
-        unassigned = [cid for cid in valid_concepts if cid not in concept_to_topic]
-        if unassigned:
+        unassigned = [cid for cid in list(valid_concepts.keys()) if cid not in concept_to_topic]
+        for cid in unassigned:
+            if cid not in valid_concepts:
+                continue
+            u_name = valid_concepts[cid].canonical_name
+            u_eq_key = _get_canonical_equiv(u_name)
+            # If this concept is an alias/syntactic duplicate of an already assigned concept, merge and drop it
+            if u_eq_key in assigned_canonical_keys:
+                target_cid = assigned_canonical_keys[u_eq_key]
+                target_c = valid_concepts.get(target_cid)
+                if target_c:
+                    for ev in getattr(valid_concepts[cid], "evidence_ids", []) or []:
+                        if ev not in target_c.evidence_ids:
+                            target_c.evidence_ids.append(ev)
+                    for a in getattr(valid_concepts[cid], "aliases", []) or []:
+                        if a not in target_c.aliases:
+                            target_c.aliases.append(a)
+                    if u_name not in target_c.aliases and u_name.lower() != target_c.canonical_name.lower():
+                        target_c.aliases.append(u_name)
+                del valid_concepts[cid]
+                continue
+
+            # Concept is genuinely unassigned - find the best matching topic by keyword
             if topic_by_id:
-                topic_keys = list(topic_by_id.keys())
-                for idx, cid in enumerate(unassigned):
-                    target_tid = topic_keys[idx % len(topic_keys)]
-                    concept_to_topic[cid] = target_tid
+                best_tid = None
+                best_score = 0
+                import re
+                u_words = set(re.findall(r"\w+", u_name.lower()))
+                for tid, tobj in topic_by_id.items():
+                    t_words = set(re.findall(r"\w+", tobj["name"].lower()))
+                    overlap = len(u_words.intersection(t_words))
+                    if overlap > best_score:
+                        best_score = overlap
+                        best_tid = tid
+                target_tid = best_tid or next(iter(topic_by_id.keys()))
+                concept_to_topic[cid] = target_tid
+                assigned_canonical_keys[u_eq_key] = cid
             else:
                 fallback_id = "subheading_1"
                 topic_by_id[fallback_id] = {
@@ -239,8 +288,8 @@ class KnowledgeService:
                     "order": 1,
                     "is_unassigned": False,
                 }
-                for concept_id in unassigned:
-                    concept_to_topic[concept_id] = fallback_id
+                concept_to_topic[cid] = fallback_id
+                assigned_canonical_keys[u_eq_key] = cid
 
         # If there are still excessively many micro-topics (> 16), consolidate them
         if len(topic_by_id) > 16:
