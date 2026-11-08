@@ -30,7 +30,7 @@ import { CommandPalette } from './palette/CommandPalette';
 import { ClassKnowledgeView } from './institution/ClassKnowledgeView';
 import { CurriculumDashboard } from './curriculum/CurriculumDashboard';
 import type { Persona } from './common/LoginPersonaModal';
-import { Zap, Sparkles, Orbit, BookOpen, X, Map } from 'lucide-react';
+import { Zap, Sparkles, Orbit, BookOpen, X, Map, LogOut } from 'lucide-react';
 import { registerConceptNameMap } from '../utils/conceptName';
 
 export type LearnerResumeResponse = Awaited<ReturnType<typeof ApiClient.resumeLearner>>;
@@ -1223,15 +1223,17 @@ export function AuthenticatedAppShell({
             </div>
 
             {/* Sign Out Button in Modal */}
-            <div className="pt-3 border-t border-white/[0.08] flex justify-end">
+            <div className="pt-3 border-t border-white/[0.08] flex justify-between items-center">
+              <span className="text-xs text-universe-slate font-mono">End your active session</span>
               <button
                 type="button"
                 onClick={() => {
                   setIsAccountModalOpen(false);
                   void onSignOut();
                 }}
-                className="rounded-xl border border-white/[0.12] bg-space-800 px-4 py-2 text-xs font-semibold text-white hover:border-red-400/40 hover:text-red-300 transition-colors"
+                className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-950/30 px-4 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/20 hover:border-red-400/50 transition-colors cursor-pointer"
               >
+                <LogOut className="w-3.5 h-3.5 text-red-400" />
                 Sign out
               </button>
             </div>

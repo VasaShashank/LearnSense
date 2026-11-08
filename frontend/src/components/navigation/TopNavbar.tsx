@@ -203,8 +203,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           })}
         </nav>
 
-        {/* Right: Command Palette + Role Switcher + Persona Pill */}
-        <div className="flex items-center gap-2.5">
+        {/* Right: Command Palette + Role Switcher + Persona Pill + Sign Out */}
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
           {/* Quick 1-Click Role Switcher */}
           {onSwitchRole && (
             <div className="hidden sm:flex items-center rounded-xl bg-space-950/70 p-1 border border-white/[0.08] shadow-inner gap-1">
@@ -212,7 +212,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 type="button"
                 title="Switch to Student Workspace"
                 onClick={() => onSwitchRole('LEARNER')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   currentPersona.role === 'LEARNER'
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm'
                     : 'text-universe-slate hover:text-white hover:bg-space-850'
@@ -225,7 +225,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 type="button"
                 title="Switch to Faculty Teacher Workspace"
                 onClick={() => onSwitchRole('TEACHER')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   currentPersona.role === 'TEACHER'
                     ? 'bg-purple-500/20 text-purple-300 border border-purple-400/40 shadow-sm'
                     : 'text-universe-slate hover:text-white hover:bg-space-850'
@@ -238,7 +238,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 type="button"
                 title="Switch to Campus Administrator Workspace"
                 onClick={() => onSwitchRole('ADMIN')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   currentPersona.role === 'ADMIN'
                     ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 shadow-sm'
                     : 'text-universe-slate hover:text-white hover:bg-space-850'
@@ -252,7 +252,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
           <button
             onClick={onOpenCommandPalette}
-            className="hidden md:flex px-3 py-1.5 rounded-lg bg-space-850 hover:bg-space-750 border border-white/[0.07] text-xs text-universe-slate hover:text-universe-text items-center gap-2 transition-all shadow-sm group"
+            className="hidden 2xl:flex px-2.5 py-1.5 rounded-lg bg-space-850 hover:bg-space-750 border border-white/[0.07] text-xs text-universe-slate hover:text-universe-text items-center gap-2 transition-all shadow-sm group"
           >
             <Search className="w-3.5 h-3.5 text-universe-slate group-hover:text-cyan-400 transition-colors" />
             <span className="font-mono text-[11px]">Command</span>
@@ -264,13 +264,13 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           {/* Persona & Login Switcher Pill */}
           <button
             onClick={onOpenLoginModal}
-            title="Switch between Student, Teacher, or B2B Admin"
-            className="px-3 py-1 rounded-xl bg-space-850 hover:bg-space-800 border border-white/[0.1] hover:border-cyan-400/40 text-xs flex items-center gap-2.5 transition-all shadow-sm group cursor-pointer"
+            title="Account Profile, Role & Persona Switcher"
+            className="px-2.5 py-1 rounded-xl bg-space-850 hover:bg-space-800 border border-white/[0.1] hover:border-cyan-400/40 text-xs flex items-center gap-2 transition-all shadow-sm group cursor-pointer shrink-0"
           >
             <span className="text-base select-none">{currentPersona.avatar}</span>
             <div className="flex flex-col text-left">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-white group-hover:text-cyan-300 text-xs transition-colors">
+                <span className="font-semibold text-white group-hover:text-cyan-300 text-xs transition-colors truncate max-w-[100px]">
                   {currentPersona.name}
                 </span>
                 <span
@@ -279,23 +279,25 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                   {currentPersona.role}
                 </span>
               </div>
-              <span className="text-[10px] text-universe-slate font-mono truncate max-w-[130px]">
+              <span className="text-[10px] text-universe-slate font-mono truncate max-w-[110px]">
                 {currentPersona.title}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-universe-slate group-hover:text-white transition-colors" />
           </button>
-            {onSignOut && (
-              <button
-                type="button"
-                onClick={onSignOut}
-                title="Sign out of LearnSense"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-space-850/60 hover:bg-space-800 text-universe-slate hover:text-red-400 transition-all text-xs font-semibold"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Sign out</span>
-              </button>
-            )}
+
+          {/* Always Visible Sign Out Button */}
+          {onSignOut && (
+            <button
+              type="button"
+              onClick={onSignOut}
+              title="Sign out of LearnSense"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-950/25 hover:bg-red-500/20 text-red-300 hover:text-red-200 hover:border-red-400/50 transition-all text-xs font-semibold shadow-sm cursor-pointer shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span>Sign out</span>
+            </button>
+          )}
         </div>
 
       </div>
