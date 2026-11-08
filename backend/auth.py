@@ -6,8 +6,11 @@ with the issuer. Application roles and tenant permissions remain the backend's
 responsibility and must be checked separately.
 """
 
+from __future__ import annotations
+
 import os
-from typing import Optional
+import time
+from typing import Dict, Optional, Tuple
 
 import logging
 
@@ -21,6 +24,15 @@ from backend.api_errors import ApiError
 logger = logging.getLogger(__name__)
 
 _bearer_scheme = HTTPBearer(auto_error=False)
+
+# Short-lived in-memory cache to avoid redundant WAN round-trips to Supabase Auth on rapid requests
+_AUTH_TOKEN_CACHE: Dict[str, Tuple[float, AuthenticatedUser]] = {}
+_AUTH_CACHE_TTL = 60.0  # seconds
+
+
+def clear_auth_cache() -> None:
+    """Clear cached token verifications (e.g. on test runs or sign-out)."""
+    _AUTH_TOKEN_CACHE.clear()
 
 
 class AuthenticatedUser(BaseModel):
@@ -40,6 +52,13 @@ async def get_current_user(
             "Missing bearer access token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    token = credentials.credentials
+    now = time.monotonic()
+    cached = _AUTH_TOKEN_CACHE.get(token)
+    if cached is not None and cached[0] > now:
+        await _reject_disabled_account(cached[1].id)
+        return cached[1]
 
     supabase_url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
     # Supabase calls this key the publishable key in newer projects; older
@@ -75,6 +94,7 @@ async def get_current_user(
         ) from exc
 
     if response.status_code in (401, 403):
+        _AUTH_TOKEN_CACHE.pop(token, None)
         raise ApiError(
             status.HTTP_401_UNAUTHORIZED, "INVALID_TOKEN",
             "Invalid or expired access token",
@@ -95,6 +115,7 @@ async def get_current_user(
         if email is not None and not isinstance(email, str):
             email = None
         user = AuthenticatedUser(id=user_id, email=email)
+        _AUTH_TOKEN_CACHE[token] = (time.monotonic() + _AUTH_CACHE_TTL, user)
     except (ValueError, TypeError) as exc:
         raise ApiError(
             status.HTTP_401_UNAUTHORIZED, "INVALID_IDENTITY",
