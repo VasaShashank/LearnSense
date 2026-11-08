@@ -471,13 +471,49 @@ def test_teacher_can_switch_to_learner_view_without_membership_loss(env):
     assert any(m["role"] == UserRole.TEACHER for m in mems)
 
 
-def test_missing_or_invalid_jwt_rejected_on_role_patch(env):
+def test_missing_or_invalid_jwt_rejected_on_role_patch(env, monkeypatch):
     client = TestClient(app, raise_server_exceptions=False)
     # Missing authorization header
     res_missing = client.patch("/api/me/role", json={"role": "TEACHER"})
     assert res_missing.status_code == 401
 
-    # Invalid authorization header
+    # Non-bearer scheme rejected before provider call
+    res_non_bearer = client.patch(
+        "/api/me/role",
+        headers={"Authorization": "Basic dXNlcjpwYXNz"},
+        json={"role": "TEACHER"}
+    )
+    assert res_non_bearer.status_code == 401
+
+    # Invalid Bearer JWT rejected with 401 when verified against auth provider
+    from backend import auth
+
+    class _FakeResponse:
+        def __init__(self, status_code, payload):
+            self.status_code = status_code
+            self._payload = payload
+            self.is_success = 200 <= status_code < 300
+
+        def json(self):
+            return self._payload
+
+    class _FakeAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def get(self, url, headers):
+            return _FakeResponse(401, {"message": "Invalid token"})
+
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "mock-anon-key")
+    monkeypatch.setattr(auth.httpx, "AsyncClient", _FakeAsyncClient)
+
     res_invalid = client.patch(
         "/api/me/role",
         headers={"Authorization": "Bearer invalid.mock.token"},
