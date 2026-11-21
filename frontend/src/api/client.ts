@@ -898,7 +898,7 @@ export const ApiClient = {
       body: JSON.stringify(data),
     }),
 
-  getConceptQuestion: (subjectId: string, conceptId: string, learnerId?: string): Promise<{
+  getConceptQuestion: (subjectId: string, conceptId: string, learnerId?: string, offset?: number): Promise<{
     question_id: string;
     concept_id: string;
     question_text: string;
@@ -912,7 +912,13 @@ export const ApiClient = {
     }>;
     no_questions?: boolean;
     source?: string;
-  }> => fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question${learnerId ? `?learner_id=${encodeURIComponent(learnerId)}` : ''}`),
+  }> => {
+    const params = new URLSearchParams();
+    if (learnerId) params.append('learner_id', learnerId);
+    if (offset !== undefined) params.append('offset', String(offset));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/question${qs}`);
+  },
 
   getConceptContent: (subjectId: string, conceptId: string): Promise<ConceptLearningContent> =>
     fetchJson(`/subjects/${subjectId}/concepts/${conceptId}/content`),
@@ -1553,6 +1559,27 @@ export const ApiClient = {
     fetchJson('/curriculum/versions/' + encodeURIComponent(versionId) + '/rollback', {
       method: 'POST',
       body: JSON.stringify(payload),
+    }),
+
+  // Student Peer Marketplace
+  getMarketplacePeers: (subjectId?: string): Promise<any[]> =>
+    fetchJson(`/marketplace/peers${subjectId ? `?subject_id=${encodeURIComponent(subjectId)}` : ''}`),
+
+  getMarketplaceConnections: (): Promise<{ incoming: any[]; outgoing: any[]; all: any[] }> =>
+    fetchJson('/marketplace/connections'),
+
+  sendMarketplaceConnection: (data: { to_id: string; topic?: string; message?: string }): Promise<any> =>
+    fetchJson('/marketplace/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
+  respondMarketplaceConnection: (requestId: string, accept: boolean): Promise<any> =>
+    fetchJson(`/marketplace/connections/${encodeURIComponent(requestId)}/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: accept ? 'ACCEPT' : 'DECLINE' }),
     }),
 };
 

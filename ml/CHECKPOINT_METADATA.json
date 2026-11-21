@@ -1,0 +1,22 @@
+{
+  "checkpoint_file": "model_5_combined_akt_mastery_v5_2.pt",
+  "sha256": "01fd2535d6f43655b8c445ddbe99b4c6cd4f538d0196475fb576e485812e63e0",
+  "size_bytes": 866660,
+  "size_bytes_allocated": 868779,
+  "curriculum_version": "2026.jee.v1",
+  "curriculum_fingerprint": "6d44446f63d5f173",
+  "n_concepts": 88,
+  "n_questions": 1751,
+  "d_model": 64,
+  "n_heads": 4,
+  "best_val_loss": 0.644997032753799,
+  "status": "synthetic_benchmark_validated",
+  "validation_tiers": {
+    "tier_1_checkpoint_integrity": "verified",
+    "tier_2_architecture_and_vocabulary_compatibility": "verified",
+    "tier_3_synthetic_benchmark_evaluation": "validated",
+    "tier_4_isolated_inference_validation": "validated",
+    "tier_5_real_world_learner_validation": "pending_live_cohort",
+    "tier_6_production_deployment_validation": "pending_unified_integration"
+  }
+}

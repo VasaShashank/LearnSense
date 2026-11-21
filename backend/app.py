@@ -209,6 +209,20 @@ def _run_startup_preflight() -> dict:
     except Exception as exc:
         results["curriculum"] = {"status": "FAILED", "reason": str(exc)}
 
+    # --- Person 3 Personalization & AKT Engine ---
+    try:
+        from src.akt_inference import AKTMasteryInferenceService
+        p3_akt = AKTMasteryInferenceService()
+        prov = p3_akt.get_model_provenance()
+        results["person3_akt"] = {
+            "status": "OK" if p3_akt.is_available() else "UNAVAILABLE",
+            "model_version": prov.get("version") or prov.get("model_version"),
+            "fingerprint": prov.get("curriculum_fingerprint"),
+            "concepts_count": prov.get("active_canonical_concepts") or prov.get("canonical_concepts_count"),
+        }
+    except Exception as exc:
+        results["person3_akt"] = {"status": "FAILED", "reason": str(exc)}
+
     return results
 
 
@@ -240,6 +254,14 @@ app.include_router(api.router, prefix="/api", tags=["application_facades"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
 # Canonical curriculum & knowledge graph (Person 2): /api/curriculum/...
 app.include_router(curriculum.router, prefix="/api", tags=["curriculum"])
+
+# Person 3 Personalization & Adaptive Intelligence API (/v1/...)
+try:
+    from src.api import create_app as create_p3_app
+    p3_app = create_p3_app()
+    app.include_router(p3_app.router)
+except Exception as exc:
+    logger.warning("Person 3 /v1 application router include skipped: %s", exc)
 
 
 async def _optional_pg_schema_status() -> dict:

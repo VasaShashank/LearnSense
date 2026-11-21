@@ -86,12 +86,19 @@ class LearnerStateValidator:
         if correctness < 0.0 or correctness > 1.0:
             result.add_error(f"Response correctness score {correctness} is outside valid range [0.0, 1.0].")
 
-        # 3. Concept reference validity
+        # 3. Concept reference validity (with Person 3 canonical migration resolution)
         if not concept_ids:
             result.add_error("Response submission does not reference any concept_ids.")
         elif valid_subject_concepts:
+            try:
+                from phase3.akt.migration_adapter import CanonicalConceptMigrationAdapter
+                _migration_adapter = CanonicalConceptMigrationAdapter()
+            except Exception:
+                _migration_adapter = None
+
             for c_id in concept_ids:
-                if c_id not in valid_subject_concepts:
+                resolved_id = _migration_adapter.to_canonical_id(c_id) if hasattr(_migration_adapter, "to_canonical_id") else c_id
+                if c_id not in valid_subject_concepts and resolved_id not in valid_subject_concepts:
                     result.add_error(f"Referenced concept_id '{c_id}' does not exist in current subject graph.")
 
         if not result.is_valid:

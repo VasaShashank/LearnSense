@@ -50,6 +50,7 @@ def test_topological_depth_derived_for_all_concepts(canonical_graph):
     assert max(depths.values()) >= 5
 
 
+@pytest.mark.skipif(not SIMULATOR_CSV.is_file(), reason="Simulator CSV missing")
 def test_simulator_62_concepts_backward_compatibility(canonical_graph):
     bridge = SimulatorBridge(canonical_graph)
     sim_concepts = load_simulator_concepts(SIMULATOR_CSV)

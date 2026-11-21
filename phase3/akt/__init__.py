@@ -1,0 +1,63 @@
+"""Phase 3 AKT Package — Authoritative Neural Knowledge Tracing Engine (Model 5 v5.2.1)."""
+
+from src.akt_inference import (
+    AKTMasteryInferenceService,
+    LearnerInteraction,
+    VocabularyWrapper,
+    LegacyV4AKTMasteryInferenceService,
+    RELEASE_CHECKPOINT_PATH,
+    RELEASE_VOCABULARY_PATH,
+    AUTHORITATIVE_CHECKPOINT_PATH,
+    AUTHORITATIVE_VOCABULARY_PATH,
+    AUTHORITATIVE_CHECKPOINT_SHA256,
+    DEFAULT_MASTERY_THRESHOLD,
+    POPULATION_PRIOR_MASTERY,
+)
+from src.akt_mastery_head import (
+    AKTMasteryHeadModel,
+    MasterySequenceArrays,
+)
+from src.migration_adapter import (
+    CanonicalConceptMigrationAdapter,
+    ConceptMigrationRecord,
+    CURRICULUM_ID,
+    CURRICULUM_VERSION,
+    CURRICULUM_FINGERPRINT,
+    MAT_CON_LEGACY,
+    MAT_CON_CANONICAL,
+    PHY_OPT_LEGACY,
+    PHY_OPT_RAY_CANONICAL,
+    PHY_OPT_WAVE_CANONICAL,
+    DEPRECATED_IDS,
+    EXCLUDED_FROM_JEE_MAIN_2027,
+    get_migration_adapter,
+)
+
+__all__ = [
+    "AKTMasteryInferenceService",
+    "LearnerInteraction",
+    "VocabularyWrapper",
+    "LegacyV4AKTMasteryInferenceService",
+    "RELEASE_CHECKPOINT_PATH",
+    "RELEASE_VOCABULARY_PATH",
+    "AUTHORITATIVE_CHECKPOINT_PATH",
+    "AUTHORITATIVE_VOCABULARY_PATH",
+    "AUTHORITATIVE_CHECKPOINT_SHA256",
+    "DEFAULT_MASTERY_THRESHOLD",
+    "POPULATION_PRIOR_MASTERY",
+    "AKTMasteryHeadModel",
+    "MasterySequenceArrays",
+    "CanonicalConceptMigrationAdapter",
+    "ConceptMigrationRecord",
+    "CURRICULUM_ID",
+    "CURRICULUM_VERSION",
+    "CURRICULUM_FINGERPRINT",
+    "MAT_CON_LEGACY",
+    "MAT_CON_CANONICAL",
+    "PHY_OPT_LEGACY",
+    "PHY_OPT_RAY_CANONICAL",
+    "PHY_OPT_WAVE_CANONICAL",
+    "DEPRECATED_IDS",
+    "EXCLUDED_FROM_JEE_MAIN_2027",
+    "get_migration_adapter",
+]

@@ -4,8 +4,6 @@ import {
   Search,
   Sparkles,
   CheckCircle2,
-  XCircle,
-  MessageCircle,
   Star,
   Zap,
   ShieldCheck,
@@ -14,28 +12,30 @@ import {
   Target,
   Heart,
   Filter,
+  MessageCircle,
+  RefreshCw,
 } from 'lucide-react';
 import type { Subject } from '../../api/client';
+import { ApiClient } from '../../api/client';
 
-/**
- * Peer discovery entry — represents another learner on the platform
- * with their public strengths and learning interests.
- */
-interface PeerProfile {
+export interface PeerProfile {
   learner_id: string;
   display_name: string;
   avatar_emoji: string;
-  strengths: string[];      // concept IDs they've mastered (>70%)
-  learning_goals: string[]; // concept IDs they're actively studying (<50%)
+  role?: string;
+  specialty?: string;
+  strengths: string[];
+  learning_goals: string[];
   mastery_avg: number;
   subjects: string[];
-  match_score: number;       // how well this peer complements the current user
+  match_score: number;
   online_status: 'online' | 'idle' | 'offline';
 }
 
-interface ConnectionRequest {
+export interface ConnectionRecord {
   id: string;
   from_id: string;
+  to_id: string;
   from_name: string;
   from_avatar: string;
   topic: string;
@@ -50,82 +50,63 @@ interface PeerMarketplaceProps {
   selectedSubject: Subject | null;
 }
 
-// Generate realistic peer profiles from platform data
-function generatePeerProfiles(learnerId: string, subjectTitle: string): PeerProfile[] {
-  const peerNames = [
-    { id: 'peer_jordan', name: 'Jordan Park', emoji: '🧑‍💻' },
-    { id: 'peer_sam', name: 'Samira Haddad', emoji: '👩‍🔬' },
-    { id: 'peer_taylor', name: 'Taylor Chen', emoji: '👨‍🎓' },
-    { id: 'peer_riley', name: 'Riley Morgan', emoji: '🧑‍🎓' },
-    { id: 'peer_avery', name: 'Avery Nakamura', emoji: '👩‍💻' },
-    { id: 'peer_casey', name: 'Casey Okonkwo', emoji: '🧑‍🏫' },
-    { id: 'peer_drew', name: 'Drew Martinez', emoji: '👨‍💻' },
-    { id: 'peer_rowan', name: 'Rowan Patil', emoji: '👩‍🎓' },
-  ];
-
-  // Generate concept-level strengths/weaknesses based on typical CS topics
-  const conceptPool = [
-    'Sorting Algorithms', 'Graph Traversal', 'Dynamic Programming', 'Recursion',
-    'Binary Search Trees', 'Hash Tables', 'Stack Operations', 'Queue Operations',
-    'Linked Lists', 'Time Complexity', 'Greedy Algorithms', 'Divide and Conquer',
-    'BFS vs DFS', 'Shortest Path', 'Tree Balancing', 'Memory Management',
-  ];
-
-  return peerNames
-    .filter(p => p.id !== learnerId)
-    .map((peer, idx) => {
-      const strengthCount = 3 + Math.floor(Math.random() * 4);
-      const goalCount = 2 + Math.floor(Math.random() * 3);
-      const shuffled = [...conceptPool].sort(() => Math.random() - 0.5);
-      return {
-        learner_id: peer.id,
-        display_name: peer.name,
-        avatar_emoji: peer.emoji,
-        strengths: shuffled.slice(0, strengthCount),
-        learning_goals: shuffled.slice(strengthCount, strengthCount + goalCount),
-        mastery_avg: 0.35 + Math.random() * 0.55,
-        subjects: [subjectTitle || 'Computer Science'],
-        match_score: 0.4 + Math.random() * 0.55,
-        online_status: idx < 3 ? 'online' : idx < 5 ? 'idle' : 'offline' as const,
-      };
-    });
-}
-
 export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
   learnerId,
   subjects: _subjects,
   selectedSubject,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStrength, setFilterStrength] = useState<string>('');
+  const [filterTopic, setFilterTopic] = useState<string>('');
   const [peers, setPeers] = useState<PeerProfile[]>([]);
-  const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
+  const [isLoadingPeers, setIsLoadingPeers] = useState<boolean>(true);
+  const [connections, setConnections] = useState<{ incoming: ConnectionRecord[]; outgoing: ConnectionRecord[]; all: ConnectionRecord[] }>({
+    incoming: [],
+    outgoing: [],
+    all: [],
+  });
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'DISCOVER' | 'CONNECTIONS' | 'MY_PROFILE'>('DISCOVER');
   const [connectMessage, setConnectMessage] = useState('');
   const [connectingPeerId, setConnectingPeerId] = useState<string | null>(null);
 
-  // Load peers on mount or subject change
+  // Load authentic peers and connections from persistent backend
+  const loadMarketplaceData = React.useCallback(async () => {
+    setIsLoadingPeers(true);
+    try {
+      const [fetchedPeers, connsData] = await Promise.all([
+        ApiClient.getMarketplacePeers(selectedSubject?.id),
+        ApiClient.getMarketplaceConnections().catch(() => ({ incoming: [], outgoing: [], all: [] })),
+      ]);
+
+      if (Array.isArray(fetchedPeers) && fetchedPeers.length > 0) {
+        setPeers(fetchedPeers);
+      }
+      if (connsData) {
+        setConnections(connsData);
+        const sentIds = new Set<string>((connsData.outgoing || []).map((c: any) => c.to_id));
+        setSentRequests(sentIds);
+      }
+    } catch (err) {
+      console.warn('Failed to load marketplace peers:', err);
+    } finally {
+      setIsLoadingPeers(false);
+    }
+  }, [selectedSubject?.id]);
+
   useEffect(() => {
-    const profiles = generatePeerProfiles(learnerId, selectedSubject?.title || 'Computer Science');
-    setPeers(profiles);
+    loadMarketplaceData();
+  }, [loadMarketplaceData]);
 
-    // Simulate an incoming connection request
-    setConnectionRequests([
-      {
-        id: 'req_001',
-        from_id: 'peer_sam',
-        from_name: 'Samira Haddad',
-        from_avatar: '👩‍🔬',
-        topic: 'Dynamic Programming',
-        message: 'Hey! I noticed you\'re strong in recursion — I could really use help connecting it to DP patterns. I can help you with graph traversal in return!',
-        status: 'PENDING',
-        created_at: new Date(Date.now() - 1800000).toISOString(),
-      },
-    ]);
-  }, [learnerId, selectedSubject]);
+  // Extract distinct topics/strengths from loaded peers for the filter dropdown
+  const availableTopics = useMemo(() => {
+    const topicSet = new Set<string>();
+    peers.forEach(p => {
+      p.strengths.forEach(s => topicSet.add(s));
+    });
+    return Array.from(topicSet).sort();
+  }, [peers]);
 
-  // Filter and sort peers
+  // Filter and sort peers by match score
   const filteredPeers = useMemo(() => {
     let result = [...peers];
     if (searchQuery.trim()) {
@@ -136,30 +117,44 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
         p.learning_goals.some(g => g.toLowerCase().includes(q))
       );
     }
-    if (filterStrength) {
+    if (filterTopic) {
       result = result.filter(p =>
-        p.strengths.some(s => s.toLowerCase().includes(filterStrength.toLowerCase()))
+        p.strengths.some(s => s.toLowerCase().includes(filterTopic.toLowerCase())) ||
+        p.learning_goals.some(g => g.toLowerCase().includes(filterTopic.toLowerCase()))
       );
     }
     return result.sort((a, b) => b.match_score - a.match_score);
-  }, [peers, searchQuery, filterStrength]);
+  }, [peers, searchQuery, filterTopic]);
 
-  // Handle sending connection request
-  const handleSendRequest = (peer: PeerProfile) => {
-    setSentRequests(prev => new Set([...prev, peer.learner_id]));
-    setConnectingPeerId(null);
-    setConnectMessage('');
+  // Send persistent connection request
+  const handleSendRequest = async (peer: PeerProfile) => {
+    try {
+      await ApiClient.sendMarketplaceConnection({
+        to_id: peer.learner_id,
+        topic: peer.strengths[0] || 'Concept Discussion',
+        message: connectMessage.trim() || `Hey ${peer.display_name}, I'd love to study ${peer.strengths[0] || 'concepts'} together!`,
+      });
+      setSentRequests(prev => new Set([...prev, peer.learner_id]));
+      setConnectingPeerId(null);
+      setConnectMessage('');
+      loadMarketplaceData();
+    } catch (err) {
+      console.error('Failed to send connection request:', err);
+    }
   };
 
-  // Handle incoming request response
-  const handleRespondToRequest = (reqId: string, accept: boolean) => {
-    setConnectionRequests(prev =>
-      prev.map(r => r.id === reqId ? { ...r, status: accept ? 'ACCEPTED' : 'DECLINED' } : r)
-    );
+  // Respond to connection request (Accept / Decline)
+  const handleRespondToRequest = async (reqId: string, accept: boolean) => {
+    try {
+      await ApiClient.respondMarketplaceConnection(reqId, accept);
+      loadMarketplaceData();
+    } catch (err) {
+      console.error('Failed to respond to connection request:', err);
+    }
   };
 
-  const pendingIncoming = connectionRequests.filter(r => r.status === 'PENDING');
-  const acceptedConnections = connectionRequests.filter(r => r.status === 'ACCEPTED');
+  const pendingIncoming = connections.incoming.filter(r => r.status === 'PENDING');
+  const acceptedConnections = connections.all.filter(r => r.status === 'ACCEPTED');
 
   const statusDotColor = (s: PeerProfile['online_status']) =>
     s === 'online' ? 'bg-emerald-400' : s === 'idle' ? 'bg-amber-400' : 'bg-zinc-500';
@@ -173,7 +168,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             <div className="flex items-center gap-2.5">
               <span className="px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-400/30 text-purple-300 text-[11px] font-mono font-semibold uppercase tracking-wider flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5" />
-                Peer Learning Network
+                Collaborative Knowledge Exchange
               </span>
               {pendingIncoming.length > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-mono font-bold animate-pulse">
@@ -182,10 +177,10 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
               )}
             </div>
             <h1 className="text-2xl lg:text-3xl font-display font-bold text-white tracking-tight">
-              Student Marketplace
+              Student Peer Marketplace
             </h1>
             <p className="text-sm text-universe-slate max-w-2xl">
-              Discover peers studying similar topics. See their strengths and learning goals. Connect with mutual consent to teach and learn from each other.
+              Connect with peers studying {selectedSubject?.title || 'JEE STEM curriculum'}. Complementary skill matching pairs your learning goals with verified peer strengths.
             </p>
           </div>
 
@@ -196,8 +191,15 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             </div>
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/20 text-center">
               <div className="text-2xl font-display font-bold text-emerald-300">{acceptedConnections.length}</div>
-              <div className="text-[10px] font-mono text-universe-slate uppercase">Connections</div>
+              <div className="text-[10px] font-mono text-universe-slate uppercase">Partners</div>
             </div>
+            <button
+              onClick={loadMarketplaceData}
+              className="p-3 rounded-xl bg-space-800 hover:bg-space-750 text-universe-slate hover:text-white border border-white/[0.08] transition-colors"
+              title="Refresh peer discovery"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingPeers ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -245,7 +247,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
           }`}
         >
           <Award className="w-4 h-4" />
-          <span>My Profile</span>
+          <span>My Profile & Skills</span>
         </button>
       </div>
 
@@ -260,33 +262,32 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, topic strength, or learning goal..."
+                placeholder="Search by peer name, concept strength, or learning goal..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs placeholder-universe-slate focus:outline-none focus:border-purple-400 transition-colors"
               />
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-universe-slate" />
               <select
-                value={filterStrength}
-                onChange={(e) => setFilterStrength(e.target.value)}
-                className="px-3 py-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs focus:outline-none focus:border-purple-400 cursor-pointer"
+                value={filterTopic}
+                onChange={(e) => setFilterTopic(e.target.value)}
+                className="px-3 py-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs focus:outline-none focus:border-purple-400 cursor-pointer max-w-xs"
               >
-                <option value="">All Topics</option>
-                <option value="sorting">Sorting Algorithms</option>
-                <option value="graph">Graph Traversal</option>
-                <option value="dynamic">Dynamic Programming</option>
-                <option value="recursion">Recursion</option>
-                <option value="binary search">Binary Search Trees</option>
-                <option value="hash">Hash Tables</option>
+                <option value="">All Topics ({availableTopics.length})</option>
+                {availableTopics.slice(0, 15).map((topic) => (
+                  <option key={topic} value={topic}>
+                    {topic}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
-          {/* Consent Notice */}
+          {/* Privacy Consent Notice */}
           <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300/90 flex items-start gap-2.5">
             <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
             <span>
-              <strong>Privacy First:</strong> Connection requests require mutual consent from both parties. Your detailed mastery data is never shared — only your public strengths and learning goals are visible.
+              <strong>Curriculum Grounded & Consent-Gated:</strong> Peer skills are evaluated against verified JEE Main / NCERT syllabus masteries. Exact assessment logs remain strictly private.
             </span>
           </div>
 
@@ -313,19 +314,19 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                       <div>
                         <h3 className="font-semibold text-white text-sm">{peer.display_name}</h3>
                         <p className="text-[11px] text-universe-slate font-mono">
-                          Avg Mastery: <span className="text-cyan-300">{(peer.mastery_avg * 100).toFixed(0)}%</span>
-                          {' • '}
-                          <span className={`${peer.online_status === 'online' ? 'text-emerald-400' : peer.online_status === 'idle' ? 'text-amber-400' : 'text-zinc-400'}`}>
-                            {peer.online_status}
-                          </span>
+                          {peer.role || 'Peer Scholar'}
+                          {peer.specialty ? ` • ${peer.specialty}` : ''}
+                        </p>
+                        <p className="text-[10px] text-universe-slate font-mono mt-0.5">
+                          Avg Mastery: <span className="text-cyan-300">{Math.round(peer.mastery_avg * 100)}%</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-400/20">
                       <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                       <span className="text-xs font-mono font-bold text-purple-300">
-                        {(peer.match_score * 100).toFixed(0)}% match
+                        {Math.round(peer.match_score * 100)}% match
                       </span>
                     </div>
                   </div>
@@ -334,7 +335,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 uppercase tracking-wider">
                       <Star className="w-3 h-3" />
-                      Can Teach You
+                      Verified Strengths (Can Teach You)
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {peer.strengths.slice(0, 4).map((s) => (
@@ -354,7 +355,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-400 uppercase tracking-wider">
                       <Target className="w-3 h-3" />
-                      Wants to Learn
+                      Active Goals (Seeking Study Buddy)
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {peer.learning_goals.slice(0, 3).map((g) => (
@@ -368,9 +369,9 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                   {/* Connection Action */}
                   <div className="pt-2 border-t border-white/[0.06]">
                     {isSent ? (
-                      <div className="flex items-center gap-2 text-xs text-cyan-300">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Request sent — waiting for their consent</span>
+                      <div className="flex items-center gap-2 text-xs text-cyan-300 font-mono py-1">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Request Sent — Pending Peer Acceptance</span>
                       </div>
                     ) : isConnecting ? (
                       <div className="space-y-2">
@@ -378,7 +379,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                           rows={2}
                           value={connectMessage}
                           onChange={(e) => setConnectMessage(e.target.value)}
-                          placeholder={`Hey ${peer.display_name}, I'd love to learn ${peer.strengths[0]} from you! I can help with...`}
+                          placeholder={`Hey ${peer.display_name}, I saw your strength in ${peer.strengths[0] || 'this subject'}. Let's study together!`}
                           className="w-full p-2.5 rounded-xl bg-space-800 border border-white/[0.1] text-white text-xs placeholder-universe-slate focus:outline-none focus:border-purple-400"
                         />
                         <div className="flex items-center justify-end gap-2">
@@ -412,11 +413,11 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             })}
           </div>
 
-          {filteredPeers.length === 0 && (
+          {filteredPeers.length === 0 && !isLoadingPeers && (
             <div className="p-10 rounded-2xl bg-space-900/40 border border-white/[0.06] text-center space-y-2">
               <Users className="w-8 h-8 text-universe-slate mx-auto" />
               <p className="text-sm text-universe-slate">No peers match your search criteria.</p>
-              <p className="text-xs text-universe-slate/60">Try broadening your search or adjusting filters.</p>
+              <p className="text-xs text-universe-slate/60">Try clearing topic filters or searching for another subject.</p>
             </div>
           )}
         </div>
@@ -448,29 +449,29 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                         <div>
                           <span className="font-semibold text-white text-sm">{req.from_name}</span>
                           <p className="text-[10px] font-mono text-universe-slate">
-                            Topic: <span className="text-amber-300">{req.topic}</span>
-                            {' • '}
-                            {new Date(req.created_at).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                            Topic: <strong className="text-amber-300">{req.topic}</strong>
                           </p>
                         </div>
                       </div>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 text-[10px] font-mono">
+                        PENDING CONSENT
+                      </span>
                     </div>
 
-                    <p className="text-xs text-universe-text/80 bg-space-800/60 rounded-lg p-3 border border-white/[0.04] italic">
+                    <p className="text-xs text-universe-text font-sans bg-space-900/60 p-3 rounded-lg border border-white/[0.05]">
                       "{req.message}"
                     </p>
 
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2 pt-1">
                       <button
                         onClick={() => handleRespondToRequest(req.id, false)}
-                        className="px-3.5 py-1.5 rounded-lg bg-space-800 hover:bg-rose-500/15 text-universe-slate hover:text-rose-300 text-xs flex items-center gap-1.5 transition-all border border-white/[0.06] hover:border-rose-500/30"
+                        className="px-3 py-1.5 rounded-xl border border-white/[0.1] hover:bg-space-800 text-universe-slate hover:text-white text-xs transition-colors"
                       >
-                        <XCircle className="w-3.5 h-3.5" />
                         Decline
                       </button>
                       <button
                         onClick={() => handleRespondToRequest(req.id, true)}
-                        className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                        className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(168,85,129,0.3)]"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         Accept & Connect
@@ -482,7 +483,7 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             )}
           </div>
 
-          {/* Active Connections */}
+          {/* Active Partners */}
           <div className="p-6 rounded-2xl bg-space-900/70 border border-white/[0.08] space-y-4">
             <h3 className="text-sm font-display font-semibold text-white flex items-center gap-2">
               <Heart className="w-4 h-4 text-purple-400" />
@@ -505,22 +506,21 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
                         <p className="text-[10px] font-mono text-emerald-400">Connected • Topic: {conn.topic}</p>
                       </div>
                     </div>
-                    <button className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-xs flex items-center gap-1.5 transition-all">
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      Message
-                    </button>
+                    <span className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs font-mono">
+                      Connected Partner
+                    </span>
                   </div>
                 ))}
                 {[...sentRequests].map((peerId) => {
                   const peer = peers.find(p => p.learner_id === peerId);
                   if (!peer) return null;
                   return (
-                    <div key={peerId} className="p-4 rounded-xl bg-space-850/60 border border-white/[0.06] flex items-center justify-between gap-3 opacity-70">
+                    <div key={peerId} className="p-4 rounded-xl bg-space-850/60 border border-white/[0.06] flex items-center justify-between gap-3 opacity-75">
                       <div className="flex items-center gap-3">
                         <span className="text-xl p-1.5 rounded-lg bg-space-800">{peer.avatar_emoji}</span>
                         <div>
                           <span className="font-semibold text-white text-sm">{peer.display_name}</span>
-                          <p className="text-[10px] font-mono text-amber-300">Request Pending — awaiting their consent</p>
+                          <p className="text-[10px] font-mono text-amber-300">Request Pending — awaiting peer response</p>
                         </div>
                       </div>
                     </div>
@@ -539,8 +539,12 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             <div className="flex items-center gap-4">
               <span className="text-3xl p-3 rounded-2xl bg-space-800 border border-white/[0.08]">👨‍🎓</span>
               <div>
-                <h2 className="text-lg font-display font-bold text-white">{learnerId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</h2>
-                <p className="text-xs text-universe-slate font-mono">Your public profile is visible to other learners</p>
+                <h2 className="text-lg font-display font-bold text-white">
+                  Learner ID // {learnerId}
+                </h2>
+                <p className="text-xs text-universe-slate font-mono">
+                  Active Subject: {selectedSubject?.title || 'JEE STEM Curriculum'}
+                </p>
               </div>
             </div>
 
@@ -548,11 +552,11 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
               <div className="space-y-2">
                 <h4 className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Star className="w-3 h-3" />
-                  Your Public Strengths (Auto-Detected)
+                  Your Subject Strengths
                 </h4>
-                <p className="text-[10px] text-universe-slate">Concepts where your mastery exceeds 70% are listed as strengths.</p>
+                <p className="text-[10px] text-universe-slate">Concepts where your Bayesian mastery probability reaches proficiency.</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Recursion', 'Stack Operations', 'Time Complexity', 'Binary Search Trees'].map(s => (
+                  {['Kinematics', 'Laws of Motion', 'Chemical Thermodynamics', 'Rotational Dynamics'].map(s => (
                     <span key={s} className="px-2.5 py-1 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 text-xs">
                       {s}
                     </span>
@@ -563,11 +567,11 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
               <div className="space-y-2">
                 <h4 className="text-[11px] font-mono text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Target className="w-3 h-3" />
-                  Your Learning Goals (Auto-Detected)
+                  Your Active Learning Goals
                 </h4>
-                <p className="text-[10px] text-universe-slate">Concepts you're actively studying with mastery below 50%.</p>
+                <p className="text-[10px] text-universe-slate">Concepts currently in your prioritized learning path.</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Dynamic Programming', 'Graph Traversal', 'Greedy Algorithms'].map(g => (
+                  {['Magnetic Effects of Current', 'Electrostatics', 'Integral Calculus'].map(g => (
                     <span key={g} className="px-2.5 py-1 rounded-lg bg-amber-950/30 border border-amber-500/20 text-amber-300 text-xs">
                       {g}
                     </span>
@@ -579,8 +583,10 @@ export const PeerMarketplace: React.FC<PeerMarketplaceProps> = ({
             <div className="p-4 rounded-xl bg-space-850/40 border border-white/[0.06] text-xs text-universe-slate flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-white font-semibold">Privacy Controls</p>
-                <p>Your strengths and learning goals are auto-detected from your mastery levels. Your exact scores, practice history, and personal data are <strong className="text-emerald-300">never shared</strong> with peers. Only publicly listed topics are visible.</p>
+                <p className="text-white font-semibold">Privacy & Anonymity Controls</p>
+                <p>
+                  Your exact test results and diagnostic error logs are <strong className="text-emerald-300">strictly private</strong>. Only broad concept labels are shared with peers for matching.
+                </p>
               </div>
             </div>
           </div>

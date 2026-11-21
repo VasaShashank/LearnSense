@@ -1,0 +1,98 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://learnsense.example/contracts/v0.1/learner_state.schema.json",
+    "title": "LearnSense Learner State",
+    "description": "Per-learner, per-concept estimate and provenance. Mastery probability is an estimate, not a claim of certainty.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "learner_id",
+        "concept_id",
+        "mastery_probability",
+        "evidence_count",
+        "updated_at",
+        "model"
+    ],
+    "properties": {
+        "learner_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "concept_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "mastery_probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "evidence_count": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "last_attempt_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "last_evidence_at": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "version"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "version": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "parameters_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "extensions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": []
+                }
+            }
+        },
+        "status": {
+            "enum": [
+                "unassessed",
+                "provisional",
+                "estimated",
+                "needs_review"
+            ],
+            "default": "estimated"
+        },
+        "metadata": {
+            "type": "object",
+            "default": {}
+        }
+    }
+}

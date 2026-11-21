@@ -53,6 +53,49 @@ class Phase3Adapter:
         )
         self.target_selector = target_selector or NextTargetSelector()
 
+    @property
+    def person3_service(self):
+        """Lazy accessor to Person 3 authoritative PersonalizationService."""
+        try:
+            from phase3.service import LearnSensePersonalizationService
+            return LearnSensePersonalizationService()
+        except Exception:
+            try:
+                from src.service import LearnSensePersonalizationService
+                return LearnSensePersonalizationService()
+            except Exception:
+                return None
+
+    @property
+    def akt_service(self):
+        p3 = self.person3_service
+        return p3.akt_service if p3 else None
+
+    @property
+    def study_plan_service(self):
+        p3 = self.person3_service
+        return p3.study_plan_service if p3 else None
+
+    @property
+    def adaptive_engine(self):
+        p3 = self.person3_service
+        return p3.adaptive_engine if p3 else None
+
+    @property
+    def tutoring_engine(self):
+        p3 = self.person3_service
+        return p3.tutoring_engine if p3 else None
+
+    @property
+    def quiz_engine(self):
+        p3 = self.person3_service
+        return p3.quiz_engine if p3 else None
+
+    @property
+    def recommendation_engine(self):
+        p3 = self.person3_service
+        return p3.recommendation_engine if p3 else None
+
     def handle_activity_response_and_replan(
         self,
         learner_state: LearnerState,

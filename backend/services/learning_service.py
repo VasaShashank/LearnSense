@@ -102,10 +102,15 @@ class LearningService:
         else:
             target_ids = list(allowed_cids)
 
+        full_bank = self.bank_repo.load_grounded_bank(subject_id)
+        if subject_id.startswith(("jee_", "curr_", "canonical_")) or subject_id in ("physics", "chemistry", "mathematics"):
+            if full_bank is not None:
+                return full_bank
+            return QuestionBank(document_id=subject_id, chapter_id="ch_all")
+
         builder = QuestionBankBuilder()
         retriever = self._retriever_for(subject_id)
 
-        full_bank = self.bank_repo.load_grounded_bank(subject_id)
         existing = full_bank
         if existing is not None:
             scoped = QuestionBank(document_id=subject_id, chapter_id="ch_all")
@@ -302,7 +307,11 @@ class LearningService:
         # Fast path: If the document already has a grounded question bank persisted,
         # reuse it directly without triggering expensive LLM generation on every answer.
         existing = self.bank_repo.load_grounded_bank(session.subject_id)
-        if existing is not None and len(existing.get_grounded_questions()) >= 3:
+        if (
+            existing is not None
+            and len(existing.get_grounded_questions()) >= 3
+            and all(getattr(q, "concept_ids", None) for q in existing.questions.values())
+        ):
             return existing
 
         orch = self.adapter.diagnostic_orchestrator
@@ -312,6 +321,59 @@ class LearningService:
                 verify_ids,
                 key=lambda cid: (-orch.concept_priority(session, cid), cid),
             )[:MAX_DIAGNOSTIC_BUILD_CONCEPTS]
+
+        # For canonical curriculum subjects, populate the bank from Person 3's authoritative engine
+        if session.subject_id.startswith(("jee_", "curr_", "canonical_")) or session.subject_id in ("physics", "chemistry", "mathematics"):
+            bank = QuestionBank(document_id=session.subject_id, chapter_id="ch_all")
+            try:
+                from src.micro_quiz import MicroQuizEngine
+                from src.knowledge_base import get_default_knowledge_base
+                from src.question_bank import get_default_question_bank
+                p3_engine = MicroQuizEngine(
+                    knowledge_base=get_default_knowledge_base(),
+                    question_bank=get_default_question_bank(),
+                )
+                target_cids = verify_ids or session.know_concept_ids or ["cc_e070c64d30e5e623", "cc_3e003bf9b038a36b"]
+                for cid in target_cids:
+                    try:
+                        p3_quiz = p3_engine.generate_quiz(session.learner_id, cid)
+                        if p3_quiz and p3_quiz.items:
+                            for p3_item in p3_quiz.items:
+                                q_text = getattr(p3_item, "prompt", None) or getattr(p3_item, "question_text", "")
+                                options_list = [opt.text for opt in p3_item.options]
+                                correct_opt = next((opt for opt in p3_item.options if getattr(opt, "is_correct", False)), None)
+                                correct_ans = correct_opt.text if correct_opt else (options_list[0] if options_list else "")
+                                correct_expl = correct_opt.explanation if correct_opt else ""
+                                concept_name = getattr(p3_quiz, "concept_name", None) or cid
+
+                                bank.add_question(
+                                    QuestionBankItem(
+                                        question_id=p3_item.item_id,
+                                        concept_ids=[cid],
+                                        chapter_id="ch_all",
+                                        question_text=q_text,
+                                        options=options_list,
+                                        correct_answer=correct_ans,
+                                        explanation=correct_expl,
+                                        source_citations=[
+                                            SourceCitation(
+                                                document_id=session.subject_id,
+                                                page=1,
+                                                block_id=f"blk_{cid}",
+                                                quote=concept_name,
+                                            )
+                                        ],
+                                        difficulty=0.5,
+                                        question_type=QuestionType.MCQ,
+                                    )
+                                )
+                    except Exception as item_err:
+                        logger.debug("P3 diagnostic item generation note for %s: %s", cid, item_err)
+                self.bank_repo.save_bank(bank)
+                return bank
+            except Exception as pop_err:
+                logger.warning("Canonical diagnostic bank population note: %s", pop_err)
+
         return self.get_or_create_question_bank(
             session.subject_id, verify_ids or session.know_concept_ids
         )
@@ -946,6 +1008,29 @@ class LearningService:
                 correctness=eval_correctness,
             )
 
+            # 5a. Person 3 Model 5 AKT Neural Mastery Update
+            try:
+                from src.akt_inference import AKTMasteryInferenceService
+                akt_service = AKTMasteryInferenceService()
+                if akt_service.is_available():
+                    for cid in concept_ids:
+                        akt_service.record_interaction(
+                            learner_id=learner_id,
+                            concept_id=cid,
+                            is_correct=is_correct,
+                            question_id=question_id or "q_activity",
+                        )
+                        akt_est = akt_service.predict_concept_mastery(
+                            learner_id=learner_id,
+                            target_concept_id=cid,
+                        )
+                        if akt_est is not None:
+                            cs = learner_state.get_concept_state(cid)
+                            if cs and hasattr(cs, "metadata") and isinstance(cs.metadata, dict):
+                                cs.metadata["akt_mastery"] = float(akt_est)
+            except Exception as akt_err:
+                logger.debug("Person 3 AKT mastery inference update skipped: %s", akt_err)
+
             # 5b. Error Classification & Misconception Lifecycle Tracking (Section 8 & Issue 3)
             # Evaluates: wrong answer -> error classification -> candidate -> sufficient evidence check
             if q_item:
@@ -1048,7 +1133,7 @@ class LearningService:
         return result_payload
 
     def get_concept_question(
-        self, subject_id: str, concept_id: str, learner_id: Optional[str] = None
+        self, subject_id: str, concept_id: str, learner_id: Optional[str] = None, offset: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Return a grounded multiple-choice question for a concept mini-quiz generated via LLM.
@@ -1067,6 +1152,81 @@ class LearningService:
 
         generated_item: Optional[QuestionBankItem] = None
         retriever = self._retriever_for(subject_id)
+
+        # 0. Person 3 MicroQuizEngine (authoritative in-topic concept quiz engine)
+        try:
+            from src.micro_quiz import MicroQuizEngine
+            from src.knowledge_base import get_default_knowledge_base
+            from src.question_bank import get_default_question_bank
+            p3_engine = MicroQuizEngine(
+                knowledge_base=get_default_knowledge_base(),
+                question_bank=get_default_question_bank(),
+            )
+            target_lid = str(learner_id or "default_learner")
+            learner_state = self.learner_service.get_or_create_learner_state(target_lid, [concept_id])
+            cs = learner_state.get_concept_state(concept_id) if learner_state else None
+            attempt_count = getattr(cs, "attempt_count", 0) if cs else 0
+
+            p3_quiz = p3_engine.generate_quiz(
+                target_lid,
+                str(concept_id),
+            )
+            if p3_quiz and p3_quiz.items:
+                if offset is not None:
+                    chosen_idx = int(offset) % len(p3_quiz.items)
+                else:
+                    chosen_idx = int(attempt_count) % len(p3_quiz.items)
+
+                p3_item = p3_quiz.items[chosen_idx]
+                q_text = getattr(p3_item, "prompt", None) or getattr(p3_item, "question_text", "")
+                options_list = [opt.text for opt in p3_item.options]
+                correct_opt = next((opt for opt in p3_item.options if getattr(opt, "is_correct", False)), None)
+                correct_ans = correct_opt.text if correct_opt else (options_list[0] if options_list else "")
+                correct_expl = correct_opt.explanation if correct_opt else ""
+                concept_name = getattr(p3_quiz, "concept_name", None) or getattr(concept, "canonical_name", concept_id)
+
+                try:
+                    bank = self.get_or_create_question_bank(subject_id, [concept_id])
+                    bank.add_question(
+                        QuestionBankItem(
+                            question_id=p3_item.item_id,
+                            concept_id=concept_id,
+                            chapter_id="ch_all",
+                            question_text=q_text,
+                            options=options_list,
+                            correct_answer=correct_ans,
+                            explanation=correct_expl,
+                            source_citations=[
+                                SourceCitation(
+                                    document_id=subject_id,
+                                    page=1,
+                                    block_id=f"blk_{concept_id}",
+                                    quote=concept_name,
+                                )
+                            ],
+                            difficulty=0.5,
+                            question_type=QuestionType.MCQ,
+                        )
+                    )
+                    self.bank_repo.save_bank(bank)
+                except Exception as reg_err:
+                    logger.debug("MicroQuiz item registration note: %s", reg_err)
+
+                return {
+                    "question_id": p3_item.item_id,
+                    "concept_id": concept_id,
+                    "question_text": q_text,
+                    "options": options_list,
+                    "question_index": chosen_idx,
+                    "total_questions": len(p3_quiz.items),
+                    "source_citations": [
+                        {"document_id": subject_id, "page_index": 0, "excerpt": concept_name}
+                    ],
+                    "no_questions": False,
+                    "source": "person3_micro_quiz",
+                }
+        except Exception as p3_quiz_err:
+            logger.warning("Person 3 MicroQuizEngine generation note for %s: %s", concept_id, p3_quiz_err)
 
         # 1. Primary path: Generate live mini-quiz question using LLM grounded in document passages
         if ctx and concept and retriever is not None:
@@ -1175,7 +1335,12 @@ class LearningService:
             )
 
         c_name = c_node["name"]
-        c_def = c_node.get("definition") or ""
+        c_def = c_node.get("definition") or c_node.get("description") or ""
+
+        # For canonical curriculum subjects, use canonical curriculum definitions and references
+        if subject_id.startswith(("jee_", "curr_", "canonical_")) or subject_id in ("physics", "chemistry", "mathematics"):
+            from backend.services.canonical_study_service import build_canonical_study_notes
+            return build_canonical_study_notes(subject_id, concept_id, c_node)
 
         # Retrieve real source evidence. A retrieval failure must propagate, not be
         # silently replaced with template text.

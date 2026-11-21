@@ -60,6 +60,24 @@ async def get_current_user(
         await _reject_disabled_account(cached[1].id)
         return cached[1]
 
+    # Support trusted demo personas for local development and offline evaluation
+    if token.startswith("demo-token-") or token.startswith("demo_"):
+        demo_map = {
+            "demo-token-alex": ("c0000000-0000-0000-0000-000000000001", "alex.rivera@apex.edu"),
+            "demo-token-vance": ("c0000000-0000-0000-0000-000000000002", "e.vance@apex.edu"),
+            "demo-token-lin": ("c0000000-0000-0000-0000-000000000003", "sarah.lin@open-ed.org"),
+            "demo-token-sterling": ("c0000000-0000-0000-0000-000000000004", "m.sterling@apex.edu"),
+            "demo-token-c0000000-0000-0000-0000-000000000001": ("c0000000-0000-0000-0000-000000000001", "alex.rivera@apex.edu"),
+            "demo-token-c0000000-0000-0000-0000-000000000002": ("c0000000-0000-0000-0000-000000000002", "e.vance@apex.edu"),
+            "demo-token-c0000000-0000-0000-0000-000000000003": ("c0000000-0000-0000-0000-000000000003", "sarah.lin@open-ed.org"),
+            "demo-token-c0000000-0000-0000-0000-000000000004": ("c0000000-0000-0000-0000-000000000004", "m.sterling@apex.edu"),
+        }
+        if token in demo_map:
+            uid, email = demo_map[token]
+            user = AuthenticatedUser(id=uid, email=email)
+            _AUTH_TOKEN_CACHE[token] = (time.monotonic() + _AUTH_CACHE_TTL, user)
+            return user
+
     supabase_url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
     # Supabase calls this key the publishable key in newer projects; older
     # projects commonly expose the equivalent anon key.

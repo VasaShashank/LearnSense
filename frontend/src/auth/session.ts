@@ -1,6 +1,33 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from './supabase'
+import { setDemoAccessToken, supabase } from './supabase'
+
+export const DEMO_PERSONAS: Record<string, { id: string; email: string; name: string; role: string }> = {
+  'alex.rivera@apex.edu': {
+    id: 'c0000000-0000-0000-0000-000000000001',
+    email: 'alex.rivera@apex.edu',
+    name: 'Alex Rivera',
+    role: 'STUDENT',
+  },
+  'e.vance@apex.edu': {
+    id: 'c0000000-0000-0000-0000-000000000002',
+    email: 'e.vance@apex.edu',
+    name: 'Prof. Eleanor Vance',
+    role: 'INSTITUTIONAL_TEACHER',
+  },
+  'sarah.lin@open-ed.org': {
+    id: 'c0000000-0000-0000-0000-000000000003',
+    email: 'sarah.lin@open-ed.org',
+    name: 'Dr. Sarah Lin',
+    role: 'INDEPENDENT_TEACHER',
+  },
+  'm.sterling@apex.edu': {
+    id: 'c0000000-0000-0000-0000-000000000004',
+    email: 'm.sterling@apex.edu',
+    name: 'Dr. Marcus Sterling',
+    role: 'ADMIN',
+  },
+}
 
 export type AuthOperation =
   | 'idle'
@@ -89,7 +116,34 @@ export class AuthSessionStore {
   start = (): (() => void) => {
     const lifecycle = ++this.lifecycle
     if (!this.client) {
-      this.publish({ loading: false, session: null })
+      let savedPersona: any = null
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const raw = localStorage.getItem('learnsense_demo_persona')
+          if (raw) savedPersona = JSON.parse(raw)
+        }
+      } catch {
+        // ignore
+      }
+      if (savedPersona && savedPersona.id && savedPersona.email) {
+        const token = `demo-token-${savedPersona.id}`
+        setDemoAccessToken(token)
+        const session = {
+          access_token: token,
+          token_type: 'bearer',
+          user: {
+            id: savedPersona.id,
+            email: savedPersona.email,
+            app_metadata: { provider: 'demo' },
+            user_metadata: { name: savedPersona.name },
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+          },
+        } as unknown as Session
+        this.publish({ loading: false, session, error: null })
+      } else {
+        this.publish({ loading: false, session: null })
+      }
       return () => {
         if (this.lifecycle === lifecycle) this.lifecycle += 1
       }
@@ -132,8 +186,43 @@ export class AuthSessionStore {
     }
   }
 
+  signInDemo(email: string, role?: string, subrole?: string): boolean {
+    const cleanEmail = email.trim().toLowerCase()
+    const persona = DEMO_PERSONAS[cleanEmail] || {
+      id: 'c0000000-0000-0000-0000-000000000001',
+      email: cleanEmail,
+      name: cleanEmail.split('@')[0],
+      role: role || 'STUDENT',
+    }
+    const token = `demo-token-${persona.id}`
+    setDemoAccessToken(token)
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('learnsense_demo_persona', JSON.stringify(persona))
+      if (role) localStorage.setItem('learnsense_initial_role', role)
+      if (subrole) localStorage.setItem('learnsense_initial_subrole', subrole)
+    }
+    const session = {
+      access_token: token,
+      token_type: 'bearer',
+      user: {
+        id: persona.id,
+        email: persona.email,
+        app_metadata: { provider: 'demo' },
+        user_metadata: { name: persona.name },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      },
+    } as unknown as Session
+
+    this.publish({ operation: 'idle', session, error: null, loading: false })
+    return true
+  }
+
   async signIn(email: string, password: string): Promise<boolean> {
     if (!this.client) {
+      if (DEMO_PERSONAS[email.trim().toLowerCase()] || password === 'TestUser123!' || email.includes('@')) {
+        return this.signInDemo(email)
+      }
       this.publish({ error: 'Supabase authentication is not configured for this application.' })
       return false
     }
@@ -286,9 +375,21 @@ export class AuthSessionStore {
   }
 
   async signOut(): Promise<boolean> {
-    if (!this.client) {
-      this.publish({ error: 'Supabase authentication is not configured for this application.' })
-      return false
+    if (!this.client || this.snapshot.session?.access_token?.startsWith('demo-token-')) {
+      setDemoAccessToken(null)
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('learnsense_demo_persona')
+      }
+      this.publish({
+        operation: 'idle',
+        session: null,
+        error: null,
+        loading: false,
+        isPasswordRecovery: false,
+        needsEmailConfirmation: false,
+        confirmationEmail: null,
+      })
+      return true
     }
 
     this.publish({ operation: 'signing-out', error: null })

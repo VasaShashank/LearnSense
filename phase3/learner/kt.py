@@ -128,6 +128,28 @@ class KnowledgeTracer:
 
             updated_masteries[c_id] = c_state.mastery_probability
 
+        # --- 7. Person 3 Model 5 AKT Neural Knowledge Tracing ---
+        try:
+            from src.akt_inference import AKTMasteryInferenceService
+            akt_svc = AKTMasteryInferenceService()
+            if akt_svc.is_available():
+                for c_id in concept_ids:
+                    akt_svc.record_interaction(
+                        learner_id=learner_state.learner_id,
+                        concept_id=c_id,
+                        is_correct=(correctness >= 0.7),
+                    )
+                    akt_val = akt_svc.predict_concept_mastery(
+                        learner_id=learner_state.learner_id,
+                        target_concept_id=c_id,
+                    )
+                    if akt_val is not None:
+                        cs = learner_state.get_concept_state(c_id)
+                        if hasattr(cs, "metadata") and isinstance(cs.metadata, dict):
+                            cs.metadata["akt_mastery"] = float(akt_val)
+        except Exception:
+            pass
+
         return updated_masteries
 
     @staticmethod

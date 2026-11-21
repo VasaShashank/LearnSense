@@ -16,9 +16,29 @@ export const supabase = supabaseUrl && supabaseKey
     })
   : null
 
+let _activeDemoToken: string | null = null
+
+export function setDemoAccessToken(token: string | null): void {
+  _activeDemoToken = token
+  if (typeof window !== 'undefined' && window.localStorage) {
+    if (token) {
+      localStorage.setItem('learnsense_demo_token', token)
+    } else {
+      localStorage.removeItem('learnsense_demo_token')
+    }
+  }
+}
+
+export function getDemoAccessToken(): string | null {
+  if (!_activeDemoToken && typeof window !== 'undefined' && window.localStorage) {
+    _activeDemoToken = localStorage.getItem('learnsense_demo_token')
+  }
+  return _activeDemoToken
+}
+
 /** Return the current session token, refreshing an expired session through Supabase. */
 export async function getCurrentAccessToken(): Promise<string | null> {
-  if (!supabase) return null
+  if (!supabase) return getDemoAccessToken()
 
   try {
     const { data, error } = await supabase.auth.getSession()

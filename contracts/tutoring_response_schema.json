@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://learnsense.example/contracts/v0.1/tutoring_response.schema.json",
+  "title": "LearnSense Tutoring Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "response_id",
+    "request_id",
+    "mode",
+    "content",
+    "created_at"
+  ],
+  "properties": {
+    "response_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "mode": {
+      "enum": [
+        "explanation",
+        "guided_question",
+        "hint",
+        "worked_example",
+        "feedback",
+        "practice_prompt",
+        "clarification",
+        "other"
+      ]
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_index",
+          "content"
+        ],
+        "properties": {
+          "step_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "concept_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "default": []
+          }
+        }
+      },
+      "default": []
+    },
+    "concept_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "next_action": {
+      "enum": [
+        "answer_question",
+        "try_problem",
+        "review_concept",
+        "ask_followup",
+        "finish",
+        "none"
+      ],
+      "default": "none"
+    },
+    "safety_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "default": {}
+    }
+  }
+}

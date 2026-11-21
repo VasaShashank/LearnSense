@@ -169,6 +169,7 @@ def test_full_akt_vocabulary_compatibility_report(canonical_jee_graph: object) -
     assert report["concepts_requiring_authoring"] == []
 
 
+@pytest.mark.skipif(not V2_CONCEPTS_CSV.is_file(), reason="Simulator CSV missing")
 def test_che_ion_resolution(canonical_jee_graph: object) -> None:
     """Verify CHE_ION resolves to Ionic Equilibrium as a distinct canonical node."""
     sim_ion = load_simulator_concepts(V2_CONCEPTS_CSV)

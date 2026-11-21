@@ -1,0 +1,144 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://learnsense.example/contracts/v0.1/recommendation.schema.json",
+    "title": "LearnSense Recommendation",
+    "description": "An actionable recommendation with transparent rationale and stable references.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "recommendation_id",
+        "learner_id",
+        "kind",
+        "target",
+        "reason_codes",
+        "created_at",
+        "status"
+    ],
+    "properties": {
+        "recommendation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "learner_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "kind": {
+            "enum": [
+                "practice_question",
+                "review_concept",
+                "learn_concept",
+                "worked_example",
+                "hint",
+                "reassessment",
+                "tutor_session"
+            ]
+        },
+        "target": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "target_type",
+                "target_id"
+            ],
+            "properties": {
+                "target_type": {
+                    "enum": [
+                        "question",
+                        "concept",
+                        "lesson",
+                        "learning_resource",
+                        "tutor_session"
+                    ]
+                },
+                "target_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                }
+            }
+        },
+        "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "enum": [
+                    "low_mastery_estimate",
+                    "prerequisite_gap",
+                    "spaced_review_due",
+                    "recent_error_pattern",
+                    "ready_for_challenge",
+                    "requested_help",
+                    "curriculum_sequence",
+                    "teacher_assigned",
+                    "other"
+                ]
+            },
+            "uniqueItems": true
+        },
+        "rationale": {
+            "type": "string"
+        },
+        "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 50
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "expires_at": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "format": "date-time"
+        },
+        "status": {
+            "enum": [
+                "proposed",
+                "presented",
+                "accepted",
+                "dismissed",
+                "completed",
+                "expired"
+            ]
+        },
+        "evidence_refs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "ref_type",
+                    "ref_id"
+                ],
+                "properties": {
+                    "ref_type": {
+                        "enum": [
+                            "attempt",
+                            "learner_state",
+                            "concept",
+                            "question",
+                            "teacher_input"
+                        ]
+                    },
+                    "ref_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                    }
+                }
+            },
+            "default": []
+        },
+        "metadata": {
+            "type": "object",
+            "default": {}
+        }
+    }
+}

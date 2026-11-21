@@ -32,8 +32,37 @@ storage/interventions/
 storage/institutions/
 storage/curriculum/
 storage/document_owners/
+storage/marketplace/
+storage/users/
+storage/learners/
+storage/subjects/
+storage/resources/
+storage/*.tmp
 tests/tmp_knowledge/
+tests/release_verification_results.json
+
+# External references and staging bundles
+staging_p3_v102/
+References/
+P3_ML_HANDOFF/
+
 # Local deployment secrets (templates end in .example and are committed)
 deploy/env/*.env
 deploy/env/*.txt
 backups/
+
+# Distribution and handover archives
+LearnSense_Person3_v1.0.2.zip
+LearnSense_Person3_v1.0.2.sha256
+*.zip
+*.sha256
+
+# General logs and OS/IDE clutter
+*.log
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

@@ -40,6 +40,10 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
 
     const signedIn = await authSessionStore.signIn(demoEmail, 'TestUser123!')
     if (!signedIn) {
+      if (!configured) {
+        authSessionStore.signInDemo(demoEmail, role, subrole)
+        return
+      }
       authSessionStore.clearError()
       const supRes = await authSessionStore.signUp(demoEmail, 'TestUser123!')
       if (supRes.success) {
@@ -324,7 +328,15 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
         </div>
 
         {!configured && (
-          <AuthAlert message="Supabase authentication is not configured. Add the existing Supabase URL and publishable or anon key settings to the app environment." />
+          <div className="flex items-start gap-3 rounded-xl border border-cyan-400/30 bg-cyan-500/[0.08] p-3 text-xs text-cyan-200">
+            <ShieldCheck className="w-4 h-4 shrink-0 text-cyan-400 mt-0.5" />
+            <div>
+              <span className="font-semibold text-white">Local Evaluation / Demo Mode</span>
+              <p className="mt-0.5 text-universe-slate">
+                Supabase credentials not configured in environment. Click any 1-click Demo Persona below to sign in instantly.
+              </p>
+            </div>
+          </div>
         )}
         {noticeMessage && (
           <div className="flex items-start gap-3 rounded-xl border border-cyan-400/30 bg-cyan-500/[0.08] p-4 text-sm text-cyan-200">
@@ -463,7 +475,7 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              disabled={!configured || isBusy}
+              disabled={isBusy}
               placeholder="you@domain.edu"
               className="w-full rounded-xl border border-white/[0.12] bg-space-950 px-4 py-3 text-white outline-none focus:border-cyan-400/50 disabled:opacity-60"
             />
@@ -493,7 +505,7 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
               minLength={isSignUp ? 8 : 1}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              disabled={!configured || isBusy}
+              disabled={isBusy}
               placeholder="••••••••"
               className="w-full rounded-xl border border-white/[0.12] bg-space-950 px-4 py-3 text-white outline-none focus:border-cyan-400/50 disabled:opacity-60"
             />
@@ -509,7 +521,7 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
                 minLength={8}
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                disabled={!configured || isBusy}
+                disabled={isBusy}
                 placeholder="••••••••"
                 className="w-full rounded-xl border border-white/[0.12] bg-space-950 px-4 py-3 text-white outline-none focus:border-cyan-400/50 disabled:opacity-60"
               />
@@ -518,7 +530,7 @@ export function AuthGate({ auth, configured }: AuthGateProps) {
 
           <button
             type="submit"
-            disabled={!configured || isBusy}
+            disabled={isBusy}
             className="w-full rounded-xl bg-cyan-500 px-4 py-3 text-sm font-bold text-space-950 hover:bg-cyan-400 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {(auth.operation === 'signing-in' || auth.operation === 'signing-up') && (

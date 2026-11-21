@@ -1,0 +1,196 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://learnsense.example/contracts/v0.1/attempt.schema.json",
+    "title": "LearnSense Assessment Attempt",
+    "description": "One submitted response to a question. Outcome fields are trusted only when produced or verified by the server/scoring service.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "attempt_id",
+        "learner_id",
+        "question_id",
+        "submitted_at",
+        "response",
+        "outcome"
+    ],
+    "properties": {
+        "attempt_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "learner_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "question_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "submitted_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "response": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+                "response_type",
+                "value"
+            ],
+            "properties": {
+                "response_type": {
+                    "enum": [
+                        "single_choice",
+                        "multiple_select",
+                        "numeric",
+                        "short_text",
+                        "structured_work",
+                        "other"
+                    ]
+                },
+                "value": {},
+                "work_steps": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                }
+            }
+        },
+        "outcome": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "scoring_status"
+            ],
+            "properties": {
+                "scoring_status": {
+                    "enum": [
+                        "pending",
+                        "scored",
+                        "needs_review",
+                        "invalid"
+                    ]
+                },
+                "is_correct": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "score": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "max_score": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "exclusiveMinimum": 0
+                },
+                "scored_at": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "format": "date-time"
+                },
+                "scoring_source": {
+                    "enum": [
+                        "server_key",
+                        "rubric",
+                        "human_review",
+                        "external_service",
+                        "unknown"
+                    ]
+                }
+            }
+        },
+        "context": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "session_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "item_index": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "response_time_ms": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "hint_count": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "reported_confidence": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                }
+            }
+        },
+        "idempotency_key": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "schema_version": {
+            "type": "string",
+            "default": "0.1"
+        }
+    },
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "outcome": {
+                        "properties": {
+                            "scoring_status": {
+                                "const": "scored"
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "outcome"
+                ]
+            },
+            "then": {
+                "properties": {
+                    "outcome": {
+                        "required": [
+                            "is_correct"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

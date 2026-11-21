@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-11-11T15:19:10Z",
+  "curriculum_version": "2026.jee.v1",
+  "curriculum_fingerprint": "6d44446f63d5f173",
+  "scenarios": {
+    "scenario_a": {
+      "status": "PASSED",
+      "elapsed_seconds": 0.08,
+      "weakest_concept": "cc_5297270d115d62e1",
+      "weakest_mastery": 0.1133,
+      "total_active_concepts_evaluated": 87,
+      "quiz_item_count": 4
+    },
+    "scenario_b": {
+      "status": "PASSED",
+      "elapsed_seconds": 0.0018,
+      "turns_completed": 3,
+      "total_history_messages": 6,
+      "concept_id": "cc_3e003bf9b038a36b",
+      "zero_answer_leakage_verified": true
+    },
+    "scenario_c": {
+      "status": "PASSED",
+      "elapsed_seconds": 0.087,
+      "concept_id": "cc_e070c64d30e5e623",
+      "questions_served_count": 8,
+      "repetition_free": true
+    },
+    "scenario_d": {
+      "status": "PASSED",
+      "elapsed_seconds": 0.1822,
+      "concept_id": "cc_5f9917b8333fae45",
+      "mastery_probability": 0.5424,
+      "model_name": "model_5_combined_akt_mastery_v5_2",
+      "curriculum_fingerprint": "6d44446f63d5f173"
+    },
+    "scenario_e": {
+      "status": "PASSED",
+      "elapsed_seconds": 0.0014,
+      "excluded_concept_rejected": true,
+      "content_unavailable_status_verified": true,
+      "diagram_problem_classified_unsupported": true
+    }
+  },
+  "all_passed": true
+}

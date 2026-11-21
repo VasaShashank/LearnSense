@@ -182,6 +182,11 @@ export function DemoPersonaWorkspace() {
       setGaps(pathGapRes.gaps);
       setPathNodes(pathGapRes.learning_path.nodes);
       setNextTarget(pathGapRes.next_target);
+      setActiveStudyConcept(prev => {
+        if (!prev) return null;
+        const matching = graph.concepts.find(c => c.concept_id === prev.concept_id);
+        return matching ? { ...matching } : prev;
+      });
     } catch (err: any) {
       console.error('Failed to refresh subject data', err);
       setGraphError(err?.message || 'Failed to refresh knowledge topology from backend');
@@ -281,9 +286,28 @@ export function DemoPersonaWorkspace() {
 
   // Handle "Knowledge Changed" Event
   const handleKnowledgeChanged = useCallback((updatedMasteries: Record<string, number>, conceptId: string) => {
+    // 1. Immediately update activeStudyConcept if open
+    setActiveStudyConcept(prev => {
+      if (!prev) return null;
+      const newScore = updatedMasteries[prev.concept_id];
+      return newScore !== undefined ? { ...prev, mastery: newScore } : prev;
+    });
+
+    // 2. Optimistically update graphData.concepts so all nodes on the canvas reflect new mastery instantly
+    setGraphData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        concepts: prev.concepts.map(c => {
+          const updated = updatedMasteries[c.concept_id];
+          return updated !== undefined ? { ...c, mastery: updated } : c;
+        }),
+      };
+    });
+
     refreshSubjectData();
     const formattedConcept = conceptId.replace(/_/g, ' ').toUpperCase();
-    const masteryVal = Math.round((updatedMasteries[conceptId] || 0.5) * 100);
+    const masteryVal = Math.round((updatedMasteries[conceptId] ?? 0.5) * 100);
     setKnowledgeChangedNotification(`KNOWLEDGE ATLAS CALIBRATED // ${formattedConcept} mastery calibrated to ${masteryVal}%.`);
     setTimeout(() => {
       setKnowledgeChangedNotification(null);

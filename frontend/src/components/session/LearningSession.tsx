@@ -59,12 +59,25 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
     newMastery: number;
   } | null>(null);
 
-  const loadQuestion = React.useCallback(() => {
+  const [questionOffset, setQuestionOffset] = useState<number>(0);
+  const [sessionMastery, setSessionMastery] = useState<number>(concept.mastery ?? 0.3);
+
+  React.useEffect(() => {
+    setQuestionOffset(0);
+    setSessionMastery(concept.mastery ?? 0.3);
+  }, [concept.concept_id, concept.mastery]);
+
+  const loadQuestion = React.useCallback((advance: boolean = false) => {
     setLoadingQuestion(true);
     setFeedback(null);
     setSelectedOptionIdx(null);
 
-    ApiClient.getConceptQuestion(subject.id, concept.concept_id, learnerId)
+    const targetOffset = advance ? questionOffset + 1 : questionOffset;
+    if (advance) {
+      setQuestionOffset(targetOffset);
+    }
+
+    ApiClient.getConceptQuestion(subject.id, concept.concept_id, learnerId, targetOffset)
       .then((data) => {
         if (data) {
           setQuestion(data);
@@ -77,7 +90,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
       .finally(() => {
         setLoadingQuestion(false);
       });
-  }, [subject.id, concept.concept_id, learnerId]);
+  }, [subject.id, concept.concept_id, learnerId, questionOffset]);
 
   // Fetch domain question and comprehensive learning lesson
   React.useEffect(() => {
@@ -126,6 +139,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
     if (!question || (selectedOptionIdx === null && !isDontKnow)) return;
     setIsSubmitting(true);
     const selectedOption = selectedOptionIdx !== null ? question.options[selectedOptionIdx] : undefined;
+    const uniqueReqId = `req_${concept.concept_id}_${question.question_id}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     try {
       const res = await ApiClient.submitActivityResponse({
@@ -136,10 +150,12 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
         selected_option: selectedOption,
         selected_index: selectedOptionIdx ?? undefined,
         is_dont_know: isDontKnow,
-        request_id: `req_${concept.concept_id}`,
+        request_id: uniqueReqId,
       });
 
-      const newM = res.updated_masteries[concept.concept_id] ?? concept.mastery;
+      const newM = res.updated_masteries[concept.concept_id] !== undefined
+        ? res.updated_masteries[concept.concept_id]
+        : sessionMastery;
       const isCorrect = res.is_correct ?? false;
 
       setFeedback({
@@ -151,9 +167,11 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
           ? `Signaling 'I don't know' allows LearnSense to calibrate your knowledge state without penalty.`
           : `Review the foundational rules of ${concept.name} before attempting the next milestone.`),
         correct_answer: res.correct_answer,
-        oldMastery: concept.mastery,
+        oldMastery: sessionMastery,
         newMastery: newM,
       });
+
+      setSessionMastery(newM);
 
       // Trigger "Knowledge Changed" state propagation
       onKnowledgeChanged(res.updated_masteries, concept.concept_id);
@@ -183,9 +201,14 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
                 STUDY FOCUS // {subject.title}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
-              {concept.name}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-white tracking-tight">
+                {concept.name}
+              </h2>
+              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg border border-cyan-500/40 bg-cyan-950/60 text-cyan-300">
+                {Math.round(sessionMastery * 100)}% Mastery
+              </span>
+            </div>
           </div>
         </div>
 
@@ -324,7 +347,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
             <div className="pb-4 border-b border-white/[0.07]">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                  {loadingQuestion ? 'GENERATING GROUNDED ASSESSMENT...' : 'ADAPTIVE MASTERY ASSESSMENT'}
+                  {loadingQuestion ? 'GENERATING GROUNDED ASSESSMENT...' : `ADAPTIVE MASTERY ASSESSMENT // QUESTION ${questionOffset + 1}`}
                 </span>
                 {question?.source === 'llm' && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
@@ -440,7 +463,7 @@ export const LearningSession: React.FC<LearningSessionProps> = ({
 
                 <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
                   <button
-                    onClick={loadQuestion}
+                    onClick={() => loadQuestion(true)}
                     className="py-3 px-5 rounded-xl border border-white/[0.1] bg-white/[0.05] hover:bg-white/[0.1] text-universe-slate hover:text-white font-mono text-xs flex items-center gap-2 transition-all cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
