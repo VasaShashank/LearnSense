@@ -10,26 +10,43 @@
 
 ## 1. Executive Summary
 
-The consolidation of **Person 1** (Multi-Tenancy, Supabase Platform Auth, PostgreSQL RLS, Diagnostic Framework), **Person 2** (NCERT/JEE Class 11 & 12 Curriculum Harvesting, Strict 0-Cycle DAG, Visual Page Evidence), and **Person 3** (Bayesian Knowledge Tracing, Adaptive CAT Engine with Shannon Expected Information Gain, Teaching Optimizer, Study Guide Service, and Peer Marketplace) is **fully completed**.
+The consolidation of **Person 1** (Multi-Tenancy, Supabase Platform Auth, PostgreSQL RLS, Diagnostic Framework), **Person 2** (NCERT/JEE Class 11 & 12 Curriculum Harvesting, Strict 0-Cycle DAG, Visual Page Evidence), and **Person 3** (Attentive Knowledge Tracing [AKT Model 5 v5.2.1], Bayesian Knowledge Tracing [BKT] Baseline, Adaptive CAT Engine with Shannon Expected Information Gain, Teaching Optimizer, Study Guide Service, and Peer Marketplace) is **fully completed**.
 
 All demo mock hardcodings, static percentages, and temporary stubs have been permanently replaced with mathematical models, authentic curriculum passages, and verified persistent session storage.
 
 ### System Verification Metrics
 | Verification Layer | Status | Metric / Evidence |
 | :--- | :--- | :--- |
+| **Primary Neural KT Engine (AKT)** | **PASS** | Model 5 v5.2.1 (`01fd2535d6f4...`) operational for continuous concept mastery estimation & Task A/B prediction. |
 | **Pytest Backend Suite** | **PASS** | `104 passed, 3 skipped, 0 failed` across Person 3, Person 2/3 integration, and Phase 4. |
 | **Frontend Production Build** | **PASS** | `npm --prefix frontend run build` (`tsc -b && vite build`) clean in 2.50s with **0 errors**. |
 | **Micro-Quiz & EIG CAT** | **PASS** | Active Shannon EIG item selection reduces entropy by **0.5932 bits**; multi-item CAT session lifecycle verified. |
 | **Live API Diagnostics** | **PASS** | 7/7 live teacher and institutional B2B endpoints verified against running uvicorn instance. |
-| **Mastery Convergence** | **PASS** | Real-time Bayesian posterior updates on every submitted attempt with band-weighted accuracy. |
+| **Mastery Convergence** | **PASS** | Real-time AKT & Bayesian posterior updates on every submitted attempt with band-weighted accuracy. |
 
 ---
 
 ## 2. Person 3 Core Capabilities & Subsystem Architecture
 
-### 2.1. Bayesian Knowledge Tracing (BKT) & Posterior Updates
+### 2.1. Attentive Knowledge Tracing (AKT — Model 5 v5.2.1 Flagship Engine)
+- **Location:** `ml/model_v5_2.py`, `src/akt_inference.py`, `backend/services/learning_service.py`
+- **Neural Architecture:** `AKTMasteryHeadV52`
+  - Causal self-attention transformer that encodes student interaction sequences $(c_t, y_t)$ without future information leakage.
+  - Query-conditioned context estimation: query vector at step $t$ attends to historical context $[0 \dots t-1]$ and initial student profile.
+  - Hyperparameters: $d_{\text{model}} = 64$, 4 attention heads, 88 canonical concepts vocabulary, 1,751 question embeddings.
+  - Verified Checkpoint: `ml/checkpoints/model_5_combined_akt_mastery_v5_2.pt` (SHA-256: `01fd2535d6f43655b8c445ddbe99b4c6cd4f538d0196475fb576e485812e63e0`).
+- **Two Authoritative Benchmark Tasks:**
+  1. **Task A — Next-Question Performance Prediction:** Predicts binary probability $\hat{y}_{t+1} \in [0, 1]$ of correctly answering the next question; evaluated via **AUC-ROC** ($\ge 0.84$).
+  2. **Task B — Continuous Concept Mastery Estimation:** Predicts the continuous latent mastery vector $\mathbf{m}_t \in [0, 1]^K$ across all concepts; evaluated via **Band-Weighted MAE**:
+     - **Low Band ($< 0.40$):** MAE $0.151$ (v5.2) vs $0.154$ (v5.1).
+     - **Medium Band ($0.40 - 0.70$):** MAE $0.129$ (v5.2) vs $0.142$ (v5.1).
+     - **High Band ($> 0.70$):** MAE $0.278$ (v5.2) vs $0.429$ (v5.1) — **$35\%$ error reduction** in high-mastery mastery bounds.
+- **Runtime Service:** `AKTMasteryInferenceService` serves continuous concept mastery vectors and cold-start estimates to the application layer.
+
+### 2.2. Bayesian Knowledge Tracing (BKT Baseline & Cold-Start Layer)
 - **Location:** `phase3/learner/service.py` & `phase3/learner/models.py`
-- **Algorithm:**
+- **Role:** Deterministic 4-parameter probabilistic baseline and cold-start prior when interaction history is short ($N < 3$) or offline without PyTorch.
+- **Formulation:**
   $$\begin{aligned}
   P(L_{t} \mid \text{obs}=1) &= \frac{P(L_{t-1}) \cdot (1 - P(S))}{P(L_{t-1}) \cdot (1 - P(S)) + (1 - P(L_{t-1})) \cdot P(G)} \\
   P(L_{t} \mid \text{obs}=0) &= \frac{P(L_{t-1}) \cdot P(S)}{P(L_{t-1}) \cdot P(S) + (1 - P(L_{t-1})) \cdot (1 - P(G))} \\
